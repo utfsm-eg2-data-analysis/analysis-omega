@@ -4,11 +4,8 @@ ifndef CLASTOOL
     $(error "Please set the variable CLASTOOL")
 endif
 
-ifndef PRODIR
-    $(error "Please set the variable PRODIR")
-endif
-
-BINDIR := $(PRODIR)/bin
+BINDIR := ./bin
+SRCDIR := ./src
 
 ROOTCONFIG := root-config
 ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
@@ -28,18 +25,19 @@ LIBS := $(ROOTGLIBS)\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
-FILES := CheckGSIMCards
+PROG := MakePlots CheckGSIMCards
+LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
 
-all: $(FILES)
+all: $(LIST)
 
-%: %.o
-	@echo "Doing application " $@ 
+$(BINDIR)/%: $(BINDIR)/%.o
+	@echo "Doing application" $@ 
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
 
-%.o: %.cxx
+$(BINDIR)/%.o: $(SRCDIR)/%.cxx
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(FILES:%=%.o) $(FILES)
+	rm -f $(LIST:%=%.o) $(LIST)

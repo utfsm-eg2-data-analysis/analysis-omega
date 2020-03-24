@@ -54,11 +54,8 @@ TString titleObservable;
 TString titleAxis;
 TString outPrefix;
 TString toPlotObservable;
-TString histProperties;
+TString histProperties = "";
 TString outputPlotName;
-
-Double_t legendY1 = 0.8;
-Double_t legendY2 = 0.9;
 
 /*** Declaration of functions ***/
 
@@ -138,21 +135,37 @@ int main(int argc, char **argv) {
   simrecHistC->SetFillStyle(0);
   simrecHistC->SetLineColor(kRed);
   simrecHistC->SetLineWidth(3);
-  
+
   TCanvas *c = new TCanvas("c", "c", 1200, 1000); 
   gStyle->SetOptStat(0);
   c->SetGrid();
 
-  simrecHistA->DrawNormalized("HIST");
-  simrecHistB->DrawNormalized("HIST SAME");
-  simrecHistC->DrawNormalized("HIST SAME");
+  // my own normalization
+  simrecHistA->Draw("HIST");
+  c->Update();
+  //scale hint1 to the pad coordinates
+  Float_t rightmax = 1.1*simrecHistB->GetMaximum();
+  Float_t scale = gPad->GetUymax()/rightmax;
+  simrecHistB->Scale(scale);
+  simrecHistB->Draw("SAME HIST");
+  //draw an axis on the right side
+  TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
+			    gPad->GetUxmax(), gPad->GetUymax(),
+			    0, rightmax, 510, "+L");
+  axis->SetLineColor(kBlue);
+  axis->SetLabelColor(kBlue);
+  axis->Draw();
+  
+  // simrecHistA->DrawNormalized("HIST");
+  // simrecHistB->DrawNormalized("HIST SAME");
+  // simrecHistC->DrawNormalized("HIST SAME");
   
   // legend
-  TLegend *l = new TLegend(0.7, legendY1, 0.9, legendY2);
+  TLegend *l = new TLegend(0.7, 0.9, 0.9, 1.0);
   // l->AddEntry(dataHist, "data", "l");
   l->AddEntry(simrecHistA, "(1, 208)", "l");
   l->AddEntry(simrecHistB, "(1, 2)", "l");
-  l->AddEntry(simrecHistC, "(2, 208)", "l");
+  // l->AddEntry(simrecHistC, "(2, 208)", "l");
   l->Draw();
   
   c->Print(outputPlotName); // output file
@@ -191,8 +204,12 @@ void printUsage() {
   std::cout << "    sets observable to draw, which can be: " << std::endl;
   std::cout << "    M : omega invariant mass difference" << std::endl;
   std::cout << "    Q : Q2" << std::endl;
+  std::cout << "    N : Nu" << std::endl;
+  std::cout << "    Z : Z" << std::endl;
+  std::cout << "    X : Xb" << std::endl;
   std::cout << "    P : PhiPQ" << std::endl;
   std::cout << "    T : Pt2" << std::endl;
+  std::cout << "    W : W" << std::endl;
   std::cout << "    0 : P(pi0)" << std::endl;
   std::cout << "    1 : P(pi+)" << std::endl;
   std::cout << "    2 : P(pi-)" << std::endl;
@@ -210,19 +227,29 @@ void assignOptions() {
     toPlotObservable = "Q2";
     titleObservable = "Q^{2}(#omega)";
     titleAxis = "Q^{2}";
-    histProperties = "";
+  } else if (observableChosen == "N") {
+    toPlotObservable = "Nu";
+    titleObservable = "#nu(#omega)";
+    titleAxis = "#nu (GeV)";
+    histProperties = "(200, 2.2, 4.2)";
+  } else if (observableChosen == "Z") {
+    toPlotObservable = "Z";
+    titleObservable = "Z(#omega)";
+    titleAxis = "Z";
+    histProperties = "(220, 0.1, 1.2)";
+  } else if (observableChosen == "X") {
+    toPlotObservable = "Xb";
+    titleObservable = "Xb(#omega)";
+    titleAxis = "Xb";
+    // histProperties = "";
   } else if (observableChosen == "P") {
     toPlotObservable = "PhiPQ";
     titleObservable = "#phi_{PQ}(#omega)";
     titleAxis = "#phi_{PQ}";
-    histProperties = "";
-    legendY1 = 0.3;
-    legendY2 = 0.4;
   } else if (observableChosen == "W") {
     toPlotObservable = "W";
     titleObservable = "W(#omega)";
     titleAxis = "W";
-    histProperties = "";
   } else if (observableChosen == "T") {
     toPlotObservable = "Pt2";
     titleObservable = "P_{T}^{2}(#omega)";
@@ -232,22 +259,22 @@ void assignOptions() {
     toPlotObservable = "Ppi0";
     titleObservable = "P(#pi0)";
     titleAxis = "P (GeV)";
-    histProperties = "";
+    histProperties = "(150, 0., 3.)";
   } else if (observableChosen == "1") {
     toPlotObservable = "Ppip";
     titleObservable = "P(#pi+)";
     titleAxis = "P (GeV)";
-    histProperties = "";
+    histProperties = "(150, 0., 3.)";
   } else if (observableChosen == "2") {
     toPlotObservable = "Ppim";
     titleObservable = "P(#pi-)";
     titleAxis = "P (GeV)";
-    histProperties = "";
+    histProperties = "(150, 0., 3.)";
   } else if (observableChosen == "3") {
     toPlotObservable = "Pomega";
     titleObservable = "P(#omega)";
     titleAxis = "P (GeV)";
-    histProperties = "";
+    histProperties = "(250, 0., 5.)";
   }
   // name
   outputPlotName = outFolder + "/gsim-cards-" + toPlotObservable + ".png";
