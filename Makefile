@@ -21,11 +21,11 @@ LDFLAGS := -g -O0 $(ROOTLDFLAGS) # debug info
 
 INCLUDES := -I$(ANALYSER)/include\
                -I$(CLASTOOL)/include
-LIBS := $(ROOTGLIBS)\
+LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
-PROG := MakePlots CheckGSIMCards
+PROG := MakePlots old_MakePlots GetQuantiles CheckGSIMCards SystPi0Mass
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

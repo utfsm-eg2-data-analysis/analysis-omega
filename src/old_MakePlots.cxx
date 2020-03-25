@@ -1,13 +1,9 @@
 /**************************************/
-/* MakePlots.cxx                      */
+/* old_MakePlots.cxx                  */
 /*                                    */
 /* Created by Andrés Bórquez, CCTVAL  */
 /*                                    */
 /**************************************/
-
-// Plots different kinvar spectrums, such as: IM(omega), IMD(omega), Q2, Z, Nu, Pt2, PhiPQ
-// For different sets of targets: D, C, Fe, Pb
-// For data or simulation
 
 #include <iostream>
 
@@ -63,6 +59,8 @@ void printOptions();
 void printUsage();
 void assignOptions();
 
+void setAlias(TTree *treeExtracted); // old
+
 int main(int argc, char **argv) {
 
   parseCommandLine(argc, argv);
@@ -70,15 +68,17 @@ int main(int argc, char **argv) {
   printOptions();
 
   // cuts
-  TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-  TCut cutPi0 = "0.059 < pi0M && pi0M < 0.209";
-  TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
-  TCut cutAll = cutDIS && cutPipPim && cutPi0;
+  TCut cutDIS = "Q2 > 1 && W > 2"; // old
+  TCut cutPi0 = "0.059 < mpi0 && mpi0 < 0.209"; // old
+  TCut cutPipPim = "0.48 > mpippim || 0.51 < mpippim"; // old
+  TCut cutAll = cutDIS && cutPipPim && cutPi0 && cutTargType && cutZ;
 
   TChain *treeExtracted = new TChain();
-  treeExtracted->Add(inputFile1 + "/mix");
-  treeExtracted->Add(inputFile2 + "/mix");
-  treeExtracted->Add(inputFile3 + "/mix");
+  treeExtracted->Add(inputFile1 + "/outdata");
+  treeExtracted->Add(inputFile2 + "/outdata");
+  treeExtracted->Add(inputFile3 + "/outdata");
+
+  setAlias(treeExtracted); // old
   
   TH1F *theHist;
   treeExtracted->Draw(toPlotObservable + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./MakePlots -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./old_MakePlots -h to print usage." << std::endl;
     exit(0);
   }
   while ((c = getopt(argc, argv, "hdst:o:z:")) != -1)
@@ -118,7 +118,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'o': observableChosen = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./MakePlots -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./old_MakePlots -h to print usage." << std::endl;
       exit(0);
       break;
     }
@@ -126,7 +126,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printOptions() {
   std::cout << std::endl;
-  std::cout << "Executing MakePlots program. Parameters chosen are:" << std::endl;
+  std::cout << "Executing old_MakePlots program. Parameters chosen are:" << std::endl;
   std::cout << "  dataFlag         = " << dataFlag << std::endl;
   std::cout << "  simFlag          = " << simFlag << std::endl;
   std::cout << "  targetOption     = " << targetOption << std::endl;
@@ -137,8 +137,8 @@ void printOptions() {
 
 void printUsage() {
   std::cout << std::endl;
-  std::cout << "MakePlots program. Usage is:" << std::endl;
-  std::cout << "./MakePlots -[options] -[more options]" << std::endl;
+  std::cout << "old_MakePlots program. Usage is:" << std::endl;
+  std::cout << "./old_MakePlots -[options] -[more options]" << std::endl;
   std::cout << "  h         : prints help and exit program" << std::endl;
   std::cout << "  t[target] : select target: D | C | Fe | Pb" << std::endl;
   std::cout << "  d : draw data" << std::endl;
@@ -163,18 +163,18 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
-      inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
-      inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = inputFolder + "/C/wout_C-thickD2.root"; // old
+      inputFile2 = inputFolder + "/Fe/wout_Fe-thickD2.root"; // old
+      inputFile3 = inputFolder + "/Pb/wout_Pb-thinD2.root"; // old
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+      inputFile1 = inputFolder + "/C/wout_C-thickD2.root"; // old
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+      inputFile1 = inputFolder + "/Fe/wout_Fe-thickD2.root"; // old
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = inputFolder + "/Pb/wout_Pb-thinD2.root"; // old
     }
   } else if (simFlag) {
     outPrefix = "simrec";
@@ -183,16 +183,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/jlab/D/wout_simrecD.root";
+      inputFile1 = inputFolder + "/jlab/D/wout_simrecD.root"; // old
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/C/wout_simrecC.root";
+      inputFile1 = inputFolder + "/jlab/C/wout_simrecC.root"; // old
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = inputFolder + "/jlab/Fe/wout_simrecFe.root"; // old
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/Pb/wout_simrecPb.root";
+      inputFile1 = inputFolder + "/usm/Pb/wout_simrecPb.root"; // old
     }
   }
   // for Z binning
@@ -220,12 +220,12 @@ void assignOptions() {
   }
   // for observable
   if (observableChosen == "M") {
-    toPlotObservable = "wM";
+    toPlotObservable = "momega"; // old
     titleObservable = "IM(#omega) for ";
     titleAxis = "IM (GeV)";
     histProperties = "(250, 0., 2.5.)";
   } else if (observableChosen == "D") {
-    toPlotObservable = "wD";
+    toPlotObservable = "deltam"; // old
     titleObservable = "IMD(#omega) for ";
     titleAxis = "IMD (GeV)";
     histProperties = "(200, 0., 1.6)";
@@ -249,12 +249,61 @@ void assignOptions() {
     titleObservable = "#phi_{PQ} ";
     titleAxis = "#phi_{PQ}";
     histProperties = "(100, -180, 180.)";
-  } else if (observableChosen == "T") {
-    toPlotObservable = "Pt2";
-    titleObservable = "P_{T}^{2} ";
-    titleAxis = "GeV^{2}";
-    histProperties = "(100, 0., 1.5)";
   }
   // output name
-  outputPlotName = outFolder + "/" + outPrefix + "-" + toPlotObservable + "-" + targetOption + sufixZBin + ".png";
+  outputPlotName = outFolder + "/old_" + outPrefix + "-" + toPlotObservable + "-" + targetOption + sufixZBin + ".png"; // old
+}
+
+void setAlias(TTree *treeExtracted) { // old
+  // pip
+  treeExtracted->SetAlias("p2pip", "fX[2]*fX[2] + fY[2]*fY[2] + fZ[2]*fZ[2]");
+  treeExtracted->SetAlias("E2pip", "p2pip + 0.13957*0.13957");
+  treeExtracted->SetAlias("m2pip", "E2pip - p2pip");
+  treeExtracted->SetAlias("mpip", "TMath::Sqrt(m2pip)");
+  treeExtracted->SetAlias("Epip", "TMath::Sqrt(E2pip)");
+  
+  // pim
+  treeExtracted->SetAlias("p2pim", "fX[3]*fX[3] + fY[3]*fY[3] + fZ[3]*fZ[3]");
+  treeExtracted->SetAlias("E2pim", "p2pim + 0.13957*0.13957");
+  treeExtracted->SetAlias("m2pim", "E2pim - p2pim");
+  treeExtracted->SetAlias("mpim", "TMath::Sqrt(m2pim)");
+  treeExtracted->SetAlias("Epim", "TMath::Sqrt(E2pim)");
+  
+  // pi0
+  treeExtracted->SetAlias("Pxpi0", "fX[0] + fX[1]");
+  treeExtracted->SetAlias("Pypi0", "fY[0] + fY[1]");
+  treeExtracted->SetAlias("Pzpi0", "fZ[0] + fZ[1]");
+  treeExtracted->SetAlias("p2pi0", "Pxpi0*Pxpi0 + Pypi0*Pypi0 + Pzpi0*Pzpi0");
+  treeExtracted->SetAlias("cos_theta", "(fX[0]*fX[1] + fY[0]*fY[1] + fZ[0]*fZ[1])/(fE[0]*fE[1])"); // original
+  treeExtracted->SetAlias("m2pi0", "2*fE[0]*fE[1]*(1 - cos_theta)"); // original
+  treeExtracted->SetAlias("mpi0", "TMath::Sqrt(m2pi0)");
+  treeExtracted->SetAlias("E2pi0", "m2pi0 + p2pi0");
+  treeExtracted->SetAlias("Epi0", "TMath::Sqrt(E2pi0)");
+  
+  // crossed terms
+  treeExtracted->SetAlias("p1p2", "fX[2]*fX[3] + fY[2]*fY[3] + fZ[2]*fZ[3]");
+  treeExtracted->SetAlias("E1E2", "TMath::Sqrt(E2pip*E2pim)");
+  treeExtracted->SetAlias("p2p3", "fX[3]*Pxpi0 + fY[3]*Pypi0 + fZ[3]*Pzpi0");
+  treeExtracted->SetAlias("E2E3", "TMath::Sqrt(E2pim*E2pi0)");
+  treeExtracted->SetAlias("p1p3", "fX[2]*Pxpi0 + fY[2]*Pypi0 + fZ[2]*Pzpi0");
+  treeExtracted->SetAlias("E1E3", "TMath::Sqrt(E2pip*E2pi0)");
+
+  // dalitz plots!
+  treeExtracted->SetAlias("m2pippim", "m2pip + m2pim + 2*(E1E2 - p1p2)");
+  treeExtracted->SetAlias("m2pimpi0", "m2pim + m2pi0 + 2*(E2E3 - p2p3)");
+  treeExtracted->SetAlias("m2pippi0", "m2pip + m2pi0 + 2*(E1E3 - p1p3)");
+
+  // for the cuts
+  treeExtracted->SetAlias("mpippim", "TMath::Sqrt(m2pippim)");
+  treeExtracted->SetAlias("mpimpi0", "TMath::Sqrt(m2pimpi0)");
+  treeExtracted->SetAlias("mpippi0", "TMath::Sqrt(m2pippi0)");
+
+  // omega
+  treeExtracted->SetAlias("Eomega", "Epip + Epim + fE[0] + fE[1]");
+  treeExtracted->SetAlias("Pxomega", "fX[0] + fX[1] + fX[2] + fX[3]");
+  treeExtracted->SetAlias("Pyomega", "fY[0] + fY[1] + fY[2] + fY[3]");
+  treeExtracted->SetAlias("Pzomega", "fZ[0] + fZ[1] + fZ[2] + fZ[3]");
+  treeExtracted->SetAlias("p2omega", "Pxomega*Pxomega + Pyomega*Pyomega + Pzomega*Pzomega");
+  treeExtracted->SetAlias("momega", "TMath::Sqrt(Eomega*Eomega - Pxomega*Pxomega - Pyomega*Pyomega - Pzomega*Pzomega)");
+  treeExtracted->SetAlias("deltam", "momega - mpi0 - mpip - mpim");
 }
