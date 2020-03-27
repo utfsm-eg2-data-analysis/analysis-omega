@@ -57,14 +57,16 @@ Double_t obtMean  = 0.131;
 Double_t obtSigma = 0.024;
 Double_t pi0LowEdge;
 Double_t pi0HighEdge;
+TString  pi0NSigmaSufix;
 
 // main options
-TString targetOption;
 Int_t   plotFlag = 0;
 Int_t   fitFlag  = 0;
+TString targetOption;
 Int_t   doMRFlag = 0;
-Int_t   Nsigma;
 TString kinvarOption;
+Int_t   pi0Nsigma;
+Int_t   wNsigma;
 
 // cuts
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
@@ -73,6 +75,7 @@ TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 TCut cutAll;
 TCut cutKinVar;
 TCut cutTargType;
+TCut cutOmega;
 
 // kinvar options
 Int_t    kinvarNbins = 5;
@@ -81,6 +84,9 @@ Double_t edgesZ[6] = {0.5, 0.557, 0.617, 0.689, 0.784, 1.};
 Double_t edgesQ2[6] = {1., 1.181, 1.364, 1.598, 1.960, 3.970};
 Double_t edgesNu[6] = {2.2, 3.191, 3.504, 3.744, 3.964, 4.2};
 Double_t edgesPt2[6] = {0., 0.04, 0.09, 0.16, 0.273, 1.5};
+TString  kinvarSufix;
+TString  kinvarMRSufix;
+Int_t    kinvarConstant = 1; // default for (Q2, Nu, Pt2)
 
 // MR-related
 Double_t particleNumber[4][5];
@@ -91,6 +97,15 @@ TString outPrefix;
 TString outputPlotName;
 TString outputTextName;
 
+// other
+Int_t canvasWidth = 1366;
+Int_t canvasHeight = 768;
+
+// omega fit
+TString  wNSigmaSufix;
+Double_t wLowEdge[5];
+Double_t wHighEdge[5];
+
 /*** Declaration of functions ***/
 
 inline int parseCommandLine(int argc, char* argv[]);
@@ -99,6 +114,7 @@ void printUsage();
 void assignOptions();
 
 void drawVerticalLine(Double_t x);
+void fitOmegaPeak();
 void integrateData(TString targetOption2);
 
 int main(int argc, char **argv) {
@@ -108,7 +124,7 @@ int main(int argc, char **argv) {
   printOptions();
 
   // define canvas
-  TCanvas *c = new TCanvas("c", "c", 1366, 768); 
+  TCanvas *c = new TCanvas("c", "c", canvasWidth, canvasHeight); 
   c->SetGrid();
   
   if (plotFlag) {
@@ -199,11 +215,21 @@ int main(int argc, char **argv) {
   } else if (doMRFlag) {
 
     gStyle->SetOptStat(0);
+
+    // define cuts, the most important part of this program
+    pi0LowEdge = obtMean - pi0Nsigma*obtSigma;
+    pi0HighEdge = obtMean + pi0Nsigma*obtSigma;
+    cutPi0 = Form("%f < pi0M && pi0M < %f", pi0LowEdge, pi0HighEdge);
+    
+    fitOmegaPeak();
     
     integrateData("D");
     integrateData("C");
     integrateData("Fe");
     integrateData("Pb");
+
+    // go back to main canvas
+    c->cd();
     
     // creating and filling histograms
     TH1F *numberDeutHist = new TH1F("numberDeutHist", "", kinvarNbins, 0.5, 1.);
@@ -222,8 +248,8 @@ int main(int argc, char **argv) {
       numberIronHist->SetBinContent(cc + 1, particleNumber[2][cc]);
       numberIronHist->SetBinError(cc + 1, particleError[2][cc]);
         
-      numberLeadHist->SetBinContent(cc + 1, particleNumber[4][cc]);
-      numberLeadHist->SetBinError(cc + 1, particleError[4][cc]);
+      numberLeadHist->SetBinContent(cc + 1, particleNumber[3][cc]);
+      numberLeadHist->SetBinError(cc + 1, particleError[3][cc]);
     }
   
     TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
@@ -245,7 +271,7 @@ int main(int argc, char **argv) {
     CarbonMR->Divide(numberCarbonHist, numberDeutHist);
     CarbonMR->Scale(4.6194); // electron normalization, uniD
   
-    CarbonMR->SetAxisRange(0., 2.2, "Y"); // range
+    CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
     CarbonMR->Draw("E");  
   
     TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
@@ -315,14 +341,16 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./SystPi0Mass -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:pfm:k:")) != -1)
+  while ((c = getopt(argc, argv, "ht:pfmk:i:w:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'p': plotFlag = 1; break;
     case 'f': fitFlag = 1; break;
-    case 'm': doMRFlag = 1; Nsigma = atoi(optarg); break;
-    case 'k': kinvarOption = optarg; break;      
+    case 'm': doMRFlag = 1; break;
+    case 'k': kinvarOption = optarg; break;
+    case 'i': pi0Nsigma = atoi(optarg); break;
+    case 'w': wNsigma = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./SystPi0Mass -h to print usage." << std::endl;
       exit(0);
@@ -336,11 +364,12 @@ void printOptions() {
   std::cout << "  plotFlag     = " << plotFlag << std::endl;
   if (plotFlag) std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  fitFlag      = " << fitFlag << std::endl;
-  if (fitFlag)  std::cout << "  targetOption = " << targetOption << std::endl;
+  if (fitFlag) std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  doMRFlag     = " << doMRFlag << std::endl;
   if (doMRFlag) {
-    std::cout << "  Nsigma       = " << Nsigma << std::endl;
     std::cout << "  kinvarOption = " << kinvarOption << std::endl;
+    std::cout << "  pi0Nsigma    = " << pi0Nsigma << std::endl;
+    std::cout << "  wNsigma      = " << wNsigma << std::endl;
   }
   std::cout << std::endl;
 }
@@ -353,8 +382,10 @@ void printUsage() {
   std::cout << "  t[target] : selects target: D | C | Fe | Pb" << std::endl;
   std::cout << "  p         : plots mpi0 spectrum" << std::endl;
   std::cout << "  f         : fits mpi0 peak" << std::endl;
-  std::cout << "  m[3,4,5]  : does nbs-MR with n*sigma cut around pi0 peak" << std::endl;
+  std::cout << "  m         : does nbs-MR" << std::endl;
   std::cout << "  k[kinvar] : selects kinvar" << std::endl;
+  std::cout << "  i[3,4,5]  :  with n*sigma cut around pi0 peak" << std::endl;
+  std::cout << "  w[3,4,5]  :  with n*sigma cut around omega peak" << std::endl;  
   std::cout << std::endl;
 }
 
@@ -375,19 +406,41 @@ void assignOptions() {
     cutTargType = "TargType == 2";
     inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
   }
+  // for kinvar
+  if (kinvarOption == "Z") {
+    kinvarConstant = 3;
+    kinvarSufix = "-z";
+    kinvarMRSufix = "-Z";
+    for (Int_t z = 0; z <= kinvarNbins; z++) kinvarValue[z] = edgesZ[z];
+  } else if (kinvarOption == "Q2") {
+    kinvarSufix = "-q";
+    kinvarMRSufix = "-Q2";
+    for (Int_t q = 0; q <= kinvarNbins; q++) kinvarValue[q] = edgesQ2[q];
+  } else if (kinvarOption == "Nu") {
+    kinvarSufix = "-n";
+    kinvarMRSufix = "-Nu";
+    for (Int_t n = 0; n <= kinvarNbins; n++) kinvarValue[n] = edgesNu[n];
+  } else if (kinvarOption == "Pt2") {
+    kinvarSufix = "-p";
+    kinvarMRSufix = "-Pt2";
+    for (Int_t p = 0; p <= kinvarNbins; p++) kinvarValue[p] = edgesPt2[p];
+  }
+  // more sufix
+  wNSigmaSufix = Form("-%dw", wNsigma);
+  pi0NSigmaSufix = Form("-%dpi0", pi0Nsigma);
   // for process names
   if (plotFlag) {
     outPrefix = "plot-mpi0-" + targetOption;
   } else if (fitFlag) {
     outPrefix = "fit-mpi0-" + targetOption;
   } else if (doMRFlag) {
-    outPrefix = "nbs-MR";
-    outPrefix = outPrefix + "-mpi0";
-    outPrefix = outPrefix + Form("-%ds", Nsigma);
-    outputTextName = outFolder + "/" + outPrefix + ".dat";
+    outPrefix = "nbs-MR" + kinvarMRSufix;
+    outputTextName = outFolder + "/" + outPrefix + wNSigmaSufix + pi0NSigmaSufix + ".dat";
+    canvasWidth = 1200;
+    canvasHeight = 1000;
   }
   // output name
-  outputPlotName = outFolder + "/" + outPrefix + ".png";
+  outputPlotName = outFolder + "/" + outPrefix + wNSigmaSufix + pi0NSigmaSufix + ".png";
 }
 
 void drawVerticalLine(Double_t x) {
@@ -403,79 +456,156 @@ void drawVerticalLine(Double_t x) {
   linex->Draw();
 }
 
+void fitOmegaPeak() {
+  
+  // assign options
+  cutTargType = "TargType == 1";
+  inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+  inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+  inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+  
+  // extract data
+  TChain *treeExtracted3 = new TChain();
+  treeExtracted3->Add(inputFile1 + "/mix");
+  treeExtracted3->Add(inputFile2 + "/mix");
+  treeExtracted3->Add(inputFile3 + "/mix");
+    
+  // x-bin width = 2 MeV
+  Int_t    wNbins = 130;
+  Double_t wPlotRangeDown = 0.24; // aprox. 6 sigma
+  Double_t wPlotRangeUp = 0.50; // aprox. 6 sigma
+  
+  Double_t wSigmaIGV = 2.2e-2;
+  Double_t wSigmaRangeDown = 1.8e-2;
+  Double_t wSigmaRangeUp = 2.6e-2;
+  
+  Double_t wMeanIGV = 0.37;
+  Double_t wMeanRangeDown = 0.36;
+  Double_t wMeanRangeUp = 0.38;
+  
+  Double_t wFitRangeDown = 0.30;
+  Double_t wFitRangeUp = 0.44;
+
+  for (Int_t index2 = 0; index2 < kinvarNbins; index2++) {
+
+    // define kinvar cut
+    cutKinVar = Form("%f < ", kinvarValue[index2]) + kinvarOption + " && " + kinvarOption + Form(" < %f", kinvarValue[index2+1]);
+
+    // define canvas for fit
+    TCanvas *c4f = new TCanvas("c4f", "c4f", canvasWidth, canvasHeight); 
+    c4f->SetGrid();
+    
+    TH1F *dataHist;
+    treeExtracted3->Draw(Form("wD>>data4fit(%d, %f, %f)", wNbins, wPlotRangeDown, wPlotRangeUp), cutTargType && cutDIS && cutPipPim && cutPi0 && cutKinVar, "goff"); // without cut around omega
+    dataHist = (TH1F *)gROOT->FindObject("data4fit");
+    
+    RooRealVar wx("wx", "IMD(#omega) (GeV)", wPlotRangeDown, wPlotRangeUp);
+    
+    RooRealVar wMean("#mu", "Mean of Gaussian", wMeanIGV, wMeanRangeDown, wMeanRangeUp);
+    RooRealVar wSigma("#sigma", "Width of Gaussian", wSigmaIGV, wSigmaRangeDown, wSigmaRangeUp);
+    RooGaussian omega("omega", "omega peak", wx, wMean, wSigma);
+    
+    RooDataHist data4fit("data4fit", "data4fit", wx, dataHist);
+    omega.fitTo(data4fit, Range(wFitRangeDown, wFitRangeUp), Save());
+    
+    RooPlot *wFrame = wx.frame(Title("IMD(#omega) for D Data"), Bins(wNbins));
+    data4fit.plotOn(wFrame, Name("wData"));
+    omega.plotOn(wFrame, Name("wModel"), LineColor(kMagenta));
+    omega.paramOn(wFrame, Layout(0.6, 0.9, 0.9)); // x1, x2, delta-y
+    
+    wFrame->Draw();
+    
+    // draw chi2
+    Double_t wChi2 = wFrame->chiSquare("wModel", "wData");
+    TPaveText *wTextBlock = new TPaveText(0.7, 0.9, 0.9, 1.0, "NDC TL"); // x1, y1, x2, y2
+    wTextBlock->AddText(Form("#chi^{2}/ndf = %.3f", wChi2));
+    wTextBlock->SetFillColor(kWhite);
+    wTextBlock->SetShadowColor(kWhite);
+    wTextBlock->SetTextColor(kBlack);
+    wTextBlock->Draw();
+    
+    // draw lines
+    drawVerticalLine(wMean.getValV());
+    drawVerticalLine(wMean.getValV() - wNsigma*wSigma.getValV());
+    drawVerticalLine(wMean.getValV() + wNsigma*wSigma.getValV());
+    
+    std::cout << std::endl;
+    std::cout << "wFIT COMPLETED." << std::endl;
+    std::cout << "wMean  = " << wMean.getValV() << std::endl;
+    std::cout << "wSigma = " << wSigma.getValV() << std::endl;
+    std::cout << "wChi2  = " << wChi2 << std::endl;
+    std::cout << std::endl;
+
+    // save edges!
+    wLowEdge[index2] = wMean.getValV() - wNsigma*wSigma.getValV();
+    wHighEdge[index2] = wMean.getValV() + wNsigma*wSigma.getValV();
+    
+    TString fKinvarAuxSufix;
+    fKinvarAuxSufix = kinvarSufix + Form("%d", index2 + kinvarConstant);
+
+    std::cout << "D" << fKinvarAuxSufix << ": " << wLowEdge[index2] << " < wD < " << wHighEdge[index2] << std::endl;
+    std::cout << std::endl;
+
+    // save canvas
+    c4f->Print(outFolder + "/wfit-D" + fKinvarAuxSufix + wNSigmaSufix + pi0NSigmaSufix + ".png"); // output file
+  }
+}
+
 void integrateData(TString targetOption2) {
 
-  /*** Assign Local Options ***/
-
   // for targets
+  Int_t targIndex;
   if (targetOption2 == "D") {
     cutTargType = "TargType == 1";
     inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
     inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
     inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+    targIndex = 0;
   } else if (targetOption2 == "C") {
     cutTargType = "TargType == 2";
     inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+    inputFile2 = "";
+    inputFile3 = "";
+    targIndex = 1;
   } else if (targetOption2 == "Fe") {
     cutTargType = "TargType == 2";
     inputFile1 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+    inputFile2 = "";
+    inputFile3 = "";
+    targIndex = 2;
   } else if (targetOption2 == "Pb") {
     cutTargType = "TargType == 2";
     inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
-  }
-
-  // for kinvar
-  TString kinvarSufix;
-  Int_t   kinvarConstant = 1;
-  if (kinvarOption == "Z") {
-    kinvarConstant = 3;
-    kinvarSufix = "-z";
-    for (Int_t z = 0; z <= kinvarNbins; z++) kinvarValue[z] = edgesZ[z];
-  } else if (kinvarOption == "Q2") {
-    kinvarSufix = "-q";    
-    for (Int_t q = 0; q <= kinvarNbins; q++) kinvarValue[q] = edgesQ2[q];
-  } else if (kinvarOption == "Nu") {
-    kinvarSufix = "-n";
-    for (Int_t n = 0; n <= kinvarNbins; n++) kinvarValue[n] = edgesNu[n];
-  } else if (kinvarOption == "Pt2") {
-    kinvarSufix = "-p";
-    for (Int_t p = 0; p <= kinvarNbins; p++) kinvarValue[p] = edgesPt2[p];
+    inputFile2 = "";
+    inputFile3 = "";
+    targIndex = 3;
   }
   
-  // define cuts, the most important part of this program
-  pi0LowEdge = obtMean - Nsigma*obtSigma;
-  pi0HighEdge = obtMean + Nsigma*obtSigma;
-  cutPi0 = Form("%f < pi0M && pi0M < %f", pi0LowEdge, pi0HighEdge);
-
-  /*** Extract data! ***/
-  
+  // extract data
   TChain *treeExtracted2 = new TChain();
   treeExtracted2->Add(inputFile1 + "/mix");
   treeExtracted2->Add(inputFile2 + "/mix");
   treeExtracted2->Add(inputFile3 + "/mix");
-
+  
   for (Int_t index = 0; index < kinvarNbins; index++) {
-
+    
     // define kinvar cut
     cutKinVar = Form("%f < ", kinvarValue[index]) + kinvarOption + " && " + kinvarOption + Form(" < %f", kinvarValue[index+1]);
     
-    TH1F *dataHist;
-    treeExtracted2->Draw("wD>>data(50, 0.3, 0.4)", cutTargType && cutDIS && cutPipPim && cutPi0 && cutKinVar, "goff");
-    dataHist = (TH1F *)gROOT->FindObject("data");
+    // define omega cut
+    cutOmega = Form("%f < wD && wD < %f", wLowEdge[index], wHighEdge[index]);
     
-    Int_t targIndex;
-    if (targetOption2 == "D") targIndex = 0;
-    else if (targetOption2 == "C") targIndex = 1;
-    else if (targetOption2 == "Fe") targIndex = 2;
-    else if (targetOption2 == "Pb") targIndex = 3;
+    /*** Integrate! ***/
     
-    // save numbers!
-    particleNumber[targIndex][index] = dataHist->IntegralAndError(1, 50, particleError[targIndex][index], "");
-
+    TH1F *integratedHist;
+    treeExtracted2->Draw("wD>>data(52, 0.24, 0.5)", cutTargType && cutDIS && cutPipPim && cutPi0 && cutKinVar && cutOmega, "goff"); // with cut around omega
+    integratedHist = (TH1F *)gROOT->FindObject("data");
+    
     // print them
     TString kinvarAuxSufix;
     kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
     // std::cout << kinvarValue[index] << " < " << kinvarOption << " < " << kinvarValue[index+1] << std::endl; // for debug
+    particleNumber[targIndex][index] = integratedHist->IntegralAndError(1, 52, particleError[targIndex][index], "");
     std::cout << targetOption2 << kinvarAuxSufix << ": " << particleNumber[targIndex][index] << " +/- " << particleError[targIndex][index] << std::endl;
   }
 }

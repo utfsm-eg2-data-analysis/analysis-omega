@@ -10,7 +10,11 @@
 // This program compares different spectrums of different GSIM card options:
 //   - bad/Pb  <-> (1, 208)  <-> A
 //   - jlab/D  <-> (1, 2)    <-> B
-//   - jlab/Pb <-> (2, 208)  <-> C
+//   - jlab/Pb <-> (2, 208)  <-> C (CORRUPTED!)
+//   - usm/Pb  <-> (2, 208)  <-> C
+//   - D-data  <-> D
+//   - Pb-data <-> P
+// my real interest are: AB, AC, BD & AP
 
 #include <iostream>
 
@@ -32,11 +36,18 @@
 
 TString proFolder = "/home/borquez/omegaThesis";
 TString outFolder = proFolder + "/out/CheckGSIMCards";
-TString inFolder  = proFolder + "/out/filterSim/simrec";
-//TString inputDataFile;
-TString inputSimrecFileA = inFolder + "/bad/Pb/wout_simrecPb.root";
-TString inputSimrecFileB = inFolder + "/jlab/D/wout_simrecD.root";
-TString inputSimrecFileC = inFolder + "/jlab/Pb/wout_simrecPb.root";
+
+TString inSimFolder  = proFolder + "/out/filterSim/simrec";
+
+TString inputSimrecFileA = inSimFolder + "/bad/Pb/wout_simrecPb.root";
+TString inputSimrecFileB = inSimFolder + "/jlab/D/wout_simrecD.root";
+TString inputSimrecFileC = inSimFolder + "/usm/Pb/wout_simrecPb.root"; // "/jlab/Pb/wout_simrecPb.root" was corrupted
+
+TString inDataFolder = proFolder + "/out/filterData";
+
+TString inputDataFile1 = inDataFolder + "/Pb/wout_Pb-thinD2.root"; // default
+TString inputDataFile2 = "";
+TString inputDataFile3 = "";
 
 // main option
 TString observableChosen = "M"; // M: mass difference | Q: Q2 | N: nu | Z: Z | P: phiPQ | T: Pt2
@@ -48,6 +59,7 @@ TCut cutPipPim = "0.48 > mpippim || 0.51 < mpippim"; // mikewood cut
 TCut cutAll = cutPi0 && cutDIS && cutPipPim;
 TCut cutLiquid = "TargType == 1";
 TCut cutSolid = "TargType == 2";
+TCut cutTargType; // to be defined, for data
 
 // names stuff (to be assigned by the options)
 TString titleObservable;
@@ -56,6 +68,14 @@ TString outPrefix;
 TString toPlotObservable;
 TString histProperties = "";
 TString outputPlotName;
+
+// for compareOption
+TString compareOption;
+TString compareOptionSufix;
+Int_t   flagB = 0;
+Int_t   flagC = 0;
+Int_t   flagP = 0;
+Int_t   flagD = 0;
 
 /*** Declaration of functions ***/
 
@@ -73,23 +93,17 @@ int main(int argc, char **argv) {
   printOptions();
 
   /*** Data ***/
-  /*
+
   TChain *tData = new TChain();
-  tData->Add(inputDataFile + "/outdata");
+  tData->Add(inputDataFile1 + "/outdata");
+  tData->Add(inputDataFile2 + "/outdata");
+  tData->Add(inputDataFile3 + "/outdata");
   setAlias(tData);
   
   TH1F *dataHist;
-  tData->Draw(toPlotObservable + ">>data" + histProperties, cutAll && cutTargType && cutZ, "goff");
+  tData->Draw(toPlotObservable + ">>data" + histProperties, cutAll && cutTargType, "goff");
   dataHist = (TH1F *)gROOT->FindObject("data");
   
-  dataHist->SetTitleFont(22);
-  dataHist->SetTitle(titleObservable + titleTarget + titleZ);
-  dataHist->SetLineColor(kBlack);
-  dataHist->SetLineWidth(3);
-  dataHist->GetXaxis()->SetTitle(titleAxis);
-  dataHist->GetYaxis()->SetTitle("Entries");
-  */
-
   /*** Reconstructed ***/
 
   // input wout_simrec root files
@@ -122,12 +136,16 @@ int main(int argc, char **argv) {
   
   simrecHistA->SetTitleFont(22);
   simrecHistA->SetTitle(titleObservable);
-  simrecHistA->SetLineColor(kBlack);
-  simrecHistA->SetLineWidth(3);
-  simrecHistA->SetFillStyle(0);
   simrecHistA->GetXaxis()->SetTitle(titleAxis);
   simrecHistA->GetYaxis()->SetTitle("Entries");
-
+  simrecHistA->SetFillStyle(0);
+  simrecHistA->SetLineColor(kBlack);
+  simrecHistA->SetLineWidth(3);
+  
+  simrecHistB->SetTitleFont(22);
+  simrecHistB->SetTitle(titleObservable);
+  simrecHistB->GetXaxis()->SetTitle(titleAxis);
+  simrecHistB->GetYaxis()->SetTitle("Entries");
   simrecHistB->SetFillStyle(0);
   simrecHistB->SetLineColor(kBlue);
   simrecHistB->SetLineWidth(3);
@@ -136,36 +154,96 @@ int main(int argc, char **argv) {
   simrecHistC->SetLineColor(kRed);
   simrecHistC->SetLineWidth(3);
 
+  dataHist->SetFillStyle(0);
+  if (flagP) dataHist->SetLineColor(kMagenta);
+  else if (flagD) dataHist->SetLineColor(kOrange+7);
+  dataHist->SetLineWidth(3);
+  
   TCanvas *c = new TCanvas("c", "c", 1200, 1000); 
   gStyle->SetOptStat(0);
   c->SetGrid();
 
-  // my own normalization
-  simrecHistA->Draw("HIST");
-  c->Update();
-  //scale hint1 to the pad coordinates
-  Float_t rightmax = 1.1*simrecHistB->GetMaximum();
-  Float_t scale = gPad->GetUymax()/rightmax;
-  simrecHistB->Scale(scale);
-  simrecHistB->Draw("SAME HIST");
-  //draw an axis on the right side
-  TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
-			    gPad->GetUxmax(), gPad->GetUymax(),
-			    0, rightmax, 510, "+L");
-  axis->SetLineColor(kBlue);
-  axis->SetLabelColor(kBlue);
-  axis->Draw();
-  
-  // simrecHistA->DrawNormalized("HIST");
-  // simrecHistB->DrawNormalized("HIST SAME");
-  // simrecHistC->DrawNormalized("HIST SAME");
+  if (flagB) {
+    // my own normalization
+    simrecHistA->Draw("HIST");
+    c->Update();
+    //scale hint1 to the pad coordinates
+    Float_t rightmax = 1.1*simrecHistB->GetMaximum();
+    Float_t scale = gPad->GetUymax()/rightmax;
+    simrecHistB->Scale(scale);
+    simrecHistB->Draw("SAME HIST");
+    //draw an axis on the right side
+    TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
+			      gPad->GetUxmax(), gPad->GetUymax(),
+			      0, rightmax, 510, "+L");
+    axis->SetLineColor(kBlue);
+    axis->SetLabelColor(kBlue);
+    axis->Draw();
+  } else if (flagC) {
+    // my own normalization
+    simrecHistA->Draw("HIST");
+    c->Update();
+    //scale hint1 to the pad coordinates
+    Float_t rightmax2 = 1.1*simrecHistC->GetMaximum();
+    Float_t scale2 = gPad->GetUymax()/rightmax2;
+    simrecHistC->Scale(scale2);
+    simrecHistC->Draw("SAME HIST");
+    //draw an axis on the right side
+    TGaxis *axis2 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
+			       gPad->GetUxmax(), gPad->GetUymax(),
+			       0, rightmax2, 510, "+L");
+    axis2->SetLineColor(kRed);
+    axis2->SetLabelColor(kRed);
+    axis2->Draw();
+  } else if (flagP) {
+    // my own normalization
+    simrecHistA->Draw("HIST");
+    c->Update();
+    //scale hint1 to the pad coordinates
+    Float_t rightmax3 = 1.1*dataHist->GetMaximum();
+    Float_t scale3 = gPad->GetUymax()/rightmax3;
+    dataHist->Scale(scale3);
+    dataHist->Draw("SAME HIST");
+    //draw an axis on the right side
+    TGaxis *axis3 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
+			       gPad->GetUxmax(), gPad->GetUymax(),
+			       0, rightmax3, 510, "+L");
+    axis3->SetLineColor(kMagenta);
+    axis3->SetLabelColor(kMagenta);
+    axis3->Draw();
+  } else if (flagD) {
+    // my own normalization
+    simrecHistB->Draw("HIST");
+    c->Update();
+    //scale hint1 to the pad coordinates
+    Float_t rightmax4 = 1.1*dataHist->GetMaximum();
+    Float_t scale4 = gPad->GetUymax()/rightmax4;
+    dataHist->Scale(scale4);
+    dataHist->Draw("SAME HIST");
+    //draw an axis on the right side
+    TGaxis *axis4 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
+			       gPad->GetUxmax(), gPad->GetUymax(),
+			       0, rightmax4, 510, "+L");
+    axis4->SetLineColor(kOrange+7);
+    axis4->SetLabelColor(kOrange+7);
+    axis4->Draw();
+  }
   
   // legend
   TLegend *l = new TLegend(0.7, 0.9, 0.9, 1.0);
-  // l->AddEntry(dataHist, "data", "l");
-  l->AddEntry(simrecHistA, "(1, 208)", "l");
-  l->AddEntry(simrecHistB, "(1, 2)", "l");
-  // l->AddEntry(simrecHistC, "(2, 208)", "l");
+  if (flagB) {
+    l->AddEntry(simrecHistA, "(1, 208)", "l");
+    l->AddEntry(simrecHistB, "(1, 2)", "l");
+  } else if (flagC) {
+    l->AddEntry(simrecHistA, "(1, 208)", "l");
+    l->AddEntry(simrecHistC, "(2, 208)", "l");
+  } else if (flagP) {
+    l->AddEntry(simrecHistA, "(1, 208)", "l");
+    l->AddEntry(dataHist, "Pb data", "l");
+  } else if (flagD) {
+    l->AddEntry(simrecHistB, "(1, 2)", "l");
+    l->AddEntry(dataHist, "D data", "l");
+  }
   l->Draw();
   
   c->Print(outputPlotName); // output file
@@ -179,9 +257,10 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./CheckGSIMCards -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ho:")) != -1)
+  while ((c = getopt(argc, argv, "ho:c:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
+    case 'c': compareOption = optarg; break;      
     case 'o': observableChosen = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./CheckGSIMCards -h to print usage." << std::endl;
@@ -195,13 +274,20 @@ void printOptions() {
 }
 
 void printUsage() {
+  std::cout << std::endl;
   std::cout << "CheckGSIMCards program. Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./CheckGSIMCards -h" << std::endl;
   std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./CheckGSIMCards -o[option]" << std::endl;
-  std::cout << "    sets observable to draw, which can be: " << std::endl;
+  std::cout << "./CheckGSIMCards -c[B,C,P,D]" << std::endl;
+  std::cout << "    B : compares A(1,208) with B(1,2)" << std::endl;
+  std::cout << "    C : compares A(1,208) with C(2,208)" << std::endl;
+  std::cout << "    P : compares A(1,208) with Pb data" << std::endl;
+  std::cout << "    D : compares B(1,2) with D data" << std::endl;
+  std::cout << std::endl;  
+  std::cout << "./CheckGSIMCards -o[kinvar]" << std::endl;
+  std::cout << "    sets kinvar to draw, which can be: " << std::endl;
   std::cout << "    M : omega invariant mass difference" << std::endl;
   std::cout << "    Q : Q2" << std::endl;
   std::cout << "    N : Nu" << std::endl;
@@ -214,10 +300,29 @@ void printUsage() {
   std::cout << "    1 : P(pi+)" << std::endl;
   std::cout << "    2 : P(pi-)" << std::endl;
   std::cout << "    3 : P(omega)" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
-  // for observable
+  // for sim and data options
+  if (compareOption == "B") {
+    flagB = 1;
+    compareOptionSufix = "-A_vs_" + compareOption;
+  } else if (compareOption == "C") {
+    flagC = 1;
+    compareOptionSufix = "-A_vs_" + compareOption;
+  } else if (compareOption == "P") {
+    flagP = 1;
+    cutTargType = "TargType == 2";
+    compareOptionSufix = "-A_vs_" + compareOption;
+  } else if (compareOption == "D") {
+    flagD = 1;
+    inputDataFile2 = inDataFolder + "/C/wout_C-thickD2.root";
+    inputDataFile3 = inDataFolder + "/Fe/wout_Fe-thickD2.root";
+    cutTargType = "TargType == 1";
+    compareOptionSufix = "-B_vs_" + compareOption;
+  }
+  // for kinvar
   if (observableChosen == "M") {
     toPlotObservable = "deltam";
     titleObservable = "IMD(#omega)";
@@ -253,7 +358,7 @@ void assignOptions() {
   } else if (observableChosen == "T") {
     toPlotObservable = "Pt2";
     titleObservable = "P_{T}^{2}(#omega)";
-    titleAxis = "GeV^{2}";
+    titleAxis = "P_{T}^{2} (GeV^{2})";
     histProperties = "(150, 0., 1.5)";
   } else if (observableChosen == "0") {
     toPlotObservable = "Ppi0";
@@ -277,7 +382,7 @@ void assignOptions() {
     histProperties = "(250, 0., 5.)";
   }
   // name
-  outputPlotName = outFolder + "/gsim-cards-" + toPlotObservable + ".png";
+  outputPlotName = outFolder + "/gsim-cards-" + toPlotObservable + compareOptionSufix + ".png";
 }
 
 void setAlias(TTree *treeExtracted) {

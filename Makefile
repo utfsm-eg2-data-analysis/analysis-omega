@@ -25,7 +25,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
-PROG := MakePlots old_MakePlots GetQuantiles CheckGSIMCards SystPi0Mass
+PROG := MakePlots old_MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
