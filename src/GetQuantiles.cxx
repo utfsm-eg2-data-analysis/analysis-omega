@@ -179,7 +179,7 @@ void assignOptions() {
   if (kinvarOption == "Z") {
     toPlotKinvar = "Z";
     kinvarTitle = "Z in ";
-    histProperties = "(100, 0.5, 1.0)";
+    histProperties = "(400, 0.5, 0.9)";
   } else if (kinvarOption == "P") {
     toPlotKinvar = "Pt2";
     kinvarTitle = "Pt2 in ";

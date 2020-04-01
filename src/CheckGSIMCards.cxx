@@ -50,7 +50,7 @@ TString inputDataFile2 = "";
 TString inputDataFile3 = "";
 
 // main option
-TString observableChosen = "M"; // M: mass difference | Q: Q2 | N: nu | Z: Z | P: phiPQ | T: Pt2
+TString kinvarChosen = "M"; // M: mass difference | Q: Q2 | N: nu | Z: Z | P: phiPQ | T: Pt2
 
 // cuts
 TCut cutDIS = "Q2 > 1 && W > 2";
@@ -63,7 +63,8 @@ TCut cutTargType; // to be defined, for data
 
 // names stuff (to be assigned by the options)
 TString titleObservable;
-TString titleAxis;
+TString titleXAxis;
+TString titleYAxis = "Normalized Counts = Entries^{-1}"; // default
 TString outPrefix;
 TString toPlotObservable;
 TString histProperties = "";
@@ -76,6 +77,12 @@ Int_t   flagB = 0;
 Int_t   flagC = 0;
 Int_t   flagP = 0;
 Int_t   flagD = 0;
+
+// for normalization
+Double_t normData = 1;
+Double_t normSimrecA = 1;
+Double_t normSimrecB = 1;
+Double_t normSimrecC = 1;
 
 /*** Declaration of functions ***/
 
@@ -136,16 +143,20 @@ int main(int argc, char **argv) {
   
   simrecHistA->SetTitleFont(22);
   simrecHistA->SetTitle(titleObservable);
-  simrecHistA->GetXaxis()->SetTitle(titleAxis);
-  simrecHistA->GetYaxis()->SetTitle("Entries");
+  simrecHistA->GetXaxis()->SetTitle(titleXAxis);
+  simrecHistA->GetYaxis()->SetTitle(titleYAxis);
+  simrecHistA->GetXaxis()->CenterTitle();
+  simrecHistA->GetYaxis()->CenterTitle();
   simrecHistA->SetFillStyle(0);
   simrecHistA->SetLineColor(kBlack);
   simrecHistA->SetLineWidth(3);
   
   simrecHistB->SetTitleFont(22);
   simrecHistB->SetTitle(titleObservable);
-  simrecHistB->GetXaxis()->SetTitle(titleAxis);
-  simrecHistB->GetYaxis()->SetTitle("Entries");
+  simrecHistB->GetXaxis()->SetTitle(titleXAxis);
+  simrecHistB->GetYaxis()->SetTitle(titleYAxis);
+  simrecHistB->GetXaxis()->CenterTitle();
+  simrecHistB->GetYaxis()->CenterTitle();
   simrecHistB->SetFillStyle(0);
   simrecHistB->SetLineColor(kBlue);
   simrecHistB->SetLineWidth(3);
@@ -163,70 +174,36 @@ int main(int argc, char **argv) {
   gStyle->SetOptStat(0);
   c->SetGrid();
 
+  // normalization
+  if (kinvarChosen == "M" || kinvarChosen == "N") {
+    normData = (Double_t) dataHist->GetBinContent(dataHist->GetMaximumBin());
+    normSimrecA = (Double_t) simrecHistA->GetBinContent(simrecHistA->GetMaximumBin());
+    normSimrecB = (Double_t) simrecHistB->GetBinContent(simrecHistB->GetMaximumBin());
+    normSimrecC = (Double_t) simrecHistC->GetBinContent(simrecHistC->GetMaximumBin());
+  } else {
+    normData = (Double_t) dataHist->GetEntries();
+    normSimrecA = (Double_t) simrecHistA->GetEntries();
+    normSimrecB = (Double_t) simrecHistB->GetEntries();
+    normSimrecC = (Double_t) simrecHistC->GetEntries();
+  }
+
+  dataHist->Scale(1/normData);
+  simrecHistA->Scale(1/normSimrecA);
+  simrecHistB->Scale(1/normSimrecB);
+  simrecHistC->Scale(1/normSimrecC);
+  
   if (flagB) {
-    // my own normalization
     simrecHistA->Draw("HIST");
-    c->Update();
-    //scale hint1 to the pad coordinates
-    Float_t rightmax = 1.1*simrecHistB->GetMaximum();
-    Float_t scale = gPad->GetUymax()/rightmax;
-    simrecHistB->Scale(scale);
     simrecHistB->Draw("SAME HIST");
-    //draw an axis on the right side
-    TGaxis *axis = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
-			      gPad->GetUxmax(), gPad->GetUymax(),
-			      0, rightmax, 510, "+L");
-    axis->SetLineColor(kBlue);
-    axis->SetLabelColor(kBlue);
-    axis->Draw();
   } else if (flagC) {
-    // my own normalization
     simrecHistA->Draw("HIST");
-    c->Update();
-    //scale hint1 to the pad coordinates
-    Float_t rightmax2 = 1.1*simrecHistC->GetMaximum();
-    Float_t scale2 = gPad->GetUymax()/rightmax2;
-    simrecHistC->Scale(scale2);
     simrecHistC->Draw("SAME HIST");
-    //draw an axis on the right side
-    TGaxis *axis2 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
-			       gPad->GetUxmax(), gPad->GetUymax(),
-			       0, rightmax2, 510, "+L");
-    axis2->SetLineColor(kRed);
-    axis2->SetLabelColor(kRed);
-    axis2->Draw();
   } else if (flagP) {
-    // my own normalization
     simrecHistA->Draw("HIST");
-    c->Update();
-    //scale hint1 to the pad coordinates
-    Float_t rightmax3 = 1.1*dataHist->GetMaximum();
-    Float_t scale3 = gPad->GetUymax()/rightmax3;
-    dataHist->Scale(scale3);
     dataHist->Draw("SAME HIST");
-    //draw an axis on the right side
-    TGaxis *axis3 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
-			       gPad->GetUxmax(), gPad->GetUymax(),
-			       0, rightmax3, 510, "+L");
-    axis3->SetLineColor(kMagenta);
-    axis3->SetLabelColor(kMagenta);
-    axis3->Draw();
   } else if (flagD) {
-    // my own normalization
     simrecHistB->Draw("HIST");
-    c->Update();
-    //scale hint1 to the pad coordinates
-    Float_t rightmax4 = 1.1*dataHist->GetMaximum();
-    Float_t scale4 = gPad->GetUymax()/rightmax4;
-    dataHist->Scale(scale4);
     dataHist->Draw("SAME HIST");
-    //draw an axis on the right side
-    TGaxis *axis4 = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(),
-			       gPad->GetUxmax(), gPad->GetUymax(),
-			       0, rightmax4, 510, "+L");
-    axis4->SetLineColor(kOrange+7);
-    axis4->SetLabelColor(kOrange+7);
-    axis4->Draw();
   }
   
   // legend
@@ -257,11 +234,11 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./CheckGSIMCards -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ho:c:")) != -1)
+  while ((c = getopt(argc, argv, "hc:k:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 'c': compareOption = optarg; break;      
-    case 'o': observableChosen = optarg; break;
+    case 'k': kinvarChosen = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./CheckGSIMCards -h to print usage." << std::endl;
       exit(0);
@@ -286,7 +263,7 @@ void printUsage() {
   std::cout << "    P : compares A(1,208) with Pb data" << std::endl;
   std::cout << "    D : compares B(1,2) with D data" << std::endl;
   std::cout << std::endl;  
-  std::cout << "./CheckGSIMCards -o[kinvar]" << std::endl;
+  std::cout << "./CheckGSIMCards -k[kinvar]" << std::endl;
   std::cout << "    sets kinvar to draw, which can be: " << std::endl;
   std::cout << "    M : omega invariant mass difference" << std::endl;
   std::cout << "    Q : Q2" << std::endl;
@@ -323,62 +300,64 @@ void assignOptions() {
     compareOptionSufix = "-B_vs_" + compareOption;
   }
   // for kinvar
-  if (observableChosen == "M") {
+  if (kinvarChosen == "M") {
     toPlotObservable = "deltam";
-    titleObservable = "IMD(#omega)";
-    titleAxis = "IMD (GeV)";
+    titleObservable = "IMD(#pi^{+} #pi^{-} #pi^{0})";
+    titleXAxis = "IMD (GeV)";
     histProperties = "(160, 0., 1.6)";
-  } else if (observableChosen == "Q") {
+    titleYAxis = "Normalized Counts = Max Height^{-1}";
+  } else if (kinvarChosen == "Q") {
     toPlotObservable = "Q2";
-    titleObservable = "Q^{2}(#omega)";
-    titleAxis = "Q^{2}";
-  } else if (observableChosen == "N") {
+    titleObservable = "Q^{2}";
+    titleXAxis = "Q^{2}";
+  } else if (kinvarChosen == "N") {
     toPlotObservable = "Nu";
-    titleObservable = "#nu(#omega)";
-    titleAxis = "#nu (GeV)";
+    titleObservable = "#nu";
+    titleXAxis = "#nu (GeV)";
     histProperties = "(200, 2.2, 4.2)";
-  } else if (observableChosen == "Z") {
+    titleYAxis = "Normalized Counts = Max Height^{-1}";
+  } else if (kinvarChosen == "Z") {
     toPlotObservable = "Z";
     titleObservable = "Z(#omega)";
-    titleAxis = "Z";
+    titleXAxis = "Z";
     histProperties = "(220, 0.1, 1.2)";
-  } else if (observableChosen == "X") {
+  } else if (kinvarChosen == "X") {
     toPlotObservable = "Xb";
-    titleObservable = "Xb(#omega)";
-    titleAxis = "Xb";
+    titleObservable = "Xb";
+    titleXAxis = "Xb";
     // histProperties = "";
-  } else if (observableChosen == "P") {
+  } else if (kinvarChosen == "P") {
     toPlotObservable = "PhiPQ";
     titleObservable = "#phi_{PQ}(#omega)";
-    titleAxis = "#phi_{PQ}";
-  } else if (observableChosen == "W") {
+    titleXAxis = "#phi_{PQ}";
+  } else if (kinvarChosen == "W") {
     toPlotObservable = "W";
-    titleObservable = "W(#omega)";
-    titleAxis = "W";
-  } else if (observableChosen == "T") {
+    titleObservable = "W";
+    titleXAxis = "W";
+  } else if (kinvarChosen == "T") {
     toPlotObservable = "Pt2";
-    titleObservable = "P_{T}^{2}(#omega)";
-    titleAxis = "P_{T}^{2} (GeV^{2})";
+    titleObservable = "p_{T}^{2}(#pi^{+} #pi^{-} #pi^{0})";
+    titleXAxis = "P_{T}^{2} (GeV^{2})";
     histProperties = "(150, 0., 1.5)";
-  } else if (observableChosen == "0") {
+  } else if (kinvarChosen == "0") {
     toPlotObservable = "Ppi0";
-    titleObservable = "P(#pi0)";
-    titleAxis = "P (GeV)";
+    titleObservable = "P(#pi^{0})";
+    titleXAxis = "P (GeV)";
     histProperties = "(150, 0., 3.)";
-  } else if (observableChosen == "1") {
+  } else if (kinvarChosen == "1") {
     toPlotObservable = "Ppip";
-    titleObservable = "P(#pi+)";
-    titleAxis = "P (GeV)";
+    titleObservable = "P(#pi^{+})";
+    titleXAxis = "P (GeV)";
     histProperties = "(150, 0., 3.)";
-  } else if (observableChosen == "2") {
+  } else if (kinvarChosen == "2") {
     toPlotObservable = "Ppim";
-    titleObservable = "P(#pi-)";
-    titleAxis = "P (GeV)";
+    titleObservable = "P(#pi^{-})";
+    titleXAxis = "P (GeV)";
     histProperties = "(150, 0., 3.)";
-  } else if (observableChosen == "3") {
+  } else if (kinvarChosen == "3") {
     toPlotObservable = "Pomega";
-    titleObservable = "P(#omega)";
-    titleAxis = "P (GeV)";
+    titleObservable = "P(#pi^{+} #pi^{-} #pi^{0})";
+    titleXAxis = "P (GeV)";
     histProperties = "(250, 0., 5.)";
   }
   // name
