@@ -20,13 +20,13 @@ LD := c++
 LDFLAGS := -g -O0 $(ROOTLDFLAGS) # debug info
 
 INCLUDES := -I$(ANALYSER)/include\
-               -I$(CLASTOOL)/include
+               -I$(CLASTOOL)/include -I$(PRODIR)/include
 LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
 PROG := MakePlots old_MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
-	MakeRooFits MakeMR-nbs
+	MakeRooFits MakeMR-nbs Test
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
