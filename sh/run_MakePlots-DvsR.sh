@@ -4,18 +4,12 @@ cd ${PRODIR}
 
 ./bin/MakePlots-DvsR -h
 
-#./bin/MakePlots-DvsR -tC -kQ 
-./bin/MakePlots-DvsR -tC -kN
+#./bin/MakePlots-DvsR -tC -kQ2
+./bin/MakePlots-DvsR -tC -kNu
 #./bin/MakePlots-DvsR -tC -kW
-#./bin/MakePlots-DvsR -tC -kM
+#./bin/MakePlots-DvsR -tC -kIMD
+./bin/MakePlots-DvsR -tC -k3
+./bin/MakePlots-DvsR -tC -kZ
+./bin/MakePlots-DvsR -tC -kPt2
 
-#./bin/MakePlots-DvsR -tFe -kQ
-./bin/MakePlots-DvsR -tFe -kN
-#./bin/MakePlots-DvsR -tFe -kW
-#./bin/MakePlots-DvsR -tFe -kM
-
-#./bin/MakePlots-DvsR -tD -kQ
-./bin/MakePlots-DvsR -tD -kN
-#./bin/MakePlots-DvsR -tD -kW
-#./bin/MakePlots-DvsR -tD -kM
 

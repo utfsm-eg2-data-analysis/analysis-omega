@@ -77,54 +77,7 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile2 + "/mix");
   treeExtracted->Add(inputFile3 + "/mix");
 
-  /*** STAGE 1: Preliminary fit ***/
-  /*
-  // x-bin width = 5 MeV
-  Int_t preNbins = 52;
-  Double_t prePlotRangeDown = 0.24; // aprox. 6 omega sigma
-  Double_t prePlotRangeUp = 0.50; // aprox. 6 omega sigma
-
-  Double_t preSigmaIGV = 2.5e-2; // initial guess value
-  Double_t preSigmaRangeDown = 1.5e-2; // 1.5
-  Double_t preSigmaRangeUp = 3.5e-2; // 4
-
-  Double_t preMeanIGV = 0.37; // initial guess value
-  Double_t preMeanRangeDown = 0.36;
-  Double_t preMeanRangeUp = 0.39; // 0.38
-
-  Double_t preFitRangeDown = 0.34;
-  Double_t preFitRangeUp = 0.42;
-  
-  TH1F *fitPreHist; 
-  treeExtracted->Draw(Form("wD>>data4fit(%d, %f, %f)", preNbins, prePlotRangeDown, prePlotRangeUp), cutAll && cutTargType && kinvarCut, "goff");
-  fitPreHist = (TH1F *)gROOT->FindObject("data4fit");
-
-  RooRealVar preX("preX", "preX", prePlotRangeDown, prePlotRangeUp);
-
-  RooRealVar preMean("preMean", "Mean of Gaussian", preMeanIGV, preMeanRangeDown, preMeanRangeUp);
-  RooRealVar preSigma("preSigma", "Width of Gaussian", preSigmaIGV, preSigmaRangeDown, preSigmaRangeUp);
-  RooGaussian pre("pre", "pre peak", preX, preMean, preSigma);
-
-  RooDataHist preData("preData", "my data", preX, fitPreHist);
-  pre.fitTo(preData, Range(preFitRangeDown, preFitRangeUp), Save());
-
-  RooPlot *preFrame = preX.frame(Title("preliminary fit"), Bins(preNbins));
-  preData.plotOn(preFrame, DataError(RooAbsData::SumW2), Name("preData"));
-  pre.plotOn(preFrame, Name("preModel"), LineColor(kMagenta));
-  pre.paramOn(preFrame, Layout(0.6, 0.9, 0.9)); // x1, x2, y2
-  
-  Double_t preChi2 = preFrame->chiSquare("preModel", "preData");
-
-  TCanvas *c0 = new TCanvas("c0", "c0", 1366, 768);
-  preFrame->Draw();
-  c0->Print(outFolder + "/roofit0-" + targetOption + kinvarSufix + ".png"); // output file
-  
-  std::cout << "STAGE 1 COMPLETED." << std::endl;
-  std::cout << "preMean  = " << preMean.getValV() << std::endl;
-  std::cout << "preSigma = " << preSigma.getValV() << std::endl;
-  std::cout << "preChi2  = " << preChi2 << std::endl;
-  */
-  /*** STAGE 0: Fit ***/
+  /*** Fit ***/
   
   // bin x-width = 5 MeV
   Int_t Nbins = 90; // 90
@@ -187,7 +140,7 @@ int main(int argc, char **argv) {
     RooAddPdf model("model", "model", RooArgList(esig, ebkg));
 
     // fit extended
-    model.fitTo(data, Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+    model.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
 
     // draw data and fit into frame
     data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
@@ -202,11 +155,6 @@ int main(int argc, char **argv) {
     Double_t N_omega = nsig.getValV();
     Double_t N_bkg = nbkg.getValV();
     Double_t N_sum = N_omega + N_bkg;
-
-    // another attempt
-    RooArgSet *comps = model.getComponents();
-    RooAbsPdf *attempt = comps->find("omega");
-    attempt->plotOn(frame, Name("attempt"), LineColor(kMagenta));
     
     RooAbsReal *I_omega = esig.createIntegral(x, Range("fitRange"));
     RooAbsReal *I_bkg = ebkg.createIntegral(x, Range("fitRange"));
@@ -236,7 +184,7 @@ int main(int argc, char **argv) {
     RooAddPdf model("model", "model", RooArgList(omega, bkg), RooArgList(frac));
 
     // fit
-    model.fitTo(data, Save(), Range(fitRangeDown, fitRangeUp));
+    model.fitTo(data, Minos(kTRUE), Save(), Range(fitRangeDown, fitRangeUp));
 
     // draw data and fit into frame
     data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
@@ -297,110 +245,6 @@ int main(int argc, char **argv) {
   
   c->Print(outFolder + "/roofit0-" + targetOption + kinvarSufix + extendedSufix + ".png"); // output file
  
-  /*
-  TString outputTextFile = outFolder + "/roofit-" + targetOption + kinvarSufix + ".dat"; // output file
-  std::cout << "Writing " << outputTextFile << " ..." << std::endl;
-  std::ofstream outFinalFile(outputTextFile, std::ios::out);
-  // line 1: b1
-  outFinalFile << b1.getValV() << "\t" << b1.getError() << std::endl;
-  // line 2: bkgYields
-  outFinalFile << bkgYields.getValV() << "\t\t" << bkgYields.getError() << std::endl;
-  // line 3: omegaMean
-  outFinalFile << omegaMean.getValV() << "\t" << omegaMean.getError() << std::endl;
-  // line 4: omegaSigma
-  outFinalFile << omegaSigma.getValV() << "\t" << omegaSigma.getError() << std::endl;
-  // line 5: omegaYields (directly from parameter) (METHOD 1)
-  outFinalFile << omegaYields.getValV() << "\t\t" << omegaYields.getError() << std::endl;
-  // line 6: chi2
-  outFinalFile << chi2 << "\t\t" << "0" << std::endl;
-  
-  outFinalFile.close();
-  std::cout << "File " << outputTextFile << " has been created!" << std::endl;
-  std::cout << "Chi2: " << chi2 << std::endl;
-  */
-
-  /*** BEVINGTON PROCEDURE ***/
-  /*
-  // step 1: define three regions
-  
-  Double_t limitRegionA[2] = {plotRangeDown, mean0 - 3*sigma0};
-  Double_t limitRegionB[2] = {mean0 - 3*sigma0, mean0 + 3*sigma0};
-  Double_t limitRegionC[2] = {mean0 + 3*sigma0, plotRangeUp};
-
-  // step 2: fit bkg in all three regions
-
-  RooRealVar c1("c1", "linear term", 1.0, 0.5, 1.5);
-  RooChebychev bkg2("bkg2", "background2", x, RooArgList(c1));
-  RooRealVar bamp2("bamp2", "bkg amplitude 2", 1);
-  RooAddPdf model2("model2", "model2", RooArgList(bkg2), RooArgList(bamp2));
-  model2.fitTo(data, Extended(), Save(), Range(limitRegionA[0], limitRegionC[1]));
-  //bkg2.fitTo(data, Save(), Range(limitRegionA[0], limitRegionC[1]));
-  // draw hist and function to frame
-  TCanvas *c2 = new TCanvas("c2", "c2", 1366, 768);
-  RooPlot *frame2 = x.frame(Title("IMD(#pi^{+} #pi^{-} #pi^{0}) for " + targetOption + " in" + kinvarTitle),
-			    Bins(Nbins));
-  data.plotOn(frame2, Name("Data")); // DataError(RooAbsData::SumW2)
-  model2.plotOn(frame2, LineStyle(kDashed), LineColor(kBlue));
-  model2.paramOn(frame2, Layout(0.1, 0.4, 0.9)); // x1, x2, delta-y
-
-  /*
-  RooRealVar t1("t1", "linear term", c1.getValV());
-  RooChebychev test("test", "test", x, RooArgList(t1));
-  test.plotOn(frame2, LineStyle(kDashed), LineColor(kMagenta));
-  */
-  /*
-  frame2->Draw();
-
-  TH1F *bkgHist = (TH1F *)bkg2.createHistogram("bkgHist", x, Binning(Nbins, plotRangeDown, plotRangeUp), Extended());
-  bkgHist->SetLineWidth(2);
-  bkgHist->SetLineColor(kBlue);
-  bkgHist->Scale(bamp2.getValV());
-  bkgHist->Draw("SAME HIST");
-  
-  c2->Print(outFolder + "/roofit2-" + targetOption + kinvarSufix + ".png"); // output file
-  // keep number
-  Double_t lin2 = c1.getValV();
-
-  std::cout << std::endl;
-  std::cout << "N_d=" << dataHist->Integral(1,Nbins) << std::endl;
-  std::cout << "N_b=" << bkgHist->Integral(1,Nbins) << std::endl;
-  std::cout << std::endl;
-  */
-  /*
-  // step 3: fit all function in central regions with bkg params fixed
-  RooRealVar omegaMean("omegaMean", "Mean of Gaussian", mean0, meanRangeDown, meanRangeUp);
-  RooRealVar omegaSigma("omegaSigma", "Width of Gaussian", sigma0, sigmaRangeDown, sigmaRangeUp);
-  RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);
-  RooRealVar c1("c1", "linear term", 1.0, 0.5, 1.5);
-  RooChebychev bkg2("bkg2", "background2", x, RooArgList(c1));
-  bkg2.fitTo(data, Save(), Range(limitRegionA[0],
-				 limitRegionC[1]));
-  
-  // draw hist and function to frame
-  TCanvas *c2 = new TCanvas("c2", "c2", 1366, 768);
-  RooRealVar omegaYields("omegaYields", "omega yields", 0., dataHist->GetEntries());
-  RooRealVar bkgYields("bkgYields", "bkg yields", 0., dataHist->GetEntries());
-
-  RooPlot *frame2 = x.frame(Title("IMD(#pi^{+} #pi^{-} #pi^{0}) for " + targetOption + " in" + kinvarTitle),
-			    Bins(Nbins));
-  data.plotOn(frame2, Name("Data")); // DataError(RooAbsData::SumW2)
-  bkg2.plotOn(frame2, LineStyle(kDashed), LineColor(kBlue));
-  bkg2.paramOn(frame2, Layout(0.1, 0.4, 0.9)); // x1, x2, delta-y
-  frame2->Draw();
-  c2->Print(outFolder + "/roofit2-" + targetOption + kinvarSufix + ".png"); // output file
-  // keep number
-  Double_t lin2 = c2.getValV();
-
-  // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
-  RooAddPdf model("model", "model", RooArgList(omega, bkg), RooArgList(omegaYields, bkgYields));
-  
-  // data
-  RooDataHist data("data", "my data", x, dataHist);
-
-  // fit
-  model.fitTo(data, Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-  */
-
   return 0;
 }
 

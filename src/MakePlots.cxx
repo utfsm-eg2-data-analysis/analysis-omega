@@ -192,7 +192,7 @@ void assignOptions() {
       inputFile1 = inputFolder + "/jlab/Fe/wout_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/Pb/wout_simrecPb.root";
+      inputFile1 = inputFolder + "/usm/Pb/wout_simrecPb.root";
     }
   }
   // for Z binning
@@ -213,7 +213,7 @@ void assignOptions() {
     lowEdgeZ = 0.784;
     highEdgeZ = 1.;
   }
-  if (binNumberZ > 0) {
+  if (binNumberZ) {
     cutZ = Form("%f < Z && Z < %f", lowEdgeZ, highEdgeZ);
     titleZ = Form(" in (%.02f < Z < %.02f)", lowEdgeZ, highEdgeZ);
     sufixZBin = Form("-z%d", binNumberZ);
@@ -256,5 +256,5 @@ void assignOptions() {
     histProperties = "(100, 0., 1.5)";
   }
   // output name
-  outputPlotName = outFolder + "/" + outPrefix + "-" + toPlotObservable + "-" + targetOption + sufixZBin + ".png";
+  outputPlotName = outFolder + "/" + outPrefix + "-" + targetOption + "-" + toPlotObservable + sufixZBin + ".png";
 }
