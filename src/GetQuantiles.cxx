@@ -5,29 +5,15 @@
 /*                                    */
 /**************************************/
 
-#include <iostream>
-
-#include "TROOT.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TCut.h"
-#include "TString.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TLatex.h"
-#include "TLine.h"
-#include "TF1.h"
+#include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString proFolder   = "/home/borquez/omegaThesis";
-TString inputFolder = proFolder + "/out/filterData";
-TString outFolder   = proFolder + "/out/GetQuantiles";
+TString outDir = proDir + "/out/GetQuantiles";
+
+TString inputFile1;
+TString inputFile2;
+TString inputFile3;
 
 // parameters
 TString targetOption;
@@ -35,23 +21,14 @@ TString kinvarOption;
 Int_t   Nquantiles;
 
 // cuts
-TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-TCut cutPi0 = "0.059 < pi0M && pi0M < 0.209"; // mikewood cut
-TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM"; // mikewood cut
 TCut cutAll = cutDIS && cutPipPim && cutPi0;
 TCut cutTargType;
 
-// to be assigned by the parameters
-TString inputFile1;
-TString inputFile2;
-TString inputFile3;
-
 TString dataPrefix;
-TString toPlotKinvar;
 TString kinvarTitle;
 TString histProperties;
 
-TString outputPlotName;
+TString plotFile;
 
 /*** Declaration of functions ***/
 
@@ -59,8 +36,6 @@ inline int parseCommandLine(int argc, char* argv[]);
 void printOptions();
 void printUsage();
 void assignOptions();
-
-void drawVerticalLine(Double_t x);
 
 int main(int argc, char **argv) {
 
@@ -74,14 +49,17 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile3 + "/mix");
 
   TH1F *dataHist;
-  treeExtracted->Draw(toPlotKinvar + ">>data" + histProperties, cutAll && cutTargType, "goff");
+  treeExtracted->Draw(kinvarOption + ">>data" + histProperties, cutAll && cutTargType, "goff");
   dataHist = (TH1F *)gROOT->FindObject("data");
 
   dataHist->SetTitle(kinvarTitle + targetOption);
   dataHist->SetLineColor(kBlack);
   dataHist->SetLineWidth(2);
-  dataHist->GetXaxis()->SetTitle(toPlotKinvar);
-  dataHist->GetYaxis()->SetTitle("Events");
+  dataHist->GetXaxis()->SetTitle(kinvarOption);
+  dataHist->GetXaxis()->CenterTitle();
+  dataHist->GetYaxis()->SetTitle("Counts");
+  dataHist->GetYaxis()->CenterTitle();
+  dataHist->GetYaxis()->SetMaxDigits(3);
   
   /*** Drawing ***/
   
@@ -89,7 +67,7 @@ int main(int argc, char **argv) {
   c->SetGrid();
 
   // because Nu is special...
-  if (toPlotKinvar == "Nu") {
+  if (kinvarOption == "Nu") {
     gStyle->SetStatX(0.30);
     gStyle->SetStatY(0.85);
   }
@@ -108,10 +86,10 @@ int main(int argc, char **argv) {
     else if (i == (Nquantiles - 1)) std::cout << yq[i] << std::endl;
     else std::cout << yq[i] << ", ";
     // draw line
-    if (i != (Nquantiles - 1)) drawVerticalLine(yq[i]);
+    if (i != (Nquantiles - 1)) drawVerticalLineRed(yq[i]);
   }
 
-  c->Print(outputPlotName); // output file
+  c->Print(plotFile); // output file
   
   delete c;
   delete dataHist;
@@ -142,7 +120,7 @@ void printOptions() {
   std::cout << std::endl;
   std::cout << "Executing GetQuantiles program. Parameters chosen are:" << std::endl;
   std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  toPlotKinvar=" << toPlotKinvar << std::endl;
+  std::cout << "  kinvarOption=" << kinvarOption << std::endl;
   std::cout << "  Nquantiles=" << Nquantiles << std::endl;
   std::cout << std::endl;
 }
@@ -153,7 +131,7 @@ void printUsage() {
   std::cout << "./GetQuantiles -[options] -[more options]" << std::endl;
   std::cout << "  h          : prints help and exit program" << std::endl;
   std::cout << "  t[target]  : selects target: D | C | Fe | Pb" << std::endl;
-  std::cout << "  k[Z,P,Q,N] : sets kinvar to draw, it can be: Z, Q2, Nu or Pt2" << std::endl;
+  std::cout << "  k[kinvar]  : sets kinvar to draw, it can be: Z, Q2, Nu or Pt2" << std::endl;
   std::cout << "  q[number]  : sets the number of quantiles" << std::endl;
   std::cout << std::endl;
 }
@@ -162,47 +140,30 @@ void assignOptions() {
   // for targets
   if (targetOption == "D") {
     cutTargType = "TargType == 1";
-    inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
-    inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
-    inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
   } else if (targetOption == "C") {
     cutTargType = "TargType == 2";
-    inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
   } else if (targetOption == "Fe") {
     cutTargType = "TargType == 2";
-    inputFile1 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
   } else if (targetOption == "Pb") {
     cutTargType = "TargType == 2";
-    inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
   }
   // for kinvar
   if (kinvarOption == "Z") {
-    toPlotKinvar = "Z";
-    kinvarTitle = "Z in ";
-    histProperties = "(400, 0.5, 0.9)";
-  } else if (kinvarOption == "P") {
-    toPlotKinvar = "Pt2";
-    kinvarTitle = "Pt2 in ";
+    histProperties = "(100, 0.5, 0.9)";
+  } else if (kinvarOption == "Pt2") {
     histProperties = "(100, 0.0, 1.5)";
-  } else if (kinvarOption == "Q") {
-    toPlotKinvar = "Q2";
-    kinvarTitle = "Q2 in ";
+  } else if (kinvarOption == "Q2") {
     histProperties = "(100, 1.0, 4.0)";
-  } else if (kinvarOption == "N") {
-    toPlotKinvar = "Nu";
-    kinvarTitle = "Nu in ";
+  } else if (kinvarOption == "Nu") {
     histProperties = "(100, 2.2, 4.2)";
   }
+  kinvarTitle = kinvarOption + " in ";
   // name
-  outputPlotName = outFolder + Form("/q%d-", Nquantiles) + toPlotKinvar + "-" + targetOption + ".png";
-}
-
-void drawVerticalLine(Double_t x) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-  TLine *linex = new TLine(u, 0.1, u, 0.9);
-  linex->SetLineWidth(2);
-  linex->SetNDC(kTRUE);
-  linex->Draw();
+  plotFile = outDir + Form("/q%d-", Nquantiles) + kinvarOption + "-" + targetOption + ".png";
 }

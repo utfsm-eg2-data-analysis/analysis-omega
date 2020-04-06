@@ -26,7 +26,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
 PROG := MakePlots old_MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
-	MakeRooFits MakeMR-nbs Test MakePlots-2D
+	MakeRooFits MakeMR-nbs Test MakePlots-2D PlotParams MakeMR-bs MakeSimFits
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

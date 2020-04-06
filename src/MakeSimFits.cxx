@@ -1,12 +1,12 @@
 /**************************************/
-/* MakeRooFits.cxx                    */
+/* MakeSimFits.cxx                    */
 /*                                    */
 /* Created by Andrés Bórquez, CCTVAL  */
 /*                                    */
 /**************************************/
 
 // fits peak with a gaussian function and bkg with a 1st order polynomial
-// - added kinematic dependence as an option
+// for simrec
 
 #include "analysisConfig.h"
 
@@ -30,13 +30,11 @@ using namespace RooFit;
 
 /*** Global variables ***/
 
-TString outDir = proDir + "/out/MakeRooFits";
+TString outDir = proDir + "/out/MakeSimFits";
 
 // target options
 TString targetOption;
-TString inputFile1 = "";
-TString inputFile2 = "";
-TString inputFile3 = "";
+TString inputFile = "";
 TCut    cutTargType;
 
 // kinematic variable options
@@ -69,13 +67,13 @@ int main(int argc, char **argv) {
   printOptions();
 
   // cuts
-  TCut cutAll = cutDIS && cutPipPim && cutPi0;
+  TCut cutAll = cutDIS_old && cutPipPim_old && cutPi0_sim;
 
   TChain *treeExtracted = new TChain();
-  treeExtracted->Add(inputFile1 + "/mix");
-  treeExtracted->Add(inputFile2 + "/mix");
-  treeExtracted->Add(inputFile3 + "/mix");
+  treeExtracted->Add(inputFile + "/outdata");
 
+  setAlias_old(treeExtracted);
+  
   /*** Fit ***/
   
   // bin x-width = 5 MeV
@@ -92,8 +90,8 @@ int main(int argc, char **argv) {
   Double_t sigmaRangeUp = 2.4e-2; // 3.5
 
   TH1F *dataHist;
-  treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
-  dataHist = (TH1F *)gROOT->FindObject("data");
+  treeExtracted->Draw(Form("deltam>>simrec(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
+  dataHist = (TH1F *)gROOT->FindObject("simrec");
   Double_t N_d = dataHist->Integral(1,Nbins);
   
   /*** RooFit stuff ***/
@@ -157,17 +155,6 @@ int main(int argc, char **argv) {
   TCanvas *c = new TCanvas("c", "c", 1366, 768);
   frame->Draw();
   
-  // chi2
-  /*
-    Double_t chi2 = frame->chiSquare("Model", "Data");
-    TPaveText *textBlock = new TPaveText(0.1, 0.55, 0.3, 0.6, "NDC TL"); // x1, y1, x2, y2
-    textBlock->AddText(Form("#chi^{2}/ndf = %.3f", chi2));
-    textBlock->SetFillColor(kWhite);
-    textBlock->SetShadowColor(kWhite);
-    textBlock->SetTextColor(kBlack);
-    textBlock->Draw();
-  */
-
   // draw lines
   drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
   drawVerticalLineBlack(omegaMean.getValV());
@@ -180,20 +167,6 @@ int main(int argc, char **argv) {
   std::cout << "N_omega=" << N_omega << std::endl;
   std::cout << "N_bkg=" << N_bkg << std::endl;
 
-  // check error
-  /*
-  Double_t err_sum;
-  Double_t err_avg;
-  for (Int_t i = 1; i <= Nbins; i++) {
-    std::cout << "val[" << i << "]=" << dataHist->GetBinContent(i) << std::endl;
-    std::cout << "sta[" << i << "]=" << TMath::Sqrt(dataHist->GetBinContent(i)) << std::endl;
-    std::cout << "err[" << i << "]=" << dataHist->GetBinError(i) << std::endl;
-    err_sum += dataHist->GetBinError(i);
-  }
-  err_avg = err_sum/Nbins;
-  std::cout << "err_avg=" << err_avg << std::endl;
-  */
-
   /*** Save data from fit ***/
 
   std::cout << "Writing " << textName << " ..." << std::endl;
@@ -202,7 +175,7 @@ int main(int argc, char **argv) {
   outFinalFile << omegaMean.getValV() << "\t" << omegaMean.getError() << std::endl;
   // line 2: omegaSigma
   outFinalFile << omegaSigma.getValV() << "\t" << omegaSigma.getError() << std::endl;
-  // line 3: omegaYields (directly from parameter) (METHOD 1)
+  // line 3: number of omega particles (directly from parameter)
   outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
   // line 4: b1
   outFinalFile << b1.getValV() << "\t" << b1.getError() << std::endl;
@@ -218,7 +191,7 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./MakeRooFits -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./MakeSimFits -h to print usage." << std::endl;
     exit(0);
   }
   while ((c = getopt(argc, argv, "ht:z:q:n:p:")) != -1)
@@ -230,29 +203,29 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./MakeSimFits -h to print usage." << std::endl;
       exit(0);
       break;
     }
 }
 
 void printOptions() {
-  std::cout << "Executing MakeRooFits program. Chosen parameters are:" << std::endl;
+  std::cout << "Executing MakeSimFits program. Chosen parameters are:" << std::endl;
   std::cout << "  targetOption=" << targetOption << std::endl;
   std::cout << "  kinvarName=" << kinvarName << std::endl;
   std::cout << "  binNumber=" << binNumber << std::endl;
 }
 
 void printUsage() {
-  std::cout << "MakeRooFits program. Usage is:" << std::endl;
+  std::cout << "MakeSimFits program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -h" << std::endl;
+  std::cout << "./MakeSimFits -h" << std::endl;
   std::cout << "    prints usage and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -t[target]" << std::endl;
+  std::cout << "./MakeSimFits -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -[kinvar][number]" << std::endl;
+  std::cout << "./MakeSimFits -[kinvar][number]" << std::endl;
   std::cout << "    analyzes respective kinematic variable bin" << std::endl;
   std::cout << "    z[3-7] : analyzes specific Z bin" << std::endl;
   std::cout << "    q[1-5] : analyzes specific Q2 bin" << std::endl;
@@ -263,18 +236,16 @@ void printUsage() {
 void assignOptions() {
   // for targets, unified D
   if (targetOption == "D") {
-    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
-    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
-    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
+    inputFile = simrecDir + "/jlab/D/wout_simrecD.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
-    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile = simrecDir + "/jlab/C/wout_simrecC.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
-    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile = simrecDir + "/jlab/Fe/wout_simrecFe.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
-    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
+    inputFile = simrecDir + "/usm/Pb/wout_simrecPb.root";
     cutTargType = "TargType == 2";
   }
   // for kinvar
@@ -304,6 +275,6 @@ void assignOptions() {
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
   // names
   outDir = outDir + "/" + kinvarName;
-  plotName = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
-  textName = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
+  plotName = outDir + "/simfit-" + targetOption + kinvarSufix + ".png";
+  textName = outDir + "/simfit-" + targetOption + kinvarSufix + ".dat";
 }

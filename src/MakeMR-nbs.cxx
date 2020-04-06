@@ -5,43 +5,16 @@
 /*                                    */
 /**************************************/
 
-// From the MakeRooFits results, we obtain mean and sigma for each peak
-// With the mean and sigma, we set the edges for a cut around the peak in the root files
+// From the MakeRooFits results, we obtain mean and sigma for each omega peak
+// With the mean and sigma, we set the edges for a cut around the peak propto sigma
 // This program calculates MR doing cuts on the peak and then dividing
-// updates:
-// - use toycombine data
-// - uniD
-// - can choose obs
 
-#include <iostream>
-#include <fstream>
-
-#include "TROOT.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TF1.h"
-#include "TString.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TLatex.h"
-#include "TObjArray.h"
+#include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString proFolder = "/home/borquez/omegaThesis";
-TString outFolder = proFolder + "/out/MakeMR/nbs";
-TString inputRootLocation = proFolder + "/out/filterData";
-TString inputTextLocation = proFolder + "/out/MakeRooFits";
-
-Double_t edgesZ[6] = {0.5, 0.554, 0.611, 0.676, 0.760, 0.9}; // updated
-Double_t edgesQ2[6] = {1., 1.181, 1.364, 1.598, 1.960, 3.970};
-Double_t edgesNu[6] = {2.2, 3.191, 3.504, 3.744, 3.964, 4.2};
-Double_t edgesPt2[6] = {0.0, 0.040, 0.090, 0.159, 0.273, 1.5}; // updated
+TString outDir  = proDir + "/out/MakeMR/nbs";
+TString textDir = proDir + "/out/MakeRooFits";
 
 /*** Parameters ***/
 Int_t flagZ = 0;
@@ -52,14 +25,14 @@ Int_t Nsigma = 5; // default
 
 /*** Global options ***/
 TString sigmaSufix;
-TString obsName;
-TString obsFolder;
-TString obsValue[6];
-Int_t   obsConstant = 1; // default for (Q2, Nu, Pt2)
-Int_t   obsNbins = 5;    // default for all
-Int_t   obsMin = 1; // default for (Q2, Nu, Pt2)
-Int_t   obsMax = 5; // default for (Q2, Nu, Pt2)
-TString obsSufix;
+TString kinvarName;
+TString kinvarFolder;
+TString kinvarValue[6];
+Int_t   kinvarConstant = 1; // default for (Q2, Nu, Pt2)
+Int_t   kinvarNbins = 5;    // default for all
+Int_t   kinvarMin = 1; // default for (Q2, Nu, Pt2)
+Int_t   kinvarMax = 5; // default for (Q2, Nu, Pt2)
+TString kinvarSufix;
 TString outputFileName;
 TString outputPlotName;
 
@@ -68,11 +41,11 @@ TString  inputFile1;
 TString  inputFile2;
 TString  inputFile3;
 TCut     cutTargType;
-Double_t obsLowEdge;
-Double_t obsHighEdge;
-TCut     obsCut;
-TString  obsAuxSufix;
-TString  obsTitle;
+Double_t kinvarLowEdge;
+Double_t kinvarHighEdge;
+TCut     kinvarCut;
+TString  kinvarAuxSufix;
+TString  kinvarTitle;
 
 // from fit results [kinvar bin]
 Double_t omegaMean[5];
@@ -101,7 +74,7 @@ int main(int argc, char **argv) {
   parseCommandLine(argc, argv);
   assignGlobalOptions();
   
-  for (Int_t i = obsMin; i < (obsMax+1); i++) {
+  for (Int_t i = kinvarMin; i < (kinvarMax+1); i++) {
     assignOptions("D", i);
     readFitResult("D", i);
     integrateData("D", i);
@@ -126,10 +99,10 @@ int main(int argc, char **argv) {
   gStyle->SetOptStat(0);
 
   // creating and filling histograms
-  TH1F *numberDeutHist = new TH1F("numberDeutHist", "", obsNbins, 0.5, 1.);
-  TH1F *numberCarbonHist = new TH1F("numberCarbonHist", "", obsNbins, 0.5, 1.);
-  TH1F *numberIronHist = new TH1F("numberIronHist", "", obsNbins, 0.5, 1.);
-  TH1F *numberLeadHist = new TH1F("numberLeadHist", "", obsNbins, 0.5, 1.);
+  TH1F *numberDeutHist = new TH1F("numberDeutHist", "", kinvarNbins, 0.5, 1.);
+  TH1F *numberCarbonHist = new TH1F("numberCarbonHist", "", kinvarNbins, 0.5, 1.);
+  TH1F *numberIronHist = new TH1F("numberIronHist", "", kinvarNbins, 0.5, 1.);
+  TH1F *numberLeadHist = new TH1F("numberLeadHist", "", kinvarNbins, 0.5, 1.);
   
   // creates sumw2 structure before hand
   numberDeutHist->Sumw2();
@@ -138,7 +111,7 @@ int main(int argc, char **argv) {
   numberLeadHist->Sumw2();
   
   // for each bin in kinvar
-  for (Int_t cc = 0; cc < obsNbins; cc++) {
+  for (Int_t cc = 0; cc < kinvarNbins; cc++) {
     numberDeutHist->SetBinContent(cc + 1, particleNumber[0][cc]);
     numberDeutHist->SetBinError(cc + 1, particleError[0][cc]);
     
@@ -155,17 +128,16 @@ int main(int argc, char **argv) {
   /*** Drawing ***/
 
   std::cout << "Drawing..." << std::endl;
-  TH1F *CarbonMR = new TH1F("CarbonMR", "", obsNbins, 0.5, 1.);
-  CarbonMR->SetTitle(Form("#omega MR(" + obsName + ") - No Bkg Subtraction (-%d#sigma, %d#sigma)", Nsigma, Nsigma));
-  CarbonMR->GetXaxis()->SetTitle(obsName);
-  CarbonMR->GetXaxis()->SetNdivisions(200 + obsNbins, kFALSE);
-  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,obsValue[0]);
-  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,obsValue[1]);
-  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1,obsValue[2]);
-  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,obsValue[3]);
-  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1,obsValue[4]);
-  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,obsValue[5]);
-  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,obsValue[4]);
+  TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
+  CarbonMR->SetTitle(Form("#omega MR(" + kinvarName + ") - No Bkg Subtraction (-%d#sigma, %d#sigma)", Nsigma, Nsigma));
+  CarbonMR->GetXaxis()->SetTitle(kinvarName);
+  CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
+  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,kinvarValue[0]);
+  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,kinvarValue[1]);
+  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1,kinvarValue[2]);
+  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,kinvarValue[3]);
+  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1,kinvarValue[4]);
+  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,kinvarValue[5]);
   CarbonMR->GetYaxis()->SetTitle("MR");
 
   CarbonMR->SetMarkerColor(kRed);
@@ -179,7 +151,7 @@ int main(int argc, char **argv) {
   CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
   CarbonMR->Draw("E");  
   
-  TH1F *IronMR = new TH1F("IronMR", "", obsNbins, 0.5, 1.);
+  TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
   IronMR->SetMarkerColor(kBlue);
   IronMR->SetLineColor(kBlue);
   IronMR->SetLineWidth(3);
@@ -190,7 +162,7 @@ int main(int argc, char **argv) {
   
   IronMR->Draw("E SAME");
 
-  TH1F *LeadMR = new TH1F("LeadMR", "", obsNbins, 0.5, 1.);
+  TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
   LeadMR->SetMarkerColor(kBlack);
   LeadMR->SetLineColor(kBlack);
   LeadMR->SetLineWidth(3);
@@ -286,87 +258,84 @@ void assignGlobalOptions() {
   sigmaSufix = Form("-%dsigma", Nsigma);
   // for kinvar
   if (flagZ) {
-    obsName = "Z";
-    inputTextLocation = inputTextLocation + "/Z";
-    obsConstant = 3;
-    obsMin = 3;
-    obsMax = 7;
-    obsSufix = "-z";
-    for (Int_t i = 0; i < (obsNbins+1); i++) obsValue[i] = Form("%.02f", edgesZ[i]);
+    kinvarName = "Z";
+    textDir = textDir + "/Z";
+    kinvarConstant = 3;
+    kinvarMin = 3;
+    kinvarMax = 7;
+    kinvarSufix = "-z";
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesZ[i]);
   } else if (flagQ2) {
-    obsName = "Q2";
-    inputTextLocation = inputTextLocation + "/Q2";
-    obsSufix = "-q";
-    for (Int_t i = 0; i < (obsNbins+1); i++) obsValue[i] = Form("%.02f", edgesQ2[i]);
+    kinvarName = "Q2";
+    textDir = textDir + "/Q2";
+    kinvarSufix = "-q";
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesQ2[i]);
   } else if (flagNu) {
-    obsName = "Nu";
-    inputTextLocation = inputTextLocation + "/Nu";
-    obsSufix = "-n";
-    for (Int_t i = 0; i < (obsNbins+1); i++) obsValue[i] = Form("%.02f", edgesNu[i]);
+    kinvarName = "Nu";
+    textDir = textDir + "/Nu";
+    kinvarSufix = "-n";
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesNu[i]);
   } else if (flagPt2) {
-    obsName = "Pt2";
-    inputTextLocation = inputTextLocation + "/Pt2";
-    obsSufix = "-p";
-    for (Int_t i = 0; i < (obsNbins+1); i++) obsValue[i] = Form("%.02f", edgesPt2[i]);
+    kinvarName = "Pt2";
+    textDir = textDir + "/Pt2";
+    kinvarSufix = "-p";
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesPt2[i]);
   }
   // for output files
-  outputPlotName = outFolder + "/nbs-MR" + obsSufix + sigmaSufix + ".png";
-  outputFileName = outFolder + "/nbs-MR" + obsSufix + sigmaSufix + ".dat";
+  outputPlotName = outDir + "/nbs-MR" + kinvarSufix + sigmaSufix + ".png";
+  outputFileName = outDir + "/nbs-MR" + kinvarSufix + sigmaSufix + ".dat";
 }
 
 void assignOptions(TString targetOption, Int_t binNumber) {
   // for targets, unified D
   if (targetOption == "D") {
-    inputFile1 = inputRootLocation + "/C/comb_C-thickD2.root";
-    inputFile2 = inputRootLocation + "/Fe/comb_Fe-thickD2.root";
-    inputFile3 = inputRootLocation + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
-    inputFile1 = inputRootLocation + "/C/comb_C-thickD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
-    inputFile1 = inputRootLocation + "/Fe/comb_Fe-thickD2.root";
+    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
-    inputFile1 = inputRootLocation + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
   }
-  // for observable
+  // for kinvar
   if (flagZ) {
-    obsLowEdge = edgesZ[binNumber-obsConstant];
-    obsHighEdge = edgesZ[binNumber+1-obsConstant];
-    obsAuxSufix = Form("-z%d", binNumber);
+    kinvarLowEdge = edgesZ[binNumber-kinvarConstant];
+    kinvarHighEdge = edgesZ[binNumber+1-kinvarConstant];
+    kinvarAuxSufix = Form("-z%d", binNumber);
   } else if (flagQ2) {
-    obsLowEdge = edgesQ2[binNumber-obsConstant];
-    obsHighEdge = edgesQ2[binNumber+1-obsConstant];
-    obsAuxSufix = Form("-q%d", binNumber);
+    kinvarLowEdge = edgesQ2[binNumber-kinvarConstant];
+    kinvarHighEdge = edgesQ2[binNumber+1-kinvarConstant];
+    kinvarAuxSufix = Form("-q%d", binNumber);
   } else if (flagNu) {
-    obsLowEdge = edgesNu[binNumber-obsConstant];
-    obsHighEdge = edgesNu[binNumber+1-obsConstant];
-    obsAuxSufix = Form("-n%d", binNumber);
+    kinvarLowEdge = edgesNu[binNumber-kinvarConstant];
+    kinvarHighEdge = edgesNu[binNumber+1-kinvarConstant];
+    kinvarAuxSufix = Form("-n%d", binNumber);
   } else if (flagPt2) {
-    obsLowEdge = edgesPt2[binNumber-obsConstant];
-    obsHighEdge = edgesPt2[binNumber+1-obsConstant];
-    obsAuxSufix = Form("-p%d", binNumber);
+    kinvarLowEdge = edgesPt2[binNumber-kinvarConstant];
+    kinvarHighEdge = edgesPt2[binNumber+1-kinvarConstant];
+    kinvarAuxSufix = Form("-p%d", binNumber);
   }
-  obsTitle = Form(" (%.02f < ", obsLowEdge) + obsName + Form(" < %.02f)", obsHighEdge);
-  obsCut = Form("%f < ", obsLowEdge) + obsName + " && " + obsName + Form(" < %f", obsHighEdge);
+  kinvarTitle = Form(" (%.02f < ", kinvarLowEdge) + kinvarName + Form(" < %.02f)", kinvarHighEdge);
+  kinvarCut = Form("%f < ", kinvarLowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarHighEdge);
 }
 
 void integrateData(TString targetOption, Int_t binNumber) {
   
-  Int_t index = binNumber - obsConstant;
+  Int_t index = binNumber - kinvarConstant;
   Int_t targIndex;
 
-  TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-  TCut cutPi0 = "0.059 < pi0M && pi0M < 0.209";
-  TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
   TCut cutAll = cutPi0 && cutDIS && cutPipPim; // doesn't consider targType yet
 
   TCut cutMass = Form("%f < wD && wD < %f", massLowEdge[index], massHighEdge[index]); // here we apply the edges!
@@ -383,7 +352,7 @@ void integrateData(TString targetOption, Int_t binNumber) {
   gStyle->SetOptStat(0);
   
   TH1F *dataHist;
-  treeExtracted->Draw("wD>>data(20, 0.3, 0.4)", cutAll && obsCut && cutTargType && cutMass, "goff");
+  treeExtracted->Draw("wD>>data(20, 0.3, 0.4)", cutAll && kinvarCut && cutTargType && cutMass, "goff");
   dataHist = (TH1F *)gROOT->FindObject("data");
   
   if (targetOption == "D") targIndex = 0;
@@ -393,17 +362,19 @@ void integrateData(TString targetOption, Int_t binNumber) {
 		    
   // save numbers!
   particleNumber[targIndex][index] = dataHist->IntegralAndError(1, 20, particleError[targIndex][index], "");
-  std::cout << targetOption << obsAuxSufix << ": " << particleNumber[targIndex][index] << " +/- " << particleError[targIndex][index] << std::endl;
+  std::cout << targetOption << kinvarAuxSufix << ": " << particleNumber[targIndex][index] << " +/- " << particleError[targIndex][index] << std::endl;
   
   // draw for test!
-  dataHist->SetTitle("IMD(#omega) for " + targetOption + " in " + obsTitle);
+  dataHist->SetTitle("IMD(#pi^{+} #pi^{-} #pi^{0}) for " + targetOption + " in " + kinvarTitle);
   dataHist->SetLineColor(kBlue);
   dataHist->SetLineWidth(3);
-  dataHist->GetXaxis()->SetTitle("IMD(#omega) (GeV)");
-  dataHist->GetYaxis()->SetTitle("Entries");
+  dataHist->GetXaxis()->SetTitle("IMD (GeV)");
+  dataHist->GetXaxis()->CenterTitle();
+  dataHist->GetYaxis()->SetTitle("Counts");
+  dataHist->GetYaxis()->CenterTitle();
   dataHist->Draw("E");
 
-  TString outputTestName = outFolder + "hist-" + targetOption + obsAuxSufix + sigmaSufix + ".png";
+  TString outputTestName = outDir + "hist-" + targetOption + kinvarAuxSufix + sigmaSufix + ".png";
   cw->Print(outputTestName); // output file
   
   delete cw;
@@ -413,9 +384,9 @@ void integrateData(TString targetOption, Int_t binNumber) {
 
 void readFitResult(TString targetOption, Int_t binNumber) {
 
-  Int_t index = binNumber - obsConstant;
+  Int_t index = binNumber - kinvarConstant;
   
-  TString textFile = inputTextLocation + "/roofit-" + targetOption + obsAuxSufix + ".dat";
+  TString textFile = textDir + "/roofit-" + targetOption + kinvarAuxSufix + ".dat";
   
   std::ifstream inFile(textFile);
   
@@ -425,10 +396,10 @@ void readFitResult(TString targetOption, Int_t binNumber) {
     l++;
     if (l == 3) { // third line
       omegaMean[index] = auxString1.Atof();
-      std::cout << "Omega Mean for " << targetOption << obsAuxSufix << ": " << omegaMean[index] << std::endl;
+      std::cout << "Omega Mean for " << targetOption << kinvarAuxSufix << ": " << omegaMean[index] << std::endl;
     } else if (l == 4) { // fourth line
       omegaSigma[index] = auxString1.Atof();
-      std::cout << "Omega Sigma for " << targetOption << obsAuxSufix << ": " << omegaSigma[index] << std::endl;
+      std::cout << "Omega Sigma for " << targetOption << kinvarAuxSufix << ": " << omegaSigma[index] << std::endl;
     }
   }
   inFile.close();
@@ -436,5 +407,5 @@ void readFitResult(TString targetOption, Int_t binNumber) {
   // assign mass edges!
   massLowEdge[index] = omegaMean[index] - Nsigma*omegaSigma[index];
   massHighEdge[index] = omegaMean[index] + Nsigma*omegaSigma[index];
-  std::cout << targetOption << obsAuxSufix << ": [" << massLowEdge[index] << ", " << massHighEdge[index] << "]" << std::endl;
+  std::cout << targetOption << kinvarAuxSufix << ": [" << massLowEdge[index] << ", " << massHighEdge[index] << "]" << std::endl;
 }

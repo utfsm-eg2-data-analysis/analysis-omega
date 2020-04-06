@@ -17,6 +17,7 @@
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TCanvas.h"
@@ -26,19 +27,27 @@
 #include "TLegend.h"
 #include "TLatex.h"
 #include "TGaxis.h"
+#include "TAxis.h"
 #include "TMath.h"
 #include "TPad.h"
+#include "TObjArray.h"
 
 /*** Global variables ***/
 
-TString proFolder = "/home/borquez/omegaThesis";
+TString proDir    = "/home/borquez/omegaThesis";
+TString dataDir   = proDir + "/out/filterData";
+TString gsimDir   = proDir + "/out/filterSim/gsim";
+TString simrecDir = proDir + "/out/filterSim/simrec";
 
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-TCut cutPi0 = "0.059 < pi0M && pi0M < 0.209";
+TCut cutPi0 = "0.059 < pi0M && pi0M < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
 // cut for pi0 from MW
-TCut cutPi0_MW = "0.059 < pi0M && pi0M < 0.209";
+TCut cutPi0_MW = "0.059 < pi0M && pi0M < 0.209"; // mean=0.134 & sigma=0.025
+
+// cut for pi0 from GSIM files
+TCut cutPi0_sim = "0.132 < mpi0 && mpi0 < 0.138";
 
 // these cuts are for the files filtered with old OS programs
 TCut cutDIS_old = "Q2 > 1 && W > 2";
@@ -143,6 +152,23 @@ void drawVerticalLineBlack(Double_t x) {
   TLine *linex = new TLine(u, 0.1, u, 0.9);
   linex->SetLineWidth(3);
   linex->SetLineColor(kBlack);
+  linex->SetLineStyle(2);
+  linex->SetNDC(kTRUE);
+  linex->Draw();
+}
+
+void drawVerticalLine(Double_t x) {
+  drawVerticalLineBlack(x);
+}
+
+void drawVerticalLineRed(Double_t x) {
+  Double_t u;
+  gPad->Update(); // necessary
+  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
+  // u = (x - x1)/(x2 - x1);
+  TLine *linex = new TLine(u, 0.1, u, 0.9);
+  linex->SetLineWidth(3);
+  linex->SetLineColor(kRed);
   linex->SetLineStyle(2);
   linex->SetNDC(kTRUE);
   linex->Draw();
