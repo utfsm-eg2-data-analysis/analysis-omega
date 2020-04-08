@@ -12,29 +12,12 @@
 //          it can be any Nsigma combination around omega or pi0 peaks
 // stage 2: plots mentioned MR difference in percentage
 
-#include <iostream>
-#include <fstream>
-
-#include "TROOT.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TCut.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TF1.h"
-#include "TString.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TLatex.h"
-#include "TObjArray.h"
-#include "TLine.h"
+#include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString proFolder = "/home/borquez/omegaThesis";
-TString inputFolder = proFolder + "/out/SystPi0Mass";
-TString outFolder = inputFolder;
+TString inputDir = proDir + "/out/SystPi0";
+TString outDir = inputDir;
 
 Double_t MR_a[3][5];
 Double_t MR_aE[3][5];
@@ -65,7 +48,6 @@ void assignOptions();
 void printUsage();
 
 void readTextFiles();
-void drawHorizontalLine(Double_t y);
 void printResults(TH1F *CarbonDiff2, TH1F *IronDiff2, TH1F *LeadDiff2);
 
 int main(int argc, char **argv) {
@@ -188,7 +170,7 @@ int main(int argc, char **argv) {
     legend->Draw();
   }
   
-  ca->Print(outFolder + "/comp-MR-" + outSufix + legendSufix + ".png"); // output file
+  ca->Print(outDir + "/comp-MR-" + outSufix + legendSufix + ".png"); // output file
 
   /*** STAGE 2: Plot difference ***/
   
@@ -249,7 +231,7 @@ int main(int argc, char **argv) {
   l2->AddEntry(LeadMRdiff, "Lead", "p");
   l2->Draw();
   
-  cb->Print(outFolder + "/diff-MR-" + outSufix + ".png"); // output file
+  cb->Print(outDir + "/diff-MR-" + outSufix + ".png"); // output file
 
   printResults(CarbonMRdiff, IronMRdiff, LeadMRdiff);
   
@@ -291,60 +273,60 @@ void printUsage() {
 void assignOptions() {
   // for a
   if (MROption_a == "3w3i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-3w-3pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-3w-3pi0.dat";
     histTitle_a = "{#omega (3#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_a == "3w4i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-3w-4pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-3w-4pi0.dat";
     histTitle_a = "{#omega (3#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_a == "3w5i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-3w-5pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-3w-5pi0.dat";
     histTitle_a = "{#omega (3#sigma) & #pi^{0} (5#sigma)}";
   } else if (MROption_a == "4w3i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-4w-3pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-4w-3pi0.dat";
     histTitle_a = "{#omega (4#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_a == "4w4i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-4w-4pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-4w-4pi0.dat";
     histTitle_a = "{#omega (4#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_a == "4w5i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-4w-5pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-4w-5pi0.dat";
     histTitle_a = "{#omega (4#sigma) & #pi^{0} (5#sigma)}";
   } else if (MROption_a == "5w3i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-5w-3pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-5w-3pi0.dat";
     histTitle_a = "{#omega (5#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_a == "5w4i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-5w-4pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-5w-4pi0.dat";
     histTitle_a = "{#omega (5#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_a == "5w5i") {
-    inputFileName_a = inputFolder + "/nbs-MR-Z-5w-5pi0.dat";
+    inputFileName_a = inputDir + "/nbs-MR-Z-5w-5pi0.dat";
     histTitle_a = "{#omega (5#sigma) & #pi^{0} (5#sigma)}";
   }
   // for b
   if (MROption_b == "3w3i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-3w-3pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-3w-3pi0.dat";
     histTitle_b = "{#omega (3#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_b == "3w4i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-3w-4pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-3w-4pi0.dat";
     histTitle_b = "{#omega (3#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_b == "3w5i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-3w-5pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-3w-5pi0.dat";
     histTitle_b = "{#omega (3#sigma) & #pi^{0} (5#sigma)}";
   } else if (MROption_b == "4w3i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-4w-3pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-4w-3pi0.dat";
     histTitle_b = "{#omega (4#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_b == "4w4i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-4w-4pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-4w-4pi0.dat";
     histTitle_b = "{#omega (4#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_b == "4w5i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-4w-5pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-4w-5pi0.dat";
     histTitle_b = "{#omega (4#sigma) & #pi^{0} (5#sigma)}";
   } else if (MROption_b == "5w3i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-5w-3pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-5w-3pi0.dat";
     histTitle_b = "{#omega (5#sigma) & #pi^{0} (3#sigma)}";
   } else if (MROption_b == "5w4i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-5w-4pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-5w-4pi0.dat";
     histTitle_b = "{#omega (5#sigma) & #pi^{0} (4#sigma)}";
   } else if (MROption_b == "5w5i") {
-    inputFileName_b = inputFolder + "/nbs-MR-Z-5w-5pi0.dat";
+    inputFileName_b = inputDir + "/nbs-MR-Z-5w-5pi0.dat";
     histTitle_b = "{#omega (5#sigma) & #pi^{0} (5#sigma)}";
   }
   // file sufix
@@ -397,19 +379,6 @@ void readTextFiles() {
   }
   inFile_b.close();
   
-}
-
-void drawHorizontalLine(Double_t y) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-  // u = (y - y1)/(y2 - y1);
-  TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(2);
-  liney->SetLineColor(kBlack);
-  //liney->SetLineStyle(2);
-  liney->SetNDC(kTRUE);
-  liney->Draw();
 }
 
 void printResults(TH1F *CarbonDiff2, TH1F *IronDiff2, TH1F *LeadDiff2) {

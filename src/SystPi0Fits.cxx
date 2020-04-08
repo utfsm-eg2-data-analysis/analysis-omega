@@ -1,5 +1,5 @@
 /**************************************/
-/* MakeRooFits.cxx                    */
+/* SystPi0Fits.cxx                    */
 /*                                    */
 /* Created by Andrés Bórquez, CCTVAL  */
 /*                                    */
@@ -30,7 +30,14 @@ using namespace RooFit;
 
 /*** Global variables ***/
 
-TString outDir = proDir + "/out/MakeRooFits";
+TString outDir = proDir + "/out/SystPi0";
+
+// pi0 (make sure those are the same than in analysisConfig.h)
+Double_t pi0obtMean = 0.131;
+Double_t pi0obtSigma = 0.024;
+Double_t pi0Nsigma;
+Double_t pi0Range[2]; // to be defined
+TString  sigmaName;
 
 // target options
 TString targetOption;
@@ -199,42 +206,12 @@ int main(int argc, char **argv) {
   TCanvas *c = new TCanvas("c", "c", 1366, 768);
   frame->Draw();
   
-  // chi2
-  /*
-    Double_t chi2 = frame->chiSquare("Model", "Data");
-    TPaveText *textBlock = new TPaveText(0.1, 0.55, 0.3, 0.6, "NDC TL"); // x1, y1, x2, y2
-    textBlock->AddText(Form("#chi^{2}/ndf = %.3f", chi2));
-    textBlock->SetFillColor(kWhite);
-    textBlock->SetShadowColor(kWhite);
-    textBlock->SetTextColor(kBlack);
-    textBlock->Draw();
-  */
-
   // draw lines
   drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
   drawVerticalLineBlack(omegaMean.getValV());
   drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
   
   c->Print(plotFile); // output file
-
-  std::cout << "N_d=" << N_d << std::endl;
-  std::cout << "N_sum=" << N_sum << std::endl;
-  std::cout << "N_omega=" << N_omega << std::endl;
-  std::cout << "N_bkg=" << N_bkg << std::endl;
-
-  // check error
-  /*
-  Double_t err_sum;
-  Double_t err_avg;
-  for (Int_t i = 1; i <= Nbins; i++) {
-    std::cout << "val[" << i << "]=" << dataHist->GetBinContent(i) << std::endl;
-    std::cout << "sta[" << i << "]=" << TMath::Sqrt(dataHist->GetBinContent(i)) << std::endl;
-    std::cout << "err[" << i << "]=" << dataHist->GetBinError(i) << std::endl;
-    err_sum += dataHist->GetBinError(i);
-  }
-  err_avg = err_sum/Nbins;
-  std::cout << "err_avg=" << err_avg << std::endl;
-  */
 
   /*** Save data from fit ***/
 
@@ -260,10 +237,10 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./MakeRooFits -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./SystPi0Fits -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:z:q:n:p:S")) != -1)
+  while ((c = getopt(argc, argv, "ht:z:q:n:p:Ss:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
@@ -272,41 +249,48 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     case 'S': flagNew = 1; break;
+    case 's': pi0Nsigma = atof(optarg); break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./SystPi0Fits -h to print usage." << std::endl;
       exit(0);
       break;
     }
 }
 
 void printOptions() {
-  std::cout << "Executing MakeRooFits program. Chosen parameters are:" << std::endl;
+  std::cout << "Executing SystPi0Fits program. Chosen parameters are:" << std::endl;
   std::cout << "  targetOption=" << targetOption << std::endl;
   std::cout << "  kinvarName=" << kinvarName << std::endl;
   std::cout << "  binNumber=" << binNumber << std::endl;
   std::cout << "  flagNew=" << flagNew << std::endl;
+  std::cout << "  pi0Nsigma=" << pi0Nsigma << std::endl;
   std::cout << std::endl;
 }
 
 void printUsage() {
-  std::cout << "MakeRooFits program. Usage is:" << std::endl;
+  std::cout << "SystPi0Fits program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -h" << std::endl;
+  std::cout << "./SystPi0Fits -h" << std::endl;
   std::cout << "    prints usage and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -t[target]" << std::endl;
+  std::cout << "./SystPi0Fits -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -[kinvar][number]" << std::endl;
+  std::cout << "./SystPi0Fits -[kinvar][number]" << std::endl;
   std::cout << "    analyzes respective kinematic variable bin" << std::endl;
   std::cout << "    z[3-7] : analyzes specific Z bin" << std::endl;
   std::cout << "    q[1-5] : analyzes specific Q2 bin" << std::endl;
   std::cout << "    n[1-5] : analyzes specific Nu bin" << std::endl;
   std::cout << "    p[1-5] : analyzes specific Pt2 bin" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -S" << std::endl;
+  std::cout << "./SystPi0Fits -S" << std::endl;
   std::cout << "    plots a default 5sigma range" << std::endl;
   std::cout << "    without this option, it sets a new 5sigma range based on previous results" << std::endl;
+  std::cout << std::endl;
+  std::cout << std::endl;
+  std::cout << "./SystPi0Fits -s[3.-5.]" << std::endl;
+  std::cout << "    selects sigma range around pi0 peak" << std::endl;
+  std::cout << "    number MUST be a double between 3. and 5." << std::endl;
   std::cout << std::endl;
 }
 
@@ -352,8 +336,14 @@ void assignOptions() {
   }
   kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
+  // for nsigma
+  sigmaName = Form("%.01fsigma", pi0Nsigma);
+  // for pi0!
+  pi0Range[0] = pi0obtMean - pi0Nsigma*pi0obtSigma;
+  pi0Range[1] = pi0obtMean + pi0Nsigma*pi0obtSigma;
+  cutPi0 = Form("%.03f < pi0M && pi0M < %.03f", pi0Range[0], pi0Range[1]); // overwrite it!
   // names
-  outDir = outDir + "/" + kinvarName;
-  plotFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
-  textFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
+  outDir = outDir + "/" + sigmaName;
+  plotFile = outDir + "/pi0fit-" + targetOption + kinvarSufix + ".png";
+  textFile = outDir + "/pi0fit-" + targetOption + kinvarSufix + ".dat";
 }
