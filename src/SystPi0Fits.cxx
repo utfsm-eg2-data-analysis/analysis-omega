@@ -336,14 +336,15 @@ void assignOptions() {
   }
   kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
+  outDir = outDir + "/" + kinvarName;
   // for nsigma
   sigmaName = Form("%.01fsigma", pi0Nsigma);
+  outDir = outDir + "/" + sigmaName;
   // for pi0!
   pi0Range[0] = pi0obtMean - pi0Nsigma*pi0obtSigma;
   pi0Range[1] = pi0obtMean + pi0Nsigma*pi0obtSigma;
   cutPi0 = Form("%.03f < pi0M && pi0M < %.03f", pi0Range[0], pi0Range[1]); // overwrite it!
   // names
-  outDir = outDir + "/" + sigmaName;
   plotFile = outDir + "/pi0fit-" + targetOption + kinvarSufix + ".png";
   textFile = outDir + "/pi0fit-" + targetOption + kinvarSufix + ".dat";
 }

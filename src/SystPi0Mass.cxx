@@ -196,7 +196,6 @@ void printOptions() {
   if (plotFlag) std::cout << "  --targetOption = " << targetOption << std::endl;
   std::cout << "  fitFlag      = " << fitFlag << std::endl;
   if (fitFlag) std::cout << "  --targetOption = " << targetOption << std::endl;
-  }
   std::cout << std::endl;
 }
 

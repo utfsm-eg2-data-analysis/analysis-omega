@@ -46,7 +46,7 @@ TString titleMR;
 TString plotFile;
 TString textFile;
 
-inline void parseOpt(int argc, char* argv[]);
+inline void parseCommandLine(int argc, char* argv[]);
 void printUsage();
 void assignOptions();
 
@@ -56,7 +56,7 @@ void printResults(TH1F *CarbonMR2, TH1F *IronMR2, TH1F *LeadMR2);
 
 int main(int argc, char **argv) {
 
-  parseOpt(argc, argv);
+  parseCommandLine(argc, argv);
   assignOptions();
 
   /*** Read fit results ***/
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-inline void parseOpt(int argc, char* argv[]) {
+inline void parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
     std::cerr << "Empty command line. Execute ./MakeMR-sim -h to print usage." << std::endl;
