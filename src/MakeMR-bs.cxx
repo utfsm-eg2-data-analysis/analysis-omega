@@ -5,41 +5,47 @@
 /*                                    */
 /**************************************/
 
-// From the MakeRooFits results, we obtain different omega and bkg yields
-// This program obtains number of omega particles by different methods:
-// Only method: obtain the parameter omegaYields directly
-// Then, with the ratio of the number of omega particles, obtains MR
+// Background Subtracted MR
+// --method 1: calculate MR directly from omega number parameter of MakeRooFits
+// --method 2: calculate NBS MR but subtracts the bkg number parameter of MakeRooFits
 
 #include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString outDir  = proDir + "/out/MakeMR/bs";
-TString textDir = proDir + "/out/MakeRooFits";
+TString outDir = proDir + "/out/MakeMR/bs";
+TString fitDir = proDir + "/out/MakeRooFits";
 
-TString targetName[4] = {"D", "C", "Fe", "Pb"};
+// options
+Int_t flagZ   = 0;
+Int_t flagQ2  = 0;
+Int_t flagNu  = 0;
+Int_t flagPt2 = 0;
+Int_t Nmethod = 1; // default
 
 // [D, C, Fe, Pb][Z bin: 3-7]
-Int_t particleNumber[4][5];
-Int_t particleNumberError[4][5];
+Double_t omegaMean[4][5];
+Double_t omegaSigma[4][5];
 
-/*** Parameters ***/
+Double_t omegaNumber_fit[4][5];
+Double_t omegaError_fit[4][5];
 
-TString functionOption;
-TString functionName = "";
-TString functionSufix = "";
-TString functionTitle = "";
+Double_t omegaNumber_int[4][5];
+Double_t omegaError_int[4][5];
 
-Int_t flagZ = 0;
-Int_t flagQ2 = 0;
-Int_t flagNu = 0;
-Int_t flagPt2 = 0;
+Double_t bkgNumber[4][5];
+Double_t bkgError[4][5];
 
-TString kinvarName;
-TString kinvarSufix;
-TString kinvarValue[6];
-Int_t   kinvarConstant = 1;
-Int_t   kinvarNbins = 5; // default for all
+Double_t massEdges[4][5][2];
+
+// on kinvar
+TString  kinvarName;
+TString  kinvarSufix;
+Int_t    kinvarConstant = 1; // default for all, except Z
+Int_t    kinvarNbins = 5; // default for all
+Double_t kinvarEdges[6];
+
+TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
 TString textFile;
 TString plotFile;
@@ -50,129 +56,314 @@ inline void parseCommandLine(int argc, char* argv[]);
 void assignOptions();
 void printUsage();
 
-void readTextFiles();
-void printResults(TH1F *CarbonMR2, TH1F *IronMR2, TH1F *LeadMR2);
+void integrateData(TString targetOption);
 
 int main(int argc, char **argv) {
 
   parseCommandLine(argc, argv);
   assignOptions();
   
-  readTextFiles();
-  
-  TCanvas *c = new TCanvas("c", "c", 1000, 1000);
-  c->SetGridx(1);
-  c->SetGridy(1);
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-  gStyle->SetErrorX(0.5);
+  /*** Read fit results ***/
 
-  // creating and filling histograms
-  TH1F *numberDeutHist = new TH1F("numberDeutHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberCarbonHist = new TH1F("numberCarbonHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberIronHist = new TH1F("numberIronHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberLeadHist = new TH1F("numberLeadHist", "", kinvarNbins, 0.5, 1.);
+  for (Int_t targIndex = 0; targIndex < 4; targIndex++) {
+    for (Int_t index = 0; index < kinvarNbins; index++) {
+      
+      TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
+      
+      TString fitFile = fitDir + "/roofit-" + targetName[targIndex] + kinvarAuxSufix + ".dat";
+      
+      std::cout << "Reading " << fitFile << " ..." << std::endl;
+      std::ifstream inFile(fitFile);
+      
+      TString auxString1, auxString2;
+      Int_t l = 0; // line counter
+      while (inFile >> auxString1 >> auxString2) {
+	l++;
+	if (l == 1) { // third line
+	  omegaMean[targIndex][index] = auxString1.Atof();
+	  std::cout << "  Omega Mean for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaMean[targIndex][index] << std::endl;
+	} else if (l == 2) {
+	  omegaSigma[targIndex][index] = auxString1.Atof();
+	std::cout << "  Omega Sigma for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaSigma[targIndex][index] << std::endl;
+	} else if (l == 3) {
+	  omegaNumber_fit[targIndex][index] = auxString1.Atof();
+	  omegaError_fit[targIndex][index] = auxString2.Atof();
+	  std::cout << "  Omega Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaNumber_fit[targIndex][index] << " +/- " << omegaError_fit[targIndex][index] << std::endl;
+	} else if (l == 5) {
+	  bkgNumber[targIndex][index] = auxString1.Atof();
+	  bkgError[targIndex][index] = auxString2.Atof();
+	  std::cout << "  Bkg Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << bkgNumber[targIndex][index] << " +/- " << bkgError[targIndex][index] << std::endl;
+	}
+      }
+      inFile.close();
 
-  numberDeutHist->Sumw2();
-  numberCarbonHist->Sumw2(); 
-  numberIronHist->Sumw2();
-  numberLeadHist->Sumw2();
-  
-  for (Int_t c = 0; c < kinvarNbins; c++) {
-    // D
-    numberDeutHist->SetBinContent(c + 1, particleNumber[0][c]);
-    numberDeutHist->SetBinError(c + 1, particleNumberError[0][c]);
-    // C_C
-    numberCarbonHist->SetBinContent(c + 1, particleNumber[1][c]);
-    numberCarbonHist->SetBinError(c + 1, particleNumberError[1][c]);
-    // Fe_Fe
-    numberIronHist->SetBinContent(c + 1, particleNumber[2][c]);
-    numberIronHist->SetBinError(c + 1, particleNumberError[2][c]);
-    // Pb_Pb
-    numberLeadHist->SetBinContent(c + 1, particleNumber[3][c]);
-    numberLeadHist->SetBinError(c + 1, particleNumberError[3][c]);
+      // assign mass edges!
+      massEdges[targIndex][index][0] = omegaMean[targIndex][index] - 5*omegaSigma[targIndex][index];
+      massEdges[targIndex][index][1] = omegaMean[targIndex][index] + 5*omegaSigma[targIndex][index];
+      std::cout << "  Mass range for " << targetName[targIndex] << kinvarAuxSufix << ": [" << massEdges[targIndex][index][0] << ", " << massEdges[targIndex][index][1] << "]" << std::endl;
+      std::cout << std::endl;
+    }
   }
+
+  /*** Start Method 1 ***/
   
-  TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
-  CarbonMR->SetTitle("#omega MR(" + kinvarName + ") w/ Subtracted Bkg" + functionTitle);
-  CarbonMR->GetXaxis()->SetTitle(kinvarName);
-  CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
-  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,kinvarValue[0]);
-  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,kinvarValue[1]);
-  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1,kinvarValue[2]);
-  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,kinvarValue[3]);
-  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1,kinvarValue[4]);
-  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,kinvarValue[5]);
-  CarbonMR->GetYaxis()->SetTitle("MR");
+  if (Nmethod == 1) {
 
-  CarbonMR->SetMarkerColor(kRed);
-  CarbonMR->SetLineColor(kRed);
-  CarbonMR->SetLineWidth(3);
-  CarbonMR->SetMarkerStyle(21);
-  CarbonMR->Divide(numberCarbonHist, numberDeutHist);
-  CarbonMR->Scale(4.6194); // electron normalization
+    // creating and filling histograms
+    TH1F *DeutOmegaN_fit = new TH1F("DeutOmegaN_fit", "", kinvarNbins, 0.5, 1.);
+    TH1F *CarbonOmegaN_fit = new TH1F("CarbonOmegaN_fit", "", kinvarNbins, 0.5, 1.);
+    TH1F *IronOmegaN_fit = new TH1F("IronOmegaN_fit", "", kinvarNbins, 0.5, 1.);
+    TH1F *LeadOmegaN_fit = new TH1F("LeadOmegaN_fit", "", kinvarNbins, 0.5, 1.);
+    
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutOmegaN_fit->SetBinContent(cc + 1, omegaNumber_fit[0][cc]);
+      DeutOmegaN_fit->SetBinError(cc + 1, omegaError_fit[0][cc]);
+      
+      CarbonOmegaN_fit->SetBinContent(cc + 1, omegaNumber_fit[1][cc]);
+      CarbonOmegaN_fit->SetBinError(cc + 1, omegaError_fit[1][cc]);
+      
+      IronOmegaN_fit->SetBinContent(cc + 1, omegaNumber_fit[2][cc]);
+      IronOmegaN_fit->SetBinError(cc + 1, omegaError_fit[2][cc]);
+      
+      LeadOmegaN_fit->SetBinContent(cc + 1, omegaNumber_fit[3][cc]);
+      LeadOmegaN_fit->SetBinError(cc + 1, omegaError_fit[3][cc]);
+    }
 
-  TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
-  IronMR->SetMarkerColor(kBlue);
-  IronMR->SetLineColor(kBlue);
-  IronMR->SetLineWidth(3);
-  IronMR->SetMarkerStyle(21);
-  IronMR->Divide(numberIronHist, numberDeutHist);
-  IronMR->Scale(2.3966); // electron normalization
-
-  TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
-  LeadMR->SetMarkerColor(kBlack);
-  LeadMR->SetLineColor(kBlack);
-  LeadMR->SetLineWidth(3);
-  LeadMR->SetMarkerStyle(21);
-  LeadMR->Divide(numberLeadHist, numberDeutHist);
-  LeadMR->Scale(6.1780); // electron normalization
-
-  // draw already
-  CarbonMR->SetAxisRange(0.0, 1.2, "Y"); // range
-  CarbonMR->Draw("E1");  
-  IronMR->Draw("E1 SAME");
-  LeadMR->Draw("E1 SAME");
+    // drawing
+    TCanvas *c = new TCanvas("c", "c", 1000, 1000);
+    c->SetGridx(1);
+    c->SetGridy(1);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptStat(0);
   
-  // legend
-  TLegend *legend = new TLegend(0.9, 0.75, 1., 0.9);
-  legend->AddEntry(CarbonMR, "Carbon", "pl");
-  legend->AddEntry(IronMR, "Iron", "pl");
-  legend->AddEntry(LeadMR, "Lead", "pl");
-  legend->Draw();
+    TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
+    CarbonMR->Divide(CarbonOmegaN_fit, DeutOmegaN_fit);
+    CarbonMR->Scale(4.6194); // electron normalization
 
-  c->Print(plotFile); // output file
+    CarbonMR->SetTitle("#omega MR(" + kinvarName + ") - Subtracted Bkg");
+    CarbonMR->GetXaxis()->SetTitle(kinvarName);
+    CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
+    CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
+    CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
+    CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
+    CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
+    CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
+    CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
+    CarbonMR->GetYaxis()->SetTitle("MR");
+    CarbonMR->SetAxisRange(0.0, 1.2, "Y"); // range
+  
+    CarbonMR->SetMarkerColor(kRed);
+    CarbonMR->SetLineColor(kRed);
+    CarbonMR->SetLineWidth(3);
+    CarbonMR->SetMarkerStyle(21);
 
-  printResults(CarbonMR, IronMR, LeadMR);
+    CarbonMR->Draw("E1");
 
-  /*** Saving fit content ***/
+    TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
+    IronMR->Divide(IronOmegaN_fit, DeutOmegaN_fit);
+    IronMR->Scale(2.3966); // electron normalization
   
-  std::cout << "Writing " << textFile << " ..." << std::endl;
-  std::ofstream outFinalFile(textFile, std::ios::out); // output file
-  // first line
-  outFinalFile << CarbonMR->GetBinContent(1) << "\t" << CarbonMR->GetBinError(1) << "\t"
-	       << IronMR->GetBinContent(1) << "\t" << IronMR->GetBinError(1) << "\t"
-	       << LeadMR->GetBinContent(1) << "\t" << LeadMR->GetBinError(1)  << std::endl;
-  // second line
-  outFinalFile << CarbonMR->GetBinContent(2) << "\t" << CarbonMR->GetBinError(2) << "\t"
-	       << IronMR->GetBinContent(2) << "\t" << IronMR->GetBinError(2) << "\t"
-	       << LeadMR->GetBinContent(2) << "\t" << LeadMR->GetBinError(2) << std::endl;
-  // third line
-  outFinalFile << CarbonMR->GetBinContent(3) << "\t" << CarbonMR->GetBinError(3) << "\t"
-	       << IronMR->GetBinContent(3) << "\t" << IronMR->GetBinError(3) << "\t"
-	       << LeadMR->GetBinContent(3) << "\t" << LeadMR->GetBinError(3) << std::endl;
-  // fourth line
-  outFinalFile << CarbonMR->GetBinContent(4) << "\t" << CarbonMR->GetBinError(4) << "\t"
-	       << IronMR->GetBinContent(4) << "\t" << IronMR->GetBinError(4) << "\t"
-	       << LeadMR->GetBinContent(4) << "\t" << LeadMR->GetBinError(4) << std::endl;
-  // fifth line
-  outFinalFile << CarbonMR->GetBinContent(5) << "\t" << CarbonMR->GetBinError(5) << "\t"
-	       << IronMR->GetBinContent(5) << "\t" << IronMR->GetBinError(5) << "\t"
-	       << LeadMR->GetBinContent(5) << "\t" << LeadMR->GetBinError(5) << std::endl;
+    IronMR->SetMarkerColor(kBlue);
+    IronMR->SetLineColor(kBlue);
+    IronMR->SetLineWidth(3);
+    IronMR->SetMarkerStyle(21);
+
+    IronMR->Draw("E1 SAME");
   
-  outFinalFile.close();
-  std::cout << "File " << textFile << " has been created!" << std::endl;
+    TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
+    LeadMR->Divide(LeadOmegaN_fit, DeutOmegaN_fit);
+    LeadMR->Scale(6.1780); // electron normalization
+
+    LeadMR->SetMarkerColor(kBlack);
+    LeadMR->SetLineColor(kBlack);
+    LeadMR->SetLineWidth(3);
+    LeadMR->SetMarkerStyle(21);
   
+    LeadMR->Draw("E1 SAME");
+  
+    // legend
+    TLegend *legend = new TLegend(0.9, 0.75, 1., 0.9);
+    legend->AddEntry(CarbonMR, "Carbon", "pl");
+    legend->AddEntry(IronMR, "Iron", "pl");
+    legend->AddEntry(LeadMR, "Lead", "pl");
+    legend->Draw();
+
+    c->Print(plotFile); // output file
+
+    // saving content
+    std::ofstream outFinalFile(textFile, std::ios::out); // output file
+    
+    // first line
+    outFinalFile << CarbonMR->GetBinContent(1) << "\t" << CarbonMR->GetBinError(1) << "\t"
+		 << IronMR->GetBinContent(1) << "\t" << IronMR->GetBinError(1) << "\t"
+		 << LeadMR->GetBinContent(1) << "\t" << LeadMR->GetBinError(1)  << std::endl;
+    // second line
+    outFinalFile << CarbonMR->GetBinContent(2) << "\t" << CarbonMR->GetBinError(2) << "\t"
+		 << IronMR->GetBinContent(2) << "\t" << IronMR->GetBinError(2) << "\t"
+		 << LeadMR->GetBinContent(2) << "\t" << LeadMR->GetBinError(2) << std::endl;
+    // third line
+    outFinalFile << CarbonMR->GetBinContent(3) << "\t" << CarbonMR->GetBinError(3) << "\t"
+		 << IronMR->GetBinContent(3) << "\t" << IronMR->GetBinError(3) << "\t"
+		 << LeadMR->GetBinContent(3) << "\t" << LeadMR->GetBinError(3) << std::endl;
+    // fourth line
+    outFinalFile << CarbonMR->GetBinContent(4) << "\t" << CarbonMR->GetBinError(4) << "\t"
+		 << IronMR->GetBinContent(4) << "\t" << IronMR->GetBinError(4) << "\t"
+		 << LeadMR->GetBinContent(4) << "\t" << LeadMR->GetBinError(4) << std::endl;
+    // fifth line
+    outFinalFile << CarbonMR->GetBinContent(5) << "\t" << CarbonMR->GetBinError(5) << "\t"
+		 << IronMR->GetBinContent(5) << "\t" << IronMR->GetBinError(5) << "\t"
+		 << LeadMR->GetBinContent(5) << "\t" << LeadMR->GetBinError(5) << std::endl;
+  
+    outFinalFile.close();
+    std::cout << "File " << textFile << " has been created!" << std::endl;    
+    
+  } else if (Nmethod == 2) {
+
+    // integrate data, duh
+    integrateData("D");
+    integrateData("C");
+    integrateData("Fe");
+    integrateData("Pb");
+
+    // creating and filling histograms
+    TH1F *DeutOmegaN_int = new TH1F("DeutOmegaN_int", "", kinvarNbins, 0.5, 1.);
+    TH1F *CarbonOmegaN_int = new TH1F("CarbonOmegaN_int", "", kinvarNbins, 0.5, 1.);
+    TH1F *IronOmegaN_int = new TH1F("IronOmegaN_int", "", kinvarNbins, 0.5, 1.);
+    TH1F *LeadOmegaN_int = new TH1F("LeadOmegaN_int", "", kinvarNbins, 0.5, 1.);
+    
+    TH1F *DeutBkgN = new TH1F("DeutBkgN", "", kinvarNbins, 0.5, 1.);
+    TH1F *CarbonBkgN = new TH1F("CarbonBkgN", "", kinvarNbins, 0.5, 1.);
+    TH1F *IronBkgN = new TH1F("IronBkgN", "", kinvarNbins, 0.5, 1.);
+    TH1F *LeadBkgN = new TH1F("LeadBkgN", "", kinvarNbins, 0.5, 1.);
+    
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+
+      // omega
+      DeutOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[0][cc]);
+      DeutOmegaN_int->SetBinError(cc + 1, omegaError_int[0][cc]);
+      CarbonOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[1][cc]);
+      CarbonOmegaN_int->SetBinError(cc + 1, omegaError_int[1][cc]);
+      IronOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[2][cc]);
+      IronOmegaN_int->SetBinError(cc + 1, omegaError_int[2][cc]);
+      LeadOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[3][cc]);
+      LeadOmegaN_int->SetBinError(cc + 1, omegaError_int[3][cc]);
+
+      // bkg
+      DeutBkgN->SetBinContent(cc + 1, bkgNumber[0][cc]);
+      DeutBkgN->SetBinError(cc + 1, bkgError[0][cc]);
+      CarbonBkgN->SetBinContent(cc + 1, bkgNumber[1][cc]);
+      CarbonBkgN->SetBinError(cc + 1, bkgError[1][cc]);
+      IronBkgN->SetBinContent(cc + 1, bkgNumber[2][cc]);
+      IronBkgN->SetBinError(cc + 1, bkgError[2][cc]);
+      LeadBkgN->SetBinContent(cc + 1, bkgNumber[3][cc]);
+      LeadBkgN->SetBinError(cc + 1, bkgError[3][cc]);
+    }
+
+    // subtract!
+    TH1F *DeutOmegaN_corr = new TH1F("DeutOmegaN_corr", "", kinvarNbins, 0.5, 1.);
+    DeutOmegaN_corr->Add(DeutOmegaN_int, DeutBkgN, 1, -1);
+    for (Int_t p = 1; p <= kinvarNbins; p++) std::cout << DeutOmegaN_corr->GetBinContent(p) << " +/- " << DeutOmegaN_corr->GetBinError(p) << std::endl; // debug
+    
+    TH1F *CarbonOmegaN_corr = new TH1F("CarbonOmegaN_corr", "", kinvarNbins, 0.5, 1.);
+    CarbonOmegaN_corr->Add(CarbonOmegaN_int, CarbonBkgN, 1, -1);
+    for (Int_t p = 1; p <= kinvarNbins; p++) std::cout << CarbonOmegaN_corr->GetBinContent(p) << " +/- " << CarbonOmegaN_corr->GetBinError(p) << std::endl; // debug
+    
+    TH1F *IronOmegaN_corr = new TH1F("IronOmegaN_corr", "", kinvarNbins, 0.5, 1.);
+    IronOmegaN_corr->Add(IronOmegaN_int, IronBkgN, 1, -1);
+
+    TH1F *LeadOmegaN_corr = new TH1F("LeadOmegaN_corr", "", kinvarNbins, 0.5, 1.);
+    LeadOmegaN_corr->Add(LeadOmegaN_int, LeadBkgN, 1, -1);
+    
+    // drawing
+    TCanvas *c2 = new TCanvas("c2", "c2", 1000, 1000);
+    c2->SetGridx(1);
+    c2->SetGridy(1);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptStat(0);
+  
+    TH1F *CarbonMR_m2 = new TH1F("CarbonMR_m2", "", kinvarNbins, 0.5, 1.);
+    CarbonMR_m2->Divide(CarbonOmegaN_corr, DeutOmegaN_corr);
+    CarbonMR_m2->Scale(4.6194); // electron normalization
+
+    CarbonMR_m2->SetTitle("#omega MR(" + kinvarName + ") - Subtracted Bkg (Method 2)");
+    CarbonMR_m2->GetXaxis()->SetTitle(kinvarName);
+    CarbonMR_m2->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
+    CarbonMR_m2->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
+    CarbonMR_m2->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
+    CarbonMR_m2->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
+    CarbonMR_m2->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
+    CarbonMR_m2->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
+    CarbonMR_m2->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
+    CarbonMR_m2->GetYaxis()->SetTitle("MR");
+    CarbonMR_m2->SetAxisRange(0., 1.2, "Y"); // range
+  
+    CarbonMR_m2->SetMarkerColor(kRed);
+    CarbonMR_m2->SetLineColor(kRed);
+    CarbonMR_m2->SetLineWidth(3);
+    CarbonMR_m2->SetMarkerStyle(21);
+
+    CarbonMR_m2->Draw("E1");
+
+    TH1F *IronMR_m2 = new TH1F("IronMR_m2", "", kinvarNbins, 0.5, 1.);
+    IronMR_m2->Divide(IronOmegaN_corr, DeutOmegaN_corr);
+    IronMR_m2->Scale(2.3966); // electron normalization
+  
+    IronMR_m2->SetMarkerColor(kBlue);
+    IronMR_m2->SetLineColor(kBlue);
+    IronMR_m2->SetLineWidth(3);
+    IronMR_m2->SetMarkerStyle(21);
+
+    IronMR_m2->Draw("E1 SAME");
+  
+    TH1F *LeadMR_m2 = new TH1F("LeadMR_m2", "", kinvarNbins, 0.5, 1.);
+    LeadMR_m2->Divide(LeadOmegaN_corr, DeutOmegaN_corr);
+    LeadMR_m2->Scale(6.1780); // electron normalization
+
+    LeadMR_m2->SetMarkerColor(kBlack);
+    LeadMR_m2->SetLineColor(kBlack);
+    LeadMR_m2->SetLineWidth(3);
+    LeadMR_m2->SetMarkerStyle(21);
+  
+    LeadMR_m2->Draw("E1 SAME");
+  
+    // legend
+    TLegend *legend2 = new TLegend(0.9, 0.75, 1., 0.9);
+    legend2->AddEntry(CarbonMR_m2, "Carbon", "pl");
+    legend2->AddEntry(IronMR_m2, "Iron", "pl");
+    legend2->AddEntry(LeadMR_m2, "Lead", "pl");
+    legend2->Draw();
+
+    c2->Print(plotFile); // output file
+
+    // saving content
+    std::ofstream outFinalFile2(textFile, std::ios::out); // output file
+    
+    // first line
+    outFinalFile2 << CarbonMR_m2->GetBinContent(1) << "\t" << CarbonMR_m2->GetBinError(1) << "\t"
+		  << IronMR_m2->GetBinContent(1) << "\t" << IronMR_m2->GetBinError(1) << "\t"
+		  << LeadMR_m2->GetBinContent(1) << "\t" << LeadMR_m2->GetBinError(1)  << std::endl;
+    // second line
+    outFinalFile2 << CarbonMR_m2->GetBinContent(2) << "\t" << CarbonMR_m2->GetBinError(2) << "\t"
+		  << IronMR_m2->GetBinContent(2) << "\t" << IronMR_m2->GetBinError(2) << "\t"
+		  << LeadMR_m2->GetBinContent(2) << "\t" << LeadMR_m2->GetBinError(2) << std::endl;
+    // third line
+    outFinalFile2 << CarbonMR_m2->GetBinContent(3) << "\t" << CarbonMR_m2->GetBinError(3) << "\t"
+		  << IronMR_m2->GetBinContent(3) << "\t" << IronMR_m2->GetBinError(3) << "\t"
+		  << LeadMR_m2->GetBinContent(3) << "\t" << LeadMR_m2->GetBinError(3) << std::endl;
+    // fourth line
+    outFinalFile2 << CarbonMR_m2->GetBinContent(4) << "\t" << CarbonMR_m2->GetBinError(4) << "\t"
+		  << IronMR_m2->GetBinContent(4) << "\t" << IronMR_m2->GetBinError(4) << "\t"
+		  << LeadMR_m2->GetBinContent(4) << "\t" << LeadMR_m2->GetBinError(4) << std::endl;
+    // fifth line
+    outFinalFile2 << CarbonMR_m2->GetBinContent(5) << "\t" << CarbonMR_m2->GetBinError(5) << "\t"
+		  << IronMR_m2->GetBinContent(5) << "\t" << IronMR_m2->GetBinError(5) << "\t"
+		  << LeadMR_m2->GetBinContent(5) << "\t" << LeadMR_m2->GetBinError(5) << std::endl;
+  
+    outFinalFile2.close();
+    std::cout << "File " << textFile << " has been created!" << std::endl;    
+  }  
   return 0;
 }
 
@@ -182,14 +373,14 @@ Int_t c;
     std::cerr << "Empty command line. Execute ./MakeMR-bs -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hF:zqnp")) != -1)
+  while ((c = getopt(argc, argv, "hzqnpm:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 'z': flagZ = 1; break;
-    case 'F': functionOption = optarg; break;
     case 'q': flagQ2 = 1; break;
     case 'n': flagNu = 1; break;
     case 'p': flagPt2 = 1; break;
+    case 'm': Nmethod = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeMR-bs -h to print usage." << std::endl;
       exit(0);
@@ -209,98 +400,106 @@ void printUsage() {
   std::cout << "    n : Nu" << std::endl;
   std::cout << "    p : Pt2" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeMR-bs -F[g,b,l]" << std::endl;
-  std::cout << "    (mandatory when -z)" << std::endl;
-  std::cout << "    g  : gaussian" << std::endl;
-  std::cout << "    bw : breit-wigner" << std::endl;
-  std::cout << "    ln : lognormal" << std::endl;
+  std::cout << "./MakeMR-bs -m[int]" << std::endl;
+  std::cout << "    1 : calculate MR directly from the fit parameter" << std::endl;
+  std::cout << "    2 : calculate MR subtracting bkg number to NBS MR" << std::endl;
 }
 
 void assignOptions() {
-  // kinvarervable option
+  // kinvar option
   if (flagZ) {
     kinvarSufix = "-z";
     kinvarName = "Z";
     kinvarConstant = 3;
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesZ[i]);
-    // function option
-    if (functionOption == "g") {
-      functionName = "gaus";
-      functionSufix = "";
-      functionTitle = " w/ Gaussian";
-    } else if (functionOption == "bw") {
-      functionName = "bw";
-      functionSufix = "bw-";
-      functionTitle = " w/ Breit-Wigner";
-    } else if (functionOption == "ln") {
-      functionName = "ln";
-      functionSufix = "ln-";
-      functionTitle = " w/ Lognormal";
-    }
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
   } else if (flagQ2) {
     kinvarSufix = "-q";
     kinvarName = "Q2";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesQ2[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
   } else if (flagNu) {
     kinvarSufix = "-n";
     kinvarName = "Nu";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesNu[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
   } else if (flagPt2) {
     kinvarSufix = "-p";
     kinvarName = "Pt2";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesPt2[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
   // input files
-  textDir = textDir + "/" + kinvarName;
+  fitDir = fitDir + "/" + kinvarName;
   // output files
-  plotFile = outDir + "/bs-MR" + kinvarSufix + ".png";
-  textFile = outDir + "/bs-MR" + kinvarSufix + ".dat";
-}
-
-void readTextFiles() {
-  
-  TString inputFile;
-  TString auxKinvarSufix;
-  
-  for (Int_t tt = 0; tt < 4; tt++) { // target index
-    for (Int_t zz = 0; zz < kinvarNbins; zz++) {
-      
-      auxKinvarSufix = kinvarSufix + Form("%d", zz + kinvarConstant); // crucial
-      
-      inputFile = textDir + "/roofit-" + targetName[tt] + auxKinvarSufix + ".dat";
-      
-      std::cout << "Reading " << inputFile << "..." << std::endl;
-      std::ifstream inFile(inputFile);
-      TString auxString1, auxString2;
-      Int_t l = 0; // line counter
-      while (inFile >> auxString1 >> auxString2) {
-	l++;
-	if (l == 3) { // third line
-	  particleNumber[tt][zz] = auxString1.Atof();
-	  particleNumberError[tt][zz] = auxString2.Atof();
-	  std::cout << particleNumber[tt][zz] << "\t" << particleNumberError[tt][zz] << std::endl;
-	}
-      }
-      inFile.close();
-    }
+  if (Nmethod == 1) {
+    plotFile = outDir + "/bs-MR-" + kinvarName + ".png";
+    textFile = outDir + "/bs-MR-" + kinvarName + ".dat";
+  } else if (Nmethod == 2) {
+    plotFile = outDir + "/bs2-MR-" + kinvarName + ".png";
+    textFile = outDir + "/bs2-MR-" + kinvarName + ".dat";
   }
 }
 
-void printResults(TH1F *CarbonMR2, TH1F *IronMR2, TH1F *LeadMR2) {
-  std::cout << std::endl;
-  std::cout << "Carbon" << std::endl;
-  for (Int_t zp = 0; zp < kinvarNbins; zp++) {
-    std::cout << kinvarSufix << (zp+kinvarConstant) << ": "  << CarbonMR2->GetBinContent(zp + 1) << " +/- "  << CarbonMR2->GetBinError(zp + 1) << std::endl;
-  }
+void integrateData(TString targetOption) {
+
+  TString inputFile1, inputFile2, inputFile3;
+  Int_t   targIndex;
   
-  std::cout << "Iron" << std::endl;
-  for (Int_t zpp = 0; zpp < kinvarNbins; zpp++) {
-    std::cout << kinvarSufix << (zpp+kinvarConstant) << ": "  << IronMR2->GetBinContent(zpp + 1) << " +/- "  << IronMR2->GetBinError(zpp + 1) << std::endl;
+  TCut cutTargType;
+  TCut cutAll = cutPi0 && cutDIS && cutPipPim;
+  
+  // for targets, unified D
+  if (targetOption == "D") {
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
+    cutTargType = "TargType == 1";
+    targIndex = 0;
+    std::cout << "Reading " << inputFile1 << std::endl;
+    std::cout << "        " << inputFile2 << std::endl;
+    std::cout << "        " << inputFile3 << " ..." << std::endl;
+  } else if (targetOption == "C") {
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile2 = "";
+    inputFile3 = "";
+    cutTargType = "TargType == 2";
+    targIndex = 1;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
+  } else if (targetOption == "Fe") {
+    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile2 = "";
+    inputFile3 = "";
+    cutTargType = "TargType == 2";
+    targIndex = 2;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
+  } else if (targetOption == "Pb") {
+    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
+    inputFile2 = "";
+    inputFile3 = "";
+    cutTargType = "TargType == 2";
+    targIndex = 3;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
   }
 
-  std::cout << "Lead" << std::endl;
-  for (Int_t zppp = 0; zppp < kinvarNbins; zppp++) {
-    std::cout << kinvarSufix << (zppp+kinvarConstant) << ": "  << LeadMR2->GetBinContent(zppp + 1) << " +/- "  << LeadMR2->GetBinError(zppp + 1) << std::endl;
+  TChain *treeExtracted = new TChain();
+  treeExtracted->Add(inputFile1 + "/mix");
+  treeExtracted->Add(inputFile2 + "/mix");
+  treeExtracted->Add(inputFile3 + "/mix");
+  
+  for (Int_t index = 0; index < kinvarNbins; index++) {
+
+    TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
+    
+    TCut kinvarCut;
+    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarEdges[index+1]);
+    TCut cutMass = Form("%f < wD && wD < %f", massEdges[targIndex][index][0], massEdges[targIndex][index][1]);
+    
+    TH1F *dataHist;
+    treeExtracted->Draw("wD>>data(60, 0.2, 0.5)", cutAll && cutTargType && kinvarCut && cutMass, "goff");
+    dataHist = (TH1F *)gROOT->FindObject("data");
+    
+    // save numbers!
+    omegaNumber_int[targIndex][index] = dataHist->IntegralAndError(1, 60, omegaError_int[targIndex][index], "");
+    std::cout << "  Omega Number for " << targetOption << kinvarAuxSufix << ": " << omegaNumber_int[targIndex][index] << " +/- " << omegaError_int[targIndex][index] << std::endl;
+    
+    delete dataHist;
   }
   std::cout << std::endl;
 }

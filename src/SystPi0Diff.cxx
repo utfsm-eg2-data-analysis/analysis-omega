@@ -90,8 +90,8 @@ int main(int argc, char **argv) {
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
 
-  maxDiffHist->SetTitle("Progression of max difference in " + histTitle);
-  maxDiffHist->GetXaxis()->SetTitle("#sigma");
+  maxDiffHist->SetTitle("Max. difference in " + histTitle + " wrt 3 #sigma cut around #pi^{0} mass");
+  maxDiffHist->GetXaxis()->SetTitle("#sigma cut around #pi^{0} mass");
   maxDiffHist->GetXaxis()->CenterTitle();
   maxDiffHist->GetXaxis()->SetNdivisions(208, kTRUE);
   maxDiffHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,"3");
@@ -147,22 +147,24 @@ void assignOptions() {
   // first case
   if (bsFlag) {
     inputDir = inputDir + "/Z";
+    outDir = outDir + "/Z";
     inputFile_0 = inputDir + "/3.0sigma/bs-MR-Z.dat";
     inputFile_1 = inputDir + "/3.5sigma/bs-MR-Z.dat";
     inputFile_2 = inputDir + "/4.0sigma/bs-MR-Z.dat";
     inputFile_3 = inputDir + "/4.5sigma/bs-MR-Z.dat";
     inputFile_4 = inputDir + "/5.0sigma/bs-MR-Z.dat";
-    histTitle = "BS #omega MR(Z)";
-    plotFile = inputDir + "/bs-diff.png";
+    histTitle = "BS MR(Z)";
+    plotFile = outDir + "/bs-diff.png";
   } else {
     inputDir = inputDir + "/Z";
+    outDir = outDir + "/Z";
     inputSufix = Form("-%dw", omegaN);
     inputFile_0 = inputDir + "/3.0sigma/nbs-MR-Z" + inputSufix + ".dat";
     inputFile_1 = inputDir + "/3.5sigma/nbs-MR-Z" + inputSufix + ".dat";
     inputFile_2 = inputDir + "/4.0sigma/nbs-MR-Z" + inputSufix + ".dat";
     inputFile_3 = inputDir + "/4.5sigma/nbs-MR-Z" + inputSufix + ".dat";
     inputFile_4 = inputDir + "/5.0sigma/nbs-MR-Z" + inputSufix + ".dat";
-    plotFile = inputDir + "/nbs" + inputSufix + "-diff.png";
+    plotFile = outDir + "/nbs" + inputSufix + "-diff.png";
     histTitle = Form("%d", omegaN);
     histTitle = "NBS #omega(" + histTitle + "#sigma) MR(Z)";
   }
@@ -208,6 +210,13 @@ void readTextFiles(TString inputFile_a, TString inputFile_b) {
 
 void fillHistograms(Int_t index) {
 
+  // draw!
+  TCanvas *cf = new TCanvas("cf", "cf", 1000, 1000);
+  cf->SetGridx(0);
+  cf->SetGridy(1);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  
   // creating and filling histograms
   TH1F *CarbonMR_a = new TH1F("CarbonMR_a", "", 5, 0.5, 1.);
   TH1F *IronMR_a = new TH1F("IronMR_a", "", 5, 0.5, 1.);
@@ -240,20 +249,59 @@ void fillHistograms(Int_t index) {
   CarbonMRdiff->Add(CarbonMR_a, CarbonMR_b, 1, -1);
   CarbonMRdiff->Divide(CarbonMR_a);
   CarbonMRdiff->Scale(100);
+
+  CarbonMRdiff->SetTitle("Diff. in (%)");
+  CarbonMRdiff->GetXaxis()->SetTitle("Z");
+  CarbonMRdiff->GetXaxis()->SetNdivisions(208, kTRUE);
+  CarbonMRdiff->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,"0.5");
+  CarbonMRdiff->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"0.557");
+  CarbonMRdiff->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1,"0.617");
+  CarbonMRdiff->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"0.689");
+  CarbonMRdiff->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1,"0.784");
+  CarbonMRdiff->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,"1.0");
+  CarbonMRdiff->GetYaxis()->SetTitle("Difference (%)");
+
+  CarbonMRdiff->SetMarkerColor(kRed);
+  CarbonMRdiff->SetMarkerStyle(22);
+  CarbonMRdiff->SetMarkerSize(3);
   
   TH1F *IronMRdiff = new TH1F("IronMRdiff", "", 5, 0.5, 1.);
   IronMRdiff->Add(IronMR_a, IronMR_b, 1, -1);
   IronMRdiff->Divide(IronMR_a);
   IronMRdiff->Scale(100);
+
+  IronMRdiff->SetMarkerColor(kBlue);
+  IronMRdiff->SetMarkerStyle(22);
+  IronMRdiff->SetMarkerSize(3);
     
   TH1F *LeadMRdiff = new TH1F("LeadMRdiff", "", 5, 0.5, 1.);
   LeadMRdiff->Add(LeadMR_a, LeadMR_b, 1, -1);
   LeadMRdiff->Divide(LeadMR_a);
   LeadMRdiff->Scale(100);
 
+  LeadMRdiff->SetMarkerColor(kBlack);
+  LeadMRdiff->SetMarkerStyle(22);
+  LeadMRdiff->SetMarkerSize(3);
+  
   // obtain and save max diff
   obtainMaxDiff(CarbonMRdiff, IronMRdiff, LeadMRdiff, index);
 
+  CarbonMRdiff->SetAxisRange(-50, 50, "Y"); // range
+  CarbonMRdiff->Draw("HIST P");
+  IronMRdiff->Draw("HIST P SAME");
+  LeadMRdiff->Draw("HIST P SAME");
+
+  drawHorizontalLine(0);
+
+  TLegend *lf = new TLegend(0.15, 0.15, 0.3, 0.3);
+  lf->AddEntry(CarbonMRdiff, "Carbon", "p");
+  lf->AddEntry(IronMRdiff, "Iron", "p");
+  lf->AddEntry(LeadMRdiff, "Lead", "p");
+  lf->Draw();
+
+  TString indexSufix = Form("%d", index);
+  cf->Print(outDir + "/diff-MR-" + indexSufix + ".png"); // output file
+  
   delete CarbonMR_a;
   delete IronMR_a;
   delete LeadMR_a;

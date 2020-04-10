@@ -33,11 +33,13 @@ TString functionOption;
 TString functionSufix = ""; // default for (Z-gaus, Q2, Nu, Pt2)
 
 // name
-TString outputPlotName;
+TString plotFile;
 
-// [D, C, Fe, Pb][Z bin: 3-7], uniD
-Double_t fitMean[4][5], fitWidth[4][5], fitYields[4][5];
-Double_t fitMeanError[4][5], fitWidthError[4][5], fitYieldsError[4][5];
+// [D, C, Fe, Pb][Z bin: 3-7]
+Double_t fitMean[4][5], fitMeanError[4][5];
+Double_t fitSigma[4][5], fitSigmaError[4][5];
+Double_t fitOmega[4][5], fitOmegaError[4][5];
+Double_t fitBkg[4][5], fitBkgError[4][5];
 
 /*** Declaration of functions ***/
 
@@ -54,65 +56,118 @@ int main(int argc, char **argv) {
 
   readTextFiles();
   
-  TCanvas *c = new TCanvas("c", "c", 1200, 1000);
-  c->Divide(1,4,0,0); // nx, ny, margins
+  TCanvas *c = new TCanvas("c", "c", 1368, 768);
+  c->Divide(2,3,0.01,0.01); // nx, ny, margins
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
   gStyle->SetTitleSize(0.12, "t"); // hist title size
   
   // creating and filling histograms
-  TH1F *histMean = new TH1F("histMean", "#mu", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *histWidth = new TH1F("histWidth", "#sigma", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *histYields = new TH1F("histYields", "#omega number", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-
-  for (Int_t t = 0; t < 4; t++) { // uniD
+  TH1F *meanHist = new TH1F("meanHist", "#mu", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *sigmaHist = new TH1F("sigmaHist", "#sigma", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *omegaHist = new TH1F("omegaHist", "N_{#omega}", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *bkgHist = new TH1F("bkgHist", "N_{b}", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *snHist = new TH1F("snHist", "SN", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  
+  for (Int_t t = 0; t < 4; t++) {
     for (Int_t z = 0; z < kinvarNbins; z++) {
       // mean
-      histMean->SetBinContent(kinvarNbins*t + z + 1, fitMean[t][z]);
-      histMean->SetBinError(kinvarNbins*t + z + 1, fitMeanError[t][z]);
+      meanHist->SetBinContent(kinvarNbins*t + z + 1, fitMean[t][z]);
+      meanHist->SetBinError(kinvarNbins*t + z + 1, fitMeanError[t][z]);
       // width
-      histWidth->SetBinContent(kinvarNbins*t + z + 1, fitWidth[t][z]);
-      histWidth->SetBinError(kinvarNbins*t + z + 1, fitWidthError[t][z]);
-      // yields
-      histYields->SetBinContent(kinvarNbins*t + z + 1, fitYields[t][z]);
-      histYields->SetBinError(kinvarNbins*t + z + 1, fitYieldsError[t][z]);
+      sigmaHist->SetBinContent(kinvarNbins*t + z + 1, fitSigma[t][z]);
+      sigmaHist->SetBinError(kinvarNbins*t + z + 1, fitSigmaError[t][z]);
+      // omega
+      omegaHist->SetBinContent(kinvarNbins*t + z + 1, fitOmega[t][z]);
+      omegaHist->SetBinError(kinvarNbins*t + z + 1, fitOmegaError[t][z]);
+      // bkg
+      bkgHist->SetBinContent(kinvarNbins*t + z + 1, fitBkg[t][z]);
+      bkgHist->SetBinError(kinvarNbins*t + z + 1, fitBkgError[t][z]);
     }
   }
+  // sn ratio
+  snHist->Divide(omegaHist, bkgHist);
 
   c->cd(1);
   gPad->SetGridx(1);
-  histMean->SetLabelSize(0.1, "Y");
-  histMean->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  histMean->GetYaxis()->SetTitle("#mu");
-  histMean->GetYaxis()->CenterTitle();
-  histMean->SetLineColor(kRed);
-  histMean->SetLineWidth(3);
+  meanHist->SetLabelSize(0.1, "Y");
+  meanHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
+  meanHist->GetYaxis()->CenterTitle();
+  meanHist->GetYaxis()->SetMaxDigits(4);
+  meanHist->SetLineColor(kRed);
+  meanHist->SetLineWidth(3);
 
-  histMean->Draw("E");
-
-  c->cd(2);
-  gPad->SetGridx(1);
-  histWidth->SetLabelSize(0.1, "Y");
-  histWidth->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  histWidth->GetYaxis()->SetTitle("#sigma");
-  histWidth->GetYaxis()->CenterTitle();
-  histWidth->SetLineColor(kBlack);
-  histWidth->SetLineWidth(3);
-
-  histWidth->Draw("E");
+  meanHist->Draw("E");
 
   c->cd(3);
   gPad->SetGridx(1);
-  histYields->SetLabelSize(0.1, "Y");
-  histYields->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  histYields->GetYaxis()->SetTitle("N_{#omega}");
-  histYields->GetYaxis()->CenterTitle();
-  histYields->SetLineColor(kMagenta+2);
-  histYields->SetLineWidth(3);
+  sigmaHist->SetLabelSize(0.1, "Y");
+  sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
+  sigmaHist->GetYaxis()->CenterTitle();
+  sigmaHist->GetYaxis()->SetMaxDigits(2);
+  sigmaHist->SetLineColor(kBlack);
+  sigmaHist->SetLineWidth(3);
 
-  histYields->Draw("E");
+  sigmaHist->Draw("E");
 
-  c->Print(outputPlotName); // output file
+  c->cd(2);
+  gPad->SetGridx(1);
+  omegaHist->SetLabelSize(0.1, "Y");
+  omegaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
+  omegaHist->GetYaxis()->CenterTitle();
+  omegaHist->SetLineColor(kMagenta+2);
+  omegaHist->SetLineWidth(3);
+
+  omegaHist->Draw("E");
+  
+  c->cd(4);
+  gPad->SetGridx(1);
+  bkgHist->SetLabelSize(0.1, "Y");
+  bkgHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
+  bkgHist->GetYaxis()->CenterTitle();
+  bkgHist->SetLineColor(kBlue);
+  bkgHist->SetLineWidth(3);
+
+  bkgHist->Draw("E");
+
+  c->cd(6);
+  gPad->SetGridx(1);
+  snHist->SetLabelSize(0.1, "Y");
+  snHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
+  snHist->GetYaxis()->CenterTitle();
+  snHist->SetLineColor(kGreen+2);
+  snHist->SetLineWidth(3);
+
+  snHist->Draw("E");
+
+  /*** Test propagation of errors ***/
+
+  Double_t ome_val, ome_err;
+  Double_t bkg_val, bkg_err;
+  Double_t sn_val, sn_err;
+  Double_t cal_err;
+  
+  for (Int_t t = 1; t <= 5; t++) {
+
+    ome_val=omegaHist->GetBinContent(t);
+    ome_err=omegaHist->GetBinError(t);
+
+    bkg_val=bkgHist->GetBinContent(t);
+    bkg_err=bkgHist->GetBinError(t);
+
+    sn_val=snHist->GetBinContent(t);
+
+    cal_err=sn_val*TMath::Sqrt(TMath::Power((ome_err/ome_val), 2) + TMath::Power((bkg_err/bkg_val), 2));
+    
+    std::cout << "cal_err=" << cal_err << std::endl;
+
+    sn_err = snHist->GetBinError(t);
+    std::cout << "sn_err=" << sn_err<< std::endl;
+    std::cout << "sn_val=" << sn_val<< std::endl;
+    std::cout << std::endl;
+  }
+  
+  c->Print(plotFile); // output file
 }
 
 inline int parseCommandLine(int argc, char* argv[]) {
@@ -183,7 +238,7 @@ void assignOptions() {
     kinvarDir = "/Pt2";
   }
   // name
-  outputPlotName = outDir + kinvarDir + "/roofit" + functionSufix + kinvarSufix + ".png";
+  plotFile = outDir + kinvarDir + "/roofit" + functionSufix + kinvarSufix + ".png";
 }
 
 void readTextFiles() {
@@ -191,7 +246,7 @@ void readTextFiles() {
   TString textFileName;
   TString kinvarAuxSufix;
   
-  for (Int_t tt = 0; tt < 4; tt++) { // uniD
+  for (Int_t tt = 0; tt < 4; tt++) {
     for (Int_t zz = 0; zz < kinvarNbins; zz++) {
       kinvarAuxSufix = Form("%d", zz + kinvarConstant);      
       textFileName = kinvarDir + "/roofit" + functionSufix + "-" + targetName[tt] + kinvarSufix + kinvarAuxSufix + ".dat";
@@ -206,18 +261,23 @@ void readTextFiles() {
 	if (l == 1) { // first line
 	  fitMean[tt][zz] = auxString1.Atof();
 	  fitMeanError[tt][zz] = auxString2.Atof();
-	  std::cout << "--mean:   " << fitMean[tt][zz] << " +- " << fitMeanError[tt][zz] << std::endl;
+	  std::cout << "--mean : " << fitMean[tt][zz] << " +- " << fitMeanError[tt][zz] << std::endl;
 	} else if (l == 2) {
-	  fitWidth[tt][zz] = auxString1.Atof();
-	  fitWidthError[tt][zz] = auxString2.Atof();
-	  std::cout << "--width:  " << fitWidth[tt][zz] << " +- " << fitWidthError[tt][zz] << std::endl;
+	  fitSigma[tt][zz] = auxString1.Atof();
+	  fitSigmaError[tt][zz] = auxString2.Atof();
+	  std::cout << "--sigma: " << fitSigma[tt][zz] << " +- " << fitSigmaError[tt][zz] << std::endl;
 	} else if (l == 3) {
-	  fitYields[tt][zz] = auxString1.Atof();
-	  fitYieldsError[tt][zz] = auxString2.Atof();
-	  std::cout << "--yields: " << fitYields[tt][zz] << " +- " << fitYieldsError[tt][zz] << std::endl;
+	  fitOmega[tt][zz] = auxString1.Atof();
+	  fitOmegaError[tt][zz] = auxString2.Atof();
+	  std::cout << "--omega: " << fitOmega[tt][zz] << " +- " << fitOmegaError[tt][zz] << std::endl;
+	} else if (l == 5) {
+	  fitBkg[tt][zz] = auxString1.Atof();
+	  fitBkgError[tt][zz] = auxString2.Atof();
+	  std::cout << "--bkg  : " << fitBkg[tt][zz] << " +- " << fitBkgError[tt][zz] << std::endl;
 	}
       }
       inFile.close();
+      std::cout << std::endl;
     }
   }
 }

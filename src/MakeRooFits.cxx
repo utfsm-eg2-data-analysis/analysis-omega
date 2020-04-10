@@ -169,14 +169,14 @@ int main(int argc, char **argv) {
 
   // define constraints
   RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.001));
-
-  RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
+  RooGaussian conMean("conMean", "conMean", omegaMean, RooConst(0.37), RooConst(0.001));
   
+  RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma, conMean));
+
   // fit constraint model
-  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-
+  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Constrain(conMean), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
   r2->Print("v");
-  
+    
   // draw data and fit into frame
   data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
   cmodel.plotOn(frame, Name("Model"), LineColor(kRed));

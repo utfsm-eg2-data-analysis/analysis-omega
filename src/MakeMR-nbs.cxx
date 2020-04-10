@@ -13,84 +13,115 @@
 
 /*** Global variables ***/
 
-TString outDir  = proDir + "/out/MakeMR/nbs";
-TString textDir = proDir + "/out/MakeRooFits";
+TString outDir = proDir + "/out/MakeMR/nbs";
+TString fitDir = proDir + "/out/MakeRooFits";
 
-/*** Parameters ***/
+// parameters
 Int_t flagZ = 0;
 Int_t flagQ2 = 0;
 Int_t flagNu = 0;
 Int_t flagPt2 = 0;
+
 Int_t Nsigma = 5; // default
-
-/*** Global options ***/
 TString sigmaSufix;
-TString kinvarName;
-TString kinvarFolder;
-TString kinvarValue[6];
-Int_t   kinvarConstant = 1; // default for (Q2, Nu, Pt2)
-Int_t   kinvarNbins = 5;    // default for all
-Int_t   kinvarMin = 1; // default for (Q2, Nu, Pt2)
-Int_t   kinvarMax = 5; // default for (Q2, Nu, Pt2)
-TString kinvarSufix;
-TString outputFileName;
-TString outputPlotName;
 
-/*** Local options ***/
-TString  inputFile1;
-TString  inputFile2;
-TString  inputFile3;
-TCut     cutTargType;
-Double_t kinvarLowEdge;
-Double_t kinvarHighEdge;
-TCut     kinvarCut;
-TString  kinvarAuxSufix;
-TString  kinvarTitle;
+// for kinvar
+TString  kinvarName;
+Int_t    kinvarConstant = 1; // default for (Q2, Nu, Pt2)
+Int_t    kinvarNbins = 5;    // default for all
+TString  kinvarSufix;
+Double_t kinvarEdges[6];
 
-// from fit results [kinvar bin]
-Double_t omegaMean[5];
-Double_t omegaSigma[5];
-Double_t massLowEdge[5];
-Double_t massHighEdge[5];
+TString textFile;
+TString plotFile;
 
-// from root files [D,C,Fe,Pb][kinvar bin]
-Double_t particleNumber[4][5];
-Double_t particleError[4][5];
+TString targetName[4] = {"D", "C", "Fe", "Pb"};
+
+// [D, C, Fe, Pb][kinvar]
+Double_t omegaMean[4][5];
+Double_t omegaSigma[4][5];
+
+Double_t omegaNumber_int[4][5];
+Double_t omegaError_int[4][5];
+
+Double_t massEdges[4][5][2];
 
 /*** Declaration of functions ***/
 
 inline void parseCommandLine(int argc, char* argv[]);
-void assignGlobalOptions();
+void assignOptions();
 void printUsage();
 
-void assignOptions(TString targetOption, Int_t binNumber);
-void readFitResult(TString targetOption, Int_t binNumber);
-void integrateData(TString targetOption, Int_t binNumber);
-
-void printResults(TH1F *CarbonMR2, TH1F *IronMR2, TH1F *LeadMR2);
+void integrateData(TString targetOption);
 
 int main(int argc, char **argv) {
 
   parseCommandLine(argc, argv);
-  assignGlobalOptions();
-  
-  for (Int_t i = kinvarMin; i < (kinvarMax+1); i++) {
-    assignOptions("D", i);
-    readFitResult("D", i);
-    integrateData("D", i);
-    
-    assignOptions("C", i);
-    // readFitResult("C", i);
-    integrateData("C", i);
+  assignOptions();
 
-    assignOptions("Fe", i);
-    // readFitResult("Fe", i);
-    integrateData("Fe", i);
+  /*** Read fit results ***/
 
-    assignOptions("Pb", i);
-    // readFitResult("Pb", i);
-    integrateData("Pb", i);
+  for (Int_t targIndex = 0; targIndex < 4; targIndex++) {
+    for (Int_t index = 0; index < kinvarNbins; index++) {
+      
+      TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
+      
+      TString fitFile = fitDir + "/roofit-" + targetName[targIndex] + kinvarAuxSufix + ".dat";
+      
+      std::cout << "Reading " << fitFile << " ..." << std::endl;
+      std::ifstream inFile(fitFile);
+      
+      TString auxString1, auxString2;
+      Int_t l = 0; // line counter
+      while (inFile >> auxString1 >> auxString2) {
+	l++;
+	if (l == 1) { // third line
+	  omegaMean[targIndex][index] = auxString1.Atof();
+	  std::cout << "  Omega Mean for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaMean[targIndex][index] << std::endl;
+	} else if (l == 2) {
+	  omegaSigma[targIndex][index] = auxString1.Atof();
+	std::cout << "  Omega Sigma for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaSigma[targIndex][index] << std::endl;
+	}
+      }
+      inFile.close();
+
+      // assign mass edges!
+      massEdges[targIndex][index][0] = omegaMean[targIndex][index] - Nsigma*omegaSigma[targIndex][index];
+      massEdges[targIndex][index][1] = omegaMean[targIndex][index] + Nsigma*omegaSigma[targIndex][index];
+      std::cout << "  Mass range for " << targetName[targIndex] << kinvarAuxSufix << ": [" << massEdges[targIndex][index][0] << ", " << massEdges[targIndex][index][1] << "]" << std::endl;
+      std::cout << std::endl;
+    }
   }
+  
+  /*** Integrate data ***/
+  
+  integrateData("D");
+  integrateData("C");
+  integrateData("Fe");
+  integrateData("Pb");
+  
+  // creating and filling histograms
+  TH1F *DeutOmegaN_int = new TH1F("DeutOmegaN_int", "", kinvarNbins, 0.5, 1.);
+  TH1F *CarbonOmegaN_int = new TH1F("CarbonOmegaN_int", "", kinvarNbins, 0.5, 1.);
+  TH1F *IronOmegaN_int = new TH1F("IronOmegaN_int", "", kinvarNbins, 0.5, 1.);
+  TH1F *LeadOmegaN_int = new TH1F("LeadOmegaN_int", "", kinvarNbins, 0.5, 1.);
+    
+  // for each bin in kinvar
+  for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+    DeutOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[0][cc]);
+    DeutOmegaN_int->SetBinError(cc + 1, omegaError_int[0][cc]);
+    
+    CarbonOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[1][cc]);
+    CarbonOmegaN_int->SetBinError(cc + 1, omegaError_int[1][cc]);
+    
+    IronOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[2][cc]);
+    IronOmegaN_int->SetBinError(cc + 1, omegaError_int[2][cc]);
+        
+    LeadOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[3][cc]);
+    LeadOmegaN_int->SetBinError(cc + 1, omegaError_int[3][cc]);
+  }
+  
+  /*** Drawing ***/
 
   TCanvas *c = new TCanvas("c", "c", 1000, 1000);
   c->SetGridx(1);
@@ -98,78 +129,48 @@ int main(int argc, char **argv) {
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
 
-  // creating and filling histograms
-  TH1F *numberDeutHist = new TH1F("numberDeutHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberCarbonHist = new TH1F("numberCarbonHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberIronHist = new TH1F("numberIronHist", "", kinvarNbins, 0.5, 1.);
-  TH1F *numberLeadHist = new TH1F("numberLeadHist", "", kinvarNbins, 0.5, 1.);
-  
-  // creates sumw2 structure before hand
-  numberDeutHist->Sumw2();
-  numberCarbonHist->Sumw2();
-  numberIronHist->Sumw2();  
-  numberLeadHist->Sumw2();
-  
-  // for each bin in kinvar
-  for (Int_t cc = 0; cc < kinvarNbins; cc++) {
-    numberDeutHist->SetBinContent(cc + 1, particleNumber[0][cc]);
-    numberDeutHist->SetBinError(cc + 1, particleError[0][cc]);
-    
-    numberCarbonHist->SetBinContent(cc + 1, particleNumber[1][cc]);
-    numberCarbonHist->SetBinError(cc + 1, particleError[1][cc]);
-    
-    numberIronHist->SetBinContent(cc + 1, particleNumber[2][cc]);
-    numberIronHist->SetBinError(cc + 1, particleError[2][cc]);
-        
-    numberLeadHist->SetBinContent(cc + 1, particleNumber[4][cc]);
-    numberLeadHist->SetBinError(cc + 1, particleError[4][cc]);
-  }
-  
-  /*** Drawing ***/
-
-  std::cout << "Drawing..." << std::endl;
   TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
-  CarbonMR->SetTitle(Form("#omega MR(" + kinvarName + ") - No Bkg Subtraction (-%d#sigma, %d#sigma)", Nsigma, Nsigma));
+  CarbonMR->Divide(CarbonOmegaN_int, DeutOmegaN_int);
+  CarbonMR->Scale(4.6194); // electron normalization
+  
+  CarbonMR->SetTitle(Form("MR(" + kinvarName + ") - No Bkg Subtraction #omega(%d#sigma)", Nsigma));
   CarbonMR->GetXaxis()->SetTitle(kinvarName);
   CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
-  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,kinvarValue[0]);
-  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,kinvarValue[1]);
-  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1,kinvarValue[2]);
-  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,kinvarValue[3]);
-  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1,kinvarValue[4]);
-  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1,kinvarValue[5]);
+  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
+  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
+  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
+  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
+  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
+  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
   CarbonMR->GetYaxis()->SetTitle("MR");
-
+  CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
+  
   CarbonMR->SetMarkerColor(kRed);
   CarbonMR->SetLineColor(kRed);
   CarbonMR->SetLineWidth(3);
   CarbonMR->SetMarkerStyle(21);
-  CarbonMR->Divide(numberCarbonHist, numberDeutHist);
-  // CarbonMR->Scale(1.08476); // divD
-  CarbonMR->Scale(4.6194); // electron normalization, uniD
   
-  CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
   CarbonMR->Draw("E");  
   
   TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
+  IronMR->Divide(IronOmegaN_int, DeutOmegaN_int);
+  IronMR->Scale(2.3966); // electron normalization
+
   IronMR->SetMarkerColor(kBlue);
   IronMR->SetLineColor(kBlue);
   IronMR->SetLineWidth(3);
   IronMR->SetMarkerStyle(21);
-  IronMR->Divide(numberIronHist, numberDeutHist);
-  // IronMR->Scale(1.01234); // divD
-  IronMR->Scale(2.3966); // electron normalization, uniD
   
   IronMR->Draw("E SAME");
 
   TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
+  LeadMR->Divide(LeadOmegaN_int, DeutOmegaN_int);
+  LeadMR->Scale(6.1780); // electron normalization
+
   LeadMR->SetMarkerColor(kBlack);
   LeadMR->SetLineColor(kBlack);
   LeadMR->SetLineWidth(3);
   LeadMR->SetMarkerStyle(21);
-  LeadMR->Divide(numberLeadHist, numberDeutHist);
-  // LeadMR->Scale(2.12055); // divD
-  LeadMR->Scale(6.1780); // electron normalization, uniD
   
   LeadMR->Draw("E SAME");
     
@@ -180,11 +181,11 @@ int main(int argc, char **argv) {
   legend->AddEntry(LeadMR, "Lead", "pl");
   legend->Draw();
 
-  c->Print(outputPlotName); // output file
+  c->Print(plotFile); // output file
 
   /*** Save results ***/
   
-  std::ofstream outFinalFile(outputFileName, std::ios::out); // output file
+  std::ofstream outFinalFile(textFile, std::ios::out); // output file
   // first line
   outFinalFile << CarbonMR->GetBinContent(1) << "\t" << CarbonMR->GetBinError(1) << "\t"
 	       << IronMR->GetBinContent(1) << "\t" << IronMR->GetBinError(1) << "\t"
@@ -207,7 +208,7 @@ int main(int argc, char **argv) {
 	       << LeadMR->GetBinContent(5) << "\t" << LeadMR->GetBinError(5) << std::endl;
   
   outFinalFile.close();
-  std::cout << "File " << outputFileName << " created!" << std::endl;
+  std::cout << "File " << textFile << " has been created!" << std::endl;
   
   return 0;
 }
@@ -253,159 +254,101 @@ void printUsage() {
   std::cout << "    (default value: n=5)" << std::endl;
 }
 
-void assignGlobalOptions() {
+void assignOptions() {
   // for sigma
   sigmaSufix = Form("-%dsigma", Nsigma);
   // for kinvar
   if (flagZ) {
     kinvarName = "Z";
-    textDir = textDir + "/Z";
+    fitDir = fitDir + "/Z";
     kinvarConstant = 3;
-    kinvarMin = 3;
-    kinvarMax = 7;
     kinvarSufix = "-z";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesZ[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
   } else if (flagQ2) {
     kinvarName = "Q2";
-    textDir = textDir + "/Q2";
+    fitDir = fitDir + "/Q2";
     kinvarSufix = "-q";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesQ2[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
   } else if (flagNu) {
     kinvarName = "Nu";
-    textDir = textDir + "/Nu";
+    fitDir = fitDir + "/Nu";
     kinvarSufix = "-n";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesNu[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
   } else if (flagPt2) {
     kinvarName = "Pt2";
-    textDir = textDir + "/Pt2";
+    fitDir = fitDir + "/Pt2";
     kinvarSufix = "-p";
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarValue[i] = Form("%.02f", edgesPt2[i]);
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
   // for output files
-  outputPlotName = outDir + "/nbs-MR" + kinvarSufix + sigmaSufix + ".png";
-  outputFileName = outDir + "/nbs-MR" + kinvarSufix + sigmaSufix + ".dat";
+  plotFile = outDir + "/nbs-MR-" + kinvarName + sigmaSufix + ".png";
+  textFile = outDir + "/nbs-MR-" + kinvarName + sigmaSufix + ".dat";
 }
 
-void assignOptions(TString targetOption, Int_t binNumber) {
+void integrateData(TString targetOption) {
+
+  TString inputFile1, inputFile2, inputFile3;
+  Int_t   targIndex;
+  
+  TCut cutTargType;
+  TCut cutAll = cutPi0 && cutDIS && cutPipPim;
+  
   // for targets, unified D
   if (targetOption == "D") {
     inputFile1 = dataDir + "/C/comb_C-thickD2.root";
     inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
     inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
     cutTargType = "TargType == 1";
+    targIndex = 0;
+    std::cout << "Reading " << inputFile1 << std::endl;
+    std::cout << "        " << inputFile2 << std::endl;
+    std::cout << "        " << inputFile3 << " ..." << std::endl;
   } else if (targetOption == "C") {
     inputFile1 = dataDir + "/C/comb_C-thickD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
+    targIndex = 1;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
   } else if (targetOption == "Fe") {
     inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
+    targIndex = 2;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
   } else if (targetOption == "Pb") {
     inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
     inputFile2 = "";
     inputFile3 = "";
     cutTargType = "TargType == 2";
+    targIndex = 3;
+    std::cout << "Reading " << inputFile1 << " ..." << std::endl;
   }
-  // for kinvar
-  if (flagZ) {
-    kinvarLowEdge = edgesZ[binNumber-kinvarConstant];
-    kinvarHighEdge = edgesZ[binNumber+1-kinvarConstant];
-    kinvarAuxSufix = Form("-z%d", binNumber);
-  } else if (flagQ2) {
-    kinvarLowEdge = edgesQ2[binNumber-kinvarConstant];
-    kinvarHighEdge = edgesQ2[binNumber+1-kinvarConstant];
-    kinvarAuxSufix = Form("-q%d", binNumber);
-  } else if (flagNu) {
-    kinvarLowEdge = edgesNu[binNumber-kinvarConstant];
-    kinvarHighEdge = edgesNu[binNumber+1-kinvarConstant];
-    kinvarAuxSufix = Form("-n%d", binNumber);
-  } else if (flagPt2) {
-    kinvarLowEdge = edgesPt2[binNumber-kinvarConstant];
-    kinvarHighEdge = edgesPt2[binNumber+1-kinvarConstant];
-    kinvarAuxSufix = Form("-p%d", binNumber);
-  }
-  kinvarTitle = Form(" (%.02f < ", kinvarLowEdge) + kinvarName + Form(" < %.02f)", kinvarHighEdge);
-  kinvarCut = Form("%f < ", kinvarLowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarHighEdge);
-}
-
-void integrateData(TString targetOption, Int_t binNumber) {
-  
-  Int_t index = binNumber - kinvarConstant;
-  Int_t targIndex;
-
-  TCut cutAll = cutPi0 && cutDIS && cutPipPim; // doesn't consider targType yet
-
-  TCut cutMass = Form("%f < wD && wD < %f", massLowEdge[index], massHighEdge[index]); // here we apply the edges!
 
   TChain *treeExtracted = new TChain();
   treeExtracted->Add(inputFile1 + "/mix");
   treeExtracted->Add(inputFile2 + "/mix");
   treeExtracted->Add(inputFile3 + "/mix");
+  
+  for (Int_t index = 0; index < kinvarNbins; index++) {
 
-  TCanvas *cw = new TCanvas("cw", "cw", 1000, 1000);
-  cw->SetGridx(1);
-  cw->SetGridy(1);
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-  
-  TH1F *dataHist;
-  treeExtracted->Draw("wD>>data(20, 0.3, 0.4)", cutAll && kinvarCut && cutTargType && cutMass, "goff");
-  dataHist = (TH1F *)gROOT->FindObject("data");
-  
-  if (targetOption == "D") targIndex = 0;
-  else if (targetOption == "C") targIndex = 1;
-  else if (targetOption == "Fe") targIndex = 2;
-  else if (targetOption == "Pb") targIndex = 3;
-		    
-  // save numbers!
-  particleNumber[targIndex][index] = dataHist->IntegralAndError(1, 20, particleError[targIndex][index], "");
-  std::cout << targetOption << kinvarAuxSufix << ": " << particleNumber[targIndex][index] << " +/- " << particleError[targIndex][index] << std::endl;
-  
-  // draw for test!
-  dataHist->SetTitle("IMD(#pi^{+} #pi^{-} #pi^{0}) for " + targetOption + " in " + kinvarTitle);
-  dataHist->SetLineColor(kBlue);
-  dataHist->SetLineWidth(3);
-  dataHist->GetXaxis()->SetTitle("IMD (GeV)");
-  dataHist->GetXaxis()->CenterTitle();
-  dataHist->GetYaxis()->SetTitle("Counts");
-  dataHist->GetYaxis()->CenterTitle();
-  dataHist->Draw("E");
-
-  TString outputTestName = outDir + "hist-" + targetOption + kinvarAuxSufix + sigmaSufix + ".png";
-  cw->Print(outputTestName); // output file
-  
-  delete cw;
-  delete dataHist;
-  delete treeExtracted;
-}
-
-void readFitResult(TString targetOption, Int_t binNumber) {
-
-  Int_t index = binNumber - kinvarConstant;
-  
-  TString textFile = textDir + "/roofit-" + targetOption + kinvarAuxSufix + ".dat";
-  
-  std::ifstream inFile(textFile);
-  
-  TString auxString1, auxString2;
-  Int_t l = 0; // line counter
-  while (inFile >> auxString1 >> auxString2) {
-    l++;
-    if (l == 3) { // third line
-      omegaMean[index] = auxString1.Atof();
-      std::cout << "Omega Mean for " << targetOption << kinvarAuxSufix << ": " << omegaMean[index] << std::endl;
-    } else if (l == 4) { // fourth line
-      omegaSigma[index] = auxString1.Atof();
-      std::cout << "Omega Sigma for " << targetOption << kinvarAuxSufix << ": " << omegaSigma[index] << std::endl;
-    }
+    TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
+    
+    TCut kinvarCut;
+    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarEdges[index+1]);
+    TCut cutMass = Form("%f < wD && wD < %f", massEdges[targIndex][index][0], massEdges[targIndex][index][1]);
+    
+    TH1F *dataHist;
+    treeExtracted->Draw("wD>>data(60, 0.2, 0.5)", cutAll && cutTargType && kinvarCut && cutMass, "goff");
+    dataHist = (TH1F *)gROOT->FindObject("data");
+    
+    // save numbers!
+    omegaNumber_int[targIndex][index] = dataHist->IntegralAndError(1, 60, omegaError_int[targIndex][index], "");
+    std::cout << "  Omega Number for " << targetOption << kinvarAuxSufix << ": " << omegaNumber_int[targIndex][index] << " +/- " << omegaError_int[targIndex][index] << std::endl;
+    
+    delete dataHist;
   }
-  inFile.close();
+  std::cout << std::endl;
 
-  // assign mass edges!
-  massLowEdge[index] = omegaMean[index] - Nsigma*omegaSigma[index];
-  massHighEdge[index] = omegaMean[index] + Nsigma*omegaSigma[index];
-  std::cout << targetOption << kinvarAuxSufix << ": [" << massLowEdge[index] << ", " << massHighEdge[index] << "]" << std::endl;
 }
