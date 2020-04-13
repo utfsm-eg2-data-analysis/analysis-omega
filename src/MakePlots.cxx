@@ -1,7 +1,7 @@
 /**************************************/
 /* MakePlots.cxx                      */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Created by Andrés Bórquez          */
 /*                                    */
 /**************************************/
 
@@ -94,14 +94,14 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakePlots -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hdsgt:o:z:")) != -1)
+  while ((c = getopt(argc, argv, "hdsgt:k:z:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 'd': dataFlag = 1; break;
     case 's': simrecFlag = 1; break;
     case 'g': gsimFlag = 1; break;
     case 't': targetOption = optarg; break;
-    case 'o': kinvarOption = optarg; break;
+    case 'k': kinvarOption = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakePlots -h to print usage." << std::endl;
@@ -111,8 +111,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void printOptions() {
-  std::cout << std::endl;
-  std::cout << "Executing MakePlots program. Parameters chosen are:" << std::endl;
+  std::cout << "Executing MakePlots program. The chosen parameters are:" << std::endl;
   std::cout << "  dataFlag     = " << dataFlag << std::endl;
   std::cout << "  simrecFlag   = " << simrecFlag << std::endl;
   std::cout << "  gsimFlag     = " << gsimFlag << std::endl;
@@ -123,23 +122,35 @@ void printOptions() {
 }
 
 void printUsage() {
-  std::cout << std::endl;
   std::cout << "MakePlots program. Usage is:" << std::endl;
-  std::cout << "./MakePlots -[options] -[more options]" << std::endl;
-  std::cout << "  h         : prints help and exit program" << std::endl;
-  std::cout << "  d : draw data" << std::endl;
-  std::cout << "  s : draw simrec" << std::endl;
-  std::cout << "  g : draw gsim" << std::endl;
-  std::cout << "  t[target] : select target: D | C | Fe | Pb" << std::endl;
-  std::cout << "  o[option] : sets kinvar to draw, it can be: " << std::endl;
-  std::cout << "      --> wM : omega invariant mass" << std::endl;
-  std::cout << "      --> wD : omega invariant mass difference" << std::endl;
-  std::cout << "      --> Q2 : Q2" << std::endl;
-  std::cout << "      --> Nu : Nu" << std::endl;
-  std::cout << "      --> Z : Z" << std::endl;
-  std::cout << "      --> PhiPQ : PhiPQ" << std::endl;
-  std::cout << "      --> Pt2 : Pt2" << std::endl;
-  std::cout << "  z[3-7]    : turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -h" << std::endl;
+  std::cout << "  prints help and exit program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -d" << std::endl;
+  std::cout << "  draws data" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -s" << std::endl;
+  std::cout << "  draws simrec" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -g" << std::endl;
+  std::cout << "  draws gsim" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -t[target]" << std::endl;
+  std::cout << "  selects target: D | C | Fe | Pb" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -k[kinvar]" << std::endl;
+  std::cout << "  sets kinvar to draw, it can be: " << std::endl;
+  std::cout << "  wM (omega invariant mass)" << std::endl;
+  std::cout << "  wD (omega invariant mass difference)" << std::endl;
+  std::cout << "  Q2" << std::endl;
+  std::cout << "  Nu" << std::endl;
+  std::cout << "  Z" << std::endl;
+  std::cout << "  Pt2" << std::endl;
+  std::cout << "  PhiPQ" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots -z[3-7]" << std::endl;
+  std::cout << "  turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
   std::cout << std::endl;
 }
 

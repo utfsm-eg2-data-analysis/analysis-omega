@@ -5,23 +5,16 @@
 /*                                    */
 /**************************************/
 
-// Offers a comparison between data and simrec
-// updated:
-// - it now uses configuration file
-// - modified nu normalization
-// - added Z
-// - updated usage
+// offers a comparison between data and simrec
 // pending:
 // - add cut around omega mass
-// - add gsim cut for pi0
+// - add gsim
 
 #include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString topDataFolder = proFolder +  "/out/filterData";
-TString topSimFolder = proFolder +  "/out/filterSim/simrec";
-TString outFolder = proFolder + "/out/MakePlots";
+TString outDir = proDir + "/out/MakePlots";
 
 TString inputDataFile1 = "";
 TString inputDataFile2 = "";
@@ -30,7 +23,7 @@ TString inputSimrecFile;
 
 // main options
 TString targetOption;
-TString kinvarChosen;
+TString kinvarOption;
 Int_t binNumberZ = 0; // [3-7]: binning on
 
 // cuts
@@ -51,7 +44,7 @@ TString histProperties;
 Double_t normSimrec = 1;
 Double_t normData = 1;
 
-TString outPlotName;
+TString plotFile;
 
 // default values for legend position
 Double_t legendY1 = 0.8;
@@ -72,6 +65,9 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
+  
   /*** Data ***/
   
   TChain *tData = new TChain();
@@ -116,7 +112,7 @@ int main(int argc, char **argv) {
   c->SetGrid();
 
   // normalization
-  if (kinvarChosen == "IMD") {
+  if (kinvarOption == "IMD") {
     normData = (Double_t) dataHist->GetBinContent(dataHist->GetMaximumBin());
     normSimrec = (Double_t) simrecHist->GetBinContent(simrecHist->GetMaximumBin());
   } else {
@@ -135,7 +131,7 @@ int main(int argc, char **argv) {
   l->AddEntry(simrecHist, "reconstructed", "l");
   l->Draw();
   
-  c->Print(outPlotName); // output file
+  c->Print(plotFile); // output file
 }
 
 /*** Functions ***/
@@ -150,7 +146,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
-    case 'k': kinvarChosen = optarg; break;
+    case 'k': kinvarOption = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakePlots-DvsR -h to print usage." << std::endl;
@@ -161,9 +157,10 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printOptions() {
   std::cout << "Executing MakePlots-DvsR program. The chosen parameters are:" << std::endl;
-  std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  toPlotKinvar=" << toPlotKinvar << std::endl;
-  std::cout << "  binNumberZ=" << binNumberZ << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  toPlotKinvar = " << toPlotKinvar << std::endl;
+  std::cout << "  binNumberZ   = " << binNumberZ << std::endl;
+  std::cout << std::endl;
 }
 
 void printUsage() {
@@ -181,7 +178,7 @@ void printUsage() {
   std::cout << "    Nu" << std::endl;
   std::cout << "    W" << std::endl;
   std::cout << "    P(pi+pi-pi0)" << std::endl;
-  std::cout << "    IMD(pi+pi-pi0)" << std::endl;
+  std::cout << "    wD(pi+pi-pi0)" << std::endl;
   std::cout << "    Z" << std::endl;
   std::cout << "    Pt2" << std::endl;
   std::cout << "    PhiPQ" << std::endl;
@@ -191,99 +188,98 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./MakePlots -z[3-7]" << std::endl;
   std::cout << "    turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
   // for targets
   if (targetOption == "D") {
-    inputDataFile1 = topDataFolder + "/C/wout_C-thickD2.root";
-    inputDataFile2 = topDataFolder + "/Fe/wout_Fe-thickD2.root";
-    inputDataFile3 = topDataFolder + "/Pb/wout_Pb-thinD2.root";
-    inputSimrecFile = topSimFolder + "/jlab/D/wout_simrecD.root";
+    inputDataFile1 = dataDir + "/C/wout_C-thickD2.root";
+    inputDataFile2 = dataDir + "/Fe/wout_Fe-thickD2.root";
+    inputDataFile3 = dataDir + "/Pb/wout_Pb-thinD2.root";
+    inputSimrecFile = simrecDir + "/jlab/D/wout_simrecD.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
-    inputDataFile1 = topDataFolder + "/C/wout_C-thickD2.root";
-    inputSimrecFile = topSimFolder + "/jlab/C/wout_simrecC.root";
+    inputDataFile1 = dataDir + "/C/wout_C-thickD2.root";
+    inputSimrecFile = simrecDir + "/jlab/C/wout_simrecC.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
-    inputDataFile1 = topDataFolder + "/Fe/wout_Fe-thickD2.root";
-    inputSimrecFile = topSimFolder + "/jlab/Fe/wout_simrecFe.root";
+    inputDataFile1 = dataDir + "/Fe/wout_Fe-thickD2.root";
+    inputSimrecFile = simrecDir + "/jlab/Fe/wout_simrecFe.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
-    inputDataFile1 = topDataFolder + "/Pb/wout_Pb-thinD2.root";
-    inputSimrecFile = topSimFolder + "/usm/Pb/wout_simrecPb.root";
+    inputDataFile1 = dataDir + "/Pb/wout_Pb-thinD2.root";
+    inputSimrecFile = simrecDir + "/usm/Pb/wout_simrecPb.root";
     cutTargType = "TargType == 2";
   }
   // for Z binning
   if (binNumberZ) {
-    Double_t lowEdgeZ = edgesZ[binNumberZ-3];
-    Double_t highEdgeZ = edgesZ[binNumberZ+1-3];
-    cutZ = Form("%f < Z && Z < %f", lowEdgeZ, highEdgeZ);
-    if (binNumberZ) titleZ = Form(" in (%.02f < Z < %.02f)", lowEdgeZ, highEdgeZ);
+    cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form(" in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
   // for kinvar
-  if (kinvarChosen == "Q2") {
+  if (kinvarOption == "Q2") {
     toPlotKinvar = "Q2";
     titleKinvar = "Q^{2} for ";
     titleXAxis = "Q^{2} (GeV^{2})";
     histProperties = "(200, 1., 4.)";
-  } else if (kinvarChosen == "Nu") {
+  } else if (kinvarOption == "Nu") {
     toPlotKinvar = "Nu";
     titleKinvar = "#nu for ";
     titleXAxis = "#nu (GeV)";
     histProperties = "(200, 2.2, 4.2)";
     legendX1 = 0.15;
     legendX2 = 0.35;
-  } else if (kinvarChosen == "W") {
+  } else if (kinvarOption == "W") {
     toPlotKinvar = "W";
     titleKinvar = "W(#omega) for ";
     titleXAxis = "W";
     histProperties = "(200, 2., 3.)";
-  } else if (kinvarChosen == "P") {
+  } else if (kinvarOption == "P") {
     toPlotKinvar = "Pomega";
     titleKinvar = "P(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleXAxis = "P (GeV)";
     histProperties = ""; 
-  } else if (kinvarChosen == "IMD") {
+  } else if (kinvarOption == "IMD") {
     toPlotKinvar = "deltam";
     titleKinvar = "IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleXAxis = "IMD (GeV)";
     titleYAxis = "Normalized Counts = Max Height^{-1}";
     histProperties = "(200, 0., 1.6)";
-  } else if (kinvarChosen == "Z") {
+  } else if (kinvarOption == "Z") {
     toPlotKinvar = "Z";
     titleKinvar = "Z(#omega) for ";
     titleXAxis = "Z";
     histProperties = "(300, 0., 1.5)";
-  } else if (kinvarChosen == "Pt2") {
+  } else if (kinvarOption == "Pt2") {
     toPlotKinvar = "Pt2";
     titleKinvar = "p_{T}^{2}(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleXAxis = "p_{T}^{2} (GeV^{2})";
     histProperties = "(150, 0., 1.5)";
-  } else if (kinvarChosen == "PhiPQ") {
+  } else if (kinvarOption == "PhiPQ") {
     toPlotKinvar = "PhiPQ";
     titleKinvar = "#phi_{PQ}(#omega) for ";
     titleXAxis = "#phi_{PQ}";
     histProperties = "";
     legendY1 = 0.3;
     legendY2 = 0.4;
-  } else if (kinvarChosen == "P0") {
+  } else if (kinvarOption == "P0") {
     toPlotKinvar = "Ppi0";
     titleKinvar = "P(#pi^{0}) for ";
     titleXAxis = "P (GeV)";
     histProperties = "";
-  } else if (kinvarChosen == "P+") {
+  } else if (kinvarOption == "P+") {
     toPlotKinvar = "Ppip";
     titleKinvar = "P(#pi^{+}) for ";
     titleXAxis = "P (GeV)";
     histProperties = "";
-  } else if (kinvarChosen == "P-") {
+  } else if (kinvarOption == "P-") {
     toPlotKinvar = "Ppim";
     titleKinvar = "P(#pi^{-}) for ";
     titleXAxis = "P (GeV)";
     histProperties = "";
   }
   // names
-  outPlotName = outFolder + "/data_vs_simrec-" + targetOption + sufixZBin + "-" + toPlotKinvar + ".png";
+  plotFile = outDir + "/data_vs_simrec-" + targetOption + sufixZBin + "-" + toPlotKinvar + ".png";
 }
