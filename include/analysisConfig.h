@@ -34,7 +34,6 @@
 
 /*** Global variables ***/
 
-// TString proDir    = "/home/borquez/omegaThesis";
 TString proDir    = getenv("PRODIR");
 TString dataDir   = proDir + "/out/filterData";
 TString gsimDir   = proDir + "/out/filterSim/gsim";
@@ -48,7 +47,7 @@ TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 TCut cutPi0_MW = "0.059 < pi0M && pi0M < 0.209"; // mean=0.134 & sigma=0.025
 
 // cut for pi0 from GSIM files
-TCut cutPi0_sim = "0.132 < mpi0 && mpi0 < 0.138";
+TCut cutPi0_gsim = "0.132 < mpi0 && mpi0 < 0.138";
 
 // these cuts are for the files filtered with old OS programs
 TCut cutDIS_old = "Q2 > 1 && W > 2";

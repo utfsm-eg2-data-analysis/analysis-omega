@@ -9,52 +9,37 @@
 // For different sets of targets: D, C, Fe, Pb
 // For data or simulation
 
-#include <iostream>
-
-#include "TROOT.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TCut.h"
-#include "TString.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TLatex.h"
+#include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString proFolder   = "/home/borquez/omegaThesis";
-TString inputFolder = proFolder + "/out/filterData";  // default for data
-TString outFolder   = proFolder + "/out/MakePlots";
+TString outDir      = proDir + "/out/MakePlots";
 TString inputFile1  = "";
 TString inputFile2  = "";
 TString inputFile3  = "";
 
 // main options
-Int_t   dataFlag = 0;
-Int_t   simFlag  = 0;
+Int_t   dataFlag   = 0;
+Int_t   simrecFlag = 0;
+Int_t   gsimFlag   = 0;
 TString targetOption;
-TString observableChosen = "M";
+TString kinvarOption = "wM";
 Int_t   binNumberZ = 0; // 0: off | [3-7]: on
 
-// cuts
 TCut cutTargType;
-TCut cutZ = "";
 
-// names stuff (to be assigned by the options)
-TString titleDraw;
+TCut cutZ = "";
 TString titleZ = "";
 TString sufixZBin = "";
-TString titleObservable;
+
+TString titleDraw;
+
+TString titleKinvar;
 TString titleAxis;
-TString outPrefix;
-TString toPlotObservable;
 TString histProperties;
-TString outputPlotName;
+
+TString outPrefix;
+TString plotFile;
 
 /*** Declaration of functions ***/
 
@@ -64,15 +49,14 @@ void printUsage();
 void assignOptions();
 
 int main(int argc, char **argv) {
-
+  
   parseCommandLine(argc, argv);
   assignOptions();
   printOptions();
 
-  // cuts
-  TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-  TCut cutPi0 = "0.059 < pi0M && pi0M < 0.209";
-  TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
+  
   TCut cutAll = cutDIS && cutPipPim && cutPi0;
 
   TChain *treeExtracted = new TChain();
@@ -81,15 +65,16 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile3 + "/mix");
   
   TH1F *theHist;
-  treeExtracted->Draw(toPlotObservable + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
+  treeExtracted->Draw(kinvarOption + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
   theHist = (TH1F *)gROOT->FindObject(outPrefix);
   
   theHist->SetTitleFont(22);
-  theHist->SetTitle(titleObservable + targetOption + titleDraw + titleZ);
+  theHist->SetTitle(titleKinvar + targetOption + titleDraw + titleZ);
   theHist->SetLineColor(kBlack);
   theHist->SetLineWidth(3);
   theHist->GetXaxis()->SetTitle(titleAxis);
   theHist->GetYaxis()->SetTitle("Counts");
+  theHist->GetYaxis()->SetMaxDigits(3);
   
   /*** Drawing ***/
   
@@ -98,7 +83,7 @@ int main(int argc, char **argv) {
   
   theHist->Draw("E");
   
-  c->Print(outputPlotName); // output file
+  c->Print(plotFile); // output file
 }
 
 /*** Functions ***/
@@ -109,13 +94,14 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakePlots -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hdst:o:z:")) != -1)
+  while ((c = getopt(argc, argv, "hdsgt:o:z:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 'd': dataFlag = 1; break;
-    case 's': simFlag = 1; break;      
+    case 's': simrecFlag = 1; break;
+    case 'g': gsimFlag = 1; break;
     case 't': targetOption = optarg; break;
-    case 'o': observableChosen = optarg; break;
+    case 'o': kinvarOption = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakePlots -h to print usage." << std::endl;
@@ -127,11 +113,12 @@ inline int parseCommandLine(int argc, char* argv[]) {
 void printOptions() {
   std::cout << std::endl;
   std::cout << "Executing MakePlots program. Parameters chosen are:" << std::endl;
-  std::cout << "  dataFlag         = " << dataFlag << std::endl;
-  std::cout << "  simFlag          = " << simFlag << std::endl;
-  std::cout << "  targetOption     = " << targetOption << std::endl;
-  std::cout << "  toPlotObservable = " << toPlotObservable << std::endl;
-  std::cout << "  binNumberZ       = " << binNumberZ << std::endl;
+  std::cout << "  dataFlag     = " << dataFlag << std::endl;
+  std::cout << "  simrecFlag   = " << simrecFlag << std::endl;
+  std::cout << "  gsimFlag     = " << gsimFlag << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  kinvarOption = " << kinvarOption << std::endl;
+  std::cout << "  binNumberZ   = " << binNumberZ << std::endl;
   std::cout << std::endl;
 }
 
@@ -140,17 +127,18 @@ void printUsage() {
   std::cout << "MakePlots program. Usage is:" << std::endl;
   std::cout << "./MakePlots -[options] -[more options]" << std::endl;
   std::cout << "  h         : prints help and exit program" << std::endl;
-  std::cout << "  t[target] : select target: D | C | Fe | Pb" << std::endl;
   std::cout << "  d : draw data" << std::endl;
   std::cout << "  s : draw simrec" << std::endl;
-  std::cout << "  o[option] : sets observable to draw, it can be: " << std::endl;
-  std::cout << "      --> M : omega invariant mass" << std::endl;
-  std::cout << "      --> D : omega invariant mass difference" << std::endl;
-  std::cout << "      --> Q : Q2" << std::endl;
-  std::cout << "      --> N : Nu" << std::endl;
+  std::cout << "  g : draw gsim" << std::endl;
+  std::cout << "  t[target] : select target: D | C | Fe | Pb" << std::endl;
+  std::cout << "  o[option] : sets kinvar to draw, it can be: " << std::endl;
+  std::cout << "      --> wM : omega invariant mass" << std::endl;
+  std::cout << "      --> wD : omega invariant mass difference" << std::endl;
+  std::cout << "      --> Q2 : Q2" << std::endl;
+  std::cout << "      --> Nu : Nu" << std::endl;
   std::cout << "      --> Z : Z" << std::endl;
-  std::cout << "      --> P : PhiPQ" << std::endl;
-  std::cout << "      --> T : Pt2" << std::endl;
+  std::cout << "      --> PhiPQ : PhiPQ" << std::endl;
+  std::cout << "      --> Pt2 : Pt2" << std::endl;
   std::cout << "  z[3-7]    : turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
   std::cout << std::endl;
 }
@@ -163,98 +151,90 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
-      inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
-      inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+      inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
+      inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+      inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
     }
-  } else if (simFlag) {
+  } else if (simrecFlag) {
     outPrefix = "simrec";
-    titleDraw = " Simrec ";
-    inputFolder = proFolder + "/out/filterSim/simrec";
+    titleDraw = " Reconstructed ";
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/jlab/D/wout_simrecD.root";
+      inputFile1 = simrecDir + "/jlab/D/wout_simrecD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/C/wout_simrecC.root";
+      inputFile1 = simrecDir + "/jlab/C/wout_simrecC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = simrecDir + "/jlab/Fe/wout_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/usm/Pb/wout_simrecPb.root";
+      inputFile1 = simrecDir + "/usm/Pb/wout_simrecPb.root";
+    }
+  } else if (gsimFlag) {
+    outPrefix = "gsim";
+    titleDraw = " Generated ";
+    // for targets
+    if (targetOption == "D") {
+      cutTargType = "TargType == 1";
+      inputFile1 = gsimDir + "/jlab/D/wout_simrecD.root";
+    } else if (targetOption == "C") {
+      cutTargType = "TargType == 2";
+      inputFile1 = gsimDir + "/jlab/C/wout_simrecC.root";
+    } else if (targetOption == "Fe") {
+      cutTargType = "TargType == 2";
+      inputFile1 = gsimDir + "/jlab/Fe/wout_simrecFe.root";
+    } else if (targetOption == "Pb") {
+      cutTargType = "TargType == 2";
+      inputFile1 = gsimDir + "/usm/Pb/wout_simrecPb.root";
     }
   }
   // for Z binning
-  Double_t lowEdgeZ, highEdgeZ;
-  if (binNumberZ == 3) {
-    lowEdgeZ = 0.5;
-    highEdgeZ = 0.557;
-  } else if (binNumberZ == 4) {
-    lowEdgeZ = 0.557;
-    highEdgeZ = 0.617;
-  } else if (binNumberZ == 5) {
-    lowEdgeZ = 0.617;
-    highEdgeZ = 0.689;
-  } else if (binNumberZ == 6) {
-    lowEdgeZ = 0.689;
-    highEdgeZ = 0.784;
-  } else if (binNumberZ == 7) {
-    lowEdgeZ = 0.784;
-    highEdgeZ = 1.;
-  }
   if (binNumberZ) {
-    cutZ = Form("%f < Z && Z < %f", lowEdgeZ, highEdgeZ);
-    titleZ = Form(" in (%.02f < Z < %.02f)", lowEdgeZ, highEdgeZ);
+    cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form("in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
-  // for observable
-  if (observableChosen == "M") {
-    toPlotObservable = "wM";
-    titleObservable = "IM(#omega) for ";
+  // for kinvar
+  if (kinvarOption == "wM") {
+    titleKinvar = "IM(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IM (GeV)";
     histProperties = "(250, 0., 2.5.)";
-  } else if (observableChosen == "D") {
-    toPlotObservable = "wD";
-    titleObservable = "IMD(#omega) for ";
+  } else if (kinvarOption == "wD") {
+    titleKinvar = "IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IMD (GeV)";
     histProperties = "(200, 0., 1.6)";
-  } else if (observableChosen == "Q") {
-    toPlotObservable = "Q2";
-    titleObservable = "Q^{2}";
-    titleAxis = "Q^{2}";
+  } else if (kinvarOption == "Q2") {
+    titleKinvar = "Q^{2}";
+    titleAxis = "Q^{2} (GeV^{2})";
     histProperties = "(100, 1., 4.)";  
-  } else if (observableChosen == "N") {
-    toPlotObservable = "Nu";
-    titleObservable = "#nu";
-    titleAxis = "#nu";
+  } else if (kinvarOption == "Nu") {
+    titleKinvar = "#nu";
+    titleAxis = "#nu (GeV)";
     histProperties = "(200, 2.2, 4.2)";
-  } else if (observableChosen == "Z") {
-    toPlotObservable = "Z";
-    titleObservable = "Z";
+  } else if (kinvarOption == "Z") {
+    titleKinvar = "Z";
     titleAxis = "Z";
     histProperties = "(100, 0., 1.2)";
-  } else if (observableChosen == "P") {
-    toPlotObservable = "PhiPQ";
-    titleObservable = "#phi_{PQ} ";
-    titleAxis = "#phi_{PQ}";
+  } else if (kinvarOption == "PhiPQ") {
+    titleKinvar = "#phi_{PQ} ";
+    titleAxis = "#phi_{PQ} (degrees)";
     histProperties = "(100, -180, 180.)";
-  } else if (observableChosen == "T") {
-    toPlotObservable = "Pt2";
-    titleObservable = "P_{T}^{2} ";
-    titleAxis = "GeV^{2}";
+  } else if (kinvarOption == "Pt2") {
+    titleKinvar = "p_{T}^{2} ";
+    titleAxis = "p_{T}^{2} (GeV^{2})";
     histProperties = "(100, 0., 1.5)";
   }
   // output name
-  outputPlotName = outFolder + "/" + outPrefix + "-" + targetOption + "-" + toPlotObservable + sufixZBin + ".png";
+  plotFile = outDir + "/" + outPrefix + "-" + targetOption + "-" + kinvarOption + sufixZBin + ".png";
 }
