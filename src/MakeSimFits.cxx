@@ -6,7 +6,7 @@
 /**************************************/
 
 // fits peak with a gaussian function and bkg with a 1st order polynomial
-// for simrec
+// for simrec (for now)
 
 #include "analysisConfig.h"
 
@@ -66,8 +66,11 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
+  
   // cuts
-  TCut cutAll = cutDIS_old && cutPipPim_old && cutPi0_sim;
+  TCut cutAll = cutDIS_old && cutPipPim_old && cutPi0_old;
 
   TChain *treeExtracted = new TChain();
   treeExtracted->Add(inputFile + "/outdata");
@@ -211,9 +214,10 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printOptions() {
   std::cout << "Executing MakeSimFits program. Chosen parameters are:" << std::endl;
-  std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  kinvarName=" << kinvarName << std::endl;
-  std::cout << "  binNumber=" << binNumber << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  kinvarName   = " << kinvarName << std::endl;
+  std::cout << "  binNumber    = " << binNumber << std::endl;
+  std::cout << std::endl;
 }
 
 void printUsage() {
@@ -231,6 +235,7 @@ void printUsage() {
   std::cout << "    q[1-5] : analyzes specific Q2 bin" << std::endl;
   std::cout << "    n[1-5] : analyzes specific Nu bin" << std::endl;
   std::cout << "    p[1-5] : analyzes specific Pt2 bin" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {

@@ -31,10 +31,14 @@
 #include "TMath.h"
 #include "TPad.h"
 #include "TObjArray.h"
+#include "TVector3.h"
+#include "TDatabasePDG.h"
 
 /*** Global variables ***/
 
-TString proDir    = getenv("PRODIR");
+TString proDir = getenv("PRODIR");
+TString incDir = proDir + "/include";
+
 TString dataDir   = proDir + "/out/filterData";
 TString gsimDir   = proDir + "/out/filterSim/gsim";
 TString simrecDir = proDir + "/out/filterSim/simrec";

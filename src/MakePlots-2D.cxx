@@ -1,22 +1,22 @@
 /**************************************/
 /* MakePlots-2D.cxx                   */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Created by Andrés Bórquez          */
 /*                                    */
 /**************************************/
 
 // draws different 2D plots
-// im interested in: data-Q2:Nu, data-Pt2:Z, simrec-Q2:Nu, simrec-Pt2:Z
+// i'm interested in: data-Q2:Nu, data-Pt2:Z, simrec-Q2:Nu, simrec-Pt2:Z
+// it still uses old filtered wout_ files
 
 #include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString inputFolder = proFolder +  "/out/filterData";
-TString inputFile1  = "";
-TString inputFile2  = "";
-TString inputFile3  = "";
-TString outFolder   = proFolder + "/out/MakePlots";
+TString outDir = proDir + "/out/MakePlots";
+TString inputFile1 = "";
+TString inputFile2 = "";
+TString inputFile3 = "";
 
 // options
 Int_t dataFlag = 0;
@@ -38,11 +38,12 @@ TString YHistProp;
 TString histProperties;
 
 // name scheme
-TString outPrefix;
 TString titleDraw;
 TString titleZ;
 TString sufixZBin;
-TString outputPlotName;
+
+TString outPrefix;
+TString plotFile;
 
 /*** Declaration of functions ***/
 
@@ -57,6 +58,9 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
+  
   // setting cuts
   cutAll = cutDIS_old && cutPi0_old && cutPipPim_old;
 
@@ -89,7 +93,7 @@ int main(int argc, char **argv) {
   
   gPad->SetLogz(); // important
   
-  c->Print(outputPlotName); // output file
+  c->Print(plotFile); // output file
   
   return 0;
 }
@@ -121,22 +125,45 @@ inline int parseCommandLine(int argc, char* argv[]) {
 void printUsage() {
   std::cout << "MakePlots-2D program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakePlots-2D -[options] -[more options]" << std::endl;
-  std::cout << "  h           : prints help and exit program" << std::endl;
-  std::cout << "  d           : draw data (default)" << std::endl;
-  std::cout << "  s           : draw simrec" << std::endl;
-  std::cout << "  t[target]   : selects target: D | C | Fe | Pb" << std::endl;
-  std::cout << "  x[kinvar]   : sets kinvar to draw in X axis" << std::endl;
-  std::cout << "  y[kinvar]   : sets kinvar to draw in Y axis" << std::endl;
-  std::cout << "  z[3-7]      : select Z bin" << std::endl;
+  std::cout << "./MakePlots-2D -h" << std::endl;
+  std::cout << "  prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "  Variables are:" << std::endl;
-  std::cout << "      Q2" << std::endl;
-  std::cout << "      Nu" << std::endl;
-  std::cout << "      Z" << std::endl;
-  std::cout << "      Pt2" << std::endl;
+  std::cout << "./MakePlots-2D -d" << std::endl;
+  std::cout << "  draw data (default)" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D -s" << std::endl;
+  std::cout << "  draw simrec" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D -t[target]" << std::endl;
+  std::cout << "  selects target: D | C | Fe | Pb" << std::endl;
+  std::cout << std::endl;  
+  std::cout << "./MakePlots-2D -x[kinvar]" << std::endl;
+  std::cout << "  sets kinvar to draw in X axis" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D -y[kinvar]" << std::endl;
+  std::cout << "  sets kinvar to draw in Y axis" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D z[3-7]" << std::endl;
+  std::cout << "  turns on and selects bin in Z" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Possible kinematic variables are:" << std::endl;
+  std::cout << "  Q2" << std::endl;
+  std::cout << "  Nu" << std::endl;
+  std::cout << "  Z" << std::endl;
+  std::cout << "  Pt2" << std::endl;
+  std::cout << std::endl;
 }
 
+void printOptions() {
+  std::cout << "Executing MakePlots-2D program. The chosen parameters are:" << std::endl;
+  std::cout << "  dataFlag     = " << dataFlag << std::endl;
+  std::cout << "  simFlag      = " << simFlag << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  XOption      = " << XOption << std::endl;
+  std::cout << "  YOption      = " << YOption << std::endl;
+  std::cout << "  binNumberZ   = " << binNumberZ << std::endl;
+  std::cout << std::endl;
+}
 
 void assignOptions() {
   // for kind of data
@@ -146,36 +173,35 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/C/wout_C-thickD2.root";
-      inputFile2 = inputFolder + "/Fe/wout_Fe-thickD2.root";
-      inputFile3 = inputFolder + "/Pb/wout_Pb-thinD2.root";
+      inputFile1 = dataDir + "/C/wout_C-thickD2.root";
+      inputFile2 = dataDir + "/Fe/wout_Fe-thickD2.root";
+      inputFile3 = dataDir + "/Pb/wout_Pb-thinD2.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/C/wout_C-thickD2.root";
+      inputFile1 = dataDir + "/C/wout_C-thickD2.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Fe/wout_Fe-thickD2.root";
+      inputFile1 = dataDir + "/Fe/wout_Fe-thickD2.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/Pb/wout_Pb-thinD2.root";
+      inputFile1 = dataDir + "/Pb/wout_Pb-thinD2.root";
     }
   } else if (simFlag) {
     outPrefix = "simrec";
     titleDraw = " Reconstructed";
-    inputFolder = proFolder + "/out/filterSim/simrec";
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = inputFolder + "/jlab/D/wout_simrecD.root";
+      inputFile1 = simrecDir + "/jlab/D/wout_simrecD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/C/wout_simrecC.root";
+      inputFile1 = simrecDir + "/jlab/C/wout_simrecC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = simrecDir + "/jlab/Fe/wout_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = inputFolder + "/usm/Pb/wout_simrecPb.root";
+      inputFile1 = simrecDir + "/usm/Pb/wout_simrecPb.root";
     }
   }
   // x variable
@@ -209,22 +235,10 @@ void assignOptions() {
   histProperties = "(" + XHistProp + ", " + YHistProp + ")";
   // for z
   if (binNumberZ) {
-    Double_t lowEdgeZ = edgesZ[binNumberZ-3];
-    Double_t highEdgeZ = edgesZ[binNumberZ-3+1];
-    cutZ = Form("%f < Z && Z < %f", lowEdgeZ, highEdgeZ);
-    titleZ = Form(" in (%.02f < Z < %.02f)", lowEdgeZ, highEdgeZ);
+    cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form(" in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
   // names
-  outputPlotName = outFolder + "/" + outPrefix + "-" + targetOption + "-" + YOption + "_vs_" + XOption + sufixZBin + ".png";
-}
-
-void printOptions() {
-  std::cout << "Executing MakePlots-2D program. Chosen parameters are:" << std::endl;
-  std::cout << "  dataFlag=" << dataFlag << std::endl;
-  std::cout << "  simFlag=" << simFlag << std::endl;
-  std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  XOption=" << XOption << std::endl;
-  std::cout << "  YOption=" << YOption << std::endl;
-  if (binNumberZ) std::cout << "  binNumberZ=" << binNumberZ << std::endl;
+  plotFile = outDir + "/" + outPrefix + "-" + targetOption + "-" + YOption + "_vs_" + XOption + sufixZBin + ".png";
 }

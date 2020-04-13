@@ -1,23 +1,17 @@
-/*************************************************/
-/*  ToyCombine.cxx                               */
-/*                                               */
-/*  Andrés Bórquez, CCTVAL                       */
-/*                                               */
-/*************************************************/
+/*****************************************/
+/*  FilterNCombine.cxx                   */
+/*                                       */
+/*  Andrés Bórquez                       */
+/*                                       */
+/*****************************************/
 
-#include <iostream>
+// updated to filter simrec and gsim as well
+// now it needs a .tmp file to read, located in incDir
+// the sets are: {0,1,2} = {old, usm, jlab}
 
-#include "TROOT.h"
-#include "TChain.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TVector3.h"
-#include "TDatabasePDG.h"
-#include "TString.h"
+// needs to update: don't correct if GSIM!
 
-#include "TClasTool.h"
-#include "TIdentificator.h"
+#include "analysisConfig.h"
 
 /*** Constants ***/
 
@@ -31,11 +25,20 @@ Float_t kEbeam = 5.014;
 
 // parameters
 TString targetOption;
-TString dataType;
+Int_t dataFlag   = 0;
+Int_t simrecFlag = 0;
+Int_t gsimFlag   = 0;
+Int_t setOption; // set of simulations
 
-TString targetName;
+TString treeName;
+TString setName[3] = {"old", "usm", "jlab"};
+
+TString outDir; // depends on data type
+TString outFile;
+
+// input
+TString textFile;
 TString inputFile;
-TString outputFile;
 
 // There are 23 in total
 Float_t tTargType;
@@ -54,8 +57,8 @@ Int_t Ne;
 
 /*** Declaration of functions ***/
 
-void printUsage();
 inline int parseCommandLine(int argc, char* argv[]);
+void printUsage();
 void assignOptions();
 
 Float_t CorrectGammaMomentum(Int_t i); // i stands for component
@@ -67,16 +70,25 @@ int main(int argc, char **argv) {
   parseCommandLine(argc, argv);
   assignOptions();
 
-  /*
-    TFile *corrfile = new TFile("gammECorr.root", "read");
-    hcfm = (TH1F*) corrfile->Get("hcfm");
-  */
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
 
+  /*** Read text file to gather input root file ***/
+
+  std::ifstream inFile(textFile);
+  std::cout << "Reading " << textFile << " ..." << std::endl;
+  TString auxLine;
+  while (inFile >> auxLine) {
+    inputFile = auxLine;
+    std::cout << "auxLine=" << auxLine << std::endl;
+  }
+  inFile.close();
+  
   /*** Init tree ***/
   
   // hadrons (t - tree)
   TChain *t = new TChain();
-  t->Add(inputFile + "/ntuple_data"); // input
+  t->Add(inputFile + "/" + treeName); // input
 
   t->SetBranchStatus("*", 0);
   
@@ -134,7 +146,7 @@ int main(int argc, char **argv) {
   
   /*** Output settings ***/
   
-  TFile *outFile = new TFile(outputFile, "RECREATE", "Omega Meson Filtered Combinations"); // output
+  TFile *rootFile = new TFile(outFile, "RECREATE", "Omega Meson Filtered Combinations"); // output
 
   // 29 variables for each original detected particle
   Int_t oTargType;
@@ -277,9 +289,6 @@ int main(int argc, char **argv) {
 
   Int_t nEvents = 0;
 
-  // test
-  // Int_t noElectrons = 0;
-  
   // searchs for different event numbers, iterates in all entries
   for (Int_t i = 0; i < Ne; i++) {
     t->GetEntry(i);
@@ -616,8 +625,8 @@ int main(int argc, char **argv) {
   tMix->Print();
   std::cout << std::endl;
   
-  outFile->Write();
-  outFile->Close();
+  rootFile->Write();
+  rootFile->Close();
 
   std::cout << "From a total of " << nEvents << " events." << std::endl;
   std::cout << "There are at least " << nAtLeastOmega << " events that have at least one omega particle," << std::endl;
@@ -632,52 +641,66 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./ToyCombine -h to print help." << std::endl;
+    std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:d:")) != -1)
+  while ((c = getopt(argc, argv, "ht:ds:g:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
-    case 'd': dataType = optarg; break;
+    case 'd': dataFlag = 1; break;
+    case 's': simrecFlag = 1; setOption = atoi(optarg); break;
+    case 'g': gsimFlag = 1; setOption = atoi(optarg); break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./ToyCombine -h to print help." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
       exit(0);
       break;
     }
 }
 
 void assignOptions() {
-  // target full name
-  if (targetOption == "C") targetName = "C-thickD2";
-  else if (targetOption == "Fe") targetName = "Fe-thickD2";
-  else if (targetOption == "Pb") targetName = "Pb-thinD2";
-  // for data
-  if (dataType == "d") {
-    inputFile  = "/eos/user/b/borquez/EG2Pruned/prune_data_" + targetName + ".root";
-    outputFile = "/eos/user/b/borquez/EG2Pruned/comb_" + targetName + ".root";
-  } else if (dataType == "s") {
-    inputFile = "";
-    outputFile = "";
-  } else if (dataType == "g") {
-    inputFile = "";
-    outputFile = "";
+  // for data type
+  if (dataFlag) {
+    textFile = incDir + "/FNC-data-" + targetOption + ".tmp";
+    outDir = dataDir + "/" + targetOption;
+    treeName = "ntuple_data";
+  } else if (simrecFlag) {
+    textFile = incDir + "/FNC-" + setName[setOption] + "-" + targetOption + ".tmp";
+    outDir = simrecDir + "/" + setName[setOption] + "/" + targetOption;
+    treeName = "ntuple_accept";
+  } else if (gsimFlag) {
+    textFile = incDir + "/FNC-" + setName[setOption] + "-" + targetOption + ".tmp";
+    outDir = gsimDir + "/" + setName[setOption] + "/" + targetOption;
+    treeName = "ntuple_thrown";
   }
+  // independent of the choice the file will be called like this
+  outFile = outDir + "/comb_out.root";
 }
 
 void printUsage() {
-  std::cerr << "ToyCombine program. Usage is:" << std::endl;
-  std::cerr << std::endl;
-  std::cerr << "./ToyCombine -h" << std::endl;
-  std::cerr << "    prints this message and exits program" << std::endl;
-  std::cerr << std::endl;
-  std::cerr << "./ToyCombine -t[C, Fe, Pb]" << std::endl;
-  std::cerr << "    filters collection of files for the respective target" << std::endl;
-  std::cerr << std::endl;
-  std::cerr << "./ToyCombine -d[d, s, g]" << std::endl;
-  std::cerr << "    d : data" << std::endl;
-  std::cerr << "    s : simrec" << std::endl;
-  std::cerr << "    g : gsim" << std::endl;
+  std::cout << "FilterNCombine program. Usage is:" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -h" << std::endl;
+  std::cout << "    prints this message and exits program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
+  std::cout << "    filters the respective target" << std::endl;
+  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -d" << std::endl;
+  std::cout << "    filters data" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -s[0,1,2]" << std::endl;
+  std::cout << "    filters simrec, integers stand for possible set" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -g[0,1,2]" << std::endl;
+  std::cout << "    filters gsim, integers stand for possible set" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Possible set options are: " << std::endl;
+  std::cout << "    0 = old" << std::endl;
+  std::cout << "    1 = usm" << std::endl;
+  std::cout << "    2 = jlab" << std::endl;
+  std::cout << std::endl;
 }
 
 /*** Mathematical functions ***/
