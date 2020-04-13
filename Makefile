@@ -4,6 +4,8 @@ ifndef CLASTOOL
     $(error "Please set the variable CLASTOOL")
 endif
 
+MKDIR_P := mkdir -p
+
 BINDIR := ./bin
 SRCDIR := ./src
 
@@ -18,7 +20,7 @@ LD := c++
 ifeq ($(shell echo $${HOSTNAME}),)
 	CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS)
 	LDFLAGS := -g -O0 $(ROOTLDFLAGS)
-else ifeq ($(shell echo $${HOSTNAME}),ui01.hpc.utfsm.cl)
+else ifeq ($(shell echo $${HOSTNAME}),ui02.hpc.utfsm.cl)
 	CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS)
 	LDFLAGS := -g -O2 $(ROOTLDFLAGS)
 endif
@@ -42,6 +44,7 @@ $(BINDIR)/%: $(BINDIR)/%.o
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cxx
+	$(MKDIR_P) $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
