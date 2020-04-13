@@ -7,7 +7,7 @@
 
 /*** TASK 2 for Analysis Note ***/
 
-// nbs & bs for simulations, only for Z
+// nbs & bs for simrec, only for Z
 // it lacks electron normalization
 
 #include "analysisConfig.h"
@@ -156,7 +156,6 @@ int main(int argc, char **argv) {
   CarbonMR->SetLineWidth(3);
   CarbonMR->SetMarkerStyle(21);
   CarbonMR->Divide(numberCarbonHist, numberDeutHist);
-  // CarbonMR->Scale(1.08476); // electron normalization factor
 
   // draw already!
   CarbonMR->SetAxisRange(0., 1.8, "Y"); // range
@@ -169,7 +168,6 @@ int main(int argc, char **argv) {
   IronMR->SetLineWidth(3);
   IronMR->SetMarkerStyle(21);
   IronMR->Divide(numberIronHist, numberDeutHist);
-  // IronMR->Scale(1.01234); // electron normalization factor
     
   IronMR->Draw("E SAME");
 
@@ -180,7 +178,6 @@ int main(int argc, char **argv) {
   LeadMR->SetLineWidth(3);
   LeadMR->SetMarkerStyle(21);
   LeadMR->Divide(numberLeadHist, numberDeutHist);
-  // LeadMR->Scale(2.12055); // electron normalization factor
     
   LeadMR->Draw("E SAME");
     
@@ -287,7 +284,7 @@ void integrateData(TString targetOption) {
     cutTargType = "TargType == 2";
   }
   
-  TCut cutAll = cutPi0_sim && cutDIS_old && cutPipPim_old;
+  TCut cutAll = cutPi0_old && cutDIS_old && cutPipPim_old;
 
   TCut cutZ;
   TString titleZ;

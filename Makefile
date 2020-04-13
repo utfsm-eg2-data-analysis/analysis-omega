@@ -35,7 +35,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
 PROG := MakePlots MakePlots_old GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
-	MakeRooFits MakeMR-nbs Test MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn
+	MakeRooFits MakeMR-nbs Test MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
