@@ -13,11 +13,15 @@ ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 
 CXX := c++
-#CXXFLAGS := -O2 -Wall -fPIC $(ROOTCFLAGS)
-CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # debug info
 LD := c++
-#LDFLAGS := -O2 $(ROOTLDFLAGS)
-LDFLAGS := -g -O0 $(ROOTLDFLAGS) # debug info
+
+ifeq ($(shell echo $${HOSTNAME}),)
+	CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS)
+	LDFLAGS := -g -O0 $(ROOTLDFLAGS)
+else ifeq ($(shell echo $${HOSTNAME}),ui01.hpc.utfsm.cl)
+	CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS)
+	LDFLAGS := -g -O2 $(ROOTLDFLAGS)
+endif
 
 INCLUDES := -I$(ANALYSER)/include\
                -I$(CLASTOOL)/include -I$(PRODIR)/include

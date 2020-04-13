@@ -34,7 +34,8 @@
 
 /*** Global variables ***/
 
-TString proDir    = "/home/borquez/omegaThesis";
+// TString proDir    = "/home/borquez/omegaThesis";
+TString proDir    = getenv("PRODIR");
 TString dataDir   = proDir + "/out/filterData";
 TString gsimDir   = proDir + "/out/filterSim/gsim";
 TString simrecDir = proDir + "/out/filterSim/simrec";
