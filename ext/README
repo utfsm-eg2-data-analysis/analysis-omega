@@ -6,37 +6,42 @@ GetSimpleTuple
 Analyser
 ClasTool
 
-To install the last two, some systems will require the package `xutils-dev`
+To install the last two, some systems will require the package xutils-dev
 
-Then, add in the end of `.bashrc`
+Then, add in the end of .bashrc
 
-> export OS_NAME=`uname`
-> export OSNAME=${OS_NAME}
-> 
-> export CLASTOOL=${PRODIR}/ext/ClasTool
-> export CLAS_LIB=${PRODIR}/ext/clas_lib
-> export CLAS_PACK=${PRODIR}/ext/clas_pack
-> export ANALYSER=${PRODIR}/ext/Analyser
-> 
-> export PATH=${CLASTOOL}/bin/${OSNAME}:${PATH}
-> export ROOT_INCLUDE_PATH=${ANALYSER}/include:${CLASTOOL}/include:${ROOT_INCLUDE_PATH}
-> export LD_LIBRARY_PATH=${CLASTOOL}/slib/${OS_NAME}:${ANALYSER}/slib:${LD_LIBRARY_PATH}
+export OS_NAME=`uname`
+export OSNAME=${OS_NAME}
 
-Then,
+export CLASTOOL=${PRODIR}/ext/ClasTool
+export CLAS_LIB=${PRODIR}/ext/clas_lib
+export CLAS_PACK=${PRODIR}/ext/clas_pack
+export ANALYSER=${PRODIR}/ext/Analyser
 
-> $ cd ${PRODIR}/ext/ClasTool
-> $ make
+export PATH=${CLASTOOL}/bin/${OSNAME}:${PATH}
+export ROOT_INCLUDE_PATH=${ANALYSER}/include:${CLASTOOL}/include:${ROOT_INCLUDE_PATH}
+export LD_LIBRARY_PATH=${CLASTOOL}/slib/${OS_NAME}:${ANALYSER}/slib:${LD_LIBRARY_PATH}
 
-> cd ${PRODIR}/ext/Analyser
-> make -j4
-> make
+Then, compile the programs. The last step is required by newer versions of ROOT,
+which require the dictionaries to be in the same dir than the dynamic libraries.
 
-Then, (this is because from certain version of ROOT, it requires all the dictionaries to be in the same dir than slibs)
+$ cd ${PRODIR}/ext/ClasTool
+$ make
+$ find . -name *.pcm -exec cp -t ./slib/Linux {} +
 
-inside Analyser dir
+$ cd ${PRODIR}/ext/Analyser
+$ make
+$ find . -name *.pcm -exec cp -t ./slib {} +
 
-> sudo find . -name *.pcm exec cp -t ./slib/Linux {} +
+You can also edit the rootlogon.C file in your home dir by adding:
 
-inside ClasTool dir
+{
+  printf("Hello!\n");
+  gSystem->Load("libMathMore");
+  gSystem->Load("libClasTool");
+  gSystem->Load("libTIdentificator");
+}
 
-> cp .dicts/TIdentificatorDict_rdict.pcm slib/
+For this to make effect, you need a file called .rootrc aswell, with the only line:
+
+Rint.Logon: ~/rootlogon.C
