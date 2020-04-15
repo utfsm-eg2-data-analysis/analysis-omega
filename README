@@ -22,4 +22,8 @@ Then,
 > $ cd ${PRODIR}
 > $ make
 
-Everything should work!
+Everything should work just fine by now!
+
+Just in case, you can set the directory structure by running
+
+$ ./sh/create_dir_structure.sh

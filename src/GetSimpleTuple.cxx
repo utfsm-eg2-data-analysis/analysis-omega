@@ -99,10 +99,9 @@ int main(int argc, char **argv) {
     output = new TFile(outFile, "RECREATE", "Data of particles"); // output file
   } else if (simFlag) {
     NtupleName = "ntuple_accept";
+    output = new TFile(outFile, "RECREATE", "Simulation of particles"); // output file
     ntuple_thrown = new TNtuple("ntuple_thrown", "particles pluses", VarList);
     e_thrown = new TNtuple("e_thrown", "All Electrons", VarListElec);
-
-    output = new TFile(outFile, "RECREATE", "Simulation of particles"); // output file
   }
   
   ntuple = new TNtuple(NtupleName, "Stable particles", VarList);
