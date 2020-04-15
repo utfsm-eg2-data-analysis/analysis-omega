@@ -33,11 +33,13 @@
 #include "TObjArray.h"
 #include "TVector3.h"
 #include "TDatabasePDG.h"
+#include "TParticlePDG.h"
+#include "TNtuple.h"
 
 /*** Global variables ***/
 
 TString proDir = getenv("PRODIR");
-TString incDir = proDir + "/include";
+TString tmpDir = proDir + "/tmp";
 
 TString dataDir   = proDir + "/out/filterData";
 TString gsimDir   = proDir + "/out/filterSim/gsim";

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+qsub submit-bad-Pb.sh
+qsub submit-jlab-D.sh
+qsub submit-jlab-Pb.sh

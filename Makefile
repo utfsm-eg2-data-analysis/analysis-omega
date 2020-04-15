@@ -18,8 +18,8 @@ CXX := c++
 LD := c++
 
 ifeq ($(shell echo $${HOSTNAME}),)
-	CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS)
-	LDFLAGS := -g -O0 $(ROOTLDFLAGS)
+	CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # O0
+	LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
 else ifeq ($(shell echo $${HOSTNAME}),ui01.hpc.utfsm.cl)
 	CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS)
 	LDFLAGS := -g -O2 $(ROOTLDFLAGS)
@@ -36,7 +36,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
 
 PROG := MakePlots MakePlots_old GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs Test MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
-	FilterNCombine
+	FilterNCombine GetSimpleTuple
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   TString auxLine;
   while (inFile >> auxLine) {
     inputFile = auxLine;
-    std::cout << "auxLine=" << auxLine << std::endl;
+    std::cout << "  inputFile = " << inputFile << std::endl;
   }
   inFile.close();
   
@@ -348,18 +348,26 @@ int main(int argc, char **argv) {
 	  // assigning energy
 	  // for gammas is corrected from a primitive sampling fraction, hence the factor 0.272
 	  // for pions is assigned from the measured momentum and a constant invariant mass (pdg)
-	  if (tPid == 22) {
-	    oE = tE/0.272;
-	  } else if (tPid == 211 || tPid == -211) {
-	    oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
+	  if (!gsimFlag) {
+	    if (tPid == 22) {
+	      oE = tE/0.272;
+	    } else if (tPid == 211 || tPid == -211) {
+	      oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
+	    }
+	  } else if (gsimFlag) {
+	    oE = tE;
 	  }
 	  // assigning momentum
 	  // for gammas is corrected with primitive sampling fraction and ECPB treatment
-	  if (tPid == 22) {
-	    oPx = CorrectGammaMomentum(0);
-	    oPy = CorrectGammaMomentum(1);
-	    oPz = CorrectGammaMomentum(2);
-	  } else if (tPid == 211 || tPid == -211) {
+	  if (!gsimFlag) {
+	    if (tPid == 22) {
+	      oPx = CorrectGammaMomentum(0);
+	      oPy = CorrectGammaMomentum(1);
+	      oPz = CorrectGammaMomentum(2);
+	    } else if (tPid == 211 || tPid == -211) {
+	      oPx = tPx; oPy = tPy; oPz = tPz;
+	    }
+	  } else if (gsimFlag) {
 	    oPx = tPx; oPy = tPy; oPz = tPz;
 	  }
 	  oTargType = (Int_t) tTargType;
@@ -526,26 +534,44 @@ int main(int argc, char **argv) {
 	    for (Int_t j = i; j < (i + nParticles); j++) {
 	      t->GetEntry(j);
 	      if (j == jGamma1) {
-		mE[0] = tE/0.272;                 // primitive sampling fraction
-		mPx[0] = CorrectGammaMomentum(0); // correction
-		mPy[0] = CorrectGammaMomentum(1); // correction
-		mPz[0] = CorrectGammaMomentum(2); // correction
+		if (!gsimFlag) {
+		  mE[0] = tE/0.272;                 // primitive sampling fraction
+		  mPx[0] = CorrectGammaMomentum(0); // correction
+		  mPy[0] = CorrectGammaMomentum(1); // correction
+		  mPz[0] = CorrectGammaMomentum(2); // correction
+		} else if (gsimFlag) {
+		  mE[0] = tE;
+		  mPx[0] = tPx;	mPy[0] = tPy; mPz[0] = tPz;
+		}		
 		mPid[0] = (Int_t) tPid;
 		mEntry[0] = jGamma1;
 	      } else if (j == jGamma2) {
-		mE[1] = tE/0.272;                 // primitive sampling fraction
-		mPx[1] = CorrectGammaMomentum(0); // correction
-		mPy[1] = CorrectGammaMomentum(1); // correction
-		mPz[1] = CorrectGammaMomentum(2); // correction
+		if (!gsimFlag) {
+		  mE[1] = tE/0.272;                 // primitive sampling fraction
+		  mPx[1] = CorrectGammaMomentum(0); // correction
+		  mPy[1] = CorrectGammaMomentum(1); // correction
+		  mPz[1] = CorrectGammaMomentum(2); // correction
+		} else if (gsimFlag) {
+		  mE[1] = tE;
+		  mPx[1] = tPx;	mPy[1] = tPy; mPz[1] = tPz;
+		}
 		mPid[1] = (Int_t) tPid;
 		mEntry[1] = jGamma2;
 	      } else if (j == jPip) {
-		mE[2] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
+		if (!gsimFlag) {
+		  mE[2] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
+		} else if (gsimFlag) {
+		  mE[2] = tE;
+		}
 		mPx[2] = tPx; mPy[2] = tPy; mPz[2] = tPz;
 		mPid[2] = (Int_t) tPid;
 		mEntry[2] = jPip;
 	      } else if (j == jPim) {
-		mE[3] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
+		if (!gsimFlag) {
+		  mE[3] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
+		} else if (gsimFlag) {
+		  mE[3] = tE;
+		}		  
 		mPx[3] = tPx; mPy[3] = tPy; mPz[3] = tPz;
 		mPid[3] = (Int_t) tPid;
 		mEntry[3] = jPim;
@@ -661,15 +687,15 @@ inline int parseCommandLine(int argc, char* argv[]) {
 void assignOptions() {
   // for data type
   if (dataFlag) {
-    textFile = incDir + "/FNC-data-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU-data-" + targetOption + ".tmp";
     outDir = dataDir + "/" + targetOption;
     treeName = "ntuple_data";
   } else if (simrecFlag) {
-    textFile = incDir + "/FNC-" + setName[setOption] + "-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU-" + setName[setOption] + "-" + targetOption + ".tmp";
     outDir = simrecDir + "/" + setName[setOption] + "/" + targetOption;
     treeName = "ntuple_accept";
   } else if (gsimFlag) {
-    textFile = incDir + "/FNC-" + setName[setOption] + "-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU-" + setName[setOption] + "-" + targetOption + ".tmp";
     outDir = gsimDir + "/" + setName[setOption] + "/" + targetOption;
     treeName = "ntuple_thrown";
   }
