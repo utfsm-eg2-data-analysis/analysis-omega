@@ -26,6 +26,9 @@ else ifeq ($(shell echo $${HOSTNAME}),ui01.hpc.utfsm.cl)
 else ifeq ($(shell echo $${HOSTNAME}),ui02.hpc.utfsm.cl)
 	CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS)
 	LDFLAGS := -g -O2 $(ROOTLDFLAGS)
+else
+	CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # O0
+	LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
 endif
 
 INCLUDES := -I$(ANALYSER)/include\
