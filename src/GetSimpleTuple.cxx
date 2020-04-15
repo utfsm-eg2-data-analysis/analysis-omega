@@ -19,12 +19,10 @@ TString textFile;
 TString outFile;
 
 TString targetOption;
-Int_t setOption;
+TString setOption;
 Int_t simFlag = 0;
 
 TString analyserOption;
-
-TString setName[3] = {"old", "usm", "jlab"};
 
 /*** Declaration of functions ***/
 
@@ -307,11 +305,11 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:ds:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
-    case 's': simFlag = 1; setOption = atoi(optarg); break;
+    case 'S': simFlag = 1; setOption = optarg; break;
     case 'd': simFlag = 0; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
@@ -335,13 +333,8 @@ void printUsage() {
   std::cout << "./GetSimpleTuple -d" << std::endl;
   std::cout << "    gets tuples from data" << std::endl;
   std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -s[0,1,2]" << std::endl;
+  std::cout << "./GetSimpleTuple -S[old,usm,jlab]" << std::endl;
   std::cout << "    gets tuples from set of simulations" << std::endl;
-  std::cout << std::endl;
-  std::cout << "Possible set options are: " << std::endl;
-  std::cout << "    0 = old" << std::endl;
-  std::cout << "    1 = usm" << std::endl;
-  std::cout << "    2 = jlab" << std::endl;
   std::cout << std::endl;
 }
 
@@ -356,11 +349,11 @@ void assignOptions() {
     outDir = proDir + "/out/prunedData/" + targetOption;
   } else if (simFlag) {
     // input
-    textFile = tmpDir + "/RAW-" + setName[setOption] + "-" + targetOption + ".tmp";
+    textFile = tmpDir + "/RAW-" + setOption + "-" + targetOption + ".tmp";
     // analyser
     analyserOption = "Sim";
     // out
-    outDir = proDir + "/out/prunedSim/" + setName[setOption] + "/" + targetOption;
+    outDir = proDir + "/out/prunedSim/" + setOption + "/" + targetOption;
   }
   // regardless of the data type
   outFile = outDir + "/pruned_out.root";

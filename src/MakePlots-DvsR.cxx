@@ -6,9 +6,10 @@
 /**************************************/
 
 // offers a comparison between data and simrec
+// works with old format!!
 // pending:
 // - add cut around omega mass
-// - add gsim
+// - add gsim (should develop a RvsG...)
 
 #include "analysisConfig.h"
 
@@ -185,6 +186,7 @@ void printUsage() {
   std::cout << "    P0(pi0)" << std::endl;
   std::cout << "    P+(pi+)" << std::endl;
   std::cout << "    P-(pi-)" << std::endl;
+  std::cout << "    M0(pi0)" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -z[3-7]" << std::endl;
   std::cout << "    turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
@@ -279,6 +281,11 @@ void assignOptions() {
     titleKinvar = "P(#pi^{-}) for ";
     titleXAxis = "P (GeV)";
     histProperties = "";
+  } else if (kinvarOption == "M0") {
+    toPlotKinvar = "mpi0";
+    titleKinvar = "IM(#gamma #gamma) for ";
+    titleXAxis = "IM (GeV)";
+    histProperties = "(200, 0., 1.6)";
   }
   // names
   plotFile = outDir + "/data_vs_simrec-" + targetOption + sufixZBin + "-" + toPlotKinvar + ".png";

@@ -5,9 +5,11 @@
 /*                                    */
 /**************************************/
 
-// Plots different kinvar spectrums, such as: IM(omega), IMD(omega), Q2, Z, Nu, Pt2, PhiPQ
+// Plots different kinvar spectrums, such as:
+//   {IM(omega), IMD(omega),
+//    Q2, Z, Nu, Pt2, PhiPQ, pi0M}
 // For different sets of targets: D, C, Fe, Pb
-// For data or simulation
+// For data only (for now)
 
 #include "analysisConfig.h"
 
@@ -125,32 +127,32 @@ void printUsage() {
   std::cout << "MakePlots program. Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -h" << std::endl;
-  std::cout << "  prints help and exit program" << std::endl;
+  std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -d" << std::endl;
-  std::cout << "  draws data" << std::endl;
+  std::cout << "    draws data" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -s" << std::endl;
-  std::cout << "  draws simrec" << std::endl;
+  std::cout << "    draws simrec" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -g" << std::endl;
-  std::cout << "  draws gsim" << std::endl;
+  std::cout << "    draws gsim" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -t[target]" << std::endl;
-  std::cout << "  selects target: D | C | Fe | Pb" << std::endl;
+  std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -k[kinvar]" << std::endl;
-  std::cout << "  sets kinvar to draw, it can be: " << std::endl;
-  std::cout << "  wM (omega invariant mass)" << std::endl;
-  std::cout << "  wD (omega invariant mass difference)" << std::endl;
-  std::cout << "  Q2" << std::endl;
-  std::cout << "  Nu" << std::endl;
-  std::cout << "  Z" << std::endl;
-  std::cout << "  Pt2" << std::endl;
-  std::cout << "  PhiPQ" << std::endl;
+  std::cout << "    sets kinvar to draw, it can be: " << std::endl;
+  std::cout << "    wM (omega invariant mass)" << std::endl;
+  std::cout << "    wD (omega invariant mass difference)" << std::endl;
+  std::cout << "    Q2" << std::endl;
+  std::cout << "    Nu" << std::endl;
+  std::cout << "    Z" << std::endl;
+  std::cout << "    Pt2" << std::endl;
+  std::cout << "    PhiPQ" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -z[3-7]" << std::endl;
-  std::cout << "  turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
+  std::cout << "    turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
   std::cout << std::endl;
 }
 
@@ -181,16 +183,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = simrecDir + "/jlab/D/wout_simrecD.root";
+      inputFile1 = simrecDir + "/jlab/D/comb_simrecD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/C/wout_simrecC.root";
+      inputFile1 = simrecDir + "/jlab/C/comb_simrecC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = simrecDir + "/jlab/Fe/comb_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/usm/Pb/wout_simrecPb.root";
+      inputFile1 = simrecDir + "/usm/Pb/comb_simrecPb.root";
     }
   } else if (gsimFlag) {
     outPrefix = "gsim";
@@ -198,16 +200,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = gsimDir + "/jlab/D/wout_simrecD.root";
+      inputFile1 = gsimDir + "/jlab/D/comb_gsimD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/jlab/C/wout_simrecC.root";
+      inputFile1 = gsimDir + "/jlab/C/comb_gsimC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = gsimDir + "/jlab/Fe/comb_gsimFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/usm/Pb/wout_simrecPb.root";
+      inputFile1 = gsimDir + "/usm/Pb/comb_gsimPb.root";
     }
   }
   // for Z binning
@@ -226,26 +228,30 @@ void assignOptions() {
     titleAxis = "IMD (GeV)";
     histProperties = "(200, 0., 1.6)";
   } else if (kinvarOption == "Q2") {
-    titleKinvar = "Q^{2}";
+    titleKinvar = "Q^{2} for ";
     titleAxis = "Q^{2} (GeV^{2})";
     histProperties = "(100, 1., 4.)";  
   } else if (kinvarOption == "Nu") {
-    titleKinvar = "#nu";
+    titleKinvar = "#nu for ";
     titleAxis = "#nu (GeV)";
     histProperties = "(200, 2.2, 4.2)";
   } else if (kinvarOption == "Z") {
-    titleKinvar = "Z";
+    titleKinvar = "Z for ";
     titleAxis = "Z";
     histProperties = "(100, 0., 1.2)";
-  } else if (kinvarOption == "PhiPQ") {
-    titleKinvar = "#phi_{PQ} ";
-    titleAxis = "#phi_{PQ} (degrees)";
-    histProperties = "(100, -180, 180.)";
   } else if (kinvarOption == "Pt2") {
-    titleKinvar = "p_{T}^{2} ";
+    titleKinvar = "p_{T}^{2} for ";
     titleAxis = "p_{T}^{2} (GeV^{2})";
     histProperties = "(100, 0., 1.5)";
-  }
+  } else if (kinvarOption == "PhiPQ") {
+    titleKinvar = "#phi_{PQ} for ";
+    titleAxis = "#phi_{PQ} (degrees)";
+    histProperties = "(100, -180, 180.)";
+  } else if (kinvarOption == "pi0M") {
+    titleKinvar = "IM(#gamma #gamma) for ";
+    titleAxis = "IM (GeV)";
+    histProperties = "(100, 0, 1.6)";
+  } 
   // output name
   plotFile = outDir + "/" + outPrefix + "-" + targetOption + "-" + kinvarOption + sufixZBin + ".png";
 }

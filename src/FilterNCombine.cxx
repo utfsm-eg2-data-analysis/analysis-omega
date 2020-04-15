@@ -6,10 +6,9 @@
 /*****************************************/
 
 // updated to filter simrec and gsim as well
-// now it needs a .tmp file to read, located in incDir
-// the sets are: {0,1,2} = {old, usm, jlab}
-
-// needs to update: don't correct if GSIM!
+// now it needs a .tmp file to read, located in tmpDir
+// the sets are: {old, usm, jlab}
+// updated: doesn't correct if GSIM!
 
 #include "analysisConfig.h"
 
@@ -28,10 +27,9 @@ TString targetOption;
 Int_t dataFlag   = 0;
 Int_t simrecFlag = 0;
 Int_t gsimFlag   = 0;
-Int_t setOption; // set of simulations
+TString setOption; // set of simulations
 
 TString treeName;
-TString setName[3] = {"old", "usm", "jlab"};
 
 TString outDir; // depends on data type
 TString outFile;
@@ -141,8 +139,8 @@ int main(int argc, char **argv) {
   t->SetBranchAddress("pid", &tPid);
   
   Ne = t->GetEntries();  
-  std::cout << "Number of entries to be processed: " << Ne << std::endl;
-  std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  // std::cout << "Number of entries to be processed: " << Ne << std::endl;
+  // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   
   /*** Output settings ***/
   
@@ -301,17 +299,17 @@ int main(int argc, char **argv) {
       if (previousEvent == currentEvent) continue;
     }
     
-    std::cout << "Current event number: " << currentEvent << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    // std::cout << "Current event number: " << currentEvent << std::endl;
+    // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
     // looks at the entries (particles) of the current event
     for (Int_t j = i; j < Ne; j++) {
       t->GetEntry(j);
       if (tEvent == (Float_t) currentEvent) {
-	std::cout << "  Entry number: " << j << std::endl;
-	std::cout << "  Event number: " << (Int_t) tEvent << std::endl;
-	std::cout << "  pid:          " << tPid << std::endl;
-	std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+	// std::cout << "  Entry number: " << j << std::endl;
+	// std::cout << "  Event number: " << (Int_t) tEvent << std::endl;
+	// std::cout << "  pid:          " << tPid << std::endl;
+	// std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 	// let's count the particles
 	if (tPid == (Float_t) 211) nPipThisEvent++;
 	if (tPid == (Float_t) -211) nPimThisEvent++;
@@ -322,10 +320,10 @@ int main(int argc, char **argv) {
     }
     
     // show counts
-    std::cout << "  nPip   = " << nPipThisEvent << std::endl;
-    std::cout << "  nPim   = " << nPimThisEvent << std::endl;
-    std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    // std::cout << "  nPip   = " << nPipThisEvent << std::endl;
+    // std::cout << "  nPim   = " << nPimThisEvent << std::endl;
+    // std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
+    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** Candidate appeared! ***/
 
@@ -525,10 +523,10 @@ int main(int argc, char **argv) {
 	      partialFlag = 1;
 	    }
 	    
-	    std::cout << "jGamma1=" << jGamma1 << std::endl;
-	    std::cout << "jGamma2=" << jGamma2 << std::endl;
-	    std::cout << "jPip=" << jPip << std::endl;
-	    std::cout << "jPim=" << jPim << std::endl;
+	    // std::cout << "jGamma1=" << jGamma1 << std::endl;
+	    // std::cout << "jGamma2=" << jGamma2 << std::endl;
+	    // std::cout << "jPip=" << jPip << std::endl;
+	    // std::cout << "jPim=" << jPim << std::endl;
 	    
 	    // now extract!
 	    for (Int_t j = i; j < (i + nParticles); j++) {
@@ -641,13 +639,13 @@ int main(int argc, char **argv) {
     nGammaThisEvent = 0;
     // sum events
     nEvents++;
-    std::cout << std::endl;
+    // std::cout << std::endl;
   }
 
   /*** Writing tree ***/
 
-  tOriginal->Print();
-  std::cout << std::endl;
+  // tOriginal->Print();
+  // std::cout << std::endl;
   tMix->Print();
   std::cout << std::endl;
   
@@ -670,13 +668,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:ds:g:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dR:G:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'd': dataFlag = 1; break;
-    case 's': simrecFlag = 1; setOption = atoi(optarg); break;
-    case 'g': gsimFlag = 1; setOption = atoi(optarg); break;
+    case 'R': simrecFlag = 1; setOption = optarg; break;
+    case 'G': gsimFlag = 1; setOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
       exit(0);
@@ -691,12 +689,12 @@ void assignOptions() {
     outDir = dataDir + "/" + targetOption;
     treeName = "ntuple_data";
   } else if (simrecFlag) {
-    textFile = tmpDir + "/PRU-" + setName[setOption] + "-" + targetOption + ".tmp";
-    outDir = simrecDir + "/" + setName[setOption] + "/" + targetOption;
+    textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
+    outDir = simrecDir + "/" + setOption + "/" + targetOption;
     treeName = "ntuple_accept";
   } else if (gsimFlag) {
-    textFile = tmpDir + "/PRU-" + setName[setOption] + "-" + targetOption + ".tmp";
-    outDir = gsimDir + "/" + setName[setOption] + "/" + targetOption;
+    textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
+    outDir = gsimDir + "/" + setOption + "/" + targetOption;
     treeName = "ntuple_thrown";
   }
   // independent of the choice the file will be called like this
@@ -716,16 +714,11 @@ void printUsage() {
   std::cout << "./FilterNCombine -d" << std::endl;
   std::cout << "    filters data" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -s[0,1,2]" << std::endl;
-  std::cout << "    filters simrec, integers stand for possible set" << std::endl;
+  std::cout << "./FilterNCombine -R[old, usm, jlab]" << std::endl;
+  std::cout << "    filters simrec for chosen set" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -g[0,1,2]" << std::endl;
-  std::cout << "    filters gsim, integers stand for possible set" << std::endl;
-  std::cout << std::endl;
-  std::cout << "Possible set options are: " << std::endl;
-  std::cout << "    0 = old" << std::endl;
-  std::cout << "    1 = usm" << std::endl;
-  std::cout << "    2 = jlab" << std::endl;
+  std::cout << "./FilterNCombine -G[old, usm, jlab]" << std::endl;
+  std::cout << "    filters gsim for chosen set" << std::endl;
   std::cout << std::endl;
 }
 
