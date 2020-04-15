@@ -6,37 +6,37 @@ GetSimpleTuple
 Analyser
 ClasTool
 
-To install the last two, one must require to:
+To install the last two, some systems will require the package `xutils-dev`
 
-sudo apt install xutils-dev
+Then, add in the end of `.bashrc`
 
-Then, add in the end of .bashrc
+> export OS_NAME=`uname`
+> export OSNAME=${OS_NAME}
+> 
+> export CLASTOOL=${PRODIR}/ext/ClasTool
+> export CLAS_LIB=${PRODIR}/ext/clas_lib
+> export CLAS_PACK=${PRODIR}/ext/clas_pack
+> export ANALYSER=${PRODIR}/ext/Analyser
+> 
+> export PATH=${CLASTOOL}/bin/${OSNAME}:${PATH}
+> export ROOT_INCLUDE_PATH=${ANALYSER}/include:${CLASTOOL}/include:${ROOT_INCLUDE_PATH}
+> export LD_LIBRARY_PATH=${CLASTOOL}/slib/${OS_NAME}:${ANALYSER}/slib:${LD_LIBRARY_PATH}
 
-export OS_NAME=`uname`
-export OSNAME=${OS_NAME}
+Then,
 
-export CLASTOOL=${PRODIR}/ext/ClasTool
-export CLAS_LIB=${PRODIR}/ext/clas_lib
-export CLAS_PACK=${PRODIR}/ext/clas_pack
-export ANALYSER=${PRODIR}/ext/Analyser
+> $ cd ${PRODIR}/ext/ClasTool
+> $ make
 
-export PATH=${CLASTOOL}/bin/${OSNAME}:${PATH}
-export ROOT_INCLUDE_PATH=${ANALYSER}/include:${CLASTOOL}/include:${ROOT_INCLUDE_PATH}
-export LD_LIBRARY_PATH=${CLASTOOL}/slib/${OS_NAME}:${ANALYSER}/slib:${LD_LIBRARY_PATH}
+> cd ${PRODIR}/ext/Analyser
+> make -j4
+> make
 
-then,
-
-cd ClasTool
-make
-
-cd Analyser
-make -j4
-make
-
-then, (this is because from certain version of ROOT, it requires all the dictionaries to be in the same dir than slibs)
+Then, (this is because from certain version of ROOT, it requires all the dictionaries to be in the same dir than slibs)
 
 inside Analyser dir
-sudo find . -name *.pcm exec cp -t ./slib/Linux {} +
 
-inside Analyser dir
-cp .dicts/TIdentificatorDict_rdict.pcm slib/
+> sudo find . -name *.pcm exec cp -t ./slib/Linux {} +
+
+inside ClasTool dir
+
+> cp .dicts/TIdentificatorDict_rdict.pcm slib/
