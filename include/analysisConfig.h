@@ -75,7 +75,7 @@ Int_t runNumbersPb = 169; // from 171; because I removed 41834 and 41979
 Int_t runNumbersTotal = runNumbersC + runNumbersFe + runNumbersPb;
 
 // [D,C,Fe,Pb][bin], obtained from GetElectronNumber.cxx
-// const Double_t electronNumber[4] = {,,,};
+const Double_t electronNumber[4] = {69544805., 15054966., 29018550., 11256909.};
 const Double_t electronNumberQ2[4][5] = {{12842908., 13596600., 13772639., 14536805., 14795432.},
 					 {2815127., 2969424., 2983337., 3136969., 3149865.},
 					 {5472138., 5782588., 5778550., 6038794., 5946114.},

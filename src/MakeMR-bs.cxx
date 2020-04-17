@@ -110,6 +110,62 @@ int main(int argc, char **argv) {
     }
   }
 
+  /*** Prepare Electron Numbers ***/
+
+  // creating and filling histograms
+  TH1F *DeutElectronN = new TH1F("DeutElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *CarbonElectronN = new TH1F("CarbonElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *IronElectronN = new TH1F("IronElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *LeadElectronN = new TH1F("LeadElectronN", "", kinvarNbins, 0.5, 1.);
+  
+  // for each bin in kinvar
+  if (kinvarOption == "Z" || kinvarOption == "Pt2") {
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumber[0]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[0]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumber[1]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[1]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumber[2]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[2]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumber[3]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[3]));
+    }
+  } else if (kinvarOption == "Q2") {
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumberQ2[0][cc]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[0][cc]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumberQ2[1][cc]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[1][cc]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumberQ2[2][cc]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[2][cc]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumberQ2[3][cc]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[3][cc]));
+    }
+  } else if (kinvarOption == "Nu") { 
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumberNu[0][cc]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[0][cc]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumberNu[1][cc]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[1][cc]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumberNu[2][cc]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[2][cc]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumberNu[3][cc]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[3][cc]));
+    }
+  }
+  
   /*** Start Method 1 ***/
   
   if (Nmethod == 1) {
@@ -135,7 +191,22 @@ int main(int argc, char **argv) {
       LeadOmegaN_fit->SetBinError(cc + 1, omegaError_fit[3][cc]);
     }
 
-    // drawing
+    /*** Hadronic Ratios ***/
+
+    TH1F *DeutHR = new TH1F("DeutHR", "", kinvarNbins, 0.5, 1.);
+    DeutHR->Divide(DeutOmegaN_fit, DeutElectronN);
+
+    TH1F *CarbonHR = new TH1F("CarbonHR", "", kinvarNbins, 0.5, 1.);
+    CarbonHR->Divide(CarbonOmegaN_fit, CarbonElectronN);
+
+    TH1F *IronHR = new TH1F("IronHR", "", kinvarNbins, 0.5, 1.);
+    IronHR->Divide(IronOmegaN_fit, IronElectronN);
+
+    TH1F *LeadHR = new TH1F("LeadHR", "", kinvarNbins, 0.5, 1.);
+    LeadHR->Divide(LeadOmegaN_fit, LeadElectronN);
+    
+    /*** Drawing Multiplicity Ratios ***/
+    
     TCanvas *c = new TCanvas("c", "c", 1000, 1000);
     c->SetGridx(1);
     c->SetGridy(1);
@@ -143,9 +214,8 @@ int main(int argc, char **argv) {
     gStyle->SetOptStat(0);
   
     TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
-    CarbonMR->Divide(CarbonOmegaN_fit, DeutOmegaN_fit);
-    CarbonMR->Scale(4.6194); // electron normalization
-
+    CarbonMR->Divide(CarbonHR, DeutHR);
+    
     CarbonMR->SetTitle("#omega MR(" + kinvarOption + ") - Subtracted Bkg");
     CarbonMR->GetXaxis()->SetTitle(kinvarOption);
     CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
@@ -162,8 +232,7 @@ int main(int argc, char **argv) {
     CarbonMR->Draw("E1");
 
     TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
-    IronMR->Divide(IronOmegaN_fit, DeutOmegaN_fit);
-    IronMR->Scale(2.3966); // electron normalization
+    IronMR->Divide(IronHR, DeutHR);
   
     IronMR->SetMarkerColor(kBlue);
     IronMR->SetLineColor(kBlue);
@@ -173,8 +242,7 @@ int main(int argc, char **argv) {
     IronMR->Draw("E1 SAME");
   
     TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
-    LeadMR->Divide(LeadOmegaN_fit, DeutOmegaN_fit);
-    LeadMR->Scale(6.1780); // electron normalization
+    LeadMR->Divide(LeadHR, DeutHR);
 
     LeadMR->SetMarkerColor(kBlack);
     LeadMR->SetLineColor(kBlack);
