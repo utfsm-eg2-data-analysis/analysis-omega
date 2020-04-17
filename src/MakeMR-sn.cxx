@@ -1,7 +1,7 @@
 /**************************************/
 /* MakeMR-sn.cxx                      */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Created by Andrés Bórquez          */
 /*                                    */
 /**************************************/
 
@@ -16,14 +16,9 @@
 TString outDir = proDir + "/out/MakeMR/sn";
 TString fitDir = proDir + "/out/MakeRooFits";
 
-// parameters
-Int_t flagZ = 0;
-Int_t flagQ2 = 0;
-Int_t flagNu = 0;
-Int_t flagPt2 = 0;
+TString kinvarOption;
 
 // for kinvar
-TString  kinvarName;
 Int_t    kinvarConstant = 1; // default for (Q2, Nu, Pt2)
 Int_t    kinvarNbins = 5;    // default for all
 TString  kinvarSufix;
@@ -36,6 +31,7 @@ TString plotFile1;
 TString plotFile2;
 TString plotFile3;
 TString plotFile4;
+TString plotFileR; // new!
 
 TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
@@ -95,7 +91,7 @@ int main(int argc, char **argv) {
 	  omegaNumber_fit[targIndex][index] = auxString1.Atof();
 	  omegaError_fit[targIndex][index] = auxString2.Atof();
 	  std::cout << "  Omega Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaNumber_fit[targIndex][index] << " +/- " << omegaError_fit[targIndex][index] << std::endl;
-	} else if (l == 5) {
+	} else if (l == 4) { // updated!
 	  bkgNumber[targIndex][index] = auxString1.Atof();
 	  bkgError[targIndex][index] = auxString2.Atof();
 	  std::cout << "  Bkg Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << bkgNumber[targIndex][index] << " +/- " << bkgError[targIndex][index] << std::endl;
@@ -150,8 +146,11 @@ int main(int argc, char **argv) {
   gStyle->SetOptStat(0);
   
   TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
-  CarbonMR->SetTitle("#omega MR(" + kinvarName + ") - NBS #omega(5#sigma)");
-  CarbonMR->GetXaxis()->SetTitle(kinvarName);
+  CarbonMR->Divide(CarbonOmegaN_int, DeutOmegaN_int);
+  CarbonMR->Scale(4.6194); // electron normalization
+  
+  CarbonMR->SetTitle("#omega MR(" + kinvarOption + ") - NBS #omega(5#sigma)");
+  CarbonMR->GetXaxis()->SetTitle(kinvarOption);
   CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
   CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
   CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
@@ -165,29 +164,29 @@ int main(int argc, char **argv) {
   CarbonMR->SetLineColor(kRed);
   CarbonMR->SetLineWidth(3);
   CarbonMR->SetMarkerStyle(21);
-  CarbonMR->Divide(CarbonOmegaN_int, DeutOmegaN_int);
-  CarbonMR->Scale(4.6194); // electron normalization
   
   CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
   CarbonMR->Draw("E");  
   
   TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
+  IronMR->Divide(IronOmegaN_int, DeutOmegaN_int);
+  IronMR->Scale(2.3966); // electron normalization
+
   IronMR->SetMarkerColor(kBlue);
   IronMR->SetLineColor(kBlue);
   IronMR->SetLineWidth(3);
   IronMR->SetMarkerStyle(21);
-  IronMR->Divide(IronOmegaN_int, DeutOmegaN_int);
-  IronMR->Scale(2.3966); // electron normalization
   
   IronMR->Draw("E SAME");
 
   TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
+  LeadMR->Divide(LeadOmegaN_int, DeutOmegaN_int);
+  LeadMR->Scale(6.1780); // electron normalization
+
   LeadMR->SetMarkerColor(kBlack);
   LeadMR->SetLineColor(kBlack);
   LeadMR->SetLineWidth(3);
   LeadMR->SetMarkerStyle(21);
-  LeadMR->Divide(LeadOmegaN_int, DeutOmegaN_int);
-  LeadMR->Scale(6.1780); // electron normalization
   
   LeadMR->Draw("E SAME");
     
@@ -309,14 +308,67 @@ int main(int argc, char **argv) {
 
   c2->Print(plotFile2);
 
-  /*** Obtaining correction factors ***/
-  
+  /*** SR: SN_A/SN_D (request by OS) ***/
+
+  TCanvas *cr = new TCanvas("cr", "cr", 1000, 1000);
+  cr->SetGridx(1);
+  cr->SetGridy(1);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+
+  // definition of 1
   TH1F *unitaryHist = new TH1F("unitaryHist", "", kinvarNbins, 0.5, 1.);
   for (Int_t u = 1; u <= kinvarNbins; u++) {
     unitaryHist->SetBinContent(u, 1.);
     unitaryHist->SetBinError(u, 0.);
   }
 
+  TH1F *CarbonSR = new TH1F("CarbonSR", "", kinvarNbins, 0.5, 1.);
+  CarbonSR->Divide(SNCarbonHist, SNDeutHist);
+
+  CarbonSR->SetTitle("#omega SR(" + kinvarOption + ")");
+  CarbonSR->GetXaxis()->SetTitle(kinvarOption);
+  CarbonSR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
+  CarbonSR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
+  CarbonSR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
+  CarbonSR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
+  CarbonSR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
+  CarbonSR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
+  CarbonSR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
+  CarbonSR->GetYaxis()->SetTitle("SR");
+  CarbonSR->SetAxisRange(0., 3., "Y"); // range
+
+  CarbonSR->SetMarkerColor(kRed);
+  CarbonSR->SetLineColor(kRed);
+  CarbonSR->SetLineWidth(3);
+  CarbonSR->SetMarkerStyle(21);
+  
+  CarbonSR->Draw("E");
+  
+  TH1F *IronSR = new TH1F("IronSR", "", kinvarNbins, 0.5, 1.);
+  IronSR->Divide(SNIronHist, SNDeutHist);
+
+  IronSR->SetMarkerColor(kBlue);
+  IronSR->SetLineColor(kBlue);
+  IronSR->SetLineWidth(3);
+  IronSR->SetMarkerStyle(21);
+  
+  IronSR->Draw("E SAME");
+  
+  TH1F *LeadSR = new TH1F("LeadSR", "", kinvarNbins, 0.5, 1.);
+  LeadSR->Divide(SNLeadHist, SNDeutHist);
+
+  LeadSR->SetMarkerColor(kBlack);
+  LeadSR->SetLineColor(kBlack);
+  LeadSR->SetLineWidth(3);
+  LeadSR->SetMarkerStyle(21);
+  
+  LeadSR->Draw("E SAME");
+
+  cr->Print(plotFileR);
+
+  /*** Obtaining deltas = (1 + 1/SN) ***/
+    
   TH1F *deltaDeut = new TH1F("deltaDeut", "", kinvarNbins, 0.5, 1.);
   deltaDeut->Add(SNDeutHist, unitaryHist);
   deltaDeut->Divide(SNDeutHist);
@@ -336,20 +388,20 @@ int main(int argc, char **argv) {
   // debug
   testErrorProp1(SNDeutHist, deltaDeut);
   std::cout << std::endl;
-  
-  // drawing
+    
+  /*** DR: delta ratio ***/
+
   TCanvas *c3 = new TCanvas("c3", "c3", 1000, 1000);
   c3->SetGridx(1);
   c3->SetGridy(1);
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
   
-  // the DR: delta ratio
   TH1F *CarbonDR = new TH1F("CarbonDR", "", kinvarNbins, 0.5, 1.);
   CarbonDR->Divide(deltaDeut, deltaCarbon);
 
-  CarbonDR->SetTitle("#omega DR(" + kinvarName + ")");
-  CarbonDR->GetXaxis()->SetTitle(kinvarName);
+  CarbonDR->SetTitle("#omega DR(" + kinvarOption + ")");
+  CarbonDR->GetXaxis()->SetTitle(kinvarOption);
   CarbonDR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
   CarbonDR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
   CarbonDR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
@@ -396,7 +448,7 @@ int main(int argc, char **argv) {
 
   c3->Print(plotFile3); // output file
 
-  /*** Final stage ***/
+  /*** Obtain MR ***/
 
   TCanvas *c4 = new TCanvas("c4", "c4", 1000, 1000);
   c4->SetGridx(1);
@@ -407,8 +459,8 @@ int main(int argc, char **argv) {
   TH1F *CarbonMR_sn = new TH1F("CarbonMR_sn", "", kinvarNbins, 0.5, 1.);
   CarbonMR_sn->Multiply(CarbonMR, CarbonDR);
 
-  CarbonMR_sn->SetTitle("#omega MR(" + kinvarName + ") using SN as Correction Factor");
-  CarbonMR_sn->GetXaxis()->SetTitle(kinvarName);
+  CarbonMR_sn->SetTitle("#omega MR(" + kinvarOption + ") using SN as Correction Factor");
+  CarbonMR_sn->GetXaxis()->SetTitle(kinvarOption);
   CarbonMR_sn->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
   CarbonMR_sn->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
   CarbonMR_sn->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
@@ -493,13 +545,10 @@ inline void parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeMR-sn -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hzqnp")) != -1)
+  while ((c = getopt(argc, argv, "hk:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 'z': flagZ = 1; break;
-    case 'q': flagQ2 = 1; break;
-    case 'n': flagNu = 1; break;
-    case 'p': flagPt2 = 1; break;
+    case 'k': kinvarOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeMR-sn -h to print usage." << std::endl;
       exit(0);
@@ -513,44 +562,38 @@ void printUsage() {
   std::cout << "./MakeMR-sn -h" << std::endl;
   std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeMR-sn -[kinvar]" << std::endl;
+  std::cout << "./MakeMR-sn -k[kinvar]" << std::endl;
   std::cout << "    (exclusive and mandatory)" << std::endl;
-  std::cout << "    z : Z" << std::endl;
-  std::cout << "    q : Q2" << std::endl;
-  std::cout << "    n : Nu" << std::endl;
-  std::cout << "    p : Pt2" << std::endl;
+  std::cout << "    selects kinvar option: Z, Q2, Nu, Pt2" << std::endl;
   std::cout << std::endl;
 }
 
 void assignOptions() {
   // for kinvar
-  if (flagZ) {
-    kinvarName = "Z";
+  if (kinvarOption == "Z") {
     kinvarConstant = 3;
     kinvarSufix = "-z";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
-  } else if (flagQ2) {
-    kinvarName = "Q2";
+  } else if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
-  } else if (flagNu) {
-    kinvarName = "Nu";
+  } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
-  } else if (flagPt2) {
-    kinvarName = "Pt2";
+  } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
   // input files
-  fitDir = fitDir + "/" + kinvarName;
+  fitDir = fitDir + "/" + kinvarOption + "/g/b1"; // updated...
   // for output files
-  plotFile1 = outDir + "/nbs-MR-" + kinvarName + ".png";
-  textFile1 = outDir + "/nbs-MR-" + kinvarName + ".dat";
-  plotFile2 = outDir + "/sn-" + kinvarName + ".png";
-  plotFile3 = outDir + "/DR-" + kinvarName + ".png";
-  plotFile4 = outDir + "/sn-MR-" + kinvarName + ".png";
-  textFile2 = outDir + "/sn-MR-" + kinvarName + ".dat";
+  plotFile1 = outDir + "/nbs-MR-" + kinvarOption + ".png";
+  textFile1 = outDir + "/nbs-MR-" + kinvarOption + ".dat";
+  plotFile2 = outDir + "/SN-" + kinvarOption + ".png";
+  plotFile3 = outDir + "/DR-" + kinvarOption + ".png";
+  plotFile4 = outDir + "/sn-MR-" + kinvarOption + ".png";
+  textFile2 = outDir + "/sn-MR-" + kinvarOption + ".dat";
+  plotFileR = outDir + "/SR-" + kinvarOption + ".png"; // new!
 }
 
 void integrateData(TString targetOption) {
@@ -604,7 +647,7 @@ void integrateData(TString targetOption) {
     TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
     
     TCut kinvarCut;
-    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarEdges[index+1]);
+    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarOption + " && " + kinvarOption + Form(" < %f", kinvarEdges[index+1]);
     TCut cutMass = Form("%f < wD && wD < %f", massEdges[targIndex][index][0], massEdges[targIndex][index][1]);
     
     TH1F *dataHist;

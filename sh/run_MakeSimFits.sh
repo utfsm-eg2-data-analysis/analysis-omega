@@ -1,30 +1,54 @@
 #!/bin/bash
 
-OUDIR=${PRODIR}/out/MakeSimFits/Z
 cd ${PRODIR}
-
 ./bin/MakeSimFits -h
 
-./bin/MakeSimFits -tD -z3 > ${OUDIR}/simfit-D-z3.log
-./bin/MakeSimFits -tD -z4 > ${OUDIR}/simfit-D-z4.log
-./bin/MakeSimFits -tD -z5 > ${OUDIR}/simfit-D-z5.log
-./bin/MakeSimFits -tD -z6 > ${OUDIR}/simfit-D-z6.log
-./bin/MakeSimFits -tD -z7 > ${OUDIR}/simfit-D-z7.log
+# first try
+./bin/MakeSimFits -tD -z3 -S
+./bin/MakeSimFits -tD -z4 -S 
+./bin/MakeSimFits -tD -z5 -S
+./bin/MakeSimFits -tD -z6 -S 
+./bin/MakeSimFits -tD -z7 -S 
 
-./bin/MakeSimFits -tC -z3 > ${OUDIR}/simfit-C-z3.log
-./bin/MakeSimFits -tC -z4 > ${OUDIR}/simfit-C-z4.log
-./bin/MakeSimFits -tC -z5 > ${OUDIR}/simfit-C-z5.log
-./bin/MakeSimFits -tC -z6 > ${OUDIR}/simfit-C-z6.log
-./bin/MakeSimFits -tC -z7 > ${OUDIR}/simfit-C-z7.log
+./bin/MakeSimFits -tC -z3 -S 
+./bin/MakeSimFits -tC -z4 -S 
+./bin/MakeSimFits -tC -z5 -S 
+./bin/MakeSimFits -tC -z6 -S 
+./bin/MakeSimFits -tC -z7 -S 
 
-./bin/MakeSimFits -tFe -z3 > ${OUDIR}/simfit-Fe-z3.log
-./bin/MakeSimFits -tFe -z4 > ${OUDIR}/simfit-Fe-z4.log
-./bin/MakeSimFits -tFe -z5 > ${OUDIR}/simfit-Fe-z5.log
-./bin/MakeSimFits -tFe -z6 > ${OUDIR}/simfit-Fe-z6.log
-./bin/MakeSimFits -tFe -z7 > ${OUDIR}/simfit-Fe-z7.log
+./bin/MakeSimFits -tFe -z3 -S
+./bin/MakeSimFits -tFe -z4 -S
+./bin/MakeSimFits -tFe -z5 -S
+./bin/MakeSimFits -tFe -z6 -S
+./bin/MakeSimFits -tFe -z7 -S
 
-./bin/MakeSimFits -tPb -z3 > ${OUDIR}/simfit-Pb-z3.log
-./bin/MakeSimFits -tPb -z4 > ${OUDIR}/simfit-Pb-z4.log
-./bin/MakeSimFits -tPb -z5 > ${OUDIR}/simfit-Pb-z5.log
-./bin/MakeSimFits -tPb -z6 > ${OUDIR}/simfit-Pb-z6.log
-./bin/MakeSimFits -tPb -z7 > ${OUDIR}/simfit-Pb-z7.log
+./bin/MakeSimFits -tPb -z3 -S
+./bin/MakeSimFits -tPb -z4 -S
+./bin/MakeSimFits -tPb -z5 -S
+./bin/MakeSimFits -tPb -z6 -S
+./bin/MakeSimFits -tPb -z7 -S
+
+# second try
+./bin/MakeSimFits -tD -z3
+./bin/MakeSimFits -tD -z4 
+./bin/MakeSimFits -tD -z5
+./bin/MakeSimFits -tD -z6 
+./bin/MakeSimFits -tD -z7 
+
+./bin/MakeSimFits -tC -z3 
+./bin/MakeSimFits -tC -z4 
+./bin/MakeSimFits -tC -z5 
+./bin/MakeSimFits -tC -z6 
+./bin/MakeSimFits -tC -z7 
+
+./bin/MakeSimFits -tFe -z3
+./bin/MakeSimFits -tFe -z4
+./bin/MakeSimFits -tFe -z5
+./bin/MakeSimFits -tFe -z6
+./bin/MakeSimFits -tFe -z7
+
+./bin/MakeSimFits -tPb -z3
+./bin/MakeSimFits -tPb -z4
+./bin/MakeSimFits -tPb -z5
+./bin/MakeSimFits -tPb -z6
+./bin/MakeSimFits -tPb -z7

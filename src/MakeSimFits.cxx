@@ -1,7 +1,7 @@
 /**************************************/
 /* MakeSimFits.cxx                    */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Created by Andrés Bórquez          */
 /*                                    */
 /**************************************/
 
@@ -50,8 +50,14 @@ Int_t   binNumber;
 TCut    kinvarCut;
 
 // names
-TString plotName;
-TString textName;
+TString plotFile;
+TString textFile;
+
+Int_t flagNew = 0;
+Double_t obtMean = 0.37;
+Double_t obtSigma = 1.75e-2;
+Double_t obtEdges[2] = {0.27, 0.47}; // default
+Int_t    obtNbins = 40; // default
 
 /*** Declaration of functions ***/
 
@@ -74,28 +80,62 @@ int main(int argc, char **argv) {
 
   TChain *treeExtracted = new TChain();
   treeExtracted->Add(inputFile + "/outdata");
-
   setAlias_old(treeExtracted);
+
+  /*** Read previous results ***/
+
+  // if this is an iteration
+  if (!flagNew) {
+    std::cout << std::endl;
+    std::cout << "Reading previous file " << textFile << " ..." << std::endl;
+    std::ifstream inFile(textFile);
+    
+    TString auxString1, auxString2;
+    Int_t l = 0; // line counter
+    while (inFile >> auxString1 >> auxString2) {
+      l++;
+      if (l == 1) { // first line
+	obtMean = auxString1.Atof();
+	std::cout << "  Omega Mean for " << targetOption << kinvarSufix << ": " << obtMean << std::endl;
+      } else if (l == 2) { // second line
+	obtSigma = auxString1.Atof();
+	std::cout << "  Omega Sigma for " << targetOption << kinvarSufix << ": " << obtSigma << std::endl;
+      }
+    }
+    inFile.close();
+    
+    // keep fit range
+    obtEdges[0] = obtMean - 3*obtSigma; // 5
+    obtEdges[1] = obtMean + 3*obtSigma; // 5
+    std::cout << "  fitRange-" << targetOption << kinvarSufix << " = [" << obtEdges[0] << ", " << obtEdges[1] << "]" << std::endl;
+    // round to the 2nd digit
+    obtEdges[0] = round(100*(obtEdges[0]))/100;
+    obtEdges[1] = round(100*(obtEdges[1]))/100;
+    std::cout << "  fitRange-" << targetOption << kinvarSufix << " = [" << obtEdges[0] << ", " << obtEdges[1] << "]" << std::endl;
+    // number of bins
+    obtNbins = (Int_t) ((obtEdges[1] - obtEdges[0])/5e-3);
+    std::cout << "obtNbins-" << targetOption << kinvarSufix << " = " << obtNbins << std::endl;
+    std::cout << std::endl;
+  }
   
   /*** Fit ***/
   
   // bin x-width = 5 MeV
-  Int_t Nbins = 40; // 40
-  Double_t fitRangeDown = 0.270; // preMean.getValV() - 5*preSigma.getValV() = 0.268
-  Double_t fitRangeUp = 0.470; // preMean.getValV() + 5*preSigma.getValV() = 0.468
+  Int_t Nbins = obtNbins;
+  Double_t fitRangeDown = obtEdges[0]; // preMean.getValV() - 5*preSigma.getValV() = 0.268
+  Double_t fitRangeUp = obtEdges[1]; // preMean.getValV() + 5*preSigma.getValV() = 0.468
 
-  Double_t meanIGV = 0.37;
+  Double_t meanIGV = obtMean;
   Double_t meanRangeDown = 0.36;
   Double_t meanRangeUp = 0.39; // 0.38
 
-  Double_t sigmaIGV = 1.75e-2;
+  Double_t sigmaIGV = obtSigma;
   Double_t sigmaRangeDown = 1.6e-2; // 1.5
   Double_t sigmaRangeUp = 2.4e-2; // 3.5
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("deltam>>simrec(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
   dataHist = (TH1F *)gROOT->FindObject("simrec");
-  Double_t N_d = dataHist->Integral(1,Nbins);
   
   /*** RooFit stuff ***/
 
@@ -103,10 +143,9 @@ int main(int argc, char **argv) {
 
   RooRealVar omegaMean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
   RooRealVar omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
-  RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);  
+  RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);
 
   RooRealVar b1("b1", "linear term", 0.1, -10, 10);
-  // RooRealVar b2("b2", "quadratic term", 0.1, -10, 10);
   RooChebychev bkg("bkg", "background", x, RooArgList(b1));
 
   // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
@@ -123,39 +162,76 @@ int main(int argc, char **argv) {
   
   // fit the normal way
   RooFitResult *r1 = model.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-
   r1->Print("v");
 
   // define constraints
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.002));
-
+  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.001));
   RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
   
   // fit constraint model
   RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-
   r2->Print("v");
   
-  // draw data and fit into frame
+  // draw points
   data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
+  
+  // visualize error
+  cmodel.plotOn(frame, VisualizeError(*r2, 1, kFALSE), FillColor(kRed-9));                     // FillStyle(3001)
+  cmodel.plotOn(frame, Components("bkg"), VisualizeError(*r2, 1, kFALSE), FillColor(kBlue-9)); // DrawOption("L"), LineWidth(2), LineColor(kRed)
+
+  // overlay data points
+  data.plotOn(frame, Name("Data"));
+  
+  // overlay center values
   cmodel.plotOn(frame, Name("Model"), LineColor(kRed));
-  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   
   // add params
-  cmodel.paramOn(frame, Layout(0.1, 0.3, 0.9)); // x1, x2, delta-y
-  frame->getAttText()->SetTextSize(0.03);
-
+  cmodel.paramOn(frame, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frame->getAttText()->SetTextSize(0.025);
+  frame->getAttLine()->SetLineWidth(0);
+  
   frame->GetXaxis()->CenterTitle();
   frame->GetYaxis()->SetTitle("Counts");
   frame->GetYaxis()->CenterTitle();
   
-  // check how that integration goes...
-  Double_t N_omega = nsig.getValV();
-  Double_t N_bkg = nbkg.getValV();
-  Double_t N_sum = N_omega + N_bkg;
-    
   // draw!
-  TCanvas *c = new TCanvas("c", "c", 1366, 768);
+  TCanvas *c = new TCanvas("c", "c", 1360, 1700); // 16:20
+  c->Divide(1, 2); // two vertical pads
+  
+  c->GetPad(1)->SetPad(0., 0.3, 1., 1.); // x1,y1,x2,y2
+  c->GetPad(1)->SetTopMargin(0.1);
+  c->GetPad(1)->SetBottomMargin(0.1);
+  
+  c->GetPad(2)->SetPad(0., 0., 1., 0.3); // x1,y1,x2,y2
+  c->GetPad(2)->SetTopMargin(0.0);
+  c->GetPad(2)->SetBottomMargin(0.1);
+
+  // drawing pull hist (taking into account only global fit)
+  c->cd(2);
+  
+  RooHist *pull = frame->pullHist();
+  
+  RooPlot *frame2 = x.frame(Title(""), Bins(Nbins));
+  frame2->SetTitle("");
+  frame2->addPlotable(pull);
+  frame2->GetXaxis()->SetTickSize(0.07);
+  frame2->GetXaxis()->SetLabelSize(0.07);
+  frame2->GetXaxis()->SetTitle("");
+  frame2->SetMaximum(4.5);
+  frame2->SetMinimum(-4.5);
+  frame2->GetYaxis()->SetLabelSize(0.07);
+  frame2->GetYaxis()->SetTitleSize(0.07);
+  frame2->GetYaxis()->SetTitleOffset(0.375);
+  frame2->GetYaxis()->SetTitle("Pull");
+  frame2->GetYaxis()->CenterTitle();
+  frame2->Draw();
+  
+  drawHorizontalLine(3);
+  drawBlackHorizontalLine(0);
+  drawHorizontalLine(-3);
+
+  c->cd(1);
+  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   frame->Draw();
   
   // draw lines
@@ -163,28 +239,22 @@ int main(int argc, char **argv) {
   drawVerticalLineBlack(omegaMean.getValV());
   drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
   
-  c->Print(plotName); // output file
-
-  std::cout << "N_d=" << N_d << std::endl;
-  std::cout << "N_sum=" << N_sum << std::endl;
-  std::cout << "N_omega=" << N_omega << std::endl;
-  std::cout << "N_bkg=" << N_bkg << std::endl;
-
+  c->Print(plotFile); // output file    
+  
   /*** Save data from fit ***/
 
-  std::cout << "Writing " << textName << " ..." << std::endl;
-  std::ofstream outFinalFile(textName, std::ios::out); // output file
+  std::cout << "Writing " << textFile << " ..." << std::endl;
+  std::ofstream outFinalFile(textFile, std::ios::out); // output file
   // line 1: omegaMean
   outFinalFile << omegaMean.getValV() << "\t" << omegaMean.getError() << std::endl;
   // line 2: omegaSigma
   outFinalFile << omegaSigma.getValV() << "\t" << omegaSigma.getError() << std::endl;
-  // line 3: number of omega particles (directly from parameter)
+  // line 3: number of omega
   outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
-  // line 4: b1
-  outFinalFile << b1.getValV() << "\t" << b1.getError() << std::endl;
-  // line 5: bkgYields
+  // line 4: number of bkg
   outFinalFile << nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
-  std::cout << "Text file " << textName << " has been created!" << std::endl;
+  std::cout << "File " << textFile << " has been created!" << std::endl;
+  std::cout << std::endl;
   
   return 0;
 }
@@ -197,7 +267,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeSimFits -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:z:q:n:p:")) != -1)
+  while ((c = getopt(argc, argv, "ht:z:q:n:p:S")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
@@ -205,6 +275,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'q': flagQ2 = 1; binNumber = atoi(optarg); break;
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
+    case 'S': flagNew = 1; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeSimFits -h to print usage." << std::endl;
       exit(0);
@@ -217,6 +288,7 @@ void printOptions() {
   std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  kinvarName   = " << kinvarName << std::endl;
   std::cout << "  binNumber    = " << binNumber << std::endl;
+  std::cout << "  flagNew      = " << flagNew << std::endl;
   std::cout << std::endl;
 }
 
@@ -225,6 +297,9 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./MakeSimFits -h" << std::endl;
   std::cout << "    prints usage and exit program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeSimFits -S" << std::endl;
+  std::cout << "    use it when fitting for first time" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakeSimFits -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
@@ -280,6 +355,6 @@ void assignOptions() {
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
   // names
   outDir = outDir + "/" + kinvarName;
-  plotName = outDir + "/simfit-" + targetOption + kinvarSufix + ".png";
-  textName = outDir + "/simfit-" + targetOption + kinvarSufix + ".dat";
+  plotFile = outDir + "/simfit-" + targetOption + kinvarSufix + ".png";
+  textFile = outDir + "/simfit-" + targetOption + kinvarSufix + ".dat";
 }

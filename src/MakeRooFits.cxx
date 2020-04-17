@@ -113,8 +113,8 @@ int main(int argc, char **argv) {
     inFile.close();
     
     // keep fit range
-    obtEdges[0] = obtMean - 5*obtSigma;
-    obtEdges[1] = obtMean + 5*obtSigma;
+    obtEdges[0] = obtMean - 5*obtSigma; // 5
+    obtEdges[1] = obtMean + 5*obtSigma; //5
     std::cout << "fitRange-" << targetOption << kinvarSufix << " = [" << obtEdges[0] << ", " << obtEdges[1] << "]" << std::endl;
     // round to the 2nd digit
     obtEdges[0] = round(100*(obtEdges[0]))/100;
@@ -175,7 +175,6 @@ int main(int argc, char **argv) {
   
   // fit the normal way
   RooFitResult *r1 = model.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-
   r1->Print("v");
 
   /*** Constraints! ***/
@@ -255,6 +254,15 @@ int main(int argc, char **argv) {
   
   c->Print(plotFile); // output file
 
+  /*** Integral ***/
+
+  x.setRange("3sigmaRange", omegaMean.getValV() - 3*omegaSigma.getValV(), omegaMean.getValV() + 3*omegaSigma.getValV());
+  RooAbsReal *int3Sigma = cmodel.createIntegral(x, NormSet(x), Range("3sigmaRange"), Components("bkg"));
+
+  std::cout << std::endl;
+  std::cout << "INTEGRAL = " << int3Sigma->getValV() << std::endl;
+  std::cout << std::endl;
+
   /*** Save data from fit ***/
 
   std::cout << "Writing " << textFile << " ..." << std::endl;
@@ -266,7 +274,7 @@ int main(int argc, char **argv) {
   // line 3: number of omega
   outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
   // line 4: number of bkg
-  outFinalFile << nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
+  outFinalFile << int3Sigma->getValV() * nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
   std::cout << "File " << textFile << " has been created!" << std::endl;
   std::cout << std::endl;
   

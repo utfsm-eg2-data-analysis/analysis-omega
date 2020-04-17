@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
       nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
       nOmega += nCombThisEvent;
       
-      std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
+      // std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
 
       /*** The original ***/
 
