@@ -74,6 +74,17 @@ Int_t runNumbersFe = 263; // from 265; because I removed 41315 and 41394
 Int_t runNumbersPb = 169; // from 171; because I removed 41834 and 41979
 Int_t runNumbersTotal = runNumbersC + runNumbersFe + runNumbersPb;
 
+// [D,C,Fe,Pb][bin], obtained from GetElectronNumber.cxx
+// const Double_t electronNumber[4] = {,,,};
+const Double_t electronNumberQ2[4][5] = {{12842908., 13596600., 13772639., 14536805., 14795432.},
+					 {2815127., 2969424., 2983337., 3136969., 3149865.},
+					 {5472138., 5782588., 5778550., 6038794., 5946114.},
+					 {2189122., 2292324., 2263405., 2312089., 2199791.}};
+const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 9580918., 8663965.},
+					 {5115492., 2932212., 2366977., 2110598., 1972135.},
+					 {9572387., 13772639., 4664129., 4149167., 3856291.},
+					 {3793213., 2175171., 1761324., 1584883., 1584883.}};
+
 void setAlias_old(TTree *treeExtracted) {
   // pip
   treeExtracted->SetAlias("p2pip", "fX[2]*fX[2] + fY[2]*fY[2] + fZ[2]*fZ[2]");

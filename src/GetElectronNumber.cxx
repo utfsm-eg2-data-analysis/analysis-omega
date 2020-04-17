@@ -17,7 +17,7 @@ Int_t flagQ2 = 0;
 Int_t flagNu = 0;
 
 TCut cutTargType;
-TCut kinvarCut;
+TCut kinvarCut = "";
 
 TString kinvarName;
 TString kinvarSufix;
@@ -159,5 +159,5 @@ void assignOptions() {
     kinvarSufix = Form("-n%d", binNumber);
     kinvarName = "Nu";
   }
-  kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
+  if (flagQ2 || flagNu) kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
 }
