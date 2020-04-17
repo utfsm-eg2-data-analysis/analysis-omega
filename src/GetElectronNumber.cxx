@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     
     /*** Summing Electron Numbers ***/
 
-    rootFile = currentDir + "prune_data_" + currentRN + ".root";
+    rootFile = currentDir + "/prune_data_" + currentRN + ".root";
     std::cout << "Reading file (" << i << ") " << rootFile << " ..." << std::endl;
     TFile *File = new TFile(rootFile);
     
