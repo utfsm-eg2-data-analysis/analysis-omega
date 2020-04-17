@@ -7,6 +7,9 @@
 
 // fits peak with a gaussian function and bkg with a 1st order polynomial
 // - added kinematic dependence as an option
+// update:
+// - added bands of error bars
+// - added poly as an option
 
 #include "analysisConfig.h"
 
@@ -38,6 +41,7 @@ TString inputFile1 = "";
 TString inputFile2 = "";
 TString inputFile3 = "";
 TCut    cutTargType;
+Int_t   bkgOption = 1;
 
 // kinematic variable options
 Int_t flagZ = 0;
@@ -57,8 +61,8 @@ TString textFile;
 
 // new!
 Int_t    flagNew = 0;
-Double_t obtMean;
-Double_t obtSigma;
+Double_t obtMean = 0.37;
+Double_t obtSigma = 1.75e-2;
 Double_t obtEdges[2] = {0.27, 0.47}; // default
 Int_t    obtNbins = 40; // default
 
@@ -75,6 +79,9 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
+
   // cuts
   TCut cutAll = cutDIS && cutPipPim && cutPi0;
 
@@ -85,9 +92,10 @@ int main(int argc, char **argv) {
 
   /*** Read previous results ***/
 
+  // if this is an iteration
   if (!flagNew) {
     std::cout << std::endl;
-    std::cout << "Reading previous file " << textFile << std::endl;
+    std::cout << "Reading previous file " << textFile << " ..." << std::endl;
     std::ifstream inFile(textFile);
     
     TString auxString1, auxString2;
@@ -96,10 +104,10 @@ int main(int argc, char **argv) {
       l++;
       if (l == 1) { // first line
 	obtMean = auxString1.Atof();
-	std::cout << "Omega Mean for " << targetOption << kinvarSufix << ": " << obtMean << std::endl;
+	std::cout << "  Omega Mean for " << targetOption << kinvarSufix << ": " << obtMean << std::endl;
       } else if (l == 2) { // second line
 	obtSigma = auxString1.Atof();
-	std::cout << "Omega Sigma for " << targetOption << kinvarSufix << ": " << obtSigma << std::endl;
+	std::cout << "  Omega Sigma for " << targetOption << kinvarSufix << ": " << obtSigma << std::endl;
       }
     }
     inFile.close();
@@ -125,18 +133,17 @@ int main(int argc, char **argv) {
   Double_t fitRangeDown = obtEdges[0]; // preMean.getValV() - 5*preSigma.getValV() = 0.268
   Double_t fitRangeUp = obtEdges[1]; // preMean.getValV() + 5*preSigma.getValV() = 0.468
 
-  Double_t meanIGV = 0.37;
+  Double_t meanIGV = obtMean;
   Double_t meanRangeDown = 0.36;
   Double_t meanRangeUp = 0.39; // 0.38
 
-  Double_t sigmaIGV = 1.75e-2;
+  Double_t sigmaIGV = obtSigma;
   Double_t sigmaRangeDown = 1.6e-2;
   Double_t sigmaRangeUp = 2.3e-2;
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
   dataHist = (TH1F *)gROOT->FindObject("data");
-  Double_t N_d = dataHist->Integral(1,Nbins);
   
   /*** RooFit stuff ***/
 
@@ -146,10 +153,14 @@ int main(int argc, char **argv) {
   RooRealVar omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
   RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);  
 
-  RooRealVar b1("b1", "linear term", 0.1, -10, 10);
-  // RooRealVar b2("b2", "quadratic term", 0.1, -10, 10);
-  RooChebychev bkg("bkg", "background", x, RooArgList(b1));
+  RooRealVar b1("b1", "linear term", 0.1, -10., 10.);
+  RooRealVar b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
 
+  // bkg list
+  RooArgList lbkg(b1);
+  if (bkgOption == 2) lbkg.add(b2);
+  RooChebychev bkg("bkg", "background", x, lbkg);
+  
   // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
   RooRealVar nsig("N_{#omega}", "omega yields", 0., dataHist->GetEntries());
   RooRealVar nbkg("N_{b}", "bkg yields", 0., dataHist->GetEntries());
@@ -167,74 +178,82 @@ int main(int argc, char **argv) {
 
   r1->Print("v");
 
-  // define constraints
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.001));
-  RooGaussian conMean("conMean", "conMean", omegaMean, RooConst(0.37), RooConst(0.001));
-  
-  RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma, conMean));
+  /*** Constraints! ***/
+  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(2e-2), RooConst(0.001));
+  RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
 
   // fit constraint model
-  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Constrain(conMean), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
   r2->Print("v");
-    
-  // draw data and fit into frame
+
+  // draw data points
   data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
+  
+  // visualize error
+  cmodel.plotOn(frame, VisualizeError(*r2, 1, kFALSE), FillColor(kRed-9));                     // FillStyle(3001)
+  cmodel.plotOn(frame, Components("bkg"), VisualizeError(*r2, 1, kFALSE), FillColor(kBlue-9)); // DrawOption("L"), LineWidth(2), LineColor(kRed)
+
+  // overlay data points
+  data.plotOn(frame, Name("Data"));
+  
+  // overlay center values
   cmodel.plotOn(frame, Name("Model"), LineColor(kRed));
-  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   
   // add params
-  cmodel.paramOn(frame, Layout(0.1, 0.3, 0.9)); // x1, x2, delta-y
-  frame->getAttText()->SetTextSize(0.03);
-
+  cmodel.paramOn(frame, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frame->getAttText()->SetTextSize(0.025);
+  frame->getAttLine()->SetLineWidth(0);
+  
   frame->GetXaxis()->CenterTitle();
   frame->GetYaxis()->SetTitle("Counts");
   frame->GetYaxis()->CenterTitle();
   
-  // check how that integration goes...
-  Double_t N_omega = nsig.getValV();
-  Double_t N_bkg = nbkg.getValV();
-  Double_t N_sum = N_omega + N_bkg;
-    
   // draw!
-  TCanvas *c = new TCanvas("c", "c", 1366, 768);
+  TCanvas *c = new TCanvas("c", "c", 1360, 1700); // 16:20
+  c->Divide(1, 2); // two vertical pads
+  
+  c->GetPad(1)->SetPad(0., 0.3, 1., 1.); // x1,y1,x2,y2
+  c->GetPad(1)->SetTopMargin(0.1);
+  c->GetPad(1)->SetBottomMargin(0.1);
+  
+  c->GetPad(2)->SetPad(0., 0., 1., 0.3); // x1,y1,x2,y2
+  c->GetPad(2)->SetTopMargin(0.0);
+  c->GetPad(2)->SetBottomMargin(0.1);
+
+  // drawing pull hist (taking into account only global fit)
+  c->cd(2);
+  
+  RooHist *pull = frame->pullHist();
+  
+  RooPlot *frame2 = x.frame(Title(""), Bins(Nbins));
+  frame2->SetTitle("");
+  frame2->addPlotable(pull);
+  frame2->GetXaxis()->SetTickSize(0.07);
+  frame2->GetXaxis()->SetLabelSize(0.07);
+  frame2->GetXaxis()->SetTitle("");
+  frame2->SetMaximum(4.5);
+  frame2->SetMinimum(-4.5);
+  frame2->GetYaxis()->SetLabelSize(0.07);
+  frame2->GetYaxis()->SetTitleSize(0.07);
+  frame2->GetYaxis()->SetTitleOffset(0.375);
+  frame2->GetYaxis()->SetTitle("Pull");
+  frame2->GetYaxis()->CenterTitle();
+  frame2->Draw();
+  
+  drawHorizontalLine(3);
+  drawBlackHorizontalLine(0);
+  drawHorizontalLine(-3);
+
+  c->cd(1);
+  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   frame->Draw();
   
-  // chi2
-  /*
-    Double_t chi2 = frame->chiSquare("Model", "Data");
-    TPaveText *textBlock = new TPaveText(0.1, 0.55, 0.3, 0.6, "NDC TL"); // x1, y1, x2, y2
-    textBlock->AddText(Form("#chi^{2}/ndf = %.3f", chi2));
-    textBlock->SetFillColor(kWhite);
-    textBlock->SetShadowColor(kWhite);
-    textBlock->SetTextColor(kBlack);
-    textBlock->Draw();
-  */
-
   // draw lines
   drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
   drawVerticalLineBlack(omegaMean.getValV());
   drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
   
   c->Print(plotFile); // output file
-
-  std::cout << "N_d=" << N_d << std::endl;
-  std::cout << "N_sum=" << N_sum << std::endl;
-  std::cout << "N_omega=" << N_omega << std::endl;
-  std::cout << "N_bkg=" << N_bkg << std::endl;
-
-  // check error
-  /*
-  Double_t err_sum;
-  Double_t err_avg;
-  for (Int_t i = 1; i <= Nbins; i++) {
-    std::cout << "val[" << i << "]=" << dataHist->GetBinContent(i) << std::endl;
-    std::cout << "sta[" << i << "]=" << TMath::Sqrt(dataHist->GetBinContent(i)) << std::endl;
-    std::cout << "err[" << i << "]=" << dataHist->GetBinError(i) << std::endl;
-    err_sum += dataHist->GetBinError(i);
-  }
-  err_avg = err_sum/Nbins;
-  std::cout << "err_avg=" << err_avg << std::endl;
-  */
 
   /*** Save data from fit ***/
 
@@ -244,13 +263,12 @@ int main(int argc, char **argv) {
   outFinalFile << omegaMean.getValV() << "\t" << omegaMean.getError() << std::endl;
   // line 2: omegaSigma
   outFinalFile << omegaSigma.getValV() << "\t" << omegaSigma.getError() << std::endl;
-  // line 3: omegaYields (directly from parameter) (METHOD 1)
+  // line 3: number of omega
   outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
-  // line 4: b1
-  outFinalFile << b1.getValV() << "\t" << b1.getError() << std::endl;
-  // line 5: bkgYields
+  // line 4: number of bkg
   outFinalFile << nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
-  std::cout << "Text file " << textFile << " has been created!" << std::endl;
+  std::cout << "File " << textFile << " has been created!" << std::endl;
+  std::cout << std::endl;
   
   return 0;
 }
@@ -263,7 +281,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeRooFits -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:z:q:n:p:S")) != -1)
+  while ((c = getopt(argc, argv, "ht:z:q:n:p:Sb:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
@@ -272,6 +290,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     case 'S': flagNew = 1; break;
+    case 'b': bkgOption = atoi(optarg); break;  
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
       exit(0);
@@ -281,10 +300,11 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printOptions() {
   std::cout << "Executing MakeRooFits program. Chosen parameters are:" << std::endl;
-  std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  kinvarName=" << kinvarName << std::endl;
-  std::cout << "  binNumber=" << binNumber << std::endl;
-  std::cout << "  flagNew=" << flagNew << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  kinvarName   = " << kinvarName << std::endl;
+  std::cout << "  binNumber    = " << binNumber << std::endl;
+  std::cout << "  flagNew      = " << flagNew << std::endl;
+  std::cout << "  bkgOption    = " << bkgOption << std::endl;
   std::cout << std::endl;
 }
 
@@ -296,6 +316,9 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./MakeRooFits -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeRooFits -b[1,2]" << std::endl;
+  std::cout << "    choose bkg function: 1st order or 2nd order polynomial" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakeRooFits -[kinvar][number]" << std::endl;
   std::cout << "    analyzes respective kinematic variable bin" << std::endl;
@@ -353,7 +376,7 @@ void assignOptions() {
   kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
   // names
-  outDir = outDir + "/" + kinvarName;
+  outDir = outDir + "/" + kinvarName + "/g" + "/b" + bkgOption; // only gaussian, for now
   plotFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
   textFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
 }

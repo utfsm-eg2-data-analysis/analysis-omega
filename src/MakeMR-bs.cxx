@@ -8,6 +8,7 @@
 // Background Subtracted MR
 // --method 1: calculate MR directly from omega number parameter of MakeRooFits
 // --method 2: calculate NBS MR but subtracts the bkg number parameter of MakeRooFits
+// updated: to new makeroofits directory scheme
 
 #include "analysisConfig.h"
 
@@ -17,10 +18,9 @@ TString outDir = proDir + "/out/MakeMR/bs";
 TString fitDir = proDir + "/out/MakeRooFits";
 
 // options
-Int_t flagZ   = 0;
-Int_t flagQ2  = 0;
-Int_t flagNu  = 0;
-Int_t flagPt2 = 0;
+TString kinvarOption;
+TString functionOption;
+Int_t bkgOption = 1;
 Int_t Nmethod = 1; // default
 
 // [D, C, Fe, Pb][Z bin: 3-7]
@@ -39,16 +39,21 @@ Double_t bkgError[4][5];
 Double_t massEdges[4][5][2];
 
 // on kinvar
-TString  kinvarName;
 TString  kinvarSufix;
 Int_t    kinvarConstant = 1; // default for all, except Z
-Int_t    kinvarNbins = 5; // default for all
+Int_t    kinvarNbins = 5;    // default for all -> HARDCODED!
 Double_t kinvarEdges[6];
 
 TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
 TString textFile;
 TString plotFile;
+
+// new
+TString functionSufix;
+TString functionDir;
+TString bkgSufix;
+TString bkgDir;
 
 /*** Declaration of functions ***/
 
@@ -81,18 +86,18 @@ int main(int argc, char **argv) {
 	l++;
 	if (l == 1) { // third line
 	  omegaMean[targIndex][index] = auxString1.Atof();
-	  std::cout << "  Omega Mean for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaMean[targIndex][index] << std::endl;
+	  std::cout << "  mean  = " << omegaMean[targIndex][index] << std::endl;
 	} else if (l == 2) {
 	  omegaSigma[targIndex][index] = auxString1.Atof();
-	std::cout << "  Omega Sigma for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaSigma[targIndex][index] << std::endl;
+	  std::cout << "  sigma = " << omegaSigma[targIndex][index] << std::endl;
 	} else if (l == 3) {
 	  omegaNumber_fit[targIndex][index] = auxString1.Atof();
 	  omegaError_fit[targIndex][index] = auxString2.Atof();
-	  std::cout << "  Omega Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaNumber_fit[targIndex][index] << " +/- " << omegaError_fit[targIndex][index] << std::endl;
-	} else if (l == 5) {
+	  std::cout << "  omega number = " << omegaNumber_fit[targIndex][index] << " +/- " << omegaError_fit[targIndex][index] << std::endl;
+	} else if (l == 4) {
 	  bkgNumber[targIndex][index] = auxString1.Atof();
 	  bkgError[targIndex][index] = auxString2.Atof();
-	  std::cout << "  Bkg Number for " << targetName[targIndex] << kinvarAuxSufix << ": " << bkgNumber[targIndex][index] << " +/- " << bkgError[targIndex][index] << std::endl;
+	  std::cout << "  bkg number   = " << bkgNumber[targIndex][index] << " +/- " << bkgError[targIndex][index] << std::endl;
 	}
       }
       inFile.close();
@@ -141,15 +146,11 @@ int main(int argc, char **argv) {
     CarbonMR->Divide(CarbonOmegaN_fit, DeutOmegaN_fit);
     CarbonMR->Scale(4.6194); // electron normalization
 
-    CarbonMR->SetTitle("#omega MR(" + kinvarName + ") - Subtracted Bkg");
-    CarbonMR->GetXaxis()->SetTitle(kinvarName);
+    CarbonMR->SetTitle("#omega MR(" + kinvarOption + ") - Subtracted Bkg");
+    CarbonMR->GetXaxis()->SetTitle(kinvarOption);
     CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
-    CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
-    CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
-    CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
-    CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
-    CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
-    CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
+    for (Int_t i = 0; i < (kinvarNbins+1); i++) CarbonMR->GetXaxis()->ChangeLabel(i+1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[i]));
+    CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[kinvarNbins]));
     CarbonMR->GetYaxis()->SetTitle("MR");
     CarbonMR->SetAxisRange(0.0, 1.2, "Y"); // range
   
@@ -194,27 +195,12 @@ int main(int argc, char **argv) {
     // saving content
     std::ofstream outFinalFile(textFile, std::ios::out); // output file
     
-    // first line
-    outFinalFile << CarbonMR->GetBinContent(1) << "\t" << CarbonMR->GetBinError(1) << "\t"
-		 << IronMR->GetBinContent(1) << "\t" << IronMR->GetBinError(1) << "\t"
-		 << LeadMR->GetBinContent(1) << "\t" << LeadMR->GetBinError(1)  << std::endl;
-    // second line
-    outFinalFile << CarbonMR->GetBinContent(2) << "\t" << CarbonMR->GetBinError(2) << "\t"
-		 << IronMR->GetBinContent(2) << "\t" << IronMR->GetBinError(2) << "\t"
-		 << LeadMR->GetBinContent(2) << "\t" << LeadMR->GetBinError(2) << std::endl;
-    // third line
-    outFinalFile << CarbonMR->GetBinContent(3) << "\t" << CarbonMR->GetBinError(3) << "\t"
-		 << IronMR->GetBinContent(3) << "\t" << IronMR->GetBinError(3) << "\t"
-		 << LeadMR->GetBinContent(3) << "\t" << LeadMR->GetBinError(3) << std::endl;
-    // fourth line
-    outFinalFile << CarbonMR->GetBinContent(4) << "\t" << CarbonMR->GetBinError(4) << "\t"
-		 << IronMR->GetBinContent(4) << "\t" << IronMR->GetBinError(4) << "\t"
-		 << LeadMR->GetBinContent(4) << "\t" << LeadMR->GetBinError(4) << std::endl;
-    // fifth line
-    outFinalFile << CarbonMR->GetBinContent(5) << "\t" << CarbonMR->GetBinError(5) << "\t"
-		 << IronMR->GetBinContent(5) << "\t" << IronMR->GetBinError(5) << "\t"
-		 << LeadMR->GetBinContent(5) << "\t" << LeadMR->GetBinError(5) << std::endl;
-  
+    // l = line number
+    for (Int_t l = 1; l <= kinvarNbins; l++) {
+      outFinalFile << CarbonMR->GetBinContent(l) << "\t" << CarbonMR->GetBinError(l) << "\t"
+		   << IronMR->GetBinContent(l) << "\t" << IronMR->GetBinError(l) << "\t"
+		   << LeadMR->GetBinContent(l) << "\t" << LeadMR->GetBinError(l)  << std::endl;
+    }
     outFinalFile.close();
     std::cout << "File " << textFile << " has been created!" << std::endl;    
     
@@ -287,8 +273,8 @@ int main(int argc, char **argv) {
     CarbonMR_m2->Divide(CarbonOmegaN_corr, DeutOmegaN_corr);
     CarbonMR_m2->Scale(4.6194); // electron normalization
 
-    CarbonMR_m2->SetTitle("#omega MR(" + kinvarName + ") - Subtracted Bkg (Method 2)");
-    CarbonMR_m2->GetXaxis()->SetTitle(kinvarName);
+    CarbonMR_m2->SetTitle("#omega MR(" + kinvarOption + ") - Subtracted Bkg (Method 2)");
+    CarbonMR_m2->GetXaxis()->SetTitle(kinvarOption);
     CarbonMR_m2->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
     CarbonMR_m2->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
     CarbonMR_m2->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
@@ -363,7 +349,7 @@ int main(int argc, char **argv) {
   
     outFinalFile2.close();
     std::cout << "File " << textFile << " has been created!" << std::endl;    
-  }  
+  }
   return 0;
 }
 
@@ -373,13 +359,12 @@ Int_t c;
     std::cerr << "Empty command line. Execute ./MakeMR-bs -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hzqnpm:")) != -1)
+  while ((c = getopt(argc, argv, "hk:F:b:m:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 'z': flagZ = 1; break;
-    case 'q': flagQ2 = 1; break;
-    case 'n': flagNu = 1; break;
-    case 'p': flagPt2 = 1; break;
+    case 'k': kinvarOption = optarg; break;
+    case 'F': functionOption = optarg; break;
+    case 'b': bkgOption = atoi(optarg); break;
     case 'm': Nmethod = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeMR-bs -h to print usage." << std::endl;
@@ -394,46 +379,52 @@ void printUsage() {
   std::cout << "./MakeMR-bs -h" << std::endl;
   std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeMR-bs -[kinvar]" << std::endl;
-  std::cout << "    z : Z" << std::endl;
-  std::cout << "    q : Q2" << std::endl;
-  std::cout << "    n : Nu" << std::endl;
-  std::cout << "    p : Pt2" << std::endl;
+  std::cout << "./MakeMR-bs -k[kinvar]" << std::endl;
+  std::cout << "    selects kinvar: Q2, Nu, Z, Pt2" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeMR-bs -F[g, bw, ln]" << std::endl;
+  std::cout << "    selects function: gaussian, breit-wigner, lognormal" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeMR-bs -b[1,2]" << std::endl;
+  std::cout << "    selects bkg: 1st or 2nd order polynomial" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakeMR-bs -m[int]" << std::endl;
   std::cout << "    1 : calculate MR directly from the fit parameter" << std::endl;
   std::cout << "    2 : calculate MR subtracting bkg number to NBS MR" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
   // kinvar option
-  if (flagZ) {
+  if (kinvarOption == "Z") {
     kinvarSufix = "-z";
-    kinvarName = "Z";
     kinvarConstant = 3;
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
-  } else if (flagQ2) {
+  } else if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
-    kinvarName = "Q2";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
-  } else if (flagNu) {
+  } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
-    kinvarName = "Nu";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
-  } else if (flagPt2) {
+  } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
-    kinvarName = "Pt2";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
+  // bkg
+  bkgSufix = Form("-b%d", bkgOption);
+  bkgDir = Form("/b%d", bkgOption);
+  // function
+  functionSufix = "-" + functionOption;
+  functionDir = "/" + functionOption;  
   // input files
-  fitDir = fitDir + "/" + kinvarName;
+  fitDir = fitDir + "/" + kinvarOption + functionDir + bkgDir; // updated!
   // output files
   if (Nmethod == 1) {
-    plotFile = outDir + "/bs-MR-" + kinvarName + ".png";
-    textFile = outDir + "/bs-MR-" + kinvarName + ".dat";
+    plotFile = outDir + "/bs-MR-" + kinvarOption + functionSufix + bkgSufix + ".png";
+    textFile = outDir + "/bs-MR-" + kinvarOption + functionSufix + bkgSufix + ".dat";
   } else if (Nmethod == 2) {
-    plotFile = outDir + "/bs2-MR-" + kinvarName + ".png";
-    textFile = outDir + "/bs2-MR-" + kinvarName + ".dat";
+    plotFile = outDir + "/bs2-MR-" + kinvarOption + ".png";
+    textFile = outDir + "/bs2-MR-" + kinvarOption + ".dat";
   }
 }
 
@@ -488,7 +479,7 @@ void integrateData(TString targetOption) {
     TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
     
     TCut kinvarCut;
-    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarEdges[index+1]);
+    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarOption + " && " + kinvarOption + Form(" < %f", kinvarEdges[index+1]);
     TCut cutMass = Form("%f < wD && wD < %f", massEdges[targIndex][index][0], massEdges[targIndex][index][1]);
     
     TH1F *dataHist;

@@ -117,22 +117,27 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void printOptions() {
-  std::cout << std::endl;
-  std::cout << "Executing GetQuantiles program. Parameters chosen are:" << std::endl;
-  std::cout << "  targetOption=" << targetOption << std::endl;
-  std::cout << "  kinvarOption=" << kinvarOption << std::endl;
-  std::cout << "  Nquantiles=" << Nquantiles << std::endl;
+  std::cout << "Executing GetQuantiles program. The chosen parameters are:" << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  kinvarOption = " << kinvarOption << std::endl;
+  std::cout << "  Nquantiles   = " << Nquantiles << std::endl;
   std::cout << std::endl;
 }
 
 void printUsage() {
+  std::cout << "GetQuantiles program. This program obtains binning. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "GetQuantiles program. This program obtains the edges for each quantile. Usage is:" << std::endl;
-  std::cout << "./GetQuantiles -[options] -[more options]" << std::endl;
-  std::cout << "  h          : prints help and exit program" << std::endl;
-  std::cout << "  t[target]  : selects target: D | C | Fe | Pb" << std::endl;
-  std::cout << "  k[kinvar]  : sets kinvar to draw, it can be: Z, Q2, Nu or Pt2" << std::endl;
-  std::cout << "  q[number]  : sets the number of quantiles" << std::endl;
+  std::cout << "./GetQuantiles -h" << std::endl;
+  std::cout << "    prints help and exit program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./GetQuantiles -t[target]" << std::endl;
+  std::cout << "    selects target: D, C, Fe, Pb" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./GetQuantiles -k[kinvar]" << std::endl;
+  std::cout << "    selects kinvar: Q2, Nu, Z, Pt2" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./GetQuantiles -q[number]" << std::endl;
+  std::cout << "    sets the number of quantiles" << std::endl;
   std::cout << std::endl;
 }
 
@@ -155,7 +160,7 @@ void assignOptions() {
   }
   // for kinvar
   if (kinvarOption == "Z") {
-    histProperties = "(100, 0.5, 0.9)";
+    histProperties = "(100, 0.5, 1.0)";
   } else if (kinvarOption == "Pt2") {
     histProperties = "(100, 0.0, 1.5)";
   } else if (kinvarOption == "Q2") {
@@ -163,7 +168,7 @@ void assignOptions() {
   } else if (kinvarOption == "Nu") {
     histProperties = "(100, 2.2, 4.2)";
   }
-  kinvarTitle = kinvarOption + " in ";
+  kinvarTitle = kinvarOption + " binning for ";
   // name
   plotFile = outDir + Form("/q%d-", Nquantiles) + kinvarOption + "-" + targetOption + ".png";
 }

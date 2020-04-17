@@ -61,10 +61,18 @@ TCut cutPi0_old = "0.059 < mpi0 && mpi0 < 0.209"; // mikewood cut
 TCut cutPipPim_old = "0.48 > mpippim || 0.51 < mpippim"; // mikewood cut
 
 // edges obtained with GetQuantiles.cxx
-const Double_t edgesQ2[6] = {1., 1.181, 1.364, 1.598, 1.960, 3.970};
-const Double_t edgesNu[6] = {2.2, 3.191, 3.504, 3.744, 3.964, 4.2};
-const Double_t edgesZ[6] = {0.5, 0.554, 0.611, 0.676, 0.760, 0.9};
-const Double_t edgesPt2[6] = {0.0, 0.040, 0.090, 0.159, 0.273, 1.5};
+const Double_t edgesQ2[6] = {1, 1.187, 1.376, 1.616, 2.008, 4};
+const Double_t edgesNu[6] = {2.2, 3.233, 3.550, 3.786, 3.994, 4.2};
+const Double_t edgesZ[6] = {0.5, 0.548, 0.601, 0.665, 0.761, 1.}; // q5
+// const Double_t edgesZ[6] = {0.5, 0.560, 0.631, 0.732, 1.}; // q4
+// const Double_t edgesZ[6] = {0.5, 0.583, 0.693, 1.}; // q3
+const Double_t edgesPt2[6] = {0, 0.049, 0.113, 0.204, 0.361, 1.5};
+
+// run numbers
+Int_t runNumbersC = 118; // from 119; because I removed 42040
+Int_t runNumbersFe = 263; // from 265; because I removed 41315 and 41394
+Int_t runNumbersPb = 169; // from 171; because I removed 41834 and 41979
+Int_t runNumbersTotal = runNumbersC + runNumbersFe + runNumbersPb;
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
