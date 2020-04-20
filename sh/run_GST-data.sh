@@ -23,6 +23,7 @@ DATADIR=/data/jlab/mss/clas/eg2a/production/Pass2/Clas
 OUDIR=${PRODIR}/out/prunedData/${tarName}
 
 runlist="include/${tarLongName}rn.txt"
+lines=`wc -l < ${runlist}`
 
 cd ${PRODIR}
 
