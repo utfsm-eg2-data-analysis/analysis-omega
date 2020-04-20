@@ -6,8 +6,9 @@
 /*                                     */
 /***************************************/
 
-// UPDATE:
-// There are no longer separate trees for simrec and gsim
+// LAST UPDATE:
+// - now it saves FCUP information
+// - now it takes care on the subdir number of jlab sim
 
 #include "analysisConfig.h"
 
@@ -27,6 +28,7 @@ TString textFile;
 TString outFile;
 TString NtupleName;
 TString outTitle;
+TString NjlabDir; // new
 
 TString analyserOption;
 
@@ -49,9 +51,7 @@ int main(int argc, char **argv) {
   // init ClasTool
   TClasTool *input = new TClasTool();
   input->InitDSTReader("ROOTDSTR");
-
-  TString auxLine;
-  
+    
   /*** Reading text file to gather root file ***/
   
   ifstream in(textFile, ios::in);
@@ -62,23 +62,53 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Reading file " << textFile << " ..." << std::endl;
-  while (in >> auxLine) {
-    std::cout << "  auxLine = " << auxLine << std::endl;
-    std::cout << std::endl;
-    input->Add(auxLine);
+
+  TString currentFile;
+  TChain *c = new TChain(); // fcup
+      
+  while (in >> currentFile) {
+    std::cout << "  currentFile = " << currentFile << std::endl;
+    
+    c->Add(currentFile + "/SCALER"); // fcup
+
+    // add root file to ClasTool
+    input->Add(currentFile);
   }
   in.close();
   
+  /*** Beginning Faraday Cup process ***/
+
+  // fcup studies
+  Int_t Ne = c->GetEntries();
+  Double_t fcup = 0; // search for maximum in the run files
+  Double_t currentFC;
+
+  // only for data
+  if (!simFlag) {
+    // looping around tree entries
+    for (Int_t i = 0; i < Ne; i++) {
+      c->GetEntry(i);
+      currentFC = c->GetLeaf("SC_TRGS.Fcup_g2")->GetValue();
+      if (currentFC > fcup) fcup =  currentFC;
+    }
+  }
+  printf("  fcup = %.0f", fcup);
+  std::cout << std::endl;
+
+  delete c;
+  
+  /*** Pruning RAW data ***/
+
   // obtain electron mass
   TDatabasePDG pdg;
   Double_t kMe = pdg.GetParticle(11)->Mass();
 
   // hadron variables
-  TString varListHadrons = "TargType:Q2:Nu:Xb:W:SectorEl:ThetaPQ:PhiPQ:Zh:Pt:W2p:Xf:T:P:T4:deltaZ:E:Ee:Pe:Ect:Sct:Ecr:Scr:evnt:Px:Py:Pz:Xe:Ye:Ze:Xec:Yec:Zec:TEc:ECX:ECY:ECZ:Pex:Pey:Pez:Ein:Eout:Eine:Eoute:pid:Betta:vxh:vyh:vzh";
+  TString varListHadrons = "TargType:Q2:Nu:Xb:W:SectorEl:ThetaPQ:PhiPQ:Zh:Pt:W2p:Xf:T:P:T4:deltaZ:E:Ee:Pe:Ect:Sct:Ecr:Scr:evnt:Px:Py:Pz:Xe:Ye:Ze:Xec:Yec:Zec:TEc:ECX:ECY:ECZ:Pex:Pey:Pez:Ein:Eout:Eine:Eoute:pid:Betta:vxh:vyh:vzh:fcup";
   if (simFlag) {
     varListHadrons += ":mc_TargType:mc_Q2:mc_Nu:mc_Xb:mc_W:mc_SectorEl:mc_ThetaPQ:mc_PhiPQ:mc_Zh:mc_Pt:mc_W2p:mc_Xf:mc_T:mc_P:mc_T4:mc_deltaZ:mc_E:mc_Ee:mc_Pe:mc_Ect:mc_Sct:mc_Ecr:mc_Scr:mc_evnt:mc_Px:mc_Py:mc_Pz:mc_Xe:mc_Ye:mc_Ze:mc_Xec:mc_Yec:mc_Zec:mc_TEc:mc_ECX:mc_ECY:mc_ECZ:mc_Pex:mc_Pey:mc_Pez:mc_Ein:mc_Eout:mc_Eine:mc_Eoute:mc_pid:mc_Betta:mc_vxh:mc_vyh:mc_vzh";
   }
-  Int_t   NvarHadrons = varListHadrons.CountChar(':') + 1; // 49 for data; 98 for sim
+  Int_t   NvarHadrons = varListHadrons.CountChar(':') + 1; // 50 for data; 99 for sim
   Float_t varHadrons[NvarHadrons];
   
   // electron variables
@@ -202,6 +232,7 @@ int main(int argc, char **argv) {
           varHadrons[46] = t->X(i);
           varHadrons[47] = t->Y(i);
           varHadrons[48] = t->Z(i);
+	  varHadrons[49] = fcup; // fcup!
 
 	  // fill
 	  tHadrons->Fill(varHadrons);
@@ -232,56 +263,56 @@ int main(int argc, char **argv) {
 
       for (Int_t i = 1; i < input->GetNRows("GSIM"); i++) {
       	if (t->Id(i,1) == 22 || t->Id(i,1) == -211 || t->Id(i,1) == 211) {
-	  varHadrons[49] = t->ElecVertTarg(1);
-	  varHadrons[50] = t->Q2(1);
-	  varHadrons[51] = t->Nu(1);
-	  varHadrons[52] = t->Xb(1);
-	  varHadrons[53] = t->W(1);
-	  varHadrons[54] = t->Sector(0,1);
-	  varHadrons[55] = t->ThetaPQ(i,1);
-	  varHadrons[56] = t->PhiPQ(i,1);
-	  varHadrons[57] = t->Zh(i,1);
-	  varHadrons[58] = TMath::Sqrt(t->Pt2(i,1));
-	  varHadrons[59] = t->Mx2(i,1);
-	  varHadrons[60] = t->Xf(i,1);
-	  varHadrons[61] = t->T(i,1);
-	  varHadrons[62] = t->Momentum(i,1);
-	  varHadrons[63] = 0; //t -> TimeCorr4(0.139570,i);
-	  varHadrons[64] = (t->Z(i,1)) - (t->Z(0,1));
-	  varHadrons[65] = t->Momentum(i,1);//TMath::Max(t->Etot(i),t->Ein(i)+t->Eout(i));;
-	  varHadrons[66] = TMath::Sqrt(t->Momentum(0,1)*t->Momentum(0,1)+kMe*kMe); //TMath::Max(t->Etot(0),t->Ein(0)+t->Eout(0));
-	  varHadrons[67] = t->Momentum(0,1);
-          varHadrons[68] = 0; //t->TimeEC(0);
-          varHadrons[69] = 0; //t->TimeSC(0);
-          varHadrons[70] = 0; //t->PathEC(0);
-          varHadrons[71] = 0; //t->PathSC(0);
-          varHadrons[72] = k;
-          varHadrons[73] = t->Px(i,1);
-          varHadrons[74] = t->Py(i,1);
-          varHadrons[75] = t->Pz(i,1);
-          varHadrons[76] = t->X(0,1);
-          varHadrons[77] = t->Y(0,1);
-          varHadrons[78] = t->Z(0,1);
+	  varHadrons[50] = t->ElecVertTarg(1);
+	  varHadrons[51] = t->Q2(1);
+	  varHadrons[52] = t->Nu(1);
+	  varHadrons[53] = t->Xb(1);
+	  varHadrons[54] = t->W(1);
+	  varHadrons[55] = t->Sector(0,1);
+	  varHadrons[56] = t->ThetaPQ(i,1);
+	  varHadrons[57] = t->PhiPQ(i,1);
+	  varHadrons[58] = t->Zh(i,1);
+	  varHadrons[59] = TMath::Sqrt(t->Pt2(i,1));
+	  varHadrons[60] = t->Mx2(i,1);
+	  varHadrons[61] = t->Xf(i,1);
+	  varHadrons[62] = t->T(i,1);
+	  varHadrons[63] = t->Momentum(i,1);
+	  varHadrons[64] = 0; //t -> TimeCorr4(0.139570,i);
+	  varHadrons[65] = (t->Z(i,1)) - (t->Z(0,1));
+	  varHadrons[66] = t->Momentum(i,1);//TMath::Max(t->Etot(i),t->Ein(i)+t->Eout(i));;
+	  varHadrons[67] = TMath::Sqrt(t->Momentum(0,1)*t->Momentum(0,1)+kMe*kMe); //TMath::Max(t->Etot(0),t->Ein(0)+t->Eout(0));
+	  varHadrons[68] = t->Momentum(0,1);
+          varHadrons[69] = 0; //t->TimeEC(0);
+          varHadrons[70] = 0; //t->TimeSC(0);
+          varHadrons[71] = 0; //t->PathEC(0);
+          varHadrons[72] = 0; //t->PathSC(0);
+          varHadrons[73] = k;
+          varHadrons[74] = t->Px(i,1);
+          varHadrons[75] = t->Py(i,1);
+          varHadrons[76] = t->Pz(i,1);
+          varHadrons[77] = t->X(0,1);
+          varHadrons[78] = t->Y(0,1);
+          varHadrons[79] = t->Z(0,1);
           //vert = t->GetCorrectedVert();
-          varHadrons[79] = t->X(0,1); //vert->X(); 
-          varHadrons[80] = t->Y(0,1); //vert->Y(); 
-          varHadrons[81] = t->Z(0,1); //vert->Z(); 
-          varHadrons[82] = 0; //t->TimeEC(i);
-          varHadrons[83] = 0; //t->XEC(i);
-          varHadrons[84] = 0; //t->YEC(i);
-          varHadrons[85] = 0; //t->ZEC(i);
-          varHadrons[86] = t->Px(0,1);
-          varHadrons[87] = t->Py(0,1);
-          varHadrons[88] = t->Pz(0,1);
-	  varHadrons[89] = 0;
+          varHadrons[80] = t->X(0,1); //vert->X(); 
+          varHadrons[81] = t->Y(0,1); //vert->Y(); 
+          varHadrons[82] = t->Z(0,1); //vert->Z(); 
+          varHadrons[83] = 0; //t->TimeEC(i);
+          varHadrons[84] = 0; //t->XEC(i);
+          varHadrons[85] = 0; //t->YEC(i);
+          varHadrons[86] = 0; //t->ZEC(i);
+          varHadrons[87] = t->Px(0,1);
+          varHadrons[88] = t->Py(0,1);
+          varHadrons[89] = t->Pz(0,1);
 	  varHadrons[90] = 0;
 	  varHadrons[91] = 0;
 	  varHadrons[92] = 0;
-	  varHadrons[93] = t->Id(i,1);
-	  varHadrons[94] = t->Betta(i,1);
-          varHadrons[95] = t->X(i,1);
-          varHadrons[96] = t->Y(i,1);
-          varHadrons[97] = t->Z(i,1);
+	  varHadrons[93] = 0;
+	  varHadrons[94] = t->Id(i,1);
+	  varHadrons[95] = t->Betta(i,1);
+          varHadrons[96] = t->X(i,1);
+          varHadrons[97] = t->Y(i,1);
+          varHadrons[98] = t->Z(i,1);
 	  
 	  // fill
 	  tHadrons->Fill(varHadrons);
@@ -302,12 +333,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dS:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:n:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'S': simFlag = 1; setOption = optarg; break;
     case 'd': simFlag = 0; break;
+    case 'n': NjlabDir = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
       exit(0);
@@ -333,6 +365,10 @@ void printUsage() {
   std::cout << "./GetSimpleTuple -S[old,usm,jlab]" << std::endl;
   std::cout << "    gets tuples from set of simulations" << std::endl;
   std::cout << std::endl;
+  std::cout << "./GetSimpleTuple -n[00,01,02,...]" << std::endl;
+  std::cout << "    selects N dir (exclusive and mandatory for -Sjlab option)" << std::endl;
+  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
@@ -356,6 +392,7 @@ void assignOptions() {
     analyserOption = "Sim";
     // out
     outDir = proDir + "/out/prunedSim/" + setOption + "/" + targetOption;
+    if (setOption == "jlab") outDir += "/" + NjlabDir;
     outTitle = "Simulation of particles";
   }
   // regardless of the data type
@@ -363,7 +400,7 @@ void assignOptions() {
 }
 
 void printOptions() {
-  std::cout << "Executing GetSimpleTuple program. The chosen parameters are: " << simFlag << std::endl;
+  std::cout << "Executing GetSimpleTuple program. The chosen parameters are: " << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  setOption      = " << setOption << std::endl;

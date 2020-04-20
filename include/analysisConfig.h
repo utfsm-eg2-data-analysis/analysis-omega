@@ -19,6 +19,7 @@
 #include "TH2.h"
 #include "TF1.h"
 #include "TTree.h"
+#include "TLeaf.h"
 #include "TChain.h"
 #include "TCanvas.h"
 #include "TStyle.h"
