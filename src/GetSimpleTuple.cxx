@@ -388,6 +388,7 @@ void assignOptions() {
     NtupleName = "ntuple_sim";
     // input
     textFile = tmpDir + "/RAW-" + setOption + "-" + targetOption + ".tmp";
+    if (setOption == "jlab") textFile = tmpDir + "/RAW-" + setOption + "-" + targetOption + "-" + NjlabDir + ".tmp";
     // analyser
     analyserOption = "Sim";
     // out

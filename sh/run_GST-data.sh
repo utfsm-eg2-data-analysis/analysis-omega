@@ -29,9 +29,9 @@ cd ${PRODIR}
 
 COUNTER=0
 while [ $COUNTER -lt ${lines} ]; do
-    let COUNTER=COUNTER+1
-    rn=`sed -n "$COUNTER{p;q}" $runlist`
-    readlink -f ${DATADIR}/clas*${rn}*.root > tmp/RAW-data-${tarName}.tmp
-    ./bin/GetSimpleTuple -t${tarName} -d
-    mv -v ${OUDIR}/pruned_out.root ${OUDIR}/pruned_data_${rn}.root
+  let COUNTER=COUNTER+1
+  rn=`sed -n "$COUNTER{p;q}" $runlist`
+  readlink -f ${DATADIR}/clas*${rn}*.root > tmp/RAW-data-${tarName}.tmp
+  ./bin/GetSimpleTuple -t${tarName} -d
+  mv -v ${OUDIR}/pruned_out.root ${OUDIR}/pruned_data_${rn}.root
 done
