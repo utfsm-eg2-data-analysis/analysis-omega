@@ -58,8 +58,8 @@ TCut    kinvarCut;
 // names
 TString plotFile;
 TString textFile;
+TString pullFile; // new!
 
-// new!
 Int_t    flagNew = 0;
 Double_t obtMean = 0.37;
 Double_t obtSigma = 1.75e-2;
@@ -304,6 +304,54 @@ int main(int argc, char **argv) {
   outFinalFile << bkg3Sigma->getValV() * nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
   std::cout << "File " << textFile << " has been created!" << std::endl;
   std::cout << std::endl;
+
+  /*** Pull hist, part 2 ***/
+
+  TH1F *pullHistY = new TH1F("pullHistY", "pullHistY", 18, -3., 3.);
+  for (Int_t y = 1; y <= Nbins; y++) pullHistY->Fill(pullHist->GetBinContent(y));
+  
+  RooRealVar p("Pull", "Pull", -3., 3.);
+
+  RooRealVar pullMean("pullMean", "Mean of Gaussian", 0., -0.5, 0.5);
+  RooRealVar pullSigma("pullSigma", "Width of Gaussian", 0.5, 0.01, 1.5);
+  RooGaussian pullModel("pullModel", "pullModel", p, pullMean, pullSigma);
+
+  RooDataHist pullData("pullData", "pull data", p, pullHistY);
+
+  // define frame
+  RooPlot *frame2 = p.frame(Title(""), Bins(18));
+  
+  // fit the normal way
+  pullModel.chi2FitTo(pullData);
+  
+  // draw
+  pullData.plotOn(frame2, Name("pullData"));
+  pullModel.plotOn(frame2, Name("pullModel"), LineColor(kBlue));
+
+  pullModel.paramOn(frame2, Layout(0.11, 0.3, 0.89)); // x1, x2, delta-y
+  frame2->getAttText()->SetTextSize(0.025);
+  frame2->getAttLine()->SetLineWidth(0);
+
+  frame2->SetTitle("");
+  frame2->GetXaxis()->CenterTitle();
+  frame2->GetYaxis()->SetTitle("Counts");
+  frame2->GetYaxis()->CenterTitle();
+  
+  TCanvas *cp = new TCanvas("cp", "cp", 1020, 1020); // 16:20
+  
+  frame2->Draw();
+
+  // chi2
+  Double_t pullChi2 = frame2->chiSquare("pullModel", "pullData");
+  TPaveText *textBlock = new TPaveText(0.11, 0.68, 0.3, 0.78, "NDC TL"); // x1, y1, x2, y2
+  textBlock->AddText(Form("#chi^{2}/ndf = %.3f", pullChi2));
+  textBlock->SetFillColor(kWhite);
+  textBlock->SetLineColor(kWhite);
+  textBlock->SetShadowColor(kWhite);
+  textBlock->SetTextColor(kBlack);
+  textBlock->Draw();
+
+  cp->Print(pullFile);
   
   return 0;
 }
@@ -325,7 +373,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     case 'S': flagNew = 1; break;
-    case 'b': bkgOption = atoi(optarg); break;  
+    case 'b': bkgOption = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
       exit(0);
@@ -414,4 +462,5 @@ void assignOptions() {
   outDir = outDir + "/" + kinvarName + "/g" + "/b" + bkgOption; // only gaussian, for now
   plotFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
   textFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
+  pullFile = outDir + "/roofit-" + targetOption + kinvarSufix + "_pull.png";
 }
