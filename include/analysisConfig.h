@@ -163,9 +163,9 @@ void drawBlackHorizontalLine(Double_t y) {
   u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
   // u = (y - y1)/(y2 - y1);
   TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(3);
+  liney->SetLineWidth(1);
   liney->SetLineColor(kBlack);
-  liney->SetLineStyle(2);
+  liney->SetLineStyle(1);
   liney->SetNDC(kTRUE);
   liney->Draw();
 }

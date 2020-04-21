@@ -219,33 +219,64 @@ int main(int argc, char **argv) {
   c->GetPad(2)->SetTopMargin(0.0);
   c->GetPad(2)->SetBottomMargin(0.1);
 
-  // drawing pull hist (taking into account only global fit)
+  /*** Pull Hist ***/
+  
   c->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  gStyle->SetOptStat(0);
   
-  RooHist *pull = frame->pullHist();
+  // define histograms from model
+  TH1F *signalHist = (TH1F *) omega.createHistogram("signalHist", x, Binning(Nbins, fitRangeDown, fitRangeUp), Extended());
+  signalHist->Scale(nsig.getValV());
   
-  RooPlot *frame2 = x.frame(Title(""), Bins(Nbins));
-  frame2->SetTitle("");
-  frame2->addPlotable(pull);
-  frame2->GetXaxis()->SetTickSize(0.07);
-  frame2->GetXaxis()->SetLabelSize(0.07);
-  frame2->GetXaxis()->SetTitle("");
-  frame2->SetMaximum(4.5);
-  frame2->SetMinimum(-4.5);
-  frame2->GetYaxis()->SetLabelSize(0.07);
-  frame2->GetYaxis()->SetTitleSize(0.07);
-  frame2->GetYaxis()->SetTitleOffset(0.375);
-  frame2->GetYaxis()->SetTitle("Pull");
-  frame2->GetYaxis()->CenterTitle();
-  frame2->Draw();
+  TH1F *bkgHist =  (TH1F *) bkg.createHistogram("bkgHist", x, Binning(Nbins, fitRangeDown, fitRangeUp), Extended());
+  bkgHist->Scale(nbkg.getValV());
   
+  TH1F *modelHist = new TH1F("modelHist", "modelHist", Nbins, fitRangeDown, fitRangeUp);
+  modelHist->Add(signalHist, bkgHist);
+
+  TH1F *dataErrHist = new TH1F("dataErrHist", "dataErrHist", Nbins, fitRangeDown, fitRangeUp);
+  for (Int_t h = 1; h <= Nbins; h++) {
+    dataErrHist->SetBinContent(h, dataHist->GetBinError(h));
+    dataErrHist->SetBinError(h, 0);
+  }
+
+  TH1F *pullHist = new TH1F("pullHist", "pullHist", Nbins, fitRangeDown, fitRangeUp);
+  pullHist->Add(dataHist, modelHist, 1, -1);
+  pullHist->Divide(dataErrHist);
+
+  pullHist->SetTitle("");
+  pullHist->GetXaxis()->SetTickSize(0.07);
+  pullHist->GetXaxis()->SetLabelSize(0.07);
+  pullHist->GetXaxis()->SetTitle("");
+  pullHist->GetYaxis()->SetLabelSize(0.07);
+  pullHist->GetYaxis()->SetTitleSize(0.07);
+  pullHist->GetYaxis()->SetTitleOffset(0.375);
+  pullHist->GetYaxis()->SetTitle("Pull");
+  pullHist->GetYaxis()->CenterTitle();
+  pullHist->SetFillColor(kMagenta);
+  pullHist->SetAxisRange(-4.5, 4.5, "Y");
+  
+  pullHist->Draw("HIST B");
+    
   drawHorizontalLine(3);
   drawBlackHorizontalLine(0);
   drawHorizontalLine(-3);
 
+  /*** Finish drawing ***/
+  
+  // going back to first pad
   c->cd(1);
+  
   cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   frame->Draw();
+
+  /*
+    modelHist->SetLineColor(kBlack);
+    modelHist->SetLineWidth(5);
+    modelHist->Draw("SAME HIST");
+  */
   
   // draw lines
   drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
@@ -257,11 +288,7 @@ int main(int argc, char **argv) {
   /*** Integral ***/
 
   x.setRange("3sigmaRange", omegaMean.getValV() - 3*omegaSigma.getValV(), omegaMean.getValV() + 3*omegaSigma.getValV());
-  RooAbsReal *int3Sigma = cmodel.createIntegral(x, NormSet(x), Range("3sigmaRange"), Components("bkg"));
-
-  std::cout << std::endl;
-  std::cout << "INTEGRAL = " << int3Sigma->getValV() << std::endl;
-  std::cout << std::endl;
+  RooAbsReal *bkg3Sigma = bkg.createIntegral(x, NormSet(x), Range("3sigmaRange"));
 
   /*** Save data from fit ***/
 
@@ -274,7 +301,7 @@ int main(int argc, char **argv) {
   // line 3: number of omega
   outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
   // line 4: number of bkg
-  outFinalFile << int3Sigma->getValV() * nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
+  outFinalFile << bkg3Sigma->getValV() * nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
   std::cout << "File " << textFile << " has been created!" << std::endl;
   std::cout << std::endl;
   
