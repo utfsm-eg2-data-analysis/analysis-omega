@@ -1,61 +1,63 @@
 #!/bin/bash
 
-##################################
-# ./run_MakeRooFits.sh <bkgOpt>  #
-#     <bkgOpt> = (1, 2)          #
-##################################
+###############################################################
+# ./run_MakeRooFits.sh --bkg <bkgOpt> --kinvar <kinvarOpt>    #
+#     <kinvarOpt> = (Z, Pt2, Q2, Nu)                          #
+#     <bkgOpt> = (1, 2)                                       #
+#                                                             #
+# EG: ./run_MakeRooFits.sh --bkg 1 --kinvar Pt2               #
+###############################################################
 
-bkgOpt="$@"
+inputArray=("$@")
+
+ic=0
+while [ $ic -le $((${#inputArray[@]}-1)) ]; do
+  if [ "${inputArray[$ic]}" == "--bkg" ]; then
+    bkgOpt=${inputArray[$((ic+1))]}
+  elif [ "${inputArray[$ic]}" == "--kinvar" ]; then
+    kinvarOpt=${inputArray[$((ic+1))]}
+  else
+    printf "*** Aborting: Unrecognized argument: ${inputArray[$((ic))]}. ***\n\n";
+  fi
+  ((ic+=2))
+done
+
+COUNTER=1
+END=5
+
+if [[ ${kinvarOpt} = "Z" ]]; then
+  kinvarOpt="z"
+  COUNTER=3
+  END=7
+elif [[ ${kinvarOpt} = "Pt2" ]]; then
+  kinvarOpt="p"
+elif [[ ${kinvarOpt} = "Q2" ]]; then
+  kinvarOpt="q"
+elif [[ ${kinvarOpt} = "Nu" ]]; then
+  kinvarOpt="n"
+fi
 
 cd ${PRODIR}
 ./bin/MakeRooFits -h
 
-# first attempt
-#./bin/MakeRooFits -tD -z6 -b${bkgOpt} -S
-#./bin/MakeRooFits -tD -z7 -b${bkgOpt} -S
-#./bin/MakeRooFits -tD -z3 -b${bkgOpt} -S
-#./bin/MakeRooFits -tD -z4 -b${bkgOpt} -S
-#./bin/MakeRooFits -tD -z5 -b${bkgOpt} -S
-#
-#./bin/MakeRooFits -tC -z6 -b${bkgOpt} -S
-#./bin/MakeRooFits -tC -z7 -b${bkgOpt} -S
-#./bin/MakeRooFits -tC -z3 -b${bkgOpt} -S
-#./bin/MakeRooFits -tC -z4 -b${bkgOpt} -S
-#./bin/MakeRooFits -tC -z5 -b${bkgOpt} -S
-#
-#./bin/MakeRooFits -tFe -z6 -b${bkgOpt} -S
-#./bin/MakeRooFits -tFe -z7 -b${bkgOpt} -S
-#./bin/MakeRooFits -tFe -z3 -b${bkgOpt} -S
-#./bin/MakeRooFits -tFe -z4 -b${bkgOpt} -S
-#./bin/MakeRooFits -tFe -z5 -b${bkgOpt} -S
-#
-#./bin/MakeRooFits -tPb -z6 -b${bkgOpt} -S
-#./bin/MakeRooFits -tPb -z7 -b${bkgOpt} -S
-#./bin/MakeRooFits -tPb -z3 -b${bkgOpt} -S
-#./bin/MakeRooFits -tPb -z4 -b${bkgOpt} -S
-#./bin/MakeRooFits -tPb -z5 -b${bkgOpt} -S
+while [ ${COUNTER} -le ${END} ]; do
+  # Deut
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt}
 
-# second attempt
-./bin/MakeRooFits -tD -z6 -b${bkgOpt}
-./bin/MakeRooFits -tD -z7 -b${bkgOpt}
-./bin/MakeRooFits -tD -z3 -b${bkgOpt}
-./bin/MakeRooFits -tD -z4 -b${bkgOpt}
-./bin/MakeRooFits -tD -z5 -b${bkgOpt}
+  # Carbon
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt}
 
-./bin/MakeRooFits -tC -z6 -b${bkgOpt}
-./bin/MakeRooFits -tC -z7 -b${bkgOpt}
-./bin/MakeRooFits -tC -z3 -b${bkgOpt}
-./bin/MakeRooFits -tC -z4 -b${bkgOpt}
-./bin/MakeRooFits -tC -z5 -b${bkgOpt}
+  # Iron
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt}
 
-./bin/MakeRooFits -tFe -z6 -b${bkgOpt}
-./bin/MakeRooFits -tFe -z7 -b${bkgOpt}
-./bin/MakeRooFits -tFe -z3 -b${bkgOpt}
-./bin/MakeRooFits -tFe -z4 -b${bkgOpt}
-./bin/MakeRooFits -tFe -z5 -b${bkgOpt}
+  # Lead
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt}
 
-./bin/MakeRooFits -tPb -z6 -b${bkgOpt}
-./bin/MakeRooFits -tPb -z7 -b${bkgOpt}
-./bin/MakeRooFits -tPb -z3 -b${bkgOpt}
-./bin/MakeRooFits -tPb -z4 -b${bkgOpt}
-./bin/MakeRooFits -tPb -z5 -b${bkgOpt}
+  let COUNTER=COUNTER+1
+done
+
+

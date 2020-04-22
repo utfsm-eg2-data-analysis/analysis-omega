@@ -172,6 +172,19 @@ void drawBlackHorizontalLine(Double_t y) {
   liney->Draw();
 }
 
+void drawGrayHorizontalLine(Double_t y) {
+  Double_t u;
+  gPad->Update(); // necessary
+  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
+  // u = (y - y1)/(y2 - y1);
+  TLine *liney = new TLine(0.1, u, 0.9, u);
+  liney->SetLineWidth(3);
+  liney->SetLineColor(kGray+2);
+  liney->SetLineStyle(2);
+  liney->SetNDC(kTRUE);
+  liney->Draw();
+}
+
 void drawVerticalLineBlack(Double_t x) {
   Double_t u;
   gPad->Update(); // necessary

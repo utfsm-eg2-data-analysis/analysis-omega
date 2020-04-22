@@ -1,17 +1,22 @@
-/**************************************/
-/* PlotParams.cxx                     */
-/*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
-/*                                    */
-/**************************************/
+/*********************************/
+/* PlotParams.cxx                */
+/*                               */
+/* Created by Andrés Bórquez     */
+/*                               */
+/*********************************/
 
-// plots mean, sigma and omega n obtained from fits
+// plots mean, sigma, omega n, bkg n and sn ratio obtained from fits
+// update:
+// - style
+// - fixed range
+// - outdir and filename
 
 #include "analysisConfig.h"
 
 /*** Global variables ***/
 
-TString outDir  = proDir + "/out/MakeRooFits";
+TString outDir  = proDir + "/out/MakeRooFits"; // always!
+TString inDir;
 
 TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
@@ -31,6 +36,7 @@ TString signalDir;
 // bkg
 Int_t bkgOption = 1; // default
 TString bkgDir;
+TString bkgSufix; // new
 
 // name
 TString plotFile;
@@ -63,11 +69,11 @@ int main(int argc, char **argv) {
   gStyle->SetTitleSize(0.12, "t"); // hist title size
   
   // creating and filling histograms
-  TH1F *meanHist = new TH1F("meanHist", "#mu", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *sigmaHist = new TH1F("sigmaHist", "#sigma", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *omegaHist = new TH1F("omegaHist", "N_{#omega}", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *bkgHist = new TH1F("bkgHist", "N_{b}", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
-  TH1F *snHist = new TH1F("snHist", "SN", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *meanHist = new TH1F("meanHist", "#mu (" + kinvarOption + ")", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *sigmaHist = new TH1F("sigmaHist", "#sigma (" + kinvarOption + ")", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *omegaHist = new TH1F("omegaHist", "N_{#omega} (" + kinvarOption + ")", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *bkgHist = new TH1F("bkgHist", "N_{bkg} (" + kinvarOption + ") in (-3#sigma,3#sigma)", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
+  TH1F *snHist = new TH1F("snHist", "SN (" + kinvarOption + ") in (-3#sigma,3#sigma)", 4*kinvarNbins, 0., (Double_t) 4*kinvarNbins);
   
   for (Int_t t = 0; t < 4; t++) {
     for (Int_t z = 0; z < kinvarNbins; z++) {
@@ -90,9 +96,16 @@ int main(int argc, char **argv) {
 
   c->cd(1);
   gPad->SetGridx(1);
-  meanHist->SetLabelSize(0.1, "Y");
+  meanHist->SetLabelSize(0.1, "X");
+  meanHist->GetXaxis()->CenterLabels();
+  meanHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, "Deuterium");
+  meanHist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, "Carbon");
+  meanHist->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, "Iron");
+  meanHist->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, "Lead");
+  meanHist->GetXaxis()->ChangeLabel(-1,-1,0);
   meanHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  meanHist->GetYaxis()->CenterTitle();
+  meanHist->SetLabelSize(0.1, "Y");
+  meanHist->SetAxisRange(0.34, 0.39, "Y"); // by obs
   meanHist->SetLineColor(kRed);
   meanHist->SetLineWidth(3);
 
@@ -101,14 +114,21 @@ int main(int argc, char **argv) {
   Double_t mean_avg;
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) mean_avg += meanHist->GetBinContent(i);
   mean_avg = mean_avg/(4.*kinvarNbins);
-  drawBlackHorizontalLine(mean_avg);
+  drawGrayHorizontalLine(mean_avg);
   
   c->cd(3);
   gPad->SetGridx(1);
-  sigmaHist->SetLabelSize(0.1, "Y");
+  sigmaHist->SetLabelSize(0.1, "X");
+  sigmaHist->GetXaxis()->CenterLabels();
+  sigmaHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, "Deuterium");
+  sigmaHist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, "Carbon");
+  sigmaHist->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, "Iron");
+  sigmaHist->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, "Lead");
+  sigmaHist->GetXaxis()->ChangeLabel(-1,-1,0);
   sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  sigmaHist->GetYaxis()->CenterTitle();
+  sigmaHist->SetLabelSize(0.1, "Y");
   sigmaHist->GetYaxis()->SetMaxDigits(2);
+  sigmaHist->SetAxisRange(0.018, 0.024, "Y"); // by obs
   sigmaHist->SetLineColor(kBlack);
   sigmaHist->SetLineWidth(3);
 
@@ -117,13 +137,19 @@ int main(int argc, char **argv) {
   Double_t sigma_avg;
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) sigma_avg += sigmaHist->GetBinContent(i);
   sigma_avg = sigma_avg/(4.*kinvarNbins);
-  drawBlackHorizontalLine(sigma_avg);
+  drawGrayHorizontalLine(sigma_avg);
       
   c->cd(2);
   gPad->SetGridx(1);
-  omegaHist->SetLabelSize(0.1, "Y");
+  omegaHist->SetLabelSize(0.1, "X");
+  omegaHist->GetXaxis()->CenterLabels();
+  omegaHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, "Deuterium");
+  omegaHist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, "Carbon");
+  omegaHist->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, "Iron");
+  omegaHist->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, "Lead");
+  omegaHist->GetXaxis()->ChangeLabel(-1,-1,0);
   omegaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  omegaHist->GetYaxis()->CenterTitle();
+  omegaHist->SetLabelSize(0.1, "Y");
   omegaHist->GetYaxis()->SetMaxDigits(3);
   omegaHist->SetLineColor(kMagenta+2);
   omegaHist->SetLineWidth(3);
@@ -132,9 +158,15 @@ int main(int argc, char **argv) {
   
   c->cd(4);
   gPad->SetGridx(1);
-  bkgHist->SetLabelSize(0.1, "Y");
+  bkgHist->SetLabelSize(0.1, "X");
+  bkgHist->GetXaxis()->CenterLabels();
+  bkgHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, "Deuterium");
+  bkgHist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, "Carbon");
+  bkgHist->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, "Iron");
+  bkgHist->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, "Lead");
+  bkgHist->GetXaxis()->ChangeLabel(-1,-1,0);  
   bkgHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  bkgHist->GetYaxis()->CenterTitle();
+  bkgHist->SetLabelSize(0.1, "Y");
   bkgHist->GetYaxis()->SetMaxDigits(3);
   bkgHist->SetLineColor(kBlue);
   bkgHist->SetLineWidth(3);
@@ -143,9 +175,16 @@ int main(int argc, char **argv) {
 
   c->cd(6);
   gPad->SetGridx(1);
-  snHist->SetLabelSize(0.1, "Y");
+  snHist->SetLabelSize(0.1, "X");
+  snHist->GetXaxis()->CenterLabels();
+  snHist->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, "Deuterium");
+  snHist->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, "Carbon");
+  snHist->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, "Iron");
+  snHist->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, "Lead");
+  snHist->GetXaxis()->ChangeLabel(-1,-1,0);
   snHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
-  snHist->GetYaxis()->CenterTitle();
+  snHist->SetLabelSize(0.1, "Y");
+  snHist->SetAxisRange(0.0, 1.0, "Y"); // by obs
   snHist->SetLineColor(kGreen+2);
   snHist->SetLineWidth(3);
 
@@ -226,9 +265,10 @@ void assignOptions() {
   kinvarDir = "/" + kinvarOption;
   signalDir = "/" + signalOption;
   bkgDir = Form("/b%d", bkgOption);
+  bkgSufix = Form("-b%d", bkgOption);
   // output
-  outDir = outDir + kinvarDir + signalDir + bkgDir;
-  plotFile = outDir + "/params-" + kinvarOption + ".png";
+  inDir = outDir + kinvarDir + signalDir + bkgDir;
+  plotFile = outDir + "/params-" + kinvarOption + "-g" + bkgSufix + ".png";
 }
 
 void readTextFiles() {
@@ -239,7 +279,7 @@ void readTextFiles() {
   for (Int_t tt = 0; tt < 4; tt++) {
     for (Int_t zz = 0; zz < kinvarNbins; zz++) {
       kinvarAuxSufix = kinvarSufix + Form("%d", zz + kinvarConstant);
-      textFile = outDir + "/roofit-" + targetName[tt] + kinvarAuxSufix + ".dat";
+      textFile = inDir + "/roofit-" + targetName[tt] + kinvarAuxSufix + ".dat";
 
       std::cout << "Reading " << textFile << " ..." << std::endl;
       std::ifstream inFile(textFile);

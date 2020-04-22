@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 
   Double_t sigmaIGV = obtSigma;
   Double_t sigmaRangeDown = 1.6e-2;
-  Double_t sigmaRangeUp = 2.3e-2;
+  Double_t sigmaRangeUp = 2.6e-2;
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
@@ -178,7 +178,8 @@ int main(int argc, char **argv) {
   r1->Print("v");
 
   /*** Constraints! ***/
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(2e-2), RooConst(0.001));
+  
+  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(22e-3), RooConst(1e-3));
   RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
 
   // fit constraint model
@@ -319,7 +320,7 @@ int main(int argc, char **argv) {
   RooDataHist pullData("pullData", "pull data", p, pullHistY);
 
   // define frame
-  RooPlot *frame2 = p.frame(Title(""), Bins(18));
+  RooPlot *frame2 = p.frame(Title(targetOption + " in" + kinvarTitle), Bins(18));
   
   // fit the normal way
   pullModel.chi2FitTo(pullData);
@@ -332,7 +333,6 @@ int main(int argc, char **argv) {
   frame2->getAttText()->SetTextSize(0.025);
   frame2->getAttLine()->SetLineWidth(0);
 
-  frame2->SetTitle("");
   frame2->GetXaxis()->CenterTitle();
   frame2->GetYaxis()->SetTitle("Counts");
   frame2->GetYaxis()->CenterTitle();
