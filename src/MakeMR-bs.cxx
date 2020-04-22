@@ -43,6 +43,7 @@ TString  kinvarSufix;
 Int_t    kinvarConstant = 1; // default for all, except Z
 Int_t    kinvarNbins = 5;    // default for all -> HARDCODED!
 Double_t kinvarEdges[6];
+TString  kinvarTitle;
 
 TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
@@ -205,57 +206,93 @@ int main(int argc, char **argv) {
     TH1F *LeadHR = new TH1F("LeadHR", "", kinvarNbins, 0.5, 1.);
     LeadHR->Divide(LeadOmegaN_fit, LeadElectronN);
     
-    /*** Drawing Multiplicity Ratios ***/
+    /*** Multiplicity Ratios ***/
     
-    TCanvas *c = new TCanvas("c", "c", 1000, 1000);
-    c->SetGridx(1);
-    c->SetGridy(1);
-    gStyle->SetOptFit(0);
-    gStyle->SetOptStat(0);
-  
     TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
     CarbonMR->Divide(CarbonHR, DeutHR);
     
-    CarbonMR->SetTitle("#omega MR(" + kinvarOption + ") - Subtracted Bkg");
-    CarbonMR->GetXaxis()->SetTitle(kinvarOption);
-    CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
-    for (Int_t i = 0; i < (kinvarNbins+1); i++) CarbonMR->GetXaxis()->ChangeLabel(i+1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[i]));
-    CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[kinvarNbins]));
-    CarbonMR->GetYaxis()->SetTitle("MR");
-    CarbonMR->SetAxisRange(0.0, 1.2, "Y"); // range
-  
-    CarbonMR->SetMarkerColor(kRed);
-    CarbonMR->SetLineColor(kRed);
-    CarbonMR->SetLineWidth(3);
-    CarbonMR->SetMarkerStyle(21);
-
-    CarbonMR->Draw("E1");
-
     TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
     IronMR->Divide(IronHR, DeutHR);
-  
-    IronMR->SetMarkerColor(kBlue);
-    IronMR->SetLineColor(kBlue);
-    IronMR->SetLineWidth(3);
-    IronMR->SetMarkerStyle(21);
-
-    IronMR->Draw("E1 SAME");
-  
+    
     TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
     LeadMR->Divide(LeadHR, DeutHR);
 
-    LeadMR->SetMarkerColor(kBlack);
-    LeadMR->SetLineColor(kBlack);
-    LeadMR->SetLineWidth(3);
-    LeadMR->SetMarkerStyle(21);
-  
-    LeadMR->Draw("E1 SAME");
-  
+    /*** Draw ***/
+
+    // define arrays
+    Double_t empty[kinvarNbins];
+    Double_t MR_x[kinvarNbins];
+    Double_t CarbonMR_y[kinvarNbins];
+    Double_t CarbonMR_err[kinvarNbins];
+    Double_t IronMR_y[kinvarNbins];
+    Double_t IronMR_err[kinvarNbins];
+    Double_t LeadMR_y[kinvarNbins];
+    Double_t LeadMR_err[kinvarNbins];
+
+    // fill arrays
+    for (Int_t v = 0; v < kinvarNbins; v++) {
+      empty[v] = 0.;
+      MR_x[v] = (kinvarEdges[v] + kinvarEdges[v+1])/2.;
+      CarbonMR_y[v] = CarbonMR->GetBinContent(v+1);
+      CarbonMR_err[v] = CarbonMR->GetBinError(v+1);
+      IronMR_y[v] = IronMR->GetBinContent(v+1);
+      IronMR_err[v] = IronMR->GetBinError(v+1);
+      LeadMR_y[v] = LeadMR->GetBinContent(v+1);
+      LeadMR_err[v] = LeadMR->GetBinError(v+1);
+    }
+
+    // define canvas
+    TCanvas *c = new TCanvas("c", "c", 1000, 1000);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptStat(0);
+    
+    // define graphs
+    TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, empty, CarbonMR_err);
+    TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, empty, IronMR_err);
+    TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, empty, LeadMR_err);
+
+    CarbonMR_gr->SetTitle("Multiplicity Ratio: #omega");
+    CarbonMR_gr->GetXaxis()->SetTitle(kinvarTitle);
+    CarbonMR_gr->GetXaxis()->CenterTitle();
+    CarbonMR_gr->GetXaxis()->SetNdivisions(400 + kinvarNbins, kFALSE);
+    CarbonMR_gr->GetXaxis()->SetLimits(kinvarEdges[0], kinvarEdges[kinvarNbins]);
+    CarbonMR_gr->GetYaxis()->SetTitle("R_{#omega}");
+    CarbonMR_gr->GetYaxis()->CenterTitle();
+    CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.2);
+
+    CarbonMR_gr->SetMarkerStyle(21);
+    CarbonMR_gr->SetMarkerSize(1.5);
+    CarbonMR_gr->SetMarkerColor(kRed);
+    CarbonMR_gr->SetLineColor(kRed);
+    CarbonMR_gr->SetLineWidth(3);
+    
+    CarbonMR_gr->Draw("AP");
+
+    IronMR_gr->SetMarkerStyle(21);
+    IronMR_gr->SetMarkerSize(1.5);
+    IronMR_gr->SetMarkerColor(kBlue);
+    IronMR_gr->SetLineColor(kBlue);
+    IronMR_gr->SetLineWidth(3);
+    
+    IronMR_gr->Draw("P");
+
+    LeadMR_gr->SetMarkerStyle(21);
+    LeadMR_gr->SetMarkerSize(1.5);
+    LeadMR_gr->SetMarkerColor(kBlack);
+    LeadMR_gr->SetLineColor(kBlack);
+    LeadMR_gr->SetLineWidth(3);
+	
+    LeadMR_gr->Draw("P");
+
+    // legend position
+    Double_t legendX = 0.8;
+    if (kinvarOption == "Nu") legendX = 0.1;
+    
     // legend
-    TLegend *legend = new TLegend(0.9, 0.75, 1., 0.9);
-    legend->AddEntry(CarbonMR, "Carbon", "pl");
-    legend->AddEntry(IronMR, "Iron", "pl");
-    legend->AddEntry(LeadMR, "Lead", "pl");
+    TLegend *legend = new TLegend(legendX, 0.75, legendX+0.1, 0.9); // x1,y1,x2,y2
+    legend->AddEntry(CarbonMR_gr, "Carbon", "p");
+    legend->AddEntry(IronMR_gr, "Iron", "p");
+    legend->AddEntry(LeadMR_gr, "Lead", "p");
     legend->Draw();
 
     c->Print(plotFile); // output file
@@ -270,7 +307,7 @@ int main(int argc, char **argv) {
 		   << LeadMR->GetBinContent(l) << "\t" << LeadMR->GetBinError(l)  << std::endl;
     }
     outFinalFile.close();
-    std::cout << "File " << textFile << " has been created!" << std::endl;    
+    std::cout << "File " << textFile << " has been created!" << std::endl;
     
   } else if (Nmethod == 2) {
 
@@ -381,9 +418,9 @@ int main(int argc, char **argv) {
     LeadMR_m2->SetMarkerStyle(21);
   
     LeadMR_m2->Draw("E1 SAME");
-  
+    
     // legend
-    TLegend *legend2 = new TLegend(0.9, 0.75, 1., 0.9);
+    TLegend *legend2 = new TLegend(0.8, 0.75, 0.9, 0.9); // x1,y1,x2,y2
     legend2->AddEntry(CarbonMR_m2, "Carbon", "pl");
     legend2->AddEntry(IronMR_m2, "Iron", "pl");
     legend2->AddEntry(LeadMR_m2, "Lead", "pl");
@@ -467,15 +504,19 @@ void assignOptions() {
   if (kinvarOption == "Z") {
     kinvarSufix = "-z";
     kinvarConstant = 3;
+    kinvarTitle = "Z";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
   } else if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
+    kinvarTitle = "Q^{2} (GeV^{2})";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
   } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
+    kinvarTitle = "#nu (GeV)";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
   } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
+    kinvarTitle = "p_{T}^{2} (GeV^{2})";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
   // bkg
