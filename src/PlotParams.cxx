@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
   sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   sigmaHist->SetLabelSize(0.1, "Y");
   sigmaHist->GetYaxis()->SetMaxDigits(2);
-  sigmaHist->SetAxisRange(0.018, 0.024, "Y"); // by obs
+  sigmaHist->SetAxisRange(0.018, 0.026, "Y"); // by obs
   sigmaHist->SetLineColor(kBlack);
   sigmaHist->SetLineWidth(3);
 

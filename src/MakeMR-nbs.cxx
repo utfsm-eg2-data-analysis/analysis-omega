@@ -16,17 +16,14 @@
 TString outDir = proDir + "/out/MakeMR/nbs";
 TString fitDir = proDir + "/out/MakeRooFits";
 
-// parameters
-Int_t flagZ = 0;
-Int_t flagQ2 = 0;
-Int_t flagNu = 0;
-Int_t flagPt2 = 0;
+// options
+TString kinvarOption;
 
 Int_t Nsigma = 5; // default
 TString sigmaSufix;
 
 // for kinvar
-TString  kinvarName;
+TString  kinvarTitle;
 Int_t    kinvarConstant = 1; // default for (Q2, Nu, Pt2)
 Int_t    kinvarNbins = 5;    // default for all
 TString  kinvarSufix;
@@ -75,7 +72,7 @@ int main(int argc, char **argv) {
       Int_t l = 0; // line counter
       while (inFile >> auxString1 >> auxString2) {
 	l++;
-	if (l == 1) { // third line
+	if (l == 1) { // first line
 	  omegaMean[targIndex][index] = auxString1.Atof();
 	  std::cout << "  Omega Mean for " << targetName[targIndex] << kinvarAuxSufix << ": " << omegaMean[targIndex][index] << std::endl;
 	} else if (l == 2) {
@@ -90,6 +87,62 @@ int main(int argc, char **argv) {
       massEdges[targIndex][index][1] = omegaMean[targIndex][index] + Nsigma*omegaSigma[targIndex][index];
       std::cout << "  Mass range for " << targetName[targIndex] << kinvarAuxSufix << ": [" << massEdges[targIndex][index][0] << ", " << massEdges[targIndex][index][1] << "]" << std::endl;
       std::cout << std::endl;
+    }
+  }
+
+  /*** Prepare Electron Numbers ***/
+
+  // creating and filling histograms
+  TH1F *DeutElectronN = new TH1F("DeutElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *CarbonElectronN = new TH1F("CarbonElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *IronElectronN = new TH1F("IronElectronN", "", kinvarNbins, 0.5, 1.);
+  TH1F *LeadElectronN = new TH1F("LeadElectronN", "", kinvarNbins, 0.5, 1.);
+  
+  // for each bin in kinvar
+  if (kinvarOption == "Z" || kinvarOption == "Pt2") {
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumber[0]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[0]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumber[1]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[1]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumber[2]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[2]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumber[3]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumber[3]));
+    }
+  } else if (kinvarOption == "Q2") {
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumberQ2[0][cc]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[0][cc]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumberQ2[1][cc]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[1][cc]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumberQ2[2][cc]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[2][cc]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumberQ2[3][cc]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberQ2[3][cc]));
+    }
+  } else if (kinvarOption == "Nu") { 
+    // for each bin in kinvar
+    for (Int_t cc = 0; cc < kinvarNbins; cc++) {
+      DeutElectronN->SetBinContent(cc + 1, electronNumberNu[0][cc]);
+      DeutElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[0][cc]));
+      
+      CarbonElectronN->SetBinContent(cc + 1, electronNumberNu[1][cc]);
+      CarbonElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[1][cc]));
+      
+      IronElectronN->SetBinContent(cc + 1, electronNumberNu[2][cc]);
+      IronElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[2][cc]));
+      
+      LeadElectronN->SetBinContent(cc + 1, electronNumberNu[3][cc]);
+      LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[3][cc]));
     }
   }
   
@@ -120,69 +173,112 @@ int main(int argc, char **argv) {
     LeadOmegaN_int->SetBinContent(cc + 1, omegaNumber_int[3][cc]);
     LeadOmegaN_int->SetBinError(cc + 1, omegaError_int[3][cc]);
   }
+
+  /*** Hadronic Ratios ***/
   
-  /*** Drawing ***/
+  TH1F *DeutHR = new TH1F("DeutHR", "", kinvarNbins, 0.5, 1.);
+  DeutHR->Divide(DeutOmegaN_int, DeutElectronN);
+  
+  TH1F *CarbonHR = new TH1F("CarbonHR", "", kinvarNbins, 0.5, 1.);
+  CarbonHR->Divide(CarbonOmegaN_int, CarbonElectronN);
+  
+  TH1F *IronHR = new TH1F("IronHR", "", kinvarNbins, 0.5, 1.);
+  IronHR->Divide(IronOmegaN_int, IronElectronN);
+  
+  TH1F *LeadHR = new TH1F("LeadHR", "", kinvarNbins, 0.5, 1.);
+  LeadHR->Divide(LeadOmegaN_int, LeadElectronN);
 
-  TCanvas *c = new TCanvas("c", "c", 1000, 1000);
-  c->SetGridx(1);
-  c->SetGridy(1);
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-
+  /*** Multiplicity Ratios ***/
+  
   TH1F *CarbonMR = new TH1F("CarbonMR", "", kinvarNbins, 0.5, 1.);
-  CarbonMR->Divide(CarbonOmegaN_int, DeutOmegaN_int);
-  CarbonMR->Scale(4.6194); // electron normalization
-  
-  CarbonMR->SetTitle(Form("MR(" + kinvarName + ") - No Bkg Subtraction #omega(%d#sigma)", Nsigma));
-  CarbonMR->GetXaxis()->SetTitle(kinvarName);
-  CarbonMR->GetXaxis()->SetNdivisions(200 + kinvarNbins, kFALSE);
-  CarbonMR->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[0]));
-  CarbonMR->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[1]));
-  CarbonMR->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[2]));
-  CarbonMR->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[3]));
-  CarbonMR->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
-  CarbonMR->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
-  CarbonMR->GetYaxis()->SetTitle("MR");
-  CarbonMR->SetAxisRange(0., 1.2, "Y"); // range
-  
-  CarbonMR->SetMarkerColor(kRed);
-  CarbonMR->SetLineColor(kRed);
-  CarbonMR->SetLineWidth(3);
-  CarbonMR->SetMarkerStyle(21);
-  
-  CarbonMR->Draw("E");  
-  
+  CarbonMR->Divide(CarbonHR, DeutHR);
+    
   TH1F *IronMR = new TH1F("IronMR", "", kinvarNbins, 0.5, 1.);
-  IronMR->Divide(IronOmegaN_int, DeutOmegaN_int);
-  IronMR->Scale(2.3966); // electron normalization
-
-  IronMR->SetMarkerColor(kBlue);
-  IronMR->SetLineColor(kBlue);
-  IronMR->SetLineWidth(3);
-  IronMR->SetMarkerStyle(21);
-  
-  IronMR->Draw("E SAME");
+  IronMR->Divide(IronHR, DeutHR);
 
   TH1F *LeadMR = new TH1F("LeadMR", "", kinvarNbins, 0.5, 1.);
-  LeadMR->Divide(LeadOmegaN_int, DeutOmegaN_int);
-  LeadMR->Scale(6.1780); // electron normalization
+  LeadMR->Divide(LeadHR, DeutHR);
 
-  LeadMR->SetMarkerColor(kBlack);
-  LeadMR->SetLineColor(kBlack);
-  LeadMR->SetLineWidth(3);
-  LeadMR->SetMarkerStyle(21);
+  /*** Draw ***/
   
-  LeadMR->Draw("E SAME");
-    
+  // define arrays
+  Double_t empty[kinvarNbins];
+  Double_t MR_x[kinvarNbins];
+  Double_t CarbonMR_y[kinvarNbins];
+  Double_t CarbonMR_err[kinvarNbins];
+  Double_t IronMR_y[kinvarNbins];
+  Double_t IronMR_err[kinvarNbins];
+  Double_t LeadMR_y[kinvarNbins];
+  Double_t LeadMR_err[kinvarNbins];
+  
+  // fill arrays
+  for (Int_t v = 0; v < kinvarNbins; v++) {
+    empty[v] = 0.;
+    MR_x[v] = (kinvarEdges[v] + kinvarEdges[v+1])/2.;
+    CarbonMR_y[v] = CarbonMR->GetBinContent(v+1);
+    CarbonMR_err[v] = CarbonMR->GetBinError(v+1);
+    IronMR_y[v] = IronMR->GetBinContent(v+1);
+    IronMR_err[v] = IronMR->GetBinError(v+1);
+    LeadMR_y[v] = LeadMR->GetBinContent(v+1);
+    LeadMR_err[v] = LeadMR->GetBinError(v+1);
+  }
+  
+  // define canvas
+  TCanvas *c = new TCanvas("c", "c", 1000, 1000);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  
+  // define graphs
+  TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, empty, CarbonMR_err);
+  TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, empty, IronMR_err);
+  TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, empty, LeadMR_err);
+  
+  CarbonMR_gr->SetTitle("Multiplicity Ratio: #omega - No Bkg Subtraction");
+  CarbonMR_gr->GetXaxis()->SetTitle(kinvarTitle);
+  CarbonMR_gr->GetXaxis()->CenterTitle();
+  CarbonMR_gr->GetXaxis()->SetNdivisions(400 + kinvarNbins, kFALSE);
+  CarbonMR_gr->GetXaxis()->SetLimits(kinvarEdges[0], kinvarEdges[kinvarNbins]);
+  CarbonMR_gr->GetYaxis()->SetTitle("R_{#omega}");
+  CarbonMR_gr->GetYaxis()->CenterTitle();
+  CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.2);
+  
+  CarbonMR_gr->SetMarkerStyle(21);
+  CarbonMR_gr->SetMarkerSize(1.5);
+  CarbonMR_gr->SetMarkerColor(kRed);
+  CarbonMR_gr->SetLineColor(kRed);
+  CarbonMR_gr->SetLineWidth(3);
+  
+  CarbonMR_gr->Draw("AP");
+  
+  IronMR_gr->SetMarkerStyle(21);
+  IronMR_gr->SetMarkerSize(1.5);
+  IronMR_gr->SetMarkerColor(kBlue);
+  IronMR_gr->SetLineColor(kBlue);
+  IronMR_gr->SetLineWidth(3);
+  
+  IronMR_gr->Draw("P");
+  
+  LeadMR_gr->SetMarkerStyle(21);
+  LeadMR_gr->SetMarkerSize(1.5);
+  LeadMR_gr->SetMarkerColor(kBlack);
+  LeadMR_gr->SetLineColor(kBlack);
+  LeadMR_gr->SetLineWidth(3);
+  
+  LeadMR_gr->Draw("P");
+  
+  // legend position
+  Double_t legendX = 0.8;
+  if (kinvarOption == "Nu") legendX = 0.1;
+  
   // legend
-  TLegend *legend = new TLegend(0.9, 0.75, 1., 0.9);
-  legend->AddEntry(CarbonMR, "Carbon", "pl");
-  legend->AddEntry(IronMR, "Iron", "pl");
-  legend->AddEntry(LeadMR, "Lead", "pl");
+  TLegend *legend = new TLegend(legendX, 0.75, legendX+0.1, 0.9); // x1,y1,x2,y2
+  legend->AddEntry(CarbonMR_gr, "Carbon", "p");
+  legend->AddEntry(IronMR_gr, "Iron", "p");
+  legend->AddEntry(LeadMR_gr, "Lead", "p");
   legend->Draw();
-
+  
   c->Print(plotFile); // output file
-
+  
   /*** Save results ***/
   
   std::ofstream outFinalFile(textFile, std::ios::out); // output file
@@ -221,14 +317,11 @@ inline void parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeMR-nbs -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hs:zqnp")) != -1)
+  while ((c = getopt(argc, argv, "hs:k:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 's': Nsigma = atoi(optarg); break;
-    case 'z': flagZ = 1; break;
-    case 'q': flagQ2 = 1; break;
-    case 'n': flagNu = 1; break;
-    case 'p': flagPt2 = 1; break;
+    case 'k': kinvarOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeMR-nbs -h to print usage." << std::endl;
       exit(0);
@@ -242,12 +335,8 @@ void printUsage() {
   std::cout << "./MakeMR-nbs -h" << std::endl;
   std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeMR-nbs -[kinvar]" << std::endl;
-  std::cout << "    (exclusive and mandatory)" << std::endl;
-  std::cout << "    z : Z" << std::endl;
-  std::cout << "    q : Q2" << std::endl;
-  std::cout << "    n : Nu" << std::endl;
-  std::cout << "    p : Pt2" << std::endl;
+  std::cout << "./MakeMR-nbs -k[kinvar]" << std::endl;
+  std::cout << "    selects kinvar: Z, Pt2, Q2, Nu" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakeMR-nbs -s[n]" << std::endl;
   std::cout << "    selects range around peak: n*sigma" << std::endl;
@@ -258,31 +347,29 @@ void assignOptions() {
   // for sigma
   sigmaSufix = Form("-%dsigma", Nsigma);
   // for kinvar
-  if (flagZ) {
-    kinvarName = "Z";
-    fitDir = fitDir + "/Z";
+  if (kinvarOption == "Z") {
     kinvarConstant = 3;
     kinvarSufix = "-z";
+    kinvarTitle = "Z";
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesZ[i];
-  } else if (flagQ2) {
-    kinvarName = "Q2";
-    fitDir = fitDir + "/Q2";
+  } else if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
+    kinvarTitle = "Q^{2} (GeV^{2})";    
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesQ2[i];
-  } else if (flagNu) {
-    kinvarName = "Nu";
-    fitDir = fitDir + "/Nu";
+  } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
+    kinvarTitle = "#nu (GeV)";    
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesNu[i];
-  } else if (flagPt2) {
-    kinvarName = "Pt2";
-    fitDir = fitDir + "/Pt2";
+  } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
+    kinvarTitle = "p_{T}^{2} (GeV^{2})";    
     for (Int_t i = 0; i < (kinvarNbins+1); i++) kinvarEdges[i] = edgesPt2[i];
   }
+  // for input
+  fitDir = fitDir + "/" + kinvarOption + "/g/b1"; // should update
   // for output files
-  plotFile = outDir + "/nbs-MR-" + kinvarName + sigmaSufix + ".png";
-  textFile = outDir + "/nbs-MR-" + kinvarName + sigmaSufix + ".dat";
+  plotFile = outDir + "/nbs-MR-" + kinvarOption + sigmaSufix + ".png";
+  textFile = outDir + "/nbs-MR-" + kinvarOption + sigmaSufix + ".dat";
 }
 
 void integrateData(TString targetOption) {
@@ -336,7 +423,7 @@ void integrateData(TString targetOption) {
     TString kinvarAuxSufix = kinvarSufix + Form("%d", index + kinvarConstant);
     
     TCut kinvarCut;
-    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarName + " && " + kinvarName + Form(" < %f", kinvarEdges[index+1]);
+    kinvarCut = Form("%f < ", kinvarEdges[index]) + kinvarOption + " && " + kinvarOption + Form(" < %f", kinvarEdges[index+1]);
     TCut cutMass = Form("%f < wD && wD < %f", massEdges[targIndex][index][0], massEdges[targIndex][index][1]);
     
     TH1F *dataHist;

@@ -134,12 +134,12 @@ int main(int argc, char **argv) {
   Double_t fitRangeUp = obtEdges[1]; // preMean.getValV() + 5*preSigma.getValV() = 0.468
 
   Double_t meanIGV = obtMean;
-  Double_t meanRangeDown = 0.36;
+  Double_t meanRangeDown = 0.34;
   Double_t meanRangeUp = 0.39; // 0.38
 
   Double_t sigmaIGV = obtSigma;
-  Double_t sigmaRangeDown = 1.6e-2;
-  Double_t sigmaRangeUp = 2.6e-2;
+  Double_t sigmaRangeDown = 1.8e-2;
+  Double_t sigmaRangeUp = 2.6e-2; // testing scan
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 
   /*** Constraints! ***/
   
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(22e-3), RooConst(1e-3));
+  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(23e-3), RooConst(3e-3)); // imposing bias
   RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
 
   // fit constraint model

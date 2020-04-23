@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
       Int_t l = 0; // line counter
       while (inFile >> auxString1 >> auxString2) {
 	l++;
-	if (l == 1) { // third line
+	if (l == 1) { // first line
 	  omegaMean[targIndex][index] = auxString1.Atof();
 	  std::cout << "  mean  = " << omegaMean[targIndex][index] << std::endl;
 	} else if (l == 2) {
