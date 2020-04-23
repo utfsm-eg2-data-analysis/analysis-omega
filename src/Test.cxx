@@ -33,7 +33,7 @@ int main() {
   input->Next();
     
   // loop in evnt
-  for (Int_t k = 0; k < nEntries; k++) { // should be nEntries
+  for (Int_t k = 0; k < 10; k++) { // should be nEntries
 
     Int_t nRows = input->GetNRows("EVNT");
     Int_t nRowsG = input->GetNRows("GSIM");
@@ -103,8 +103,6 @@ int main() {
 
 	if (eflag && i < input->GetNRows("EVNT")) {
 	  TString category = t->GetCategorization(i, "Sim");
-
-	  std::cout << "yey " << k << " " << i << std::endl;
 	  
 	  if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron" || category == "positron") {
 	    id = t->GetCategorization(i, "Sim");

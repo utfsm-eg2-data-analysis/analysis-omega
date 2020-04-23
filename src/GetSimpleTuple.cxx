@@ -6,9 +6,9 @@
 /*                                     */
 /***************************************/
 
-// LAST UPDATE:
-// - fixed enormous bug: now it gathers al gsim events
-// (this update ruined its functionality for data, must fix this!!)
+// UPDATE:
+// - fixed enormous bug: now it gathers all gsim events
+// - it's working for data, again
 
 #include "analysisConfig.h"
 
@@ -142,6 +142,8 @@ int main(int argc, char **argv) {
     // reset electron values
     for (Int_t r = 0; r < NvarElectrons; r++) varElectrons[r] = -9999.;
     Int_t eflag = 0; // reconstructed has electron
+
+    /*** FOR SIMULATIONS ***/
     
     // found electron in gsim!
     if (simFlag && t->Id(0,1) == 11) {
@@ -325,14 +327,117 @@ int main(int argc, char **argv) {
 	if (gflag || rflag) tHadrons->Fill(varHadrons);
 	
       } // end of loop in gsim particles
-    } // end of electron at gsim condition	    
+      
+    } // end of "electron found in gsim" condition
+    
+    /*** FOR DATA ***/
+    
+    // found electron
+    if (!simFlag && input->GetNRows("EVNT") > 0 && t->GetCategorization(0, analyserOption.Data(), true) == "electron") {	
+      varElectrons[0] = t->Q2();
+      varElectrons[1] = t->W();
+      varElectrons[2] = t->Nu();
+      vert = t->GetCorrectedVert();
+      Float_t vxec = vert->X(); 
+      Float_t vyec = vert->Y();
+      Float_t vzec = vert->Z(); 
+      varElectrons[3] = vxec; 
+      varElectrons[4] = vyec; 
+      varElectrons[5] = vzec;
+      varElectrons[6] = t->X(0);
+      varElectrons[7] = t->Y(0);
+      varElectrons[8] = t->Z(0);
+      varElectrons[9] = t->Px(0);
+      varElectrons[10] = t->Py(0);
+      varElectrons[11] = t->Pz(0);
+      varElectrons[12] = k;
+      varElectrons[13] = t->ElecVertTarg();
+      varElectrons[14] = t->Sector(0);
+      varElectrons[15] = t->Xb();
+      varElectrons[16] = t->XEC(0);
+      varElectrons[17] = t->YEC(0);
+      varElectrons[18] = t->ZEC(0);
+      
+      // fill
+      tElectrons->Fill(varElectrons);      
+      
+      // loop in hadrons
+      for (Int_t i = 1; i < input->GetNRows("EVNT"); i++) {
+	TString category = t->GetCategorization(i, analyserOption.Data());
+
+	// hadron found!
+	if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron" || category == "positron") {
+	  varHadrons[0] = t->ElecVertTarg();
+	  varHadrons[1] = t->Q2();
+	  varHadrons[2] = t->Nu();
+	  varHadrons[3] = t->Xb();
+	  varHadrons[4] = t->W();
+	  varHadrons[5] = t->Sector(0);
+	  varHadrons[6] = t->ThetaPQ(i);
+	  varHadrons[7] = t->PhiPQ(i);
+	  varHadrons[8] = t->Zh(i);
+	  varHadrons[9] = TMath::Sqrt(t->Pt2(i));
+	  varHadrons[10] = t->Mx2(i);
+	  varHadrons[11] = t->Xf(i);
+	  varHadrons[12] = t->T(i);
+	  varHadrons[13] = t->Momentum(i);
+	  varHadrons[14] = t->TimeCorr4(0.139570,i);
+	  varHadrons[15] = (t->Z(i)) - (t->Z(0));
+	  varHadrons[16] = TMath::Max(t->Etot(i), t->Ein(i) + t->Eout(i));
+	  varHadrons[17] = TMath::Max(t->Etot(0), t->Ein(0) + t->Eout(0));
+	  varHadrons[18] = t->Momentum(0);
+	  varHadrons[19] = t->TimeEC(0);
+	  varHadrons[20] = t->TimeSC(0);
+	  varHadrons[21] = t->PathEC(0);
+	  varHadrons[22] = t->PathSC(0);
+	  varHadrons[23] = k;
+	  varHadrons[24] = t->Px(i);
+	  varHadrons[25] = t->Py(i);
+	  varHadrons[26] = t->Pz(i);
+	  varHadrons[27] = t->X(0);
+	  varHadrons[28] = t->Y(0);
+	  varHadrons[29] = t->Z(0);
+	  vert = t->GetCorrectedVert();
+	  varHadrons[30] = vert->X(); 
+	  varHadrons[31] = vert->Y(); 
+	  varHadrons[32] = vert->Z(); 
+	  varHadrons[33] = t->TimeEC(i);
+	  varHadrons[34] = t->XEC(i);
+	  varHadrons[35] = t->YEC(i);
+	  varHadrons[36] = t->ZEC(i);
+	  varHadrons[37] = t->Px(0);
+	  varHadrons[38] = t->Py(0);
+	  varHadrons[39] = t->Pz(0);
+	  varHadrons[40] = t->Ein(i);
+	  varHadrons[41] = t->Eout(i);
+	  varHadrons[42] = t->Ein(0);
+	  varHadrons[43] = t->Eout(0);
+	  varHadrons[44] = ((category == "gamma")?22:
+			    ((category == "pi-")?-211:
+			     (( category == "high energy pion +" || category == "low energy pion +")?211:
+			      ((category == "s_electron")?11:-11))));
+	  varHadrons[45] = t->Betta(i);
+	  varHadrons[46] = t->X(i);
+	  varHadrons[47] = t->Y(i);
+	  varHadrons[48] = t->Z(i);
+	  varHadrons[49] = fcup; // fcup information, finally
+	  
+	  // fill
+	  tHadrons->Fill(varHadrons);
+	} // end of hadron found condition
+	
+      } // end of loop in hadrons
+      
+    } // end of "electron found in data" condition
+
+    /*** NEXT EVENT! ***/
     
     input->Next();
   } // end of loop in events
   
   rootFile->Write();
   rootFile->Close();
-
+  
   return 0;
 }
 
