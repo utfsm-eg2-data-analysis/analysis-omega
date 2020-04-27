@@ -327,13 +327,10 @@ int main(int argc, char **argv) {
   
   Int_t nOmega = 0;
   Int_t nAtLeastOmega = 0;
+  Int_t nEvents = 0;
 
-  /*** Obtain max event number ***/
-
-  Int_t nEvents = (Int_t) t->GetMaximum(eventBranchName);
-
-  std::cout << "nEvents = " << nEvents << std::endl;
-  std::cout << std::endl;
+  //std::cout << "nEvents = " << nEvents << std::endl;
+  //std::cout << std::endl;
 
   // define a big entrylist, to avoid -9999 events and optimize
   t->Draw(">>bigList", eventBranchName + " > -1", "entrylist");
@@ -360,17 +357,17 @@ int main(int argc, char **argv) {
     l = (TEntryList*) gDirectory->Get(listName);
     t->SetEntryList(l);
     
-    std::cout << "Current event number: " << currentEvent << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    //std::cout << "Current event number: " << currentEvent << std::endl;
+    //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
     // looks at the entries (particles) of the current event
     // j = iterator, jj = real entry number
     for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
       Int_t jj = t->GetEntryNumber(j);
       t->GetEntry(jj);
-      std::cout << "  Entry number: " << jj << std::endl;
-      std::cout << "  pid:          " << tPid << std::endl;
-      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      //std::cout << "  Entry number: " << jj << std::endl;
+      //std::cout << "  pid:          " << tPid << std::endl;
+      //std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
       // let's count the particles
       if (tPid == (Float_t) 211) nPipThisEvent++;
       if (tPid == (Float_t) -211) nPimThisEvent++;
@@ -378,10 +375,10 @@ int main(int argc, char **argv) {
     }
     
     // show counts
-    std::cout << "  nPip   = " << nPipThisEvent << std::endl;
-    std::cout << "  nPim   = " << nPimThisEvent << std::endl;
-    std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    //std::cout << "  nPip   = " << nPipThisEvent << std::endl;
+    //std::cout << "  nPim   = " << nPimThisEvent << std::endl;
+    //std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
+    //std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** Candidate appeared! ***/
 
@@ -391,7 +388,7 @@ int main(int argc, char **argv) {
       nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
       nOmega += nCombThisEvent;
 
-      std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
+      //std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
 
       /*** The original ***/
 
@@ -589,10 +586,10 @@ int main(int argc, char **argv) {
 	      partialFlag = 1;
 	    }
 	    
-	    std::cout << "jGamma1=" << jGamma1 << std::endl;
-	    std::cout << "jGamma2=" << jGamma2 << std::endl;
-	    std::cout << "jPip=" << jPip << std::endl;
-	    std::cout << "jPim=" << jPim << std::endl;
+	    //std::cout << "jGamma1=" << jGamma1 << std::endl;
+	    //std::cout << "jGamma2=" << jGamma2 << std::endl;
+	    //std::cout << "jPip=" << jPip << std::endl;
+	    //std::cout << "jPim=" << jPim << std::endl;
 	    
 	    // now extract!
 	    // again, jj = real entry number, j = iterator
@@ -706,27 +703,28 @@ int main(int argc, char **argv) {
     nPimThisEvent = 0;
     nGammaThisEvent = 0;
     
-    // and set tree back to the big list!
+    // set tree back to the big list!
     t->SetEntryList(bigL);
 
     // VERY IMPORTANT
     // this optimizes and prevents event repetition!!
     i += (l->GetN()-1);
+    nEvents++;
 
     // clean some memory
     gDirectory->Delete(listName + ";1");
     rootFile->Delete(listName);
     
-    std::cout << std::endl;
+    //std::cout << std::endl;
   } // end of event loop
 
   /*** Writing tree ***/
 
-  tOriginal->Print();
-  std::cout << std::endl;
+  //tOriginal->Print();
+  //std::cout << std::endl;
 
-  tMix->Print();
-  std::cout << std::endl;
+  //tMix->Print();
+  //std::cout << std::endl;
   
   rootFile->Write();
   rootFile->Close();

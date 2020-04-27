@@ -55,6 +55,6 @@ while [ $COUNTER -lt ${lines} ]; do
     sufix="${sufix/.root/}"
     #echo ${inputfile}
     #echo ${sufix}
-    mv -v ${OUDIR}/comb_out.root ${OUDIR}/comb_gsim${tarName}_${sufix}.root
+    mv -v ${OUDIR}/comb_out.root ${OUDIR}/comb_${dataType}${tarName}_${sufix}.root
     rm -v ${TMPDIR}/PRU-${setName}-${tarName}.tmp
 done
