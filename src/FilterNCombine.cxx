@@ -764,17 +764,17 @@ inline int parseCommandLine(int argc, char* argv[]) {
 void assignOptions() {
   // for data type
   if (dataFlag) {
-    textFile = tmpDir + "/PRU-data-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU4D-" + targetOption + ".tmp";
     outDir = dataDir + "/" + targetOption;
     treeName = "ntuple_data";
     eventBranchName = "evnt";
   } else if (simrecFlag) {
-    textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU4R-" + setOption + "-" + targetOption + ".tmp";
     outDir = simrecDir + "/" + setOption + "/" + targetOption;
     treeName = "ntuple_sim";
     eventBranchName = "evnt";
   } else if (gsimFlag) {
-    textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
+    textFile = tmpDir + "/PRU4G-" + setOption + "-" + targetOption + ".tmp";
     outDir = gsimDir + "/" + setOption + "/" + targetOption;
     treeName = "ntuple_sim";
     eventBranchName = "mc_evnt";
