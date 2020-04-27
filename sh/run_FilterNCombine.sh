@@ -48,13 +48,13 @@ cd ${PRODIR}
 COUNTER=0
 while [ $COUNTER -lt ${lines} ]; do
     let COUNTER=COUNTER+1
-    sed -e "${COUNTER}q;d" ${fileslist} > ${TMPDIR}/PRU-${setName}-${tarName}.tmp
+    sed -e "${COUNTER}q;d" ${fileslist} > ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp
     ./bin/FilterNCombine -t${tarName} -${opt}${setName}
-    inputfile=`head -1 ${TMPDIR}/PRU-${setName}-${tarName}.tmp`
+    inputfile=`head -1 ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp`
     sufix="${inputfile##*_}"
     sufix="${sufix/.root/}"
     #echo ${inputfile}
     #echo ${sufix}
     mv -v ${OUDIR}/comb_out.root ${OUDIR}/comb_${dataType}${tarName}_${sufix}.root
-    rm -v ${TMPDIR}/PRU-${setName}-${tarName}.tmp
+    rm -v ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp
 done
