@@ -7,13 +7,11 @@
 
 // plots mean, sigma, omega n, bkg n and sn ratio obtained from fits
 // update:
-// - style
-// - fixed range
-// - outdir and filename
-// update:
 // - added constraint option
-// // 24,2 was the winner for Z
-// // 38, 1.5 was the winner for Pt2 (not completely sure)
+// // 24,2   was the winner for Z
+// // 38,1.5 was the winner for Pt2 (not completely sure)
+// // 34,1.5 was the winner for Q2
+// // 40,1.5 was the winner for Nu
 
 #include "analysisConfig.h"
 
@@ -142,9 +140,7 @@ int main(int argc, char **argv) {
   sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   sigmaHist->SetLabelSize(0.1, "Y");
   sigmaHist->GetYaxis()->SetMaxDigits(2);
-  // sigmaHist->SetAxisRange(0.020, 0.028, "Y"); // winner for Z
-  // sigmaHist->SetAxisRange(0.034, 0.042, "Y"); // testing for Pt2
-  sigmaHist->SetAxisRange(sigmaRangeDown, sigmaRangeUp, "Y"); // testing for Nu
+  sigmaHist->SetAxisRange(sigmaRangeDown, sigmaRangeUp, "Y"); // depends on winner
   sigmaHist->SetLineColor(kBlack);
   sigmaHist->SetLineWidth(3);
 
@@ -282,13 +278,17 @@ void assignOptions() {
   // for kinvar
   if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
+    meanConstraint = 34; // winner, hardcoded
   } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
+    meanConstraint = 40; // winner, hardcoded
   } else if (kinvarOption == "Z") {
     kinvarSufix = "-z";
     kinvarConstant = 3;
+    meanConstraint = 24; // winner, hardcoded
   } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
+    meanConstraint = 38; // winner, hardcoded
   }
   // setting the directories
   kinvarDir = "/" + kinvarOption;

@@ -393,11 +393,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printOptions() {
   std::cout << "Executing MakeRooFits program. Chosen parameters are:" << std::endl;
-  std::cout << "  targetOption = " << targetOption << std::endl;
-  std::cout << "  kinvarName   = " << kinvarName << std::endl;
-  std::cout << "  binNumber    = " << binNumber << std::endl;
-  std::cout << "  flagNew      = " << flagNew << std::endl;
-  std::cout << "  bkgOption    = " << bkgOption << std::endl;
+  std::cout << "  targetOption    = " << targetOption << std::endl;
+  std::cout << "  kinvarName      = " << kinvarName << std::endl;
+  std::cout << "  binNumber       = " << binNumber << std::endl;
+  std::cout << "  flagNew         = " << flagNew << std::endl;
+  std::cout << "  bkgOption       = " << bkgOption << std::endl;
+  std::cout << "  meanConstraint  = " << meanConstraint << std::endl;
+  std::cout << "  sigmaConstraint = " << sigmaConstraint << std::endl;
   std::cout << std::endl;
 }
 
@@ -423,6 +425,12 @@ void printUsage() {
   std::cout << "./MakeRooFits -S" << std::endl;
   std::cout << "    plots a default 5sigma range" << std::endl;
   std::cout << "    without this option, it sets a new 5sigma range based on previous results" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeRooFits -C[float]" << std::endl;
+  std::cout << "    (*1e-3) sets mean constraint for sigma parameter" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakeRooFits -c[float]" << std::endl;
+  std::cout << "    (*1e-3) sets width constraint for sigma parameter" << std::endl;
   std::cout << std::endl;
 }
 

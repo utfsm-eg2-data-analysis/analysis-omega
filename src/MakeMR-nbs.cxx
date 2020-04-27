@@ -204,6 +204,7 @@ int main(int argc, char **argv) {
   // define arrays
   Double_t empty[kinvarNbins];
   Double_t MR_x[kinvarNbins];
+  Double_t MR_xerr[kinvarNbins]; // new!
   Double_t CarbonMR_y[kinvarNbins];
   Double_t CarbonMR_err[kinvarNbins];
   Double_t IronMR_y[kinvarNbins];
@@ -215,6 +216,7 @@ int main(int argc, char **argv) {
   for (Int_t v = 0; v < kinvarNbins; v++) {
     empty[v] = 0.;
     MR_x[v] = (kinvarEdges[v] + kinvarEdges[v+1])/2.;
+    MR_xerr[v] = (kinvarEdges[v+1] - kinvarEdges[v])/TMath::Sqrt(12); // new
     CarbonMR_y[v] = CarbonMR->GetBinContent(v+1);
     CarbonMR_err[v] = CarbonMR->GetBinError(v+1);
     IronMR_y[v] = IronMR->GetBinContent(v+1);
@@ -229,9 +231,9 @@ int main(int argc, char **argv) {
   gStyle->SetOptStat(0);
   
   // define graphs
-  TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, empty, CarbonMR_err);
-  TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, empty, IronMR_err);
-  TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, empty, LeadMR_err);
+  TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, MR_xerr, CarbonMR_err);
+  TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, MR_xerr, IronMR_err);
+  TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, MR_xerr, LeadMR_err);
   
   CarbonMR_gr->SetTitle("Multiplicity Ratio: #omega - No Bkg Subtraction");
   CarbonMR_gr->GetXaxis()->SetTitle(kinvarTitle);

@@ -1,7 +1,7 @@
 /**************************************/
 /* SystPi0Mass.cxx                    */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Created by Andrés Bórquez          */
 /*                                    */
 /**************************************/
 
@@ -153,8 +153,8 @@ int main(int argc, char **argv) {
     drawVerticalLine(mean.getValV());
     drawVerticalLine(mean.getValV() - 3*sigma.getValV());
     drawVerticalLine(mean.getValV() + 3*sigma.getValV());
-    drawVerticalLineRed(0.059); // MW
-    drawVerticalLineRed(0.209); // MW
+    // drawVerticalLineRed(0.059); // MW
+    // drawVerticalLineRed(0.209); // MW
     
     std::cout << std::endl;
     std::cout << "FIT COMPLETED." << std::endl;

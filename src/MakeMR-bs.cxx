@@ -8,7 +8,8 @@
 // Background Subtracted MR
 // --method 1: calculate MR directly from omega number parameter of MakeRooFits
 // --method 2: calculate NBS MR but subtracts the bkg number parameter of MakeRooFits
-// updated: to new makeroofits directory scheme
+// UPDATE:
+// now it draws a different style, broader range and electron ratios!
 
 #include "analysisConfig.h"
 
@@ -49,6 +50,7 @@ TString targetName[4] = {"D", "C", "Fe", "Pb"};
 
 TString textFile;
 TString plotFile;
+TString plotFile0; // new!
 
 // new
 TString functionSufix;
@@ -166,6 +168,98 @@ int main(int argc, char **argv) {
       LeadElectronN->SetBinError(cc + 1, TMath::Sqrt(electronNumberNu[3][cc]));
     }
   }
+
+  /*** Plotting Electron ratios ***/
+  // can be commented
+  
+  // creating and filling histograms
+  TH1F *CarbonER = new TH1F("CarbonER", "", kinvarNbins, 0.5, 1.);
+  CarbonER->Divide(DeutElectronN, CarbonElectronN);
+  
+  TH1F *IronER = new TH1F("IronER", "", kinvarNbins, 0.5, 1.);
+  IronER->Divide(DeutElectronN, IronElectronN);
+  
+  TH1F *LeadER = new TH1F("LeadER", "", kinvarNbins, 0.5, 1.);
+  LeadER->Divide(DeutElectronN, LeadElectronN);
+
+  /*** Draw ***/
+  
+  // define arrays
+  Double_t ER_x[kinvarNbins];
+  Double_t ER_xerr[kinvarNbins]; // new!
+  Double_t CarbonER_y[kinvarNbins];
+  Double_t CarbonER_err[kinvarNbins];
+  Double_t IronER_y[kinvarNbins];
+  Double_t IronER_err[kinvarNbins];
+  Double_t LeadER_y[kinvarNbins];
+  Double_t LeadER_err[kinvarNbins];
+  
+  // fill arrays
+  for (Int_t v = 0; v < kinvarNbins; v++) {
+    ER_x[v] = (kinvarEdges[v] + kinvarEdges[v+1])/2.;
+    ER_xerr[v] = (kinvarEdges[v+1] - kinvarEdges[v])/TMath::Sqrt(12); // new
+    CarbonER_y[v] = CarbonER->GetBinContent(v+1);
+    CarbonER_err[v] = CarbonER->GetBinError(v+1);
+    IronER_y[v] = IronER->GetBinContent(v+1);
+    IronER_err[v] = IronER->GetBinError(v+1);
+    LeadER_y[v] = LeadER->GetBinContent(v+1);
+    LeadER_err[v] = LeadER->GetBinError(v+1);
+  }
+  
+  // define canvas
+  TCanvas *c0 = new TCanvas("c0", "c0", 1000, 1000);
+  gStyle->SetOptFit(0);
+  gStyle->SetOptStat(0);
+  
+  // define graphs
+  TGraphErrors *CarbonER_gr = new TGraphErrors(kinvarNbins, ER_x, CarbonER_y, ER_xerr, CarbonER_err);
+  TGraphErrors *IronER_gr = new TGraphErrors(kinvarNbins, ER_x, IronER_y, ER_xerr, IronER_err);
+  TGraphErrors *LeadER_gr = new TGraphErrors(kinvarNbins, ER_x, LeadER_y, ER_xerr, LeadER_err);
+    
+  CarbonER_gr->SetTitle("Electron Ratio");
+  CarbonER_gr->GetXaxis()->SetTitle(kinvarTitle);
+  CarbonER_gr->GetXaxis()->CenterTitle();
+  CarbonER_gr->GetXaxis()->SetNdivisions(400 + kinvarNbins, kFALSE);
+  CarbonER_gr->GetXaxis()->SetLimits(kinvarEdges[0], kinvarEdges[kinvarNbins]);
+  CarbonER_gr->GetYaxis()->SetTitle("R_{e}^{DIS}");
+  CarbonER_gr->GetYaxis()->CenterTitle();
+  CarbonER_gr->GetYaxis()->SetRangeUser(0., 8.); // updated
+  
+  CarbonER_gr->SetMarkerStyle(21);
+  CarbonER_gr->SetMarkerSize(1.5);
+  CarbonER_gr->SetMarkerColor(kRed);
+  CarbonER_gr->SetLineColor(kRed);
+  CarbonER_gr->SetLineWidth(3);
+  
+  CarbonER_gr->Draw("AP");
+  
+  IronER_gr->SetMarkerStyle(21);
+  IronER_gr->SetMarkerSize(1.5);
+  IronER_gr->SetMarkerColor(kBlue);
+  IronER_gr->SetLineColor(kBlue);
+  IronER_gr->SetLineWidth(3);
+  
+  IronER_gr->Draw("P");
+  
+  LeadER_gr->SetMarkerStyle(21);
+  LeadER_gr->SetMarkerSize(1.5);
+  LeadER_gr->SetMarkerColor(kBlack);
+  LeadER_gr->SetLineColor(kBlack);
+  LeadER_gr->SetLineWidth(3);
+  
+  LeadER_gr->Draw("P");
+  
+  // draw vertical lines
+  //for (Int_t l = 1; l < 5; l++) drawVerticalLineGray(kinvarEdges[l]);
+    
+  // legend
+  TLegend *legend0 = new TLegend(0.8, 0.75, 0.9, 0.9); // x1,y1,x2,y2
+  legend0->AddEntry(CarbonER_gr, "Carbon", "p");
+  legend0->AddEntry(IronER_gr, "Iron", "p");
+  legend0->AddEntry(LeadER_gr, "Lead", "p");
+  legend0->Draw();
+  
+  c0->Print(plotFile0); // output file
   
   /*** Start Method 1 ***/
   
@@ -192,7 +286,7 @@ int main(int argc, char **argv) {
       LeadOmegaN_fit->SetBinError(cc + 1, omegaError_fit[3][cc]);
     }
 
-    /*** Hadronic Ratios ***/
+    /*** Multiplicities (Hadronic Ratios) ***/
 
     TH1F *DeutHR = new TH1F("DeutHR", "", kinvarNbins, 0.5, 1.);
     DeutHR->Divide(DeutOmegaN_fit, DeutElectronN);
@@ -222,6 +316,7 @@ int main(int argc, char **argv) {
     // define arrays
     Double_t empty[kinvarNbins];
     Double_t MR_x[kinvarNbins];
+    Double_t MR_xerr[kinvarNbins]; // new!
     Double_t CarbonMR_y[kinvarNbins];
     Double_t CarbonMR_err[kinvarNbins];
     Double_t IronMR_y[kinvarNbins];
@@ -233,6 +328,7 @@ int main(int argc, char **argv) {
     for (Int_t v = 0; v < kinvarNbins; v++) {
       empty[v] = 0.;
       MR_x[v] = (kinvarEdges[v] + kinvarEdges[v+1])/2.;
+      MR_xerr[v] = (kinvarEdges[v+1] - kinvarEdges[v])/TMath::Sqrt(12); // new
       CarbonMR_y[v] = CarbonMR->GetBinContent(v+1);
       CarbonMR_err[v] = CarbonMR->GetBinError(v+1);
       IronMR_y[v] = IronMR->GetBinContent(v+1);
@@ -247,9 +343,9 @@ int main(int argc, char **argv) {
     gStyle->SetOptStat(0);
     
     // define graphs
-    TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, empty, CarbonMR_err);
-    TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, empty, IronMR_err);
-    TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, empty, LeadMR_err);
+    TGraphErrors *CarbonMR_gr = new TGraphErrors(kinvarNbins, MR_x, CarbonMR_y, MR_xerr, CarbonMR_err);
+    TGraphErrors *IronMR_gr = new TGraphErrors(kinvarNbins, MR_x, IronMR_y, MR_xerr, IronMR_err);
+    TGraphErrors *LeadMR_gr = new TGraphErrors(kinvarNbins, MR_x, LeadMR_y, MR_xerr, LeadMR_err);
 
     CarbonMR_gr->SetTitle("Multiplicity Ratio: #omega");
     CarbonMR_gr->GetXaxis()->SetTitle(kinvarTitle);
@@ -258,7 +354,7 @@ int main(int argc, char **argv) {
     CarbonMR_gr->GetXaxis()->SetLimits(kinvarEdges[0], kinvarEdges[kinvarNbins]);
     CarbonMR_gr->GetYaxis()->SetTitle("R_{#omega}");
     CarbonMR_gr->GetYaxis()->CenterTitle();
-    CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.2);
+    CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.4); // updated
 
     CarbonMR_gr->SetMarkerStyle(21);
     CarbonMR_gr->SetMarkerSize(1.5);
@@ -283,6 +379,9 @@ int main(int argc, char **argv) {
     LeadMR_gr->SetLineWidth(3);
 	
     LeadMR_gr->Draw("P");
+
+    // draw vertical lines
+    //for (Int_t l = 1; l < 5; l++) drawVerticalLineGray(kinvarEdges[l]);
 
     // legend position
     Double_t legendX = 0.8;
@@ -388,7 +487,7 @@ int main(int argc, char **argv) {
     CarbonMR_m2->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[4]));
     CarbonMR_m2->GetXaxis()->ChangeLabel(-1,-1,-1,-1,-1,-1, Form("%.02f", kinvarEdges[5]));
     CarbonMR_m2->GetYaxis()->SetTitle("MR");
-    CarbonMR_m2->SetAxisRange(0., 1.2, "Y"); // range
+    CarbonMR_m2->SetAxisRange(0., 1.4, "Y"); // range
   
     CarbonMR_m2->SetMarkerColor(kRed);
     CarbonMR_m2->SetLineColor(kRed);
@@ -530,6 +629,7 @@ void assignOptions() {
   // output files
   if (Nmethod == 1) {
     plotFile = outDir + "/bs-MR-" + kinvarOption + functionSufix + bkgSufix + ".png";
+    plotFile0 = outDir + "/ER-" + kinvarOption + ".png"; // new!
     textFile = outDir + "/bs-MR-" + kinvarOption + functionSufix + bkgSufix + ".dat";
   } else if (Nmethod == 2) {
     plotFile = outDir + "/bs2-MR-" + kinvarOption + ".png";

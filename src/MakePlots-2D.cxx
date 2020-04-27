@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   
   /*** Drawing ***/
   
-  TCanvas *c = new TCanvas("c", "c", 1366, 768);
+  TCanvas *c = new TCanvas("c", "c", 1366, 1366);
   c->SetTickx(1);
   c->SetTicky(1);
   gStyle->SetOptStat(0);
@@ -90,6 +90,9 @@ int main(int argc, char **argv) {
   theHist->GetXaxis()->CenterTitle();
   theHist->SetContour(99);
   theHist->Draw("COLZ");
+
+  // normalization
+  theHist->Scale(1/((Double_t) theHist->GetEntries()));
   
   gPad->SetLogz(); // important
   

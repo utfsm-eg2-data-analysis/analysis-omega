@@ -70,11 +70,11 @@ int main(int argc, char **argv) {
     
     /*** Summing Electron Numbers ***/
 
-    rootFile = currentDir + "/prune_data_" + currentRN + ".root";
+    rootFile = currentDir + "/pruned_data_" + currentRN + ".root";
     std::cout << "Reading file (" << i << ") " << rootFile << " ..." << std::endl;
     TFile *File = new TFile(rootFile);
     
-    TTree *treeExtracted = (TTree *)File->Get("e_rec");
+    TTree *treeExtracted = (TTree *)File->Get("ntuple_e");
     eNumber += treeExtracted->Draw("Nu>>data(100, -10., 10.)", cutDIS_old && cutTargType && kinvarCut, "goff"); // lazyness
 
     File->Close();
