@@ -21,6 +21,7 @@
 Int_t   simFlag = 0;
 TString targetOption;
 TString setOption;
+TString NjlabDir;
 
 TString outDir;
 TString textFile;
@@ -28,7 +29,6 @@ TString textFile;
 TString outFile;
 TString NtupleName;
 TString outTitle;
-TString NjlabDir; // new
 
 TString analyserOption;
 
@@ -519,6 +519,7 @@ void printOptions() {
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  setOption      = " << setOption << std::endl;
+  std::cout << "  NjlabDir       = " << NjlabDir << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
   std::cout << std::endl;
 }

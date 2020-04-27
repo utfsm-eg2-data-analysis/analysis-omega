@@ -1,25 +1,13 @@
-/*************************************************/
-/*  DiffractiveProcesses.cxx                     */
-/*                                               */
-/*  Andrés Bórquez, CCTVAL                       */
-/*                                               */
-/*************************************************/
+/*********************************/
+/*  DiffractiveProcesses.cxx     */
+/*                               */
+/*  Andrés Bórquez               */
+/*                               */
+/*********************************/
 
 // An attempt to check Diffractive or Exclusive processes
 
-#include <iostream>
-
-#include "TROOT.h"
-#include "TChain.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TCut.h"
-#include "TString.h"
+#include "analysisConfig.h"
 
 /*** Global Variables ***/
 
@@ -27,9 +15,7 @@
 TString targetOption;
 Int_t binNumberZ = 0; // 0: extracts from Z=0.5 to Z=1. | [3-7]: binning on
 
-TString proFolder = "/home/borquez/omegaThesis";
-TString inputFolder = proFolder + "/out/filterData";
-TString outFolder = proFolder + "/out/DiffractiveProcesses";
+TString outDir = proDir + "/out/DiffractiveProcesses";
 
 TString inputFile1 = "";
 TString inputFile2 = "";
@@ -59,8 +45,6 @@ void printUsage();
 inline int parseCommandLine(int argc, char* argv[]);
 void printOptions();
 void assignOptions();
-
-void setAlias(TTree *treeExtracted);
 
 int main(int argc, char **argv) {
 
@@ -172,44 +156,24 @@ void printUsage() {
 void assignOptions() {
   // target options
   if (targetOption == "D") {
-    inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
-    inputFile2 = inputFolder + "/Fe/comb_Fe-thickD2.root";
-    inputFile3 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
+    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
-    inputFile1 = inputFolder + "/C/comb_C-thickD2.root";
+    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
     cutTargType = "TargType == 2"; 
   } else if (targetOption == "Fe") {
-    inputFile1 = inputFolder + "/Fe/comb_Fe-thickD2.root";
+    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
-    inputFile1 = inputFolder + "/Pb/comb_Pb-thinD2.root";
+    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
     cutTargType = "TargType == 2";
   }
   // for Z binning
-  Double_t lowEdgeZ, highEdgeZ;
-  if (binNumberZ == 3) {
-    lowEdgeZ = 0.5;
-    highEdgeZ = 0.557;
-  } else if (binNumberZ == 4) {
-    lowEdgeZ = 0.557;
-    highEdgeZ = 0.617;
-  } else if (binNumberZ == 5) {
-    lowEdgeZ = 0.617;
-    highEdgeZ = 0.689;
-  } else if (binNumberZ == 6) {
-    lowEdgeZ = 0.689;
-    highEdgeZ = 0.784;
-  } else if (binNumberZ == 7) {
-    lowEdgeZ = 0.784;
-    highEdgeZ = 1.;
-  } else if (binNumberZ == 8) {
-    lowEdgeZ = 0.8;
-    highEdgeZ = 1.0;
-  }
   if (binNumberZ) {
-    cutZ = Form("%f < Z && Z < %f", lowEdgeZ, highEdgeZ);
-    titleZ = Form(" in (%.02f < Z < %.02f)", lowEdgeZ, highEdgeZ);
+    cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form(" in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
   if (stageNumber == 0) {
@@ -242,13 +206,5 @@ void assignOptions() {
     titleAxis = "IMD (GeV)";
   }
   sufixStage = Form("-s%d", stageNumber);
-  outputFile = outFolder + "/missing-mass-t" + targetOption + sufixZBin + sufixStage + ".png";
-}
-
-
-void setAlias(TTree *treeExtracted) {
-  treeExtracted->SetAlias("Pl2", "wP2*CosThetaPQ*CosThetaPQ");
-  treeExtracted->SetAlias("absQ", "TMath::Sqrt(Nu*Nu + Q2)");
-  treeExtracted->SetAlias("Mx2", "W*W + wM*wM - 2*Z*Nu*Nu + 2*TMath::Sqrt(Pl2)*absQ - 2*Z*Nu*0.938272");
-  treeExtracted->SetAlias("Mx", "TMath::Sqrt(Mx2)");
+  outputFile = outDir + "/missing-mass-t" + targetOption + sufixZBin + sufixStage + ".png";
 }

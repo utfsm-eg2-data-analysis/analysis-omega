@@ -7,6 +7,9 @@
 #                                                             #
 # EG: ./run_MakeRooFits.sh --bkg 1 --kinvar Pt2               #
 ###############################################################
+#     <mean>          #
+#     <width>         #
+#######################
 
 inputArray=("$@")
 
@@ -16,6 +19,10 @@ while [ $ic -le $((${#inputArray[@]}-1)) ]; do
     bkgOpt=${inputArray[$((ic+1))]}
   elif [ "${inputArray[$ic]}" == "--kinvar" ]; then
     kinvarOpt=${inputArray[$((ic+1))]}
+  elif [ "${inputArray[$ic]}" == "--mean" ]; then
+    mean=${inputArray[$((ic+1))]}
+  elif [ "${inputArray[$ic]}" == "--width" ]; then
+    width=${inputArray[$((ic+1))]}
   else
     printf "*** Aborting: Unrecognized argument: ${inputArray[$((ic))]}. ***\n\n";
   fi
@@ -42,20 +49,20 @@ cd ${PRODIR}
 
 while [ ${COUNTER} -le ${END} ]; do
   # Deut
-  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
-  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt}
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
 
   # Carbon
-  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
-  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt}
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
 
   # Iron
-  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
-  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt}
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
 
   # Lead
-  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -S
-  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt}
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
 
   let COUNTER=COUNTER+1
 done

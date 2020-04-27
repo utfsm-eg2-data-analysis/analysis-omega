@@ -1,9 +1,9 @@
-/**************************************/
-/* MakeRooFits.cxx                    */
-/*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
-/*                                    */
-/**************************************/
+/*********************************/
+/* MakeRooFits.cxx               */
+/*                               */
+/* Created by Andrés Bórquez     */
+/*                               */
+/*********************************/
 
 // fits peak with a gaussian function and bkg with a 1st order polynomial
 // - added kinematic dependence as an option
@@ -30,6 +30,14 @@
 #include "RooArgSet.h"
 
 using namespace RooFit;
+
+/*** Hardcoded ***/
+
+// 24,2 was the winner for Z
+Double_t meanConstraint = 26e-3;
+Double_t sigmaConstraint = 1e-3;
+Double_t sigmaRangeDown = 2.3e-2;
+Double_t sigmaRangeUp = 3.1e-2; // testing for Pt2
 
 /*** Global variables ***/
 
@@ -138,8 +146,8 @@ int main(int argc, char **argv) {
   Double_t meanRangeUp = 0.39; // 0.38
 
   Double_t sigmaIGV = obtSigma;
-  Double_t sigmaRangeDown = 1.8e-2;
-  Double_t sigmaRangeUp = 2.6e-2; // testing scan
+  // Double_t sigmaRangeDown = 1.8e-2; Double_t sigmaRangeUp = 2.8e-2; // winner for Z
+  // Double_t sigmaRangeDown = 3.4e-2; Double_t sigmaRangeUp = 4.2e-2; // testing for Pt2
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
@@ -179,7 +187,7 @@ int main(int argc, char **argv) {
 
   /*** Constraints! ***/
   
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(23e-3), RooConst(3e-3)); // imposing bias
+  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(meanConstraint), RooConst(sigmaConstraint)); // imposing bias
   RooProdPdf cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
 
   // fit constraint model
@@ -307,52 +315,52 @@ int main(int argc, char **argv) {
   std::cout << std::endl;
 
   /*** Pull hist, part 2 ***/
-
-  TH1F *pullHistY = new TH1F("pullHistY", "pullHistY", 18, -3., 3.);
-  for (Int_t y = 1; y <= Nbins; y++) pullHistY->Fill(pullHist->GetBinContent(y));
-  
-  RooRealVar p("Pull", "Pull", -3., 3.);
-
-  RooRealVar pullMean("pullMean", "Mean of Gaussian", 0., -0.5, 0.5);
-  RooRealVar pullSigma("pullSigma", "Width of Gaussian", 0.5, 0.01, 1.5);
-  RooGaussian pullModel("pullModel", "pullModel", p, pullMean, pullSigma);
-
-  RooDataHist pullData("pullData", "pull data", p, pullHistY);
-
-  // define frame
-  RooPlot *frame2 = p.frame(Title(targetOption + " in" + kinvarTitle), Bins(18));
-  
-  // fit the normal way
-  pullModel.chi2FitTo(pullData);
-  
-  // draw
-  pullData.plotOn(frame2, Name("pullData"));
-  pullModel.plotOn(frame2, Name("pullModel"), LineColor(kBlue));
-
-  pullModel.paramOn(frame2, Layout(0.11, 0.3, 0.89)); // x1, x2, delta-y
-  frame2->getAttText()->SetTextSize(0.025);
-  frame2->getAttLine()->SetLineWidth(0);
-
-  frame2->GetXaxis()->CenterTitle();
-  frame2->GetYaxis()->SetTitle("Counts");
-  frame2->GetYaxis()->CenterTitle();
-  
-  TCanvas *cp = new TCanvas("cp", "cp", 1020, 1020); // 16:20
-  
-  frame2->Draw();
-
-  // chi2
-  Double_t pullChi2 = frame2->chiSquare("pullModel", "pullData");
-  TPaveText *textBlock = new TPaveText(0.11, 0.68, 0.3, 0.78, "NDC TL"); // x1, y1, x2, y2
-  textBlock->AddText(Form("#chi^{2}/ndf = %.3f", pullChi2));
-  textBlock->SetFillColor(kWhite);
-  textBlock->SetLineColor(kWhite);
-  textBlock->SetShadowColor(kWhite);
-  textBlock->SetTextColor(kBlack);
-  textBlock->Draw();
-
-  cp->Print(pullFile);
-  
+  /*
+    TH1F *pullHistY = new TH1F("pullHistY", "pullHistY", 18, -3., 3.);
+    for (Int_t y = 1; y <= Nbins; y++) pullHistY->Fill(pullHist->GetBinContent(y));
+    
+    RooRealVar p("Pull", "Pull", -3., 3.);
+    
+    RooRealVar pullMean("pullMean", "Mean of Gaussian", 0., -0.5, 0.5);
+    RooRealVar pullSigma("pullSigma", "Width of Gaussian", 0.5, 0.01, 1.5);
+    RooGaussian pullModel("pullModel", "pullModel", p, pullMean, pullSigma);
+    
+    RooDataHist pullData("pullData", "pull data", p, pullHistY);
+    
+    // define frame
+    RooPlot *frame2 = p.frame(Title(targetOption + " in" + kinvarTitle), Bins(18));
+    
+    // fit the normal way
+    pullModel.chi2FitTo(pullData);
+    
+    // draw
+    pullData.plotOn(frame2, Name("pullData"));
+    pullModel.plotOn(frame2, Name("pullModel"), LineColor(kBlue));
+    
+    pullModel.paramOn(frame2, Layout(0.11, 0.3, 0.89)); // x1, x2, delta-y
+    frame2->getAttText()->SetTextSize(0.025);
+    frame2->getAttLine()->SetLineWidth(0);
+    
+    frame2->GetXaxis()->CenterTitle();
+    frame2->GetYaxis()->SetTitle("Counts");
+    frame2->GetYaxis()->CenterTitle();
+    
+    TCanvas *cp = new TCanvas("cp", "cp", 1020, 1020); // 16:20
+    
+    frame2->Draw();
+    
+    // chi2
+    Double_t pullChi2 = frame2->chiSquare("pullModel", "pullData");
+    TPaveText *textBlock = new TPaveText(0.11, 0.68, 0.3, 0.78, "NDC TL"); // x1, y1, x2, y2
+    textBlock->AddText(Form("#chi^{2}/ndf = %.3f", pullChi2));
+    textBlock->SetFillColor(kWhite);
+    textBlock->SetLineColor(kWhite);
+    textBlock->SetShadowColor(kWhite);
+    textBlock->SetTextColor(kBlack);
+    textBlock->Draw();
+    
+    cp->Print(pullFile);
+  */
   return 0;
 }
 
@@ -364,7 +372,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeRooFits -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:z:q:n:p:Sb:")) != -1)
+  while ((c = getopt(argc, argv, "ht:z:q:n:p:Sb:C:c:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
@@ -374,6 +382,8 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     case 'S': flagNew = 1; break;
     case 'b': bkgOption = atoi(optarg); break;
+    case 'C': meanConstraint = (Double_t) atof(optarg); break;
+    case 'c': sigmaConstraint = (Double_t) atof(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
       exit(0);
@@ -463,4 +473,9 @@ void assignOptions() {
   plotFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
   textFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
   pullFile = outDir + "/roofit-" + targetOption + kinvarSufix + "_pull.png";
+  // sigma studies
+  meanConstraint *= 1e-3;
+  sigmaConstraint *= 1e-3;
+  sigmaRangeDown = meanConstraint - 4e-3;
+  sigmaRangeUp = meanConstraint + 4e-3;
 }

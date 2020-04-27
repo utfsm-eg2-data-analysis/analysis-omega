@@ -10,6 +10,10 @@
 // - style
 // - fixed range
 // - outdir and filename
+// update:
+// - added constraint option
+// // 24,2 was the winner for Z
+// // 38, 1.5 was the winner for Pt2 (not completely sure)
 
 #include "analysisConfig.h"
 
@@ -46,6 +50,12 @@ Double_t fitMean[4][5], fitMeanError[4][5];
 Double_t fitSigma[4][5], fitSigmaError[4][5];
 Double_t fitOmega[4][5], fitOmegaError[4][5];
 Double_t fitBkg[4][5], fitBkgError[4][5];
+
+// sigma studies
+Double_t meanConstraint;
+Int_t lineFlag;
+Double_t sigmaRangeUp;
+Double_t sigmaRangeDown;
 
 /*** Declaration of functions ***/
 
@@ -94,6 +104,8 @@ int main(int argc, char **argv) {
   // sn ratio
   snHist->Divide(omegaHist, bkgHist);
 
+  /*** MEAN ***/
+  
   c->cd(1);
   gPad->SetGridx(1);
   meanHist->SetLabelSize(0.1, "X");
@@ -115,6 +127,8 @@ int main(int argc, char **argv) {
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) mean_avg += meanHist->GetBinContent(i);
   mean_avg = mean_avg/(4.*kinvarNbins);
   drawGrayHorizontalLine(mean_avg);
+
+  /*** SIGMA ***/
   
   c->cd(3);
   gPad->SetGridx(1);
@@ -128,7 +142,9 @@ int main(int argc, char **argv) {
   sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   sigmaHist->SetLabelSize(0.1, "Y");
   sigmaHist->GetYaxis()->SetMaxDigits(2);
-  sigmaHist->SetAxisRange(0.018, 0.026, "Y"); // by obs
+  // sigmaHist->SetAxisRange(0.020, 0.028, "Y"); // winner for Z
+  // sigmaHist->SetAxisRange(0.034, 0.042, "Y"); // testing for Pt2
+  sigmaHist->SetAxisRange(sigmaRangeDown, sigmaRangeUp, "Y"); // testing for Nu
   sigmaHist->SetLineColor(kBlack);
   sigmaHist->SetLineWidth(3);
 
@@ -138,7 +154,11 @@ int main(int argc, char **argv) {
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) sigma_avg += sigmaHist->GetBinContent(i);
   sigma_avg = sigma_avg/(4.*kinvarNbins);
   drawGrayHorizontalLine(sigma_avg);
-      
+
+  if (lineFlag) drawOrangeHorizontalLine(meanConstraint);
+
+  /*** OMEGA NUMBER ***/
+  
   c->cd(2);
   gPad->SetGridx(1);
   omegaHist->SetLabelSize(0.1, "X");
@@ -155,6 +175,8 @@ int main(int argc, char **argv) {
   omegaHist->SetLineWidth(3);
 
   omegaHist->Draw("E");
+
+  /*** BKG NUMBER ***/
   
   c->cd(4);
   gPad->SetGridx(1);
@@ -173,6 +195,8 @@ int main(int argc, char **argv) {
 
   bkgHist->Draw("E");
 
+  /*** SN ***/
+  
   c->cd(6);
   gPad->SetGridx(1);
   snHist->SetLabelSize(0.1, "X");
@@ -216,12 +240,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./PlotParams -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hk:F:b:")) != -1)
+  while ((c = getopt(argc, argv, "hk:F:b:C:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 'k': kinvarOption = optarg; break;
     case 'F': signalOption = optarg; break;
     case 'b': bkgOption = atoi(optarg); break;
+    case 'C': meanConstraint = (Double_t) atof(optarg); lineFlag = 1; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./PlotParams -h to print usage." << std::endl;
       exit(0);
@@ -247,6 +272,10 @@ void printUsage() {
   std::cout << "./PlotParams -b[1,2]" << std::endl;
   std::cout << "    choose bkg function: 1st order or 2nd order polynomial" << std::endl;
   std::cout << std::endl;
+  std::cout << "./PlotParams -C[float]" << std::endl;
+  std::cout << "    (temporary)" << std::endl;
+  std::cout << "    draws orange line around point in the sigma plot" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
@@ -269,6 +298,10 @@ void assignOptions() {
   // output
   inDir = outDir + kinvarDir + signalDir + bkgDir;
   plotFile = outDir + "/params-" + kinvarOption + "-g" + bkgSufix + ".png";
+  // for sigma plot
+  meanConstraint *= 1e-3;
+  sigmaRangeUp = meanConstraint + 4e-3;
+  sigmaRangeDown = meanConstraint - 4e-3;
 }
 
 void readTextFiles() {

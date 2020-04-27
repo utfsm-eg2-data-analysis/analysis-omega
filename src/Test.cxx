@@ -3,31 +3,37 @@
 #include "TClasTool.h"
 #include "TIdentificator.h"
 
+#include <algorithm>
+#include "ROOT/RDataFrame.hxx"
+#include "ROOT/RVec.hxx"
+
 int main() {
 
   /*** 1 ***/
-  
+  /*
   std::cout << "PRODIR=" << proDir << std::endl;
 
   for (Int_t i = 0; i < 6; i++) {
     std::cout << "z" << i << " - " << edgesZ[i] << std::endl;
   }
   std::cout << std::endl;
+  */
   
   /*** 2 ***/
-
+  /*
   // init ClasTool
   TClasTool *input = new TClasTool();
   input->InitDSTReader("ROOTDSTR");
-
+  
   TString currentFile = "/home/borquez/Downloads/recsisC_0028.root";
   input->Add(currentFile);
 
   Double_t nEntries = (Double_t) input->GetEntries();
   std::cout << "nEntries = " << nEntries << std::endl;
+  */
 
   /*** 3 ***/
-
+  /*
   // define TIdentificator and start!
   TIdentificator *t = new TIdentificator(input);
   input->Next();
@@ -126,5 +132,49 @@ int main() {
     
     input->Next();
   } // end of loop in event
+  */
+  /*** 4 ***/
+
+  // go parallel
+  // ROOT::EnableImplicitMT();
+
+  // open tree
+  ROOT::RDataFrame d("ntuple_sim", "/home/borquez/omegaThesis/out/prunedSim/old/C/pruned_out.root");
+
+  auto numero = d.Count();
+  std::cout << *numero << std::endl;
+  numero = d.Filter("mc_evnt != -9999").Count();
+  std::cout << *numero << std::endl;
+  numero = d.Filter("mc_evnt == -9999").Count();
+  std::cout << *numero << std::endl;
+  numero = d.Filter("evnt == -9999").Count();
+  std::cout << *numero << std::endl;
+  numero = d.Filter("evnt == 25 || mc_evnt == 25").Count();
+  std::cout << *numero << std::endl;
+  std::cout << *d.Filter("evnt == 25 || mc_evnt == 25").Count() << std::endl;
+  std::cout << std::endl;
+
+  auto d2 = d.Filter("evnt == 15 || mc_evnt == 15")
+    .Define("P2", "Px*Px + Py*Py + Pz*Pz")
+    .Define("mc_P2", "mc_Px*mc_Px + mc_Py*mc_Py + mc_Pz*mc_Pz");
   
+  d2.Display({"evnt", "pid", "P2", "mc_evnt", "mc_pid", "mc_P2"}, 12)->Print();
+  std::cout << std::endl;
+  
+  d2.Foreach([](Float_t i){std::cout << i << std::endl;}, {"P2"});
+  std::cout << std::endl;
+  
+  auto tomado = d2.Take<float>("mc_pid");
+  Int_t peo = (Int_t) tomado->size();
+  std::cout << "size:" << peo << std::endl;
+  std::cout << "content:" << std::endl;
+  for (Int_t i : *tomado) std::cout << "  " << i << std::endl;
+  bool poto = (std::find(tomado->begin(), tomado->end(), -211) != tomado->end() && std::find(tomado->begin(), tomado->end(), 211) != tomado->end() && std::find(tomado->begin(), tomado->end(), 22) != tomado->end());
+  bool poto2 = (std::count(tomado->begin(), tomado->end(), -211) >= 1 && std::count(tomado->begin(), tomado->end(), 211) >= 1 && std::count(tomado->begin(), tomado->end(), 22) >= 2);
+
+  auto tomado3 = d2.Take<float>("pid");
+  bool poto3 = (std::count(tomado3->begin(), tomado3->end(), -211) >= 1 && std::count(tomado3->begin(), tomado3->end(), 211) >= 1 && std::count(tomado3->begin(), tomado3->end(), 22) >= 2);
+  
+  std::cout << "has omega in gsim: " << poto2 << std::endl;
+  std::cout << "has omega in simrec: " << poto3 << std::endl;
 }

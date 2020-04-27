@@ -21,6 +21,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TTree.h"
+#include "TEntryList.h"
 #include "TLeaf.h"
 #include "TChain.h"
 #include "TCanvas.h"
@@ -45,8 +46,9 @@ TString proDir = getenv("PRODIR");
 TString tmpDir = proDir + "/tmp";
 
 TString dataDir   = proDir + "/out/filterData";
-TString gsimDir   = proDir + "/out/filterSim/gsim";
-TString simrecDir = proDir + "/out/filterSim/simrec";
+TString simDir   = proDir + "/out/filterSim"; // new!
+TString gsimDir   = proDir + "/out/filterSim/gsim"; // should update
+TString simrecDir = proDir + "/out/filterSim/simrec"; // should update
 
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0 = "0.059 < pi0M && pi0M < 0.203"; // mean=0.131 & sigma=0.024
@@ -87,6 +89,12 @@ const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 95809
 					 {5115492., 2932212., 2366977., 2110598., 1972135.},
 					 {9572387., 13772639., 4664129., 4149167., 3856291.},
 					 {3793213., 2175171., 1761324., 1584883., 1584883.}};
+
+// constants
+TDatabasePDG pdg;
+Float_t kMpi = pdg.GetParticle(211)->Mass();
+Float_t kMpi0 = pdg.GetParticle(111)->Mass();
+Float_t kMe = pdg.GetParticle(11)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
@@ -185,6 +193,19 @@ void drawGrayHorizontalLine(Double_t y) {
   liney->Draw();
 }
 
+void drawOrangeHorizontalLine(Double_t y) {
+  Double_t u;
+  gPad->Update(); // necessary
+  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
+  // u = (y - y1)/(y2 - y1);
+  TLine *liney = new TLine(0.1, u, 0.9, u);
+  liney->SetLineWidth(3);
+  liney->SetLineColor(kOrange+7);
+  liney->SetLineStyle(2);
+  liney->SetNDC(kTRUE);
+  liney->Draw();
+}
+
 void drawVerticalLineBlack(Double_t x) {
   Double_t u;
   gPad->Update(); // necessary
@@ -261,16 +282,14 @@ TString particleName(Int_t particleID) {
   else if (particleID == -211) return "pim";
 }
 
+void setAlias(TTree *treeExtracted) {
+  treeExtracted->SetAlias("Pl2", "wP2*CosThetaPQ*CosThetaPQ");
+  treeExtracted->SetAlias("absQ", "TMath::Sqrt(Nu*Nu + Q2)");
+  treeExtracted->SetAlias("Mx2", "W*W + wM*wM - 2*Z*Nu*Nu + 2*TMath::Sqrt(Pl2)*absQ - 2*Z*Nu*0.938272");
+  treeExtracted->SetAlias("Mx", "TMath::Sqrt(Mx2)");
 
-
-
-
-
-
-
-
-
-
+  treeExtracted->SetAlias("swD", Form("wD + 2*%f + %f", kMpi, kMpi0));
+}
 
 
 /*

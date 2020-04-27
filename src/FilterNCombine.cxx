@@ -1,28 +1,24 @@
-/*****************************************/
-/*  FilterNCombine.cxx                   */
-/*                                       */
-/*  Andrés Bórquez                       */
-/*                                       */
-/*****************************************/
+/**************************************/
+/*  FilterNCombine.cxx                */
+/*                                    */
+/*  Andrés Bórquez                    */
+/*                                    */
+/**************************************/
 
-// updated to filter simrec and gsim as well
-// now it needs a .tmp file to read, located in tmpDir
-// the sets are: {old, usm, jlab}
-// updated: doesn't correct if GSIM!
+// HALFWAY-VERSION
+// - doesn't create the new wanted structure
+// - doesn't care about jlab sims
+// - use old dir structure filterSim/{simrec,gsim}
 
 #include "analysisConfig.h"
 
 /*** Constants ***/
 
-TDatabasePDG pdg;
-Float_t kMpi = pdg.GetParticle(211)->Mass();
-Float_t kMe = pdg.GetParticle(11)->Mass();
-
 Float_t kEbeam = 5.014;
 
 /*** Global variables ***/
 
-// parameters
+// options
 TString targetOption;
 Int_t dataFlag   = 0;
 Int_t simrecFlag = 0;
@@ -51,7 +47,8 @@ Float_t tECX, tECY, tECZ;
 Float_t tPex, tPey, tPez;
 Float_t tPid;
 
-Int_t Ne;
+// new
+TString eventBranchName;
 
 /*** Declaration of functions ***/
 
@@ -81,6 +78,7 @@ int main(int argc, char **argv) {
     std::cout << "  inputFile = " << inputFile << std::endl;
   }
   inFile.close();
+  std::cout << std::endl;
   
   /*** Init tree ***/
   
@@ -89,59 +87,105 @@ int main(int argc, char **argv) {
   t->Add(inputFile + "/" + treeName); // input
 
   t->SetBranchStatus("*", 0);
-  
-  t->SetBranchStatus("TargType", 1);
-  t->SetBranchStatus("Q2", 1);
-  t->SetBranchStatus("Nu", 1);
-  t->SetBranchStatus("Xb", 1);
-  t->SetBranchStatus("W", 1);
-  t->SetBranchStatus("SectorEl", 1);  
-  t->SetBranchStatus("PhiPQ", 1);
-  t->SetBranchStatus("ThetaPQ", 1);  
-  t->SetBranchStatus("E", 1);
-  t->SetBranchStatus("evnt", 1);
-  t->SetBranchStatus("Px", 1);
-  t->SetBranchStatus("Py", 1);
-  t->SetBranchStatus("Pz", 1);
-  t->SetBranchStatus("Xec", 1);
-  t->SetBranchStatus("Yec", 1);
-  t->SetBranchStatus("Zec", 1);
-  t->SetBranchStatus("ECX", 1);
-  t->SetBranchStatus("ECY", 1);
-  t->SetBranchStatus("ECZ", 1);
-  t->SetBranchStatus("Pex", 1);
-  t->SetBranchStatus("Pey", 1);
-  t->SetBranchStatus("Pez", 1);
-  t->SetBranchStatus("pid", 1);
 
-  t->SetBranchAddress("TargType", &tTargType);
-  t->SetBranchAddress("Q2", &tQ2);
-  t->SetBranchAddress("Nu", &tNu);
-  t->SetBranchAddress("Xb", &tXb);
-  t->SetBranchAddress("W", &tW);
-  t->SetBranchAddress("SectorEl", &tSector);  
-  t->SetBranchAddress("PhiPQ", &tPhiPQ);
-  t->SetBranchAddress("ThetaPQ", &tThetaPQ);
-  t->SetBranchAddress("E", &tE);
-  t->SetBranchAddress("evnt", &tEvent);
-  t->SetBranchAddress("Px", &tPx);
-  t->SetBranchAddress("Py", &tPy);
-  t->SetBranchAddress("Pz", &tPz);
-  t->SetBranchAddress("Xec", &tZec);
-  t->SetBranchAddress("Yec", &tZec);
-  t->SetBranchAddress("Zec", &tZec);
-  t->SetBranchAddress("ECX", &tECX);
-  t->SetBranchAddress("ECY", &tECY);
-  t->SetBranchAddress("ECZ", &tECZ);
-  t->SetBranchAddress("Pex", &tPex);
-  t->SetBranchAddress("Pey", &tPey);
-  t->SetBranchAddress("Pez", &tPez);
-  t->SetBranchAddress("pid", &tPid);
-  
-  Ne = t->GetEntries();  
-  // std::cout << "Number of entries to be processed: " << Ne << std::endl;
-  // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-  
+  if (simrecFlag || dataFlag) {
+    t->SetBranchStatus("TargType", 1);
+    t->SetBranchStatus("Q2", 1);
+    t->SetBranchStatus("Nu", 1);
+    t->SetBranchStatus("Xb", 1);
+    t->SetBranchStatus("W", 1);
+    t->SetBranchStatus("SectorEl", 1);  
+    t->SetBranchStatus("PhiPQ", 1);
+    t->SetBranchStatus("ThetaPQ", 1);  
+    t->SetBranchStatus("E", 1);
+    t->SetBranchStatus("evnt", 1);
+    t->SetBranchStatus("Px", 1);
+    t->SetBranchStatus("Py", 1);
+    t->SetBranchStatus("Pz", 1);
+    t->SetBranchStatus("Xec", 1);
+    t->SetBranchStatus("Yec", 1);
+    t->SetBranchStatus("Zec", 1);
+    t->SetBranchStatus("ECX", 1);
+    t->SetBranchStatus("ECY", 1);
+    t->SetBranchStatus("ECZ", 1);
+    t->SetBranchStatus("Pex", 1);
+    t->SetBranchStatus("Pey", 1);
+    t->SetBranchStatus("Pez", 1);
+    t->SetBranchStatus("pid", 1);
+    
+    t->SetBranchAddress("TargType", &tTargType);
+    t->SetBranchAddress("Q2", &tQ2);
+    t->SetBranchAddress("Nu", &tNu);
+    t->SetBranchAddress("Xb", &tXb);
+    t->SetBranchAddress("W", &tW);
+    t->SetBranchAddress("SectorEl", &tSector);  
+    t->SetBranchAddress("PhiPQ", &tPhiPQ);
+    t->SetBranchAddress("ThetaPQ", &tThetaPQ);
+    t->SetBranchAddress("E", &tE);
+    t->SetBranchAddress("evnt", &tEvent);
+    t->SetBranchAddress("Px", &tPx);
+    t->SetBranchAddress("Py", &tPy);
+    t->SetBranchAddress("Pz", &tPz);
+    t->SetBranchAddress("Xec", &tZec);
+    t->SetBranchAddress("Yec", &tZec);
+    t->SetBranchAddress("Zec", &tZec);
+    t->SetBranchAddress("ECX", &tECX);
+    t->SetBranchAddress("ECY", &tECY);
+    t->SetBranchAddress("ECZ", &tECZ);
+    t->SetBranchAddress("Pex", &tPex);
+    t->SetBranchAddress("Pey", &tPey);
+    t->SetBranchAddress("Pez", &tPez);
+    t->SetBranchAddress("pid", &tPid);
+  } else if (gsimFlag) {
+    t->SetBranchStatus("mc_TargType", 1);
+    t->SetBranchStatus("mc_Q2", 1);
+    t->SetBranchStatus("mc_Nu", 1);
+    t->SetBranchStatus("mc_Xb", 1);
+    t->SetBranchStatus("mc_W", 1);
+    t->SetBranchStatus("mc_SectorEl", 1);  
+    t->SetBranchStatus("mc_PhiPQ", 1);
+    t->SetBranchStatus("mc_ThetaPQ", 1);  
+    t->SetBranchStatus("mc_E", 1);
+    t->SetBranchStatus("mc_evnt", 1);
+    t->SetBranchStatus("mc_Px", 1);
+    t->SetBranchStatus("mc_Py", 1);
+    t->SetBranchStatus("mc_Pz", 1);
+    t->SetBranchStatus("mc_Xec", 1);
+    t->SetBranchStatus("mc_Yec", 1);
+    t->SetBranchStatus("mc_Zec", 1);
+    t->SetBranchStatus("mc_ECX", 1);
+    t->SetBranchStatus("mc_ECY", 1);
+    t->SetBranchStatus("mc_ECZ", 1);
+    t->SetBranchStatus("mc_Pex", 1);
+    t->SetBranchStatus("mc_Pey", 1);
+    t->SetBranchStatus("mc_Pez", 1);
+    t->SetBranchStatus("mc_pid", 1);
+    
+    t->SetBranchAddress("mc_TargType", &tTargType);
+    t->SetBranchAddress("mc_Q2", &tQ2);
+    t->SetBranchAddress("mc_Nu", &tNu);
+    t->SetBranchAddress("mc_Xb", &tXb);
+    t->SetBranchAddress("mc_W", &tW);
+    t->SetBranchAddress("mc_SectorEl", &tSector);  
+    t->SetBranchAddress("mc_PhiPQ", &tPhiPQ);
+    t->SetBranchAddress("mc_ThetaPQ", &tThetaPQ);
+    t->SetBranchAddress("mc_E", &tE);
+    t->SetBranchAddress("mc_evnt", &tEvent);
+    t->SetBranchAddress("mc_Px", &tPx);
+    t->SetBranchAddress("mc_Py", &tPy);
+    t->SetBranchAddress("mc_Pz", &tPz);
+    t->SetBranchAddress("mc_Xec", &tZec);
+    t->SetBranchAddress("mc_Yec", &tZec);
+    t->SetBranchAddress("mc_Zec", &tZec);
+    t->SetBranchAddress("mc_ECX", &tECX);
+    t->SetBranchAddress("mc_ECY", &tECY);
+    t->SetBranchAddress("mc_ECZ", &tECZ);
+    t->SetBranchAddress("mc_Pex", &tPex);
+    t->SetBranchAddress("mc_Pey", &tPey);
+    t->SetBranchAddress("mc_Pez", &tPez);
+    t->SetBranchAddress("mc_pid", &tPid);
+  }
+      
   /*** Output settings ***/
   
   TFile *rootFile = new TFile(outFile, "RECREATE", "Omega Meson Filtered Combinations"); // output
@@ -274,129 +318,142 @@ int main(int argc, char **argv) {
   
   // counting variables
   Int_t currentEvent;
-  Int_t previousEvent;
   
   Int_t nPipThisEvent = 0;
   Int_t nPimThisEvent = 0;
   Int_t nGammaThisEvent = 0;
-  Int_t nParticles = 0;
+
   Int_t nCombThisEvent = 0;
   
   Int_t nOmega = 0;
   Int_t nAtLeastOmega = 0;
 
-  Int_t nEvents = 0;
+  /*** Obtain max event number ***/
 
-  // searchs for different event numbers, iterates in all entries
-  for (Int_t i = 0; i < Ne; i++) {
-    t->GetEntry(i);
+  Int_t nEvents = (Int_t) t->GetMaximum(eventBranchName);
+
+  std::cout << "nEvents = " << nEvents << std::endl;
+  std::cout << std::endl;
+
+  // define a big entrylist, to avoid -9999 events and optimize
+  t->Draw(">>bigList", eventBranchName + " > -1", "entrylist");
+  TEntryList *bigL = (TEntryList*) gDirectory->Get("bigList");
+  t->SetEntryList(bigL);
+  
+  // define entrylist
+  TEntryList *l;
+  
+  // loop in events
+  // comment: i = iterator of entry number in the big list, ii = real entry number
+  for (Int_t i = 0; i < bigL->GetN(); i++) { // bigL->GetN()
+    Int_t ii = t->GetEntryNumber(i);
+    t->GetEntry(ii);
+
+    // set it at this stage only
     currentEvent = (Int_t) tEvent;
     
-    // prevents repetition until new event, very important
-    if (i > 0) {
-      t->GetEntry(i-1);
-      previousEvent = (Int_t) tEvent;
-      if (previousEvent == currentEvent) continue;
-    }
+    TString theCondition = eventBranchName + Form(" == %d", currentEvent);
+    TString listName = Form("elist_%d", currentEvent);
+
+    // selects all entries from the same event
+    t->Draw(">>" + listName, theCondition, "entrylist");
+    l = (TEntryList*) gDirectory->Get(listName);
+    t->SetEntryList(l);
     
-    // std::cout << "Current event number: " << currentEvent << std::endl;
-    // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << "Current event number: " << currentEvent << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
     // looks at the entries (particles) of the current event
-    for (Int_t j = i; j < Ne; j++) {
-      t->GetEntry(j);
-      if (tEvent == (Float_t) currentEvent) {
-	// std::cout << "  Entry number: " << j << std::endl;
-	// std::cout << "  Event number: " << (Int_t) tEvent << std::endl;
-	// std::cout << "  pid:          " << tPid << std::endl;
-	// std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-	// let's count the particles
-	if (tPid == (Float_t) 211) nPipThisEvent++;
-	if (tPid == (Float_t) -211) nPimThisEvent++;
-	if (tPid == (Float_t) 22) nGammaThisEvent++;
-      } else {
-	j = Ne; // break this loop, optimize
-      }
+    // j = iterator, jj = real entry number
+    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+      Int_t jj = t->GetEntryNumber(j);
+      t->GetEntry(jj);
+      std::cout << "  Entry number: " << jj << std::endl;
+      std::cout << "  pid:          " << tPid << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      // let's count the particles
+      if (tPid == (Float_t) 211) nPipThisEvent++;
+      if (tPid == (Float_t) -211) nPimThisEvent++;
+      if (tPid == (Float_t) 22) nGammaThisEvent++;
     }
     
     // show counts
-    // std::cout << "  nPip   = " << nPipThisEvent << std::endl;
-    // std::cout << "  nPim   = " << nPimThisEvent << std::endl;
-    // std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    std::cout << "  nPip   = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim   = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** Candidate appeared! ***/
 
     if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
 
       nAtLeastOmega++;
-      nParticles = nPipThisEvent + nPimThisEvent + nGammaThisEvent; // nParticlesThisEvent
       nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
       nOmega += nCombThisEvent;
-      
-      // std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
+
+      std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
 
       /*** The original ***/
 
       // saves all information from the original particles in the current event, with no mixing
       // warning: all the hadronic variables correspond to the respective hadron, nothing more
-      for (Int_t j = i; j < Ne; j++) {
-	t->GetEntry(j);
-	if (tEvent == (Float_t) currentEvent) {
-	  // assigning energy
-	  // for gammas is corrected from a primitive sampling fraction, hence the factor 0.272
-	  // for pions is assigned from the measured momentum and a constant invariant mass (pdg)
-	  if (!gsimFlag) {
-	    if (tPid == 22) {
-	      oE = tE/0.272;
-	    } else if (tPid == 211 || tPid == -211) {
-	      oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
-	    }
-	  } else if (gsimFlag) {
-	    oE = tE;
+      
+      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	Int_t jj = t->GetEntryNumber(j);
+	t->GetEntry(jj);
+	// assigning energy
+	// for gammas is corrected from a primitive sampling fraction, hence the factor 0.272
+	// for pions is assigned from the measured momentum and a constant invariant mass (pdg)
+	if (!gsimFlag) {
+	  if (tPid == 22) {
+	    oE = tE/0.272;
+	  } else if (tPid == 211 || tPid == -211) {
+	    oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
 	  }
-	  // assigning momentum
-	  // for gammas is corrected with primitive sampling fraction and ECPB treatment
-	  if (!gsimFlag) {
-	    if (tPid == 22) {
-	      oPx = CorrectGammaMomentum(0);
-	      oPy = CorrectGammaMomentum(1);
-	      oPz = CorrectGammaMomentum(2);
-	    } else if (tPid == 211 || tPid == -211) {
-	      oPx = tPx; oPy = tPy; oPz = tPz;
-	    }
-	  } else if (gsimFlag) {
+	} else if (gsimFlag) {
+	  oE = tE;
+	}
+	// assigning momentum
+	// for gammas is corrected with primitive sampling fraction and ECPB treatment
+	if (!gsimFlag) {
+	  if (tPid == 22) {
+	    oPx = CorrectGammaMomentum(0);
+	    oPy = CorrectGammaMomentum(1);
+	    oPz = CorrectGammaMomentum(2);
+	  } else if (tPid == 211 || tPid == -211) {
 	    oPx = tPx; oPy = tPy; oPz = tPz;
 	  }
-	  oTargType = (Int_t) tTargType;
-	  oQ2 = tQ2;
-	  oNu = tNu;
-	  oXb = tXb;
-	  oYb = oNu/kEbeam;                   // added
-	  oW = tW;
-	  oSector = (Int_t) tSector;
-	  oZ = oE/oNu;                        // recalculated
-	  oPhiPQ = PhiPQ(oPx, oPy, oPz);      // updated!
-	  oThetaPQ = ThetaPQ(oPx, oPy, oPz);  // updated!
-	  oXec = tXec;
-	  oYec = tYec;
-	  oZec = tZec;
-	  oECX = tECX;
-	  oECY = tECY;
-	  oECZ = tECZ;
-	  oPex = tPex;
-	  oPey = tPey;
-	  oPez = tPez;
-	  oP2 = oPx*oPx + oPy*oPy + oPz*oPz;  // new!
-	  oCosThetaPQ = ((kEbeam - oPez)*oPz - oPex*oPx - oPey*oPy)/(TMath::Sqrt(oP2*(oQ2 + oNu*oNu))); // new!
-	  oPt2 = oP2*(1 - oCosThetaPQ*oCosThetaPQ); // recalculated
-	  oPid = (Int_t) tPid;
-	  oEntry = j;
-	  oEvent = (Int_t) tEvent;
-	  tOriginal->Fill();
-	} else {
-	  j = Ne; // break this loop, optimize
+	} else if (gsimFlag) {
+	  oPx = tPx; oPy = tPy; oPz = tPz;
 	}
+	oTargType = (Int_t) tTargType;
+	oQ2 = tQ2;
+	oNu = tNu;
+	oXb = tXb;
+	oYb = oNu/kEbeam;                   // added
+	oW = tW;
+	oSector = (Int_t) tSector;
+	oZ = oE/oNu;                        // recalculated
+	oPhiPQ = PhiPQ(oPx, oPy, oPz);      // updated!
+	oThetaPQ = ThetaPQ(oPx, oPy, oPz);  // updated!
+	oXec = tXec;
+	oYec = tYec;
+	oZec = tZec;
+	oECX = tECX;
+	oECY = tECY;
+	oECZ = tECZ;
+	oPex = tPex;
+	oPey = tPey;
+	oPez = tPez;
+	oP2 = oPx*oPx + oPy*oPy + oPz*oPz;  // new!
+	oCosThetaPQ = ((kEbeam - oPez)*oPz - oPex*oPx - oPey*oPy)/(TMath::Sqrt(oP2*(oQ2 + oNu*oNu))); // new!
+	oPt2 = oP2*(1 - oCosThetaPQ*oCosThetaPQ); // recalculated
+	oPid = (Int_t) tPid;
+	oEntry = j;
+	oEvent = (Int_t) tEvent;
+
+	// fill
+	tOriginal->Fill();
       }
 
       /*** The mixing ***/
@@ -414,11 +471,13 @@ int main(int argc, char **argv) {
       for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
 
 	// find and tag pip (loop in particles)
-	for (Int_t j = i; j < (i + nParticles); j++) {
-	  t->GetEntry(j);
-	  if (tPid == (Float_t) 211 && j > jPip) {
-	    jPip = j; // tag pip
-	    j = i + nParticles; // break search
+	// j = iterator, jj = real entry number
+	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	  Int_t jj = t->GetEntryNumber(j);
+	  t->GetEntry(jj);
+	  if (tPid == (Float_t) 211 && jj > jPip) {
+	    jPip = jj;      // tag pip
+	    j = (Int_t) l->GetN(); // break search
 	  }
 	}
 
@@ -430,11 +489,13 @@ int main(int argc, char **argv) {
 	for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
 	  
 	  // find and tag pim
-	  for (Int_t j = i; j < (i + nParticles); j++) {
-	    t->GetEntry(j);
-	    if (tPid == (Float_t) -211 && j > jPim) {
-	      jPim = j; // tag pim
-	      j = i + nParticles; // break search
+	  // j = iterator, jj = real entry number
+	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	    Int_t jj = t->GetEntryNumber(j);
+	    t->GetEntry(jj);
+	    if (tPid == (Float_t) -211 && jj > jPim) {
+	      jPim = jj; // tag pim
+	      j = (Int_t) l->GetN(); // break search
 	    }
 	  }
 
@@ -494,12 +555,15 @@ int main(int argc, char **argv) {
 	    
 	    // the big condition
 	    if (partialFlag) {
+
 	      // find and tag gamma1
-	      for (Int_t j = i; j < (i + nParticles); j++) {
-		t->GetEntry(j);
-		if (tPid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
-		  jGamma1 = j; // tag gamma1
-		  j = i + nParticles; // break search for j
+	      // jj = real entry number, j = iterator
+	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+		Int_t jj = t->GetEntryNumber(j);
+		t->GetEntry(jj);
+		if (tPid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
+		  jGamma1 = jj;  // tag gamma1
+		  j = (Int_t) l->GetN(); // break search for j
 		}
 	      }
 	      jGamma2 = 0; // resets gamma2
@@ -507,11 +571,13 @@ int main(int argc, char **argv) {
 	    }
 	    
 	    // find and tag gamma2
-	    for (Int_t k = (jGamma1 + 1); k < (i + nParticles); k++) { // excludes gamma1
-	      t->GetEntry(k);
-	      if (tPid == (Float_t) 22 && k > jGamma2) { // excludes previous gamma2
-		jGamma2 = k; // tag gamma2
-		k = i + nParticles; // break search for k
+	    // jj = real entry number, j = iterator
+	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	      Int_t jj = t->GetEntryNumber(j);
+	      t->GetEntry(jj);
+	      if (tPid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
+		jGamma2 = jj;  // tag gamma2
+		j = (Int_t) l->GetN(); // break search for j
 	      }
 	    }
 	    
@@ -523,15 +589,18 @@ int main(int argc, char **argv) {
 	      partialFlag = 1;
 	    }
 	    
-	    // std::cout << "jGamma1=" << jGamma1 << std::endl;
-	    // std::cout << "jGamma2=" << jGamma2 << std::endl;
-	    // std::cout << "jPip=" << jPip << std::endl;
-	    // std::cout << "jPim=" << jPim << std::endl;
+	    std::cout << "jGamma1=" << jGamma1 << std::endl;
+	    std::cout << "jGamma2=" << jGamma2 << std::endl;
+	    std::cout << "jPip=" << jPip << std::endl;
+	    std::cout << "jPim=" << jPim << std::endl;
 	    
 	    // now extract!
-	    for (Int_t j = i; j < (i + nParticles); j++) {
-	      t->GetEntry(j);
-	      if (j == jGamma1) {
+	    // again, jj = real entry number, j = iterator
+	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	      Int_t jj = t->GetEntryNumber(j);
+	      t->GetEntry(jj);
+	      
+	      if (jj == jGamma1) {
 		if (!gsimFlag) {
 		  mE[0] = tE/0.272;                 // primitive sampling fraction
 		  mPx[0] = CorrectGammaMomentum(0); // correction
@@ -543,7 +612,7 @@ int main(int argc, char **argv) {
 		}		
 		mPid[0] = (Int_t) tPid;
 		mEntry[0] = jGamma1;
-	      } else if (j == jGamma2) {
+	      } else if (jj == jGamma2) {
 		if (!gsimFlag) {
 		  mE[1] = tE/0.272;                 // primitive sampling fraction
 		  mPx[1] = CorrectGammaMomentum(0); // correction
@@ -555,7 +624,7 @@ int main(int argc, char **argv) {
 		}
 		mPid[1] = (Int_t) tPid;
 		mEntry[1] = jGamma2;
-	      } else if (j == jPip) {
+	      } else if (jj == jPip) {
 		if (!gsimFlag) {
 		  mE[2] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
 		} else if (gsimFlag) {
@@ -564,7 +633,7 @@ int main(int argc, char **argv) {
 		mPx[2] = tPx; mPy[2] = tPy; mPz[2] = tPz;
 		mPid[2] = (Int_t) tPid;
 		mEntry[2] = jPip;
-	      } else if (j == jPim) {
+	      } else if (jj == jPim) {
 		if (!gsimFlag) {
 		  mE[3] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
 		} else if (gsimFlag) {
@@ -630,22 +699,32 @@ int main(int argc, char **argv) {
 	  }
 	}
       }
-      // end of condition of candidate
-    }
+    } // end of condition of candidate
 
     // reset count variables
     nPipThisEvent = 0;
     nPimThisEvent = 0;
     nGammaThisEvent = 0;
-    // sum events
-    nEvents++;
-    // std::cout << std::endl;
-  }
+    
+    // and set tree back to the big list!
+    t->SetEntryList(bigL);
+
+    // VERY IMPORTANT
+    // this optimizes and prevents event repetition!!
+    i += (l->GetN()-1);
+
+    // clean some memory
+    gDirectory->Delete(listName + ";1");
+    rootFile->Delete(listName);
+    
+    std::cout << std::endl;
+  } // end of event loop
 
   /*** Writing tree ***/
 
-  // tOriginal->Print();
-  // std::cout << std::endl;
+  tOriginal->Print();
+  std::cout << std::endl;
+
   tMix->Print();
   std::cout << std::endl;
   
@@ -655,7 +734,9 @@ int main(int argc, char **argv) {
   std::cout << "From a total of " << nEvents << " events." << std::endl;
   std::cout << "There are at least " << nAtLeastOmega << " events that have at least one omega particle," << std::endl;
   std::cout << "we have found the following quantity of omega candidates: " << nOmega << "."  << std::endl;
-  // std::cout << "There are " << noElectrons << " events with no electrons detected."  << std::endl; // test
+  std::cout << std::endl;
+
+  std::cout << "File " << outFile << " has been created!" << std::endl;
   
   return 0;
 }
@@ -688,21 +769,26 @@ void assignOptions() {
     textFile = tmpDir + "/PRU-data-" + targetOption + ".tmp";
     outDir = dataDir + "/" + targetOption;
     treeName = "ntuple_data";
+    eventBranchName = "evnt";
   } else if (simrecFlag) {
     textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
     outDir = simrecDir + "/" + setOption + "/" + targetOption;
-    treeName = "ntuple_accept";
+    treeName = "ntuple_sim";
+    eventBranchName = "evnt";
   } else if (gsimFlag) {
     textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
     outDir = gsimDir + "/" + setOption + "/" + targetOption;
-    treeName = "ntuple_thrown";
+    treeName = "ntuple_sim";
+    eventBranchName = "mc_evnt";
   }
   // independent of the choice the file will be called like this
   outFile = outDir + "/comb_out.root";
 }
 
 void printUsage() {
-  std::cout << "FilterNCombine program. Usage is:" << std::endl;
+  std::cout << "FilterNCombine program." << std::endl;
+  std::cout << "It must exist a file /tmp/PRU-[set]-[target].tmp with the location of the input root file to filter." << std::endl;
+  std::cout << "Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -h" << std::endl;
   std::cout << "    prints this message and exits program" << std::endl;
