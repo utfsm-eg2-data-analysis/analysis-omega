@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
   CarbonMR_gr->GetXaxis()->SetLimits(kinvarEdges[0], kinvarEdges[kinvarNbins]);
   CarbonMR_gr->GetYaxis()->SetTitle("R_{#omega}");
   CarbonMR_gr->GetYaxis()->CenterTitle();
-  CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.2);
+  CarbonMR_gr->GetYaxis()->SetRangeUser(0., 1.4);
   
   CarbonMR_gr->SetMarkerStyle(21);
   CarbonMR_gr->SetMarkerSize(1.5);

@@ -95,6 +95,7 @@ TDatabasePDG pdg;
 Float_t kMpi = pdg.GetParticle(211)->Mass();
 Float_t kMpi0 = pdg.GetParticle(111)->Mass();
 Float_t kMe = pdg.GetParticle(11)->Mass();
+Float_t kMomega = pdg.GetParticle(223)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
@@ -176,6 +177,19 @@ void drawBlackHorizontalLine(Double_t y) {
   liney->SetLineWidth(1);
   liney->SetLineColor(kBlack);
   liney->SetLineStyle(1);
+  liney->SetNDC(kTRUE);
+  liney->Draw();
+}
+
+void drawBlackDashedHorizontalLine(Double_t y) {
+  Double_t u;
+  gPad->Update(); // necessary
+  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
+  // u = (y - y1)/(y2 - y1);
+  TLine *liney = new TLine(0.1, u, 0.9, u);
+  liney->SetLineWidth(5);
+  liney->SetLineColor(kBlack);
+  liney->SetLineStyle(2);
   liney->SetNDC(kTRUE);
   liney->Draw();
 }

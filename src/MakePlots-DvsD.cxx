@@ -104,6 +104,9 @@ int main(int argc, char **argv) {
     
     theHistB->Draw("HIST");
     theHistA->Draw("SAME HIST");
+
+    // line!
+    drawVerticalLineRed(kMomega);
     
     TLegend *l = new TLegend(0.7, 0.7, 0.9, 0.9);
     l->AddEntry(theHistA, "IM", "l");
@@ -184,6 +187,9 @@ int main(int argc, char **argv) {
     theHist3->SetLineWidth(3);
 
     theHist3->Draw("SAME HIST");
+
+    // line, new!
+    drawVerticalLineRed(kMomega);
     
     TLegend *l = new TLegend(0.7, 0.7, 0.85, 0.85);
     l->AddEntry(theHist0, "Deuterium", "l");
@@ -241,9 +247,9 @@ void printUsage() {
   std::cout << "./MakePlots-DvsD -k[kinvar]" << std::endl;
   std::cout << "    (exclusive)" << std::endl;
   std::cout << "    sets kinvar to draw, it can be: " << std::endl;
-  std::cout << "    wM  : omega invariant mass)" << std::endl;
-  std::cout << "    wD  : omega invariant mass difference)" << std::endl;
-  std::cout << "    swD : shifted omega invariant mass difference)" << std::endl;
+  std::cout << "    wM  : omega invariant mass" << std::endl;
+  std::cout << "    wD  : omega invariant mass difference" << std::endl;
+  std::cout << "    swD : shifted omega invariant mass difference" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots-DvsD -z[3-7]" << std::endl;
   std::cout << "    turns on binning in Z (off by default) and analyzes that specific bin" << std::endl;
@@ -302,7 +308,7 @@ void assignOptions() {
     titleAxis = "IMD (GeV)";
     histProperties = "(200, 0., 1.6)";
   } else if (kinvarOption == "swD") {
-    titleKinvar = "Shifted IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
+    titleKinvar = "IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IMD (GeV)";
     histProperties = "(250, 0., 2.5)";
   }
