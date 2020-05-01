@@ -199,19 +199,19 @@ void assignOptions() {
     inputDataFile1 = dataDir + "/C/wout_C-thickD2.root";
     inputDataFile2 = dataDir + "/Fe/wout_Fe-thickD2.root";
     inputDataFile3 = dataDir + "/Pb/wout_Pb-thinD2.root";
-    inputSimrecFile = simrecDir + "/jlab/D/wout_simrecD.root";
+    inputSimrecFile = simDir + "/jlab/D/wout_simrecD.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
     inputDataFile1 = dataDir + "/C/wout_C-thickD2.root";
-    inputSimrecFile = simrecDir + "/jlab/C/wout_simrecC.root";
+    inputSimrecFile = simDir + "/jlab/C/wout_simrecC.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
     inputDataFile1 = dataDir + "/Fe/wout_Fe-thickD2.root";
-    inputSimrecFile = simrecDir + "/jlab/Fe/wout_simrecFe.root";
+    inputSimrecFile = simDir + "/jlab/Fe/wout_simrecFe.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
     inputDataFile1 = dataDir + "/Pb/wout_Pb-thinD2.root";
-    inputSimrecFile = simrecDir + "/usm/Pb/wout_simrecPb.root";
+    inputSimrecFile = simDir + "/usm/Pb/wout_simrecPb.root";
     cutTargType = "TargType == 2";
   }
   // for Z binning

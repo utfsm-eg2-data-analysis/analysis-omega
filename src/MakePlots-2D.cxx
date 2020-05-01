@@ -195,16 +195,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = simrecDir + "/jlab/D/wout_simrecD.root";
+      inputFile1 = simDir + "/jlab/D/wout_simrecD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/C/wout_simrecC.root";
+      inputFile1 = simDir + "/jlab/C/wout_simrecC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/Fe/wout_simrecFe.root";
+      inputFile1 = simDir + "/jlab/Fe/wout_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/usm/Pb/wout_simrecPb.root";
+      inputFile1 = simDir + "/usm/Pb/wout_simrecPb.root";
     }
   }
   // x variable

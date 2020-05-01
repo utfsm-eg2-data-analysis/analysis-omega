@@ -268,19 +268,19 @@ void integrateData(TString targetOption) {
   // assign local options
   if (targetOption == "D") {
     targIndex = 0;
-    inputFile = simrecDir + "/jlab/D/wout_simrecD.root";
+    inputFile = simDir + "/jlab/D/wout_simrecD.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
     targIndex = 1;
-    inputFile = simrecDir + "/jlab/C/wout_simrecC.root";
+    inputFile = simDir + "/jlab/C/wout_simrecC.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
     targIndex = 2;
-    inputFile = simrecDir + "/jlab/Fe/wout_simrecFe.root";
+    inputFile = simDir + "/jlab/Fe/wout_simrecFe.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
     targIndex = 3;
-    inputFile = simrecDir + "/usm/Pb/wout_simrecPb.root";
+    inputFile = simDir + "/usm/Pb/wout_simrecPb.root";
     cutTargType = "TargType == 2";
   }
   

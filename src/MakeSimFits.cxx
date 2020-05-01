@@ -316,16 +316,16 @@ void printUsage() {
 void assignOptions() {
   // for targets, unified D
   if (targetOption == "D") {
-    inputFile = simrecDir + "/jlab/D/wout_simrecD.root";
+    inputFile = simDir + "/jlab/D/wout_simrecD.root";
     cutTargType = "TargType == 1";
   } else if (targetOption == "C") {
-    inputFile = simrecDir + "/jlab/C/wout_simrecC.root";
+    inputFile = simDir + "/jlab/C/wout_simrecC.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Fe") {
-    inputFile = simrecDir + "/jlab/Fe/wout_simrecFe.root";
+    inputFile = simDir + "/jlab/Fe/wout_simrecFe.root";
     cutTargType = "TargType == 2";
   } else if (targetOption == "Pb") {
-    inputFile = simrecDir + "/usm/Pb/wout_simrecPb.root";
+    inputFile = simDir + "/usm/Pb/wout_simrecPb.root";
     cutTargType = "TargType == 2";
   }
   // for kinvar

@@ -37,9 +37,9 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
 
-PROG := MakePlots MakePlots_old GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
+PROG := MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
-	GetSimpleTuple MakePlots-DvsD FilterNCombine DalitzPlots # Test
+	GetSimpleTuple MakePlots-DvsD FilterNCombine DalitzPlots # Test MakePlots_old
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

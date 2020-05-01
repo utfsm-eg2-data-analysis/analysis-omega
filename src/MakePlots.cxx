@@ -183,16 +183,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = simrecDir + "/jlab/D/comb_simrecD.root";
+      inputFile1 = simDir + "/jlab/D/comb_simrecD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/C/comb_simrecC.root";
+      inputFile1 = simDir + "/jlab/C/comb_simrecC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/jlab/Fe/comb_simrecFe.root";
+      inputFile1 = simDir + "/jlab/Fe/comb_simrecFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = simrecDir + "/usm/Pb/comb_simrecPb.root";
+      inputFile1 = simDir + "/usm/Pb/comb_simrecPb.root";
     }
   } else if (gsimFlag) {
     outPrefix = "gsim";
@@ -200,16 +200,16 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = gsimDir + "/jlab/D/comb_gsimD.root";
+      inputFile1 = simDir + "/jlab/D/comb_gsimD.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/jlab/C/comb_gsimC.root";
+      inputFile1 = simDir + "/jlab/C/comb_gsimC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/jlab/Fe/comb_gsimFe.root";
+      inputFile1 = simDir + "/jlab/Fe/comb_gsimFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = gsimDir + "/usm/Pb/comb_gsimPb.root";
+      inputFile1 = simDir + "/usm/Pb/comb_gsimPb.root";
     }
   }
   // for Z binning
