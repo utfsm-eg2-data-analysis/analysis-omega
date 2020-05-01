@@ -58,7 +58,8 @@ Float_t tmc_ECX, tmc_ECY, tmc_ECZ;
 Float_t tmc_Pex, tmc_Pey, tmc_Pez;
 Float_t tmc_Pid;
 
-Int_t Ne;
+// new
+TString eventBranchName;
 
 /*** Declaration of functions ***/
 
@@ -197,11 +198,7 @@ int main(int argc, char **argv) {
     t->SetBranchAddress("mc_Pez", &tmc_Pez);
     t->SetBranchAddress("mc_pid", &tmc_Pid);
   }
-  
-  Ne = t->GetEntries();  
-  // std::cout << "Number of entries to be processed: " << Ne << std::endl;
-  // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-  
+    
   /*** Output settings ***/
   
   TFile *rootFile = new TFile(outFile, "RECREATE", "Omega Meson Filtered Combinations"); // output
@@ -237,7 +234,53 @@ int main(int argc, char **argv) {
   Float_t omc_ECX, omc_ECY, omc_ECZ;
   Float_t omc_Pex, omc_Pey, omc_Pez;
   Int_t   omc_Entry; // +1
+
+  // 34 variables for mix of particles (6 are vectors)
+  Int_t mTargType;
+  Float_t mQ2, mNu, mXb, mYb, mW; // +1
+  Float_t mZ, mPt2; // +2, recalculated
+  Int_t mSector;
+  Float_t mPhiPQ, mThetaPQ, mCosThetaPQ; // +1
+  Float_t mE[4], mPx[4], mPy[4], mPz[4];
+  Int_t mEvent, nPip, nPim, nGamma; // +3
+  Int_t mPid[4];
+  Float_t mXec, mYec, mZec;
+  Float_t mPex, mPey, mPez;
+  Int_t mEntry[4]; // +1
+
+  Float_t pipP2, pipM;
+  Float_t pimP2, pimM;
+  Float_t pippimP, pippimE, pippimM;
+  Float_t pi0Px, pi0Py, pi0Pz;
+  Float_t pi0P2, pi0CosTheta, pi0E, pi0M;
   
+  Float_t wE, wP2;
+  Float_t wPx, wPy, wPz;
+  Float_t wM, wD;
+
+  // 34 more variables for mix of generated particles (6 are vectors)
+  Int_t   mmc_TargType;
+  Float_t mmc_Q2, mmc_Nu, mmc_Xb, mmc_Yb, mmc_W; // +1
+  Float_t mmc_Z, mmc_Pt2; // +2, recalculated
+  Int_t   mmc_Sector;
+  Float_t mmc_PhiPQ, mmc_ThetaPQ, mmc_CosThetaPQ; // +1
+  Float_t mmc_E[4], mmc_Px[4], mmc_Py[4], mmc_Pz[4];
+  Int_t   mmc_Event, nmc_Pip, nmc_Pim, nmc_Gamma; // +3
+  Int_t   mmc_Pid[4];
+  Float_t mmc_Xec, mmc_Yec, mmc_Zec;
+  Float_t mmc_Pex, mmc_Pey, mmc_Pez;
+  Int_t   mmc_Entry[4]; // +1
+
+  Float_t mc_pipP2, mc_pipM;
+  Float_t mc_pimP2, mc_pimM;
+  Float_t mc_pippimP, mc_pippimE, mc_pippimM;
+  Float_t mc_pi0Px, mc_pi0Py, mc_pi0Pz;
+  Float_t mc_pi0P2, mc_pi0CosTheta, mc_pi0E, mc_pi0M;
+  
+  Float_t mc_wE, mc_wP2;
+  Float_t mc_wPx, mc_wPy, mc_wPz;
+  Float_t mc_wM, mc_wD;
+
   TTree *tOriginal = new TTree("original", "Original particles");
   tOriginal->Branch("TargType", &oTargType);
   tOriginal->Branch("Q2", &oQ2);
@@ -268,7 +311,7 @@ int main(int argc, char **argv) {
   tOriginal->Branch("Pez", &oPez);
   tOriginal->Branch("P2", &oP2);
   tOriginal->Branch("entry", &oEntry);
-
+  
   if (simFlag) {
     tOriginal->Branch("mc_TargType", &omc_TargType);
     tOriginal->Branch("mc_Q2",  &omc_Q2);
@@ -300,53 +343,7 @@ int main(int argc, char **argv) {
     tOriginal->Branch("mc_P2", &omc_P2);
     tOriginal->Branch("mc_entry", &omc_Entry);
   }
-  
-  // 34 variables for mix of particles (6 are vectors)
-  Int_t mTargType;
-  Float_t mQ2, mNu, mXb, mYb, mW; // +1
-  Float_t mZ, mPt2; // +2, recalculated
-  Int_t mSector;
-  Float_t mPhiPQ, mThetaPQ, mCosThetaPQ; // +1
-  Float_t mE[4], mPx[4], mPy[4], mPz[4];
-  Int_t mEvent, nPip, nPim, nGamma; // +3
-  Int_t mPid[4];
-  Float_t mXec, mYec, mZec;
-  Float_t mPex, mPey, mPez;
-  Int_t mEntry[4]; // +1
 
-  Float_t pipP2, pipM;
-  Float_t pimP2, pimM;
-  Float_t pippimP, pippimE, pippimM;
-  Float_t pi0Px, pi0Py, pi0Pz;
-  Float_t pi0P2, pi0CosTheta, pi0E, pi0M;
-  
-  Float_t wE, wP2;
-  Float_t wPx, wPy, wPz;
-  Float_t wM, wD;
-
-  // 34 more variables for mix of generated particles (6 are vectors)
-  Int_t   mmc_TargType;
-  Float_t mmc_Q2, mmc_Nu, mmc_Xb, mmc_Yb, mmc_W; // +1
-  Float_t mmc_Z, mmc_Pt2; // +2, recalculated
-  Int_t   mmc_Sector;
-  Float_t mmc_PhiPQ, mmc_ThetaPQ, mmc_CosThetaPQ; // +1
-  Float_t mmc_E[4], mmc_Px[4], mmc_Py[4], mmc_Pz[4];
-  Int_t   mmc_Event, mc_nPip, mc_nPim, mc_nGamma; // +3
-  Int_t   mmc_Pid[4];
-  Float_t mmc_Xec, mmc_Yec, mmc_Zec;
-  Float_t mmc_Pex, mmc_Pey, mmc_Pez;
-  Int_t   mmc_Entry[4]; // +1
-
-  Float_t mc_pipP2, mc_pipM;
-  Float_t mc_pimP2, mc_pimM;
-  Float_t mc_pippimP, mc_pippimE, mc_pippimM;
-  Float_t mc_pi0Px, mc_pi0Py, mc_pi0Pz;
-  Float_t mc_pi0P2, mc_pi0CosTheta, mc_pi0E, mc_pi0M;
-  
-  Float_t mc_wE, mc_wP2;
-  Float_t mc_wPx, mc_wPy, mc_wPz;
-  Float_t mc_wM, mc_wD;
-  
   TTree *tMix = new TTree("mix", "Combination of particles");
   tMix->Branch("TargType", &mTargType);
   tMix->Branch("Q2", &mQ2);
@@ -417,9 +414,9 @@ int main(int argc, char **argv) {
     tMix->Branch("mc_CosThetaPQ", &mmc_CosThetaPQ);
     tMix->Branch("mc_E", &mmc_E, "E[4]/F");
     tMix->Branch("mc_Event", &mmc_Event);
-    tMix->Branch("mc_nPip",   &mc_nPip);
-    tMix->Branch("mc_nPim",   &mc_nPim);
-    tMix->Branch("mc_nGamma", &mc_nGamma);
+    tMix->Branch("mc_nPip",   &nmc_Pip);
+    tMix->Branch("mc_nPim",   &nmc_Pim);
+    tMix->Branch("mc_nGamma", &nmc_Gamma);
     tMix->Branch("mc_Px", &mmc_Px, "Px[4]/F");
     tMix->Branch("mc_Py", &mmc_Py, "Py[4]/F");
     tMix->Branch("mc_Pz", &mmc_Pz, "Pz[4]/F");
@@ -459,734 +456,704 @@ int main(int argc, char **argv) {
   }
 
   /*** START FILTERING ***/
-  
+
   // counting variables
-  Int_t currentEvent;
-  Int_t previousEvent;
-  
   Int_t nPipThisEvent = 0;
   Int_t nPimThisEvent = 0;
   Int_t nGammaThisEvent = 0;
-  
-  Int_t nParticles = 0;
   Int_t nCombThisEvent = 0;
-  
+
   Int_t nOmega = 0;
   Int_t nAtLeastOmega = 0;
 
-  Int_t nEvents = 0;
+  // mc counting variables
+  Int_t nMCPipThisEvent = 0;
+  Int_t nMCPimThisEvent = 0;
+  Int_t nMCGammaThisEvent = 0;
+  Int_t nMCCombThisEvent = 0;
 
-  /*** FOR DATA ***/
+  Int_t nMCOmega = 0;
+  Int_t nAtLeastMCOmega = 0;
 
-  if (!simFlag) {
+  // combination vectors!
+  std::vector<std::vector <int>> combVector;
+  std::vector<std::vector <int>> mc_combVector;
   
-    // searchs for different event numbers, iterates in all entries
-    for (Int_t i = 0; i < Ne; i++) {
-      t->GetEntry(i);
-      currentEvent = (Int_t) tEvent;
+  /*** START ***/
+  
+  // define entrylist
+  TEntryList *l;
+
+  // loop in events
+  // i = event number
+  for (Int_t i = 9900; i <= t->GetMaximum(eventBranchName); i++) { // t->GetMinimum(eventBranchName), t->GetMaximum(eventBranchName)
+    
+    std::cout << "Current event number: " << i << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    
+    TString theCondition;
+    TString listName = Form("elist_%d", i);
+
+    if (simFlag) theCondition = Form("evnt == %d || mc_evnt == %d", i, i);
+    else theCondition = Form("evnt == %d", i);
+
+    // selects all entries from the same event
+    t->Draw(">>" + listName, theCondition, "entrylist");
+    l = (TEntryList*) gDirectory->Get(listName);
+    t->SetEntryList(l);
       
-      // prevents repetition until new event, very important
-      if (i > 0) {
-	t->GetEntry(i-1);
-	previousEvent = (Int_t) tEvent;
-	if (previousEvent == currentEvent) continue;
-      }
-      
-      // std::cout << "Current event number: " << currentEvent << std::endl;
-      // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-      
+    // looks at the entries (particles) of the current event
+    // j = iterator, jj = real entry number
+    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+      Int_t jj = t->GetEntryNumber(j);
+      t->GetEntry(jj);
+      std::cout << "  Entry number: " << jj << std::endl;
+      std::cout << "  pid:          " << tPid << std::endl;
+      std::cout << "  mc_pid:       " << tmc_Pid << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      // count the data/simrec particles
+      if (tPid == (Float_t) 211) nPipThisEvent++;
+      if (tPid == (Float_t) -211) nPimThisEvent++;
+      if (tPid == (Float_t) 22) nGammaThisEvent++;
+      // count the gsim particles
+      if (tmc_Pid == (Float_t) 211) nMCPipThisEvent++;
+      if (tmc_Pid == (Float_t) -211) nMCPimThisEvent++;
+      if (tmc_Pid == (Float_t) 22) nMCGammaThisEvent++;
+    }
+    
+    // show counts
+    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
+    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+
+    // (as you can see, these conditions are not exclusive)
+    // candidate appeared for data/simrec
+    if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
+      nAtLeastOmega++;
+      nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
+      nOmega += nCombThisEvent;
+    }
+
+    // candidate appeared for gsim
+    if (nMCPipThisEvent >= 1 && nMCPimThisEvent >= 1 && nMCGammaThisEvent >= 2) {
+      nAtLeastMCOmega++;
+      nMCCombThisEvent = TMath::Binomial(nMCPipThisEvent, 1)*TMath::Binomial(nMCPimThisEvent, 1)*TMath::Binomial(nMCGammaThisEvent, 2);
+      nMCOmega += nMCCombThisEvent;
+    }
+
+    std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
+    std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
+    std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+
+    /*** ORIGINAL ***/
+
+    // saves all information from the original particles from an approved event, with no mixing
+    // warning: all the hadronic variables correspond to the respective hadron, nothing more
+    
+    if (nCombThisEvent > 0 || nMCCombThisEvent > 0) {
+
       // looks at the entries (particles) of the current event
-      for (Int_t j = i; j < Ne; j++) {
-	t->GetEntry(j);
-	if (tEvent == (Float_t) currentEvent) {
-	  // std::cout << "  Entry number: " << j << std::endl;
-	  // std::cout << "  Event number: " << (Int_t) tEvent << std::endl;
-	  // std::cout << "  pid:          " << tPid << std::endl;
-	  // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-	  // let's count the particles
-	  if (tPid == (Float_t) 211) nPipThisEvent++;
-	  if (tPid == (Float_t) -211) nPimThisEvent++;
-	  if (tPid == (Float_t) 22) nGammaThisEvent++;
-	} else {
-	  j = Ne; // break this loop, optimize
+      // j = iterator, jj = real entry number
+      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	Int_t jj = t->GetEntryNumber(j);
+	t->GetEntry(jj);
+
+	// assigning energy
+	// for simrec
+	if (tPid == 22) oE = tE/0.272;
+	else if (tPid == 211 || tPid == -211) oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
+	// for gsim
+	if (tmc_Pid == 22 || tmc_Pid == 211 || tmc_Pid == -211) oE = tmc_E;
+
+	// assigning momentum
+	// for simrec
+	if (tPid == 22) {
+	  oPx = CorrectGammaMomentum(0);
+	  oPy = CorrectGammaMomentum(1);
+	  oPz = CorrectGammaMomentum(2);
+	} else if (tPid == 211 || tPid == -211) {
+	  oPx = tPx; oPy = tPy; oPz = tPz;
 	}
-      }
+	// for gsim
+        if (tmc_Pid == 22 || tmc_Pid == 211 || tmc_Pid == -211) {
+	  oPx = tmc_Px; oPy = tmc_Py; oPz = tmc_Pz;
+	}
+
+	// all the other variables...
+	// for simrec
+	oTargType = (Int_t) tTargType;
+	oQ2 = tQ2;
+	oNu = tNu;
+	oXb = tXb;
+	oYb = oNu/kEbeam;                   // added
+	oW = tW;
+	oSector = (Int_t) tSector;
+	oZ = oE/oNu;                        // recalculated
+	oPhiPQ = PhiPQ(oPx, oPy, oPz);      // updated!
+	oThetaPQ = ThetaPQ(oPx, oPy, oPz);  // updated!
+	oXec = tXec;
+	oYec = tYec;
+	oZec = tZec;
+	oECX = tECX;
+	oECY = tECY;
+	oECZ = tECZ;
+	oPex = tPex;
+	oPey = tPey;
+	oPez = tPez;
+	oP2 = oPx*oPx + oPy*oPy + oPz*oPz;  // new!
+	oCosThetaPQ = ((kEbeam - oPez)*oPz - oPex*oPx - oPey*oPy)/(TMath::Sqrt(oP2*(oQ2 + oNu*oNu))); // new!
+	oPt2 = oP2*(1 - oCosThetaPQ*oCosThetaPQ); // recalculated
+	oPid = (Int_t) tPid;
+	oEntry = jj;
+	oEvent = (Int_t) tEvent;
+
+	// all the other variables...
+	// for gsim
+	omc_TargType = (Int_t) tmc_TargType;
+	omc_Q2 = tmc_Q2;
+	omc_Nu = tmc_Nu;
+	omc_Xb = tmc_Xb;
+	omc_Yb = omc_Nu/kEbeam;
+	omc_W = tmc_W;
+	omc_Sector = (Int_t) tmc_Sector;
+	omc_Z = omc_E/omc_Nu;
+	omc_PhiPQ = PhiPQ(omc_Px, omc_Py, omc_Pz);
+	omc_ThetaPQ = ThetaPQ(omc_Px, omc_Py, omc_Pz);
+	omc_Xec = tmc_Xec;
+	omc_Yec = tmc_Yec;
+	omc_Zec = tmc_Zec;
+	omc_ECX = tmc_ECX;
+	omc_ECY = tmc_ECY;
+	omc_ECZ = tmc_ECZ;
+	omc_Pex = tmc_Pex;
+	omc_Pey = tmc_Pey;
+	omc_Pez = tmc_Pez;
+	omc_P2 = omc_Px*omc_Px + omc_Py*omc_Py + omc_Pz*omc_Pz;
+	omc_CosThetaPQ = ((kEbeam - omc_Pez)*omc_Pz - omc_Pex*omc_Px - omc_Pey*omc_Py)/(TMath::Sqrt(omc_P2*(omc_Q2 + omc_Nu*omc_Nu)));
+	omc_Pt2 = omc_P2*(1 - omc_CosThetaPQ*omc_CosThetaPQ);
+	omc_Pid = (Int_t) tmc_Pid;
+	omc_Entry = jj;
+	omc_Event = (Int_t) tmc_Event;
+	
+	// fill
+	tOriginal->Fill();
+	
+      } // end of particles loop
+    } // end of candidate condition
       
-      // show counts
-      // std::cout << "  nPip   = " << nPipThisEvent << std::endl;
-      // std::cout << "  nPim   = " << nPimThisEvent << std::endl;
-      // std::cout << "  nGamma = " << nGammaThisEvent << std::endl;
-      // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-      
-      /*** Candidate appeared! ***/
-      
-      if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
+    /*** THE MIXING ***/
+
+    // PART 1: obtain & keep combinations from simrec
+    
+    // tag
+    Int_t jPip = 0;
+    Int_t jPim = 0;
+    Int_t jGamma1 = 0;
+    Int_t jGamma2 = 0;
+    
+    Int_t partialComb = 0;
+    Int_t partialLim = nGammaThisEvent - 1;
+    Int_t partialFlag = 1;
+    
+    if (nCombThisEvent > 0) {
+      for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
 	
-	nAtLeastOmega++;
-	nParticles = nPipThisEvent + nPimThisEvent + nGammaThisEvent; // nParticlesThisEvent
-	nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
-	nOmega += nCombThisEvent;
-	
-	// std::cout << "  AT LEAST ONE OMEGA HAS BEEN FOUND!" << std::endl;
-	
-	/*** The original ***/
-	
-	// saves all information from the original particles in the current event, with no mixing
-	// warning: all the hadronic variables correspond to the respective hadron, nothing more
-	for (Int_t j = i; j < Ne; j++) {
-	  t->GetEntry(j);
-	  if (tEvent == (Float_t) currentEvent) {
-	    // assigning energy
-	    // for gammas is corrected from a primitive sampling fraction, hence the factor 0.272
-	    // for pions is assigned from the measured momentum and a constant invariant mass (pdg)
-	    if (tPid == 22) {
-	      oE = tE/0.272;
-	    } else if (tPid == 211 || tPid == -211) {
-	      oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
-	    }
-	    // assigning momentum
-	    // for gammas is corrected with primitive sampling fraction and ECPB treatment
-	    if (tPid == 22) {
-	      oPx = CorrectGammaMomentum(0);
-	      oPy = CorrectGammaMomentum(1);
-	      oPz = CorrectGammaMomentum(2);
-	    } else if (tPid == 211 || tPid == -211) {
-	      oPx = tPx; oPy = tPy; oPz = tPz;
-	    }
-	    oTargType = (Int_t) tTargType;
-	    oQ2 = tQ2;
-	    oNu = tNu;
-	    oXb = tXb;
-	    oYb = oNu/kEbeam;                   // added
-	    oW = tW;
-	    oSector = (Int_t) tSector;
-	    oZ = oE/oNu;                        // recalculated
-	    oPhiPQ = PhiPQ(oPx, oPy, oPz);      // updated!
-	    oThetaPQ = ThetaPQ(oPx, oPy, oPz);  // updated!
-	    oXec = tXec;
-	    oYec = tYec;
-	    oZec = tZec;
-	    oECX = tECX;
-	    oECY = tECY;
-	    oECZ = tECZ;
-	    oPex = tPex;
-	    oPey = tPey;
-	    oPez = tPez;
-	    oP2 = oPx*oPx + oPy*oPy + oPz*oPz;  // new!
-	    oCosThetaPQ = ((kEbeam - oPez)*oPz - oPex*oPx - oPey*oPy)/(TMath::Sqrt(oP2*(oQ2 + oNu*oNu))); // new!
-	    oPt2 = oP2*(1 - oCosThetaPQ*oCosThetaPQ); // recalculated
-	    oPid = (Int_t) tPid;
-	    oEntry = j;
-	    oEvent = (Int_t) tEvent;
-	    tOriginal->Fill();
-	  } else {
-	    j = Ne; // break this loop, optimize
+	// find and tag pip (loop in particles)
+	// j = iterator, jj = real entry number
+	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	  Int_t jj = t->GetEntryNumber(j);
+	  t->GetEntry(jj);
+	  if (tPid == (Float_t) 211 && jj > jPip) {
+	    jPip = jj;      // tag pip
+	    j = (Int_t) l->GetN(); // break search
 	  }
 	}
 	
-	/*** The mixing ***/
+	// force a new beginning for the other particles
+	jPim = 0;
+	jGamma1 = 0;
+	jGamma2 = 0;
 	
-	// tag
-	Int_t jPip = 0;
-	Int_t jPim = 0;
-	Int_t jGamma1 = 0;
-	Int_t jGamma2 = 0;
-	
-	Int_t partialComb = 0;
-	Int_t partialLim = nGammaThisEvent - 1;
-	Int_t partialFlag = 1;
-
-	for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
+	for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
 	  
-	  // find and tag pip (loop in particles)
-	  for (Int_t j = i; j < (i + nParticles); j++) {
-	    t->GetEntry(j);
-	    if (tPid == (Float_t) 211 && j > jPip) {
-	      jPip = j; // tag pip
-	      j = i + nParticles; // break search
+	  // find and tag pim
+	  // j = iterator, jj = real entry number
+	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	    Int_t jj = t->GetEntryNumber(j);
+	    t->GetEntry(jj);
+	    if (tPid == (Float_t) -211 && jj > jPim) {
+	      jPim = jj; // tag pim
+	      j = (Int_t) l->GetN(); // break search
 	    }
 	  }
 	  
 	  // force a new beginning for the other particles
-	  jPim = 0;
 	  jGamma1 = 0;
-	  jGamma2 = 0;
+	  jGamma2 = 0;	  
 	  
-	  for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
+	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nGammaThisEvent, 2); iGamma++) {
 	    
-	    // find and tag pim
-	    for (Int_t j = i; j < (i + nParticles); j++) {
-	      t->GetEntry(j);
-	      if (tPid == (Float_t) -211 && j > jPim) {
-		jPim = j; // tag pim
-		j = i + nParticles; // break search
+	    // debug
+	    if (iGamma == 0) {
+	      partialComb = 0;
+	      partialLim = nGammaThisEvent - 1;
+	      partialFlag = 1;
+	    }
+	    
+	    // the big condition
+	    if (partialFlag) {
+	      
+	      // find and tag gamma1
+	      // jj = real entry number, j = iterator
+	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+		Int_t jj = t->GetEntryNumber(j);
+		t->GetEntry(jj);
+		if (tPid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
+		  jGamma1 = jj;  // tag gamma1
+		  j = (Int_t) l->GetN(); // break search for j
+		}
+	      }
+	      jGamma2 = 0; // resets gamma2
+	      partialFlag = 0;
+	    }
+	    
+	    // find and tag gamma2
+	    // jj = real entry number, j = iterator
+	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	      Int_t jj = t->GetEntryNumber(j);
+	      t->GetEntry(jj);
+	      if (tPid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
+		jGamma2 = jj;  // tag gamma2
+		j = (Int_t) l->GetN(); // break search for j
 	      }
 	    }
 	    
-	    // force a new beginning for the other particles
-	    jGamma1 = 0;
-	    jGamma2 = 0;	  
-	    
-	    for (Int_t iGamma = 0; iGamma < TMath::Binomial(nGammaThisEvent, 2); iGamma++) { 
-	      
-	      // Let's say we have nCombThisEvent=nGammaThisEvent=3
-	      // That is: we have 3 gammas in this event, and those are the only cause for the possible combinations
-	      
-	      // In the first iteration (iGamma == 0), we tag the first gamma in the list as gamma1 (call it 'a')
-	      // Then, looking for gamma2, we start from the particle next to the previously tagged gamma1, so we tag the next gamma in the list as gamma2 (call it 'b')
-	      // There we made our first combination (partialComb = 0 -> partialComb = 1)
-	      
-	      // In the second iteration (iGamma == 1), we tag the first gamma in the list as gamma1, which happens to be 'a', the same than before
-	      // Then, looking for gamma2, the condition requires to be a different gamma2 (k > jGamma2) to the one selected in the first iteration
-	      // That's how we choose another gamma2, in this case it would be 'c'
-	      // There we made our second combiation (partialComb = 2)
-	      
-	      // Now, we have used this gamma 'a' twice (partialComb = 2 = partialLim, that's what it means)
-	      // So partialFlag activates, partialComb resets and partialLim becomes 1 less
-	      // Because the next combination would be 'bc'
-	      
-	      // In the third iteration, partialFlag is already activated, so we exclude previous gamma1 ('a') from the selection
-	      // The next gamma in the list would be 'b', so it gets tagged as gamma1
-	      // Then, looking for gamma2, we start looking for particles next to 'b', that would tag 'c' as gamma2
-	      // There should be no problem, because at this point jGamma1=jGamma2='b'
-	      // it happens that (partialComb = 0 -> partialComb = 1 = partialLim)
-	      // so, partialFlag keeps activated (this forces the change of gamma1)
-	      // but as partialLim = 1 is the last value possible, the loop is already ending
-	      
-	      // For nGammaThisEvent=3
-	      // There are 3 possible combinations
-	      // initial variables : gamma1=0, gamma2=0, partialcomb=0, partialflag=1, partiallim=2
-	      // iGamma=0          : gamma2=0, partialflag=0, gamma1=a, gamma2=b, partialcomb=1
-	      // iGamma=1          :                          gamma1=a, gamma2=c, partialcomb=2, partialcomb=0, partialflag=1, partiallim=1
-	      // iGamma=2          : gamma2=0, partialflag=0, gamma1=b, gamma2=c, partialcomb=1
-	      
-	      // For nGammaThisEvent=4
-	      // There are 6 possible combinations
-	      // initial variables : gamma1=0, gamma2=0, partialcomb=0, partialflag=1, partiallim=3
-	      // iGamma=0          : gamma2=0, partialflag=0, gamma1=a, gamma2=b, partialcomb=1
-	      // iGamma=1          :                          gamma1=a, gamma2=c, partialcomb=2,
-	      // iGamma=2          :                          gamma1=a, gamma2=d, partialcomb=3, partialcomb=0, partialflag=1, partiallim=2
-	      // iGamma=3          : gamma1=b, gamma2=0, partialflag=0, gamma2=c, partialcomb=1
-	      // iGamma=4          :                          gamma1=b, gamma2=d, partialcomb=2, partialcomb=0, partialflag=1, partiallim=1
-	      // iGamma=5          : gamma1=c, gamma2=0, partialflag=0, gamma2=d, partialcomb=1
-	      
-	      // debug
-	      if (iGamma == 0) {
-		partialComb = 0;
-		partialLim = nGammaThisEvent - 1;
-		partialFlag = 1;
-	      }
-	      
-	      // the big condition
-	      if (partialFlag) {
-		// find and tag gamma1
-		for (Int_t j = i; j < (i + nParticles); j++) {
-		  t->GetEntry(j);
-		  if (tPid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
-		    jGamma1 = j; // tag gamma1
-		    j = i + nParticles; // break search for j
-		  }
-		}
-		jGamma2 = 0; // resets gamma2
-		partialFlag = 0;
-	      }
-	      
-	      // find and tag gamma2
-	      for (Int_t k = (jGamma1 + 1); k < (i + nParticles); k++) { // excludes gamma1
-		t->GetEntry(k);
-		if (tPid == (Float_t) 22 && k > jGamma2) { // excludes previous gamma2
-		  jGamma2 = k; // tag gamma2
-		  k = i + nParticles; // break search for k
-		}
-	      }
-	      
-	      // fix partial comb
-	      partialComb++;
-	      if (partialComb == partialLim && partialLim > 1) {
-		partialComb = 0;
-		partialLim--;
-		partialFlag = 1;
-	      }
-	    
-	      // std::cout << "jGamma1=" << jGamma1 << std::endl;
-	      // std::cout << "jGamma2=" << jGamma2 << std::endl;
-	      // std::cout << "jPip=" << jPip << std::endl;
-	      // std::cout << "jPim=" << jPim << std::endl;
-	      
-	      // now extract!
-	      for (Int_t j = i; j < (i + nParticles); j++) {
-		t->GetEntry(j);
-		if (j == jGamma1) {
-		  mE[0] = tE/0.272;                 // primitive sampling fraction
-		  mPx[0] = CorrectGammaMomentum(0); // correction
-		  mPy[0] = CorrectGammaMomentum(1); // correction
-		  mPz[0] = CorrectGammaMomentum(2); // correction
-		  mPid[0] = (Int_t) tPid;
-		  mEntry[0] = jGamma1;
-		} else if (j == jGamma2) {
-		  mE[1] = tE/0.272;                 // primitive sampling fraction
-		  mPx[1] = CorrectGammaMomentum(0); // correction
-		  mPy[1] = CorrectGammaMomentum(1); // correction
-		  mPz[1] = CorrectGammaMomentum(2); // correction
-		  mPid[1] = (Int_t) tPid;
-		  mEntry[1] = jGamma2;
-		} else if (j == jPip) {
-		  mE[2] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
-		  mPx[2] = tPx; mPy[2] = tPy; mPz[2] = tPz;
-		  mPid[2] = (Int_t) tPid;
-		  mEntry[2] = jPip;
-		} else if (j == jPim) {
-		  mE[3] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass		  
-		  mPx[3] = tPx; mPy[3] = tPy; mPz[3] = tPz;
-		  mPid[3] = (Int_t) tPid;
-		  mEntry[3] = jPim;
-		}
-		mTargType = (Int_t) tTargType;
-		mQ2 = tQ2;
-		mNu = tNu;
-		mXb = tXb;
-		mYb = mNu/kEbeam;
-		mW = tW;
-		mSector = (Int_t) tSector;
-		mXec = tXec;
-		mYec = tYec;
-		mZec = tZec;
-		mPex = tPex;
-		mPey = tPey;
-		mPez = tPez;
-		// define pions variables
-		pipP2 = mPx[2]*mPx[2] + mPy[2]*mPy[2] + mPz[2]*mPz[2];
-		pipM = TMath::Sqrt(mE[2]*mE[2] - pipP2); // = kMpi
-		pimP2 = mPx[3]*mPx[3] + mPy[3]*mPy[3] + mPz[3]*mPz[3];
-		pimM = TMath::Sqrt(mE[3]*mE[3] - pimP2); // = kMpi
-		pi0Px = mPx[0] + mPx[1];
-		pi0Py = mPy[0] + mPy[1];
-		pi0Pz = mPz[0] + mPz[1];
-		pi0P2 = pi0Px*pi0Px + pi0Py*pi0Py + pi0Pz*pi0Pz;
-		pi0CosTheta = (mPx[0]*mPx[1] + mPy[0]*mPy[1] + mPz[0]*mPz[1])/(mE[0]*mE[1]);
-		pi0M = TMath::Sqrt(2*mE[0]*mE[1]*(1 - pi0CosTheta));
-		pi0E = TMath::Sqrt(pi0M*pi0M + pi0P2);
-		// crossed terms
-		pippimP = mPx[2]*mPx[3] + mPy[2]*mPy[3] + mPz[2]*mPz[3];
-		pippimE = mE[2]*mE[3];
-		pippimM = TMath::Sqrt(pipM*pipM + pimM*pimM + 2*(pippimE - pippimP));
-		// define omega energy and Z
-		wE = mE[0] + mE[1] + mE[2] + mE[3];
-		mZ = wE/mNu;
-		// define omega momentum and Pt2
-		wPx = mPx[0] + mPx[1] + mPx[2] + mPx[3];
-		wPy = mPy[0] + mPy[1] + mPy[2] + mPy[3];
-		wPz = mPz[0] + mPz[1] + mPz[2] + mPz[3];
-		wP2 = wPx*wPx + wPy*wPy + wPz*wPz;
-		// define omega PhiPQ
-		mPhiPQ = PhiPQ(wPx, wPy, wPz);
-		mThetaPQ = ThetaPQ(wPx, wPy, wPz);
-		mCosThetaPQ = ((kEbeam - mPez)*wPz - mPex*wPx - mPey*wPy)/(TMath::Sqrt(wP2*(mQ2 + mNu*mNu)));
-		// define omega Pt2
-		mPt2 = wP2*(1 - mCosThetaPQ*mCosThetaPQ);
-		// define omega mass
-		wM = TMath::Sqrt(wE*wE - wP2);
-		wD = wM - pipM - pimM - pi0M;
-		mEvent = (Int_t) tEvent;
-		nPip = nPipThisEvent;
-		nPim = nPimThisEvent;
-		nGamma = nGammaThisEvent;
-	      }
-	      // and fill
-	      tMix->Fill();
+	    // fix partial comb
+	    partialComb++;
+	    if (partialComb == partialLim && partialLim > 1) {
+	      partialComb = 0;
+	      partialLim--;
+	      partialFlag = 1;
 	    }
+
+	    // fill vector
+	    combVector.push_back({jGamma1, jGamma2, jPip, jPim});
+
+	  } // end of loop in gammas
+	  
+	} // end of loop in pi-
+	
+      } // end of loop in pi+
+
+    } // end of at-least-one-omega condition
+    
+    // PART 2: obtain & keep combinations from gsim
+
+    // tag
+    jPip = 0;
+    jPim = 0;
+    jGamma1 = 0;
+    jGamma2 = 0;
+    
+    partialComb = 0;
+    partialLim = nMCGammaThisEvent - 1;
+    partialFlag = 1;
+
+    if (simFlag && nMCCombThisEvent > 0) {
+      for (Int_t iPip = 0; iPip < TMath::Binomial(nMCPipThisEvent, 1); iPip++) {
+	
+	// find and tag pip (loop in particles)
+	// j = iterator, jj = real entry number
+	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	  Int_t jj = t->GetEntryNumber(j);
+	  t->GetEntry(jj);
+	  if (tmc_Pid == (Float_t) 211 && jj > jPip) {
+	    jPip = jj;      // tag pip
+	    j = (Int_t) l->GetN(); // break search
 	  }
 	}
-	// end of condition of candidate
-      }
-      
-      // reset count variables
-      nPipThisEvent = 0;
-      nPimThisEvent = 0;
-      nGammaThisEvent = 0;
-      // sum events
-      nEvents++;
-
-      
-    } // end of loop in events
-    
-  } // end of "data" condition
-  
-  /*** FOR SIMULATIONS ***/
-  
-  if (simFlag) {
-
-    // more counting variables!
-    Int_t nMCPipThisEvent = 0;
-    Int_t nMCPimThisEvent = 0;
-    Int_t nMCGammaThisEvent = 0;
-    
-    Int_t nMCParticles = 0;
-    Int_t nMCCombThisEvent = 0;
-    
-    Int_t nMCOmega = 0;
-    Int_t nAtLeastMCOmega = 0;
-        
-    /*** DETECT OMEGA IN GSIM ***/
-
-    // loop in events
-    for (Int_t i = 0; i < Ne; i++) {
-      t->GetEntry(i);
-      currentEvent = (Int_t) tmc_Event;
-      
-      // prevents repetition until new event, very important
-      if (i > 0) {
-	t->GetEntry(i-1);
-	previousEvent = (Int_t) tmc_Event;
-	if (previousEvent == currentEvent || currentEvent == -9999) continue;
-	if (previousEvent == -9999) {
-	  t->GetEntry(i-2);
-	  previousEvent = (Int_t) tmc_Event;
-	  if (previousEvent == currentEvent || currentEvent == -9999) continue;
-	}
-      }
-      
-      // looks at the entries (particles) of the current event
-      for (Int_t j = i; j < Ne; j++) {
-	t->GetEntry(j);
-	if (tmc_Event == (Float_t) currentEvent || tEvent == (Float_t) currentEvent) {
-	  // let's count the particles
-	  // gsim
-	  if (tmc_Pid == (Float_t) 211) nMCPipThisEvent++;
-	  if (tmc_Pid == (Float_t) -211) nMCPimThisEvent++;
-	  if (tmc_Pid == (Float_t) 22) nMCGammaThisEvent++;
-	  // reconstructed
-	  if (tPid == (Float_t) 211) nPipThisEvent++;
-	  if (tPid == (Float_t) -211) nPimThisEvent++;
-	  if (tPid == (Float_t) 22) nGammaThisEvent++;
-	} else {
-	  j = Ne; // break this loop, optimize
-	}
-      }
-
-      /*** Candidate appeared in gsim! ***/
-
-      if (nMCPipThisEvent >= 1 && nMCPimThisEvent >= 1 && nMCGammaThisEvent >= 2) {
 	
-	// update counters
-	nAtLeastMCOmega++;
-	nMCParticles = nMCPipThisEvent + nMCPimThisEvent + nMCGammaThisEvent; // number of mc particles in this event
-	nMCCombThisEvent = TMath::Binomial(nMCPipThisEvent, 1)*TMath::Binomial(nMCPimThisEvent, 1)*TMath::Binomial(nMCGammaThisEvent, 2);
-	nMCOmega += nMCCombThisEvent;
-		
-	/*** The original ***/
+	// force a new beginning for the other particles
+	jPim = 0;
+	jGamma1 = 0;
+	jGamma2 = 0;
 	
-	for (Int_t j = i; j < Ne; j++) {
-	  t->GetEntry(j);	
+	for (Int_t iPim = 0; iPim < TMath::Binomial(nMCPimThisEvent, 1); iPim++) {
 	  
-	  // omega in simrec from this gsim
-	  if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
-	    if (tPid == 22) {
-	      oE = tE/0.272;
-	    } else if (tPid == 211 || tPid == -211) {
-	      oE = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi);
+	  // find and tag pim
+	  // j = iterator, jj = real entry number
+	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	    Int_t jj = t->GetEntryNumber(j);
+	    t->GetEntry(jj);
+	    if (tmc_Pid == (Float_t) -211 && jj > jPim) {
+	      jPim = jj; // tag pim
+	      j = (Int_t) l->GetN(); // break search
 	    }
-	    if (tPid == 22) {
-	      oPx = CorrectGammaMomentum(0);
-	      oPy = CorrectGammaMomentum(1);
-	      oPz = CorrectGammaMomentum(2);
-	    } else if (tPid == 211 || tPid == -211) {
-	      oPx = tPx; oPy = tPy; oPz = tPz;
-	    }
-	    oTargType = (Int_t) tTargType;
-	    oQ2 = tQ2;
-	    oNu = tNu;
-	    oXb = tXb;
-	    oYb = oNu/kEbeam;                   // added
-	    oW = tW;
-	    oSector = (Int_t) tSector;
-	    oZ = oE/oNu;                        // recalculated
-	    oPhiPQ = PhiPQ(oPx, oPy, oPz);      // updated!
-	    oThetaPQ = ThetaPQ(oPx, oPy, oPz);  // updated!
-	    oXec = tXec;
-	    oYec = tYec;
-	    oZec = tZec;
-	    oECX = tECX;
-	    oECY = tECY;
-	    oECZ = tECZ;
-	    oPex = tPex;
-	    oPey = tPey;
-	    oPez = tPez;
-	    oP2 = oPx*oPx + oPy*oPy + oPz*oPz;
-	    oCosThetaPQ = ((kEbeam - oPez)*oPz - oPex*oPx - oPey*oPy)/(TMath::Sqrt(oP2*(oQ2 + oNu*oNu)));
-	    oPt2 = oP2*(1 - oCosThetaPQ*oCosThetaPQ); // recalculated
-	    oPid = (Int_t) tPid;
-	    oEntry = j;
-	    oEvent = (Int_t) tEvent;
-	  } // end of omega in simrec condition
-	  
-	  // gsim
-	  if ((Int_t) tmc_Event != -9999) {
-	    omc_E = tmc_E;                                     // gsim, no correction
-	    omc_Px = tmc_Px; omc_Py = tmc_Py; omc_Pz = tmc_Pz; // gsim, no correction
-	    omc_TargType = (Int_t) tmc_TargType;
-	    omc_Q2 = tmc_Q2;
-	    omc_Nu = tmc_Nu;
-	    omc_Xb = tmc_Xb;
-	    omc_Yb = omc_Nu/kEbeam;                   // added
-	    omc_W = tmc_W;
-	    omc_Sector = (Int_t) tmc_Sector;
-	    omc_Z = omc_E/omc_Nu;                        // recalculated
-	    omc_PhiPQ = PhiPQ(omc_Px, omc_Py, omc_Pz);      // updated!
-	    omc_ThetaPQ = ThetaPQ(omc_Px, omc_Py, omc_Pz);  // updated!
-	    omc_Xec = tmc_Xec;
-	    omc_Yec = tmc_Yec;
-	    omc_Zec = tmc_Zec;
-	    omc_ECX = tmc_ECX;
-	    omc_ECY = tmc_ECY;
-	    omc_ECZ = tmc_ECZ;
-	    omc_Pex = tmc_Pex;
-	    omc_Pey = tmc_Pey;
-	    omc_Pez = tmc_Pez;
-	    omc_P2 = omc_Px*omc_Px + omc_Py*omc_Py + omc_Pz*omc_Pz;
-	    omc_CosThetaPQ = ((kEbeam - omc_Pez)*omc_Pz - omc_Pex*omc_Px - omc_Pey*omc_Py)/(TMath::Sqrt(omc_P2*(omc_Q2 + omc_Nu*omc_Nu)));
-	    omc_Pt2 = omc_P2*(1 - omc_CosThetaPQ*omc_CosThetaPQ); // recalculated
-	    omc_Pid = (Int_t) tmc_Pid;
-	    omc_Entry = j;
-	    omc_Event = (Int_t) tmc_Event;
 	  }
-	  // fill
-	  tOriginal->Fill();
-	} else if () {
-	  j = Ne; // break this loop, optimize
-	}
+	  
+	  // force a new beginning for the other particles
+	  jGamma1 = 0;
+	  jGamma2 = 0;	  
+	  
+	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nMCGammaThisEvent, 2); iGamma++) {
+	    
+	    // debug
+	    if (iGamma == 0) {
+	      partialComb = 0;
+	      partialLim = nMCGammaThisEvent - 1;
+	      partialFlag = 1;
+	    }
+	    
+	    // the big condition
+	    if (partialFlag) {
+	      
+	      // find and tag gamma1
+	      // jj = real entry number, j = iterator
+	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+		Int_t jj = t->GetEntryNumber(j);
+		t->GetEntry(jj);
+		if (tmc_Pid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
+		  jGamma1 = jj;  // tag gamma1
+		  j = (Int_t) l->GetN(); // break search for j
+		}
+	      }
+	      jGamma2 = 0; // resets gamma2
+	      partialFlag = 0;
+	    }
+	  
+	    // find and tag gamma2
+	    // jj = real entry number, j = iterator
+	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
+	      Int_t jj = t->GetEntryNumber(j);
+	      t->GetEntry(jj);
+	      if (tmc_Pid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
+		jGamma2 = jj;  // tag gamma2
+		j = (Int_t) l->GetN(); // break search for j
+	      }
+	    }
+	    
+	    // fix partial comb
+	    partialComb++;
+	    if (partialComb == partialLim && partialLim > 1) {
+	      partialComb = 0;
+	      partialLim--;
+	      partialFlag = 1;
+	    }
+
+	    // fill vector
+	    mc_combVector.push_back({jGamma1, jGamma2, jPip, jPim});
+
+	  } // end of loop in gammas
+	  
+	} // end of loop in pi-
 	
+      } // end of loop in pi+
+
+    } // end of at-least-one-omega condition
+      
+    // PART 3: fill
+
+    // std::cout << "  candidates for data:" << std::endl;
+    // for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    std::cout << "  candidates for simrec:" << std::endl;
+    for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    std::cout << "  candidates for gsim:" << std::endl;
+    for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+
+    // extract
+    for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations
+      for (Int_t pp = 0; pp < 4; pp++) { // loop on particles
+	
+	// simrec
+	if (nCombThisEvent == 0 || cc >= nCombThisEvent) { // if simrec = null, set everything to -9999
+	  mE[pp] = -9999.;
+	  mPx[pp] = -9999.;
+	  mPy[pp] = -9999.;
+	  mPz[pp] = -9999.;
+	  mPid[pp] = (Int_t) -9999.;
+	  mEntry[pp] = (Int_t) -9999.;
+	  mTargType = (Int_t) -9999.;
+	  mQ2 = -9999.;
+	  mNu = -9999.;
+	  mXb = -9999.;
+	  mYb = -9999.;
+	  mW = -9999.;
+	  mSector = (Int_t) -9999.;
+	  mXec = -9999.;
+	  mYec = -9999.;
+	  mZec = -9999.;
+	  mPex = -9999.;
+	  mPey = -9999.;
+	  mPez = -9999.;
+	  pipP2 = -9999.;
+	  pipM = -9999.;
+	  pimP2 = -9999.;
+	  pimM = -9999.;
+	  pi0Px = -9999.;
+	  pi0Py = -9999.;
+	  pi0Pz = -9999.;
+	  pi0P2 = -9999.;
+	  pi0CosTheta = -9999.;
+	  pi0M = -9999.;
+	  pi0E = -9999.;
+	  pippimP = -9999.;
+	  pippimE = -9999.;
+	  pippimM = -9999.;
+	  wE = -9999.;
+	  mZ = -9999.;
+	  wPx = -9999.;
+	  wPy = -9999.;
+	  wPz = -9999.;
+	  wP2 = -9999.;
+	  mPhiPQ = -9999.;
+	  mThetaPQ = -9999.;
+	  mCosThetaPQ = -9999.;
+	  mPt2 = -9999.;
+	  wM = -9999.;
+	  wD = -9999.;
+	  mEvent = -9999.;
+	  nPip = -9999.;
+	  nPim =-9999.;
+	  nGamma = -9999.;
+	} else { // simrec/data not null
+	  t->GetEntry(combVector[cc][pp]);
+	  if (pp < 2) { // gammas
+	    mE[pp] = tE/0.272;                 // primitive sampling fraction
+	    mPx[pp] = CorrectGammaMomentum(0); // correction
+	    mPy[pp] = CorrectGammaMomentum(1); // correction
+	    mPz[pp] = CorrectGammaMomentum(2); // correction
+	  } else if (pp > 1) { // pions
+	    mE[pp] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
+	    mPx[pp] = tPx; mPy[pp] = tPy; mPz[pp] = tPz;
+	  }
+	  mPid[pp] = (Int_t) tPid;
+	  mEntry[pp] = (Int_t) combVector[cc][pp];
+	  mTargType = (Int_t) tTargType;
+	  mQ2 = tQ2;
+	  mNu = tNu;
+	  mXb = tXb;
+	  mYb = mNu/kEbeam;
+	  mW = tW;
+	  mSector = (Int_t) tSector;
+	  mXec = tXec;
+	  mYec = tYec;
+	  mZec = tZec;
+	  mPex = tPex;
+	  mPey = tPey;
+	  mPez = tPez;
+	  // define pions variables
+	  pipP2 = mPx[2]*mPx[2] + mPy[2]*mPy[2] + mPz[2]*mPz[2];
+	  pipM = TMath::Sqrt(mE[2]*mE[2] - pipP2); // = kMpi
+	  pimP2 = mPx[3]*mPx[3] + mPy[3]*mPy[3] + mPz[3]*mPz[3];
+	  pimM = TMath::Sqrt(mE[3]*mE[3] - pimP2); // = kMpi
+	  pi0Px = mPx[0] + mPx[1];
+	  pi0Py = mPy[0] + mPy[1];
+	  pi0Pz = mPz[0] + mPz[1];
+	  pi0P2 = pi0Px*pi0Px + pi0Py*pi0Py + pi0Pz*pi0Pz;
+	  pi0CosTheta = (mPx[0]*mPx[1] + mPy[0]*mPy[1] + mPz[0]*mPz[1])/(mE[0]*mE[1]);
+	  pi0M = TMath::Sqrt(2*mE[0]*mE[1]*(1 - pi0CosTheta));
+	  pi0E = TMath::Sqrt(pi0M*pi0M + pi0P2);
+	  // crossed terms
+	  pippimP = mPx[2]*mPx[3] + mPy[2]*mPy[3] + mPz[2]*mPz[3];
+	  pippimE = mE[2]*mE[3];
+	  pippimM = TMath::Sqrt(pipM*pipM + pimM*pimM + 2*(pippimE - pippimP));
+	  // define omega energy and Z
+	  wE = mE[0] + mE[1] + mE[2] + mE[3];
+	  mZ = wE/mNu;
+	  // define omega momentum and Pt2
+	  wPx = mPx[0] + mPx[1] + mPx[2] + mPx[3];
+	  wPy = mPy[0] + mPy[1] + mPy[2] + mPy[3];
+	  wPz = mPz[0] + mPz[1] + mPz[2] + mPz[3];
+	  wP2 = wPx*wPx + wPy*wPy + wPz*wPz;
+	  // define omega PhiPQ
+	  mPhiPQ = PhiPQ(wPx, wPy, wPz);
+	  mThetaPQ = ThetaPQ(wPx, wPy, wPz);
+	  mCosThetaPQ = ((kEbeam - mPez)*wPz - mPex*wPx - mPey*wPy)/(TMath::Sqrt(wP2*(mQ2 + mNu*mNu)));
+	  // define omega Pt2
+	  mPt2 = wP2*(1 - mCosThetaPQ*mCosThetaPQ);
+	  // define omega mass
+	  wM = TMath::Sqrt(wE*wE - wP2);
+	  wD = wM - pipM - pimM - pi0M;
+	  mEvent = (Int_t) tEvent;
+	  nPip = nPipThisEvent;
+	  nPim = nPimThisEvent;
+	  nGamma = nGammaThisEvent;
+	} // end of simrec
+	
+	// gsim
+	if (simFlag && cc >= nMCCombThisEvent) { // if gsim = null
+	  mmc_E[pp] = -9999.;
+	  mmc_Px[pp] = -9999.;
+	  mmc_Py[pp] = -9999.;
+	  mmc_Pz[pp] = -9999.;
+	  mmc_Pid[pp] = (Int_t) -9999.;
+	  mmc_Entry[pp] = (Int_t) -9999.;
+	  mmc_TargType = (Int_t) -9999.;
+	  mmc_Q2 = -9999.;
+	  mmc_Nu = -9999.;
+	  mmc_Xb = -9999.;
+	  mmc_Yb = -9999.;
+	  mmc_W = -9999.;
+	  mmc_Sector = (Int_t) -9999.;
+	  mmc_Xec = -9999.;
+	  mmc_Yec = -9999.;
+	  mmc_Zec = -9999.;
+	  mmc_Pex = -9999.;
+	  mmc_Pey = -9999.;
+	  mmc_Pez = -9999.;
+	  mc_pipP2 = -9999.;
+	  mc_pipM = -9999.;
+	  mc_pimP2 = -9999.;
+	  mc_pimM = -9999.;
+	  mc_pi0Px = -9999.;
+	  mc_pi0Py = -9999.;
+	  mc_pi0Pz = -9999.;
+	  mc_pi0P2 = -9999.;
+	  mc_pi0CosTheta = -9999.;
+	  mc_pi0M = -9999.;
+	  mc_pi0E = -9999.;
+	  mc_pippimP = -9999.;
+	  mc_pippimE = -9999.;
+	  mc_pippimM = -9999.;
+	  mc_wE = -9999.;
+	  mmc_Z = -9999.;
+	  mc_wPx = -9999.;
+	  mc_wPy = -9999.;
+	  mc_wPz = -9999.;
+	  mc_wP2 = -9999.;
+	  mmc_PhiPQ = -9999.;
+	  mmc_ThetaPQ = -9999.;
+	  mmc_CosThetaPQ = -9999.;
+	  mmc_Pt2 = -9999.;
+	  mc_wM = -9999.;
+	  mc_wD = -9999.;
+	  mmc_Event = -9999.;
+	  nmc_Pip = -9999.;
+	  nmc_Pim =-9999.;
+	  nmc_Gamma = -9999.;
+	} else if (simFlag && cc < nMCCombThisEvent) {
+	  t->GetEntry(mc_combVector[cc][pp]);
+	  mmc_E[pp] = tmc_E;
+	  mmc_Px[pp] = tmc_Px;
+	  mmc_Py[pp] = tmc_Py;
+	  mmc_Pz[pp] = tmc_Pz;
+	  mmc_Pid[pp] = (Int_t) tmc_Pid;
+	  mmc_Entry[pp] = (Int_t) mc_combVector[cc][pp];
+	  mmc_TargType = (Int_t) tmc_TargType;
+	  mmc_Q2 = tmc_Q2;
+	  mmc_Nu = tmc_Nu;
+	  mmc_Xb = tmc_Xb;
+	  mmc_Yb = mmc_Nu/kEbeam;
+	  mmc_W = tmc_W;
+	  mmc_Sector = (Int_t) tmc_Sector;
+	  mmc_Xec = tmc_Xec;
+	  mmc_Yec = tmc_Yec;
+	  mmc_Zec = tmc_Zec;
+	  mmc_Pex = tmc_Pex;
+	  mmc_Pey = tmc_Pey;
+	  mmc_Pez = tmc_Pez;
+	  // define pions variables
+	  mc_pipP2 = mmc_Px[2]*mmc_Px[2] + mmc_Py[2]*mmc_Py[2] + mmc_Pz[2]*mmc_Pz[2];
+	  mc_pipM = TMath::Sqrt(mmc_E[2]*mmc_E[2] - mc_pipP2); // = kMpi
+	  mc_pimP2 = mmc_Px[3]*mmc_Px[3] + mmc_Py[3]*mmc_Py[3] + mmc_Pz[3]*mmc_Pz[3];
+	  mc_pimM = TMath::Sqrt(mmc_E[3]*mmc_E[3] - mc_pimP2); // = kMpi
+	  mc_pi0Px = mmc_Px[0] + mmc_Px[1];
+	  mc_pi0Py = mmc_Py[0] + mmc_Py[1];
+	  mc_pi0Pz = mmc_Pz[0] + mmc_Pz[1];
+	  mc_pi0P2 = mc_pi0Px*mc_pi0Px + mc_pi0Py*mc_pi0Py + mc_pi0Pz*mc_pi0Pz;
+	  mc_pi0CosTheta = (mmc_Px[0]*mmc_Px[1] + mmc_Py[0]*mmc_Py[1] + mmc_Pz[0]*mmc_Pz[1])/(mmc_E[0]*mmc_E[1]);
+	  mc_pi0M = TMath::Sqrt(2*mmc_E[0]*mmc_E[1]*(1 - mc_pi0CosTheta));
+	  mc_pi0E = TMath::Sqrt(mc_pi0M*mc_pi0M + mc_pi0P2);
+	  // crossed terms
+	  mc_pippimP = mmc_Px[2]*mmc_Px[3] + mmc_Py[2]*mmc_Py[3] + mmc_Pz[2]*mmc_Pz[3];
+	  mc_pippimE = mmc_E[2]*mmc_E[3];
+	  mc_pippimM = TMath::Sqrt(mc_pipM*mc_pipM + mc_pimM*mc_pimM + 2*(mc_pippimE - mc_pippimP));
+	  // define omega energy and Z
+	  mc_wE = mmc_E[0] + mmc_E[1] + mmc_E[2] + mmc_E[3];
+	  mmc_Z = mc_wE/mmc_Nu;
+	  // define omega momentum and Pt2
+	  mc_wPx = mmc_Px[0] + mmc_Px[1] + mmc_Px[2] + mmc_Px[3];
+	  mc_wPy = mmc_Py[0] + mmc_Py[1] + mmc_Py[2] + mmc_Py[3];
+	  mc_wPz = mmc_Pz[0] + mmc_Pz[1] + mmc_Pz[2] + mmc_Pz[3];
+	  mc_wP2 = mc_wPx*mc_wPx + mc_wPy*mc_wPy + mc_wPz*mc_wPz;
+	  // define omega PhiPQ
+	  mmc_PhiPQ = PhiPQ(mc_wPx, mc_wPy, mc_wPz);
+	  mmc_ThetaPQ = ThetaPQ(mc_wPx, mc_wPy, mc_wPz);
+	  mmc_CosThetaPQ = ((kEbeam - mmc_Pez)*mc_wPz - mmc_Pex*mc_wPx - mmc_Pey*mc_wPy)/(TMath::Sqrt(mc_wP2*(mmc_Q2 + mmc_Nu*mmc_Nu)));
+	  // define omega Pt2
+	  mmc_Pt2 = mc_wP2*(1 - mmc_CosThetaPQ*mmc_CosThetaPQ);
+	  // define omega mass
+	  mc_wM = TMath::Sqrt(mc_wE*mc_wE - mc_wP2);
+	  mc_wD = mc_wM - mc_pipM - mc_pimM - mc_pi0M;
+	  mmc_Event = (Int_t) tmc_Event;
+	  nmc_Pip = nMCPipThisEvent;
+	  nmc_Pim = nMCPimThisEvent;
+	  nmc_Gamma = nMCGammaThisEvent;
+	} // end of gsim
+
       } // end of loop in particles
-    } // end of "candidate in gsim" condition
+
+      // and fill
+      tMix->Fill();
+      
+    } // end of loop in combinations
+
+    // reset count variables
+    nPipThisEvent = 0;
+    nPimThisEvent = 0;
+    nGammaThisEvent = 0;
+    nCombThisEvent = 0;
     
-	/*** The mixing ***/
-    /*	
-	// tag
-	Int_t jPip = 0;
-	Int_t jPim = 0;
-	Int_t jGamma1 = 0;
-	Int_t jGamma2 = 0;
-	
-	Int_t partialComb = 0;
-	Int_t partialLim = nGammaThisEvent - 1;
-	Int_t partialFlag = 1;
+    nMCPipThisEvent = 0;
+    nMCPimThisEvent = 0;
+    nMCGammaThisEvent = 0;
+    nMCCombThisEvent = 0;
 
-	for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
-	  
-	  // find and tag pip (loop in particles)
-	  for (Int_t j = i; j < (i + nParticles); j++) {
-	    t->GetEntry(j);
-	    if (tPid == (Float_t) 211 && j > jPip) {
-	      jPip = j; // tag pip
-	      j = i + nParticles; // break search
-	    }
-	  }
-	  
-	  // force a new beginning for the other particles
-	  jPim = 0;
-	  jGamma1 = 0;
-	  jGamma2 = 0;
-	  
-	  for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
-	    
-	    // find and tag pim
-	    for (Int_t j = i; j < (i + nParticles); j++) {
-	      t->GetEntry(j);
-	      if (tPid == (Float_t) -211 && j > jPim) {
-		jPim = j; // tag pim
-		j = i + nParticles; // break search
-	      }
-	    }
-	    
-	    // force a new beginning for the other particles
-	    jGamma1 = 0;
-	    jGamma2 = 0;	  
-	    
-	    for (Int_t iGamma = 0; iGamma < TMath::Binomial(nGammaThisEvent, 2); iGamma++) { 
-	      	      
-	      // debug
-	      if (iGamma == 0) {
-		partialComb = 0;
-		partialLim = nGammaThisEvent - 1;
-		partialFlag = 1;
-	      }
-	      
-	      // the big condition
-	      if (partialFlag) {
-		// find and tag gamma1
-		for (Int_t j = i; j < (i + nParticles); j++) {
-		  t->GetEntry(j);
-		  if (tPid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
-		    jGamma1 = j; // tag gamma1
-		    j = i + nParticles; // break search for j
-		  }
-		}
-		jGamma2 = 0; // resets gamma2
-		partialFlag = 0;
-	      }
-	      
-	      // find and tag gamma2
-	      for (Int_t k = (jGamma1 + 1); k < (i + nParticles); k++) { // excludes gamma1
-		t->GetEntry(k);
-		if (tPid == (Float_t) 22 && k > jGamma2) { // excludes previous gamma2
-		  jGamma2 = k; // tag gamma2
-		  k = i + nParticles; // break search for k
-		}
-	      }
-	      
-	      // fix partial comb
-	      partialComb++;
-	      if (partialComb == partialLim && partialLim > 1) {
-		partialComb = 0;
-		partialLim--;
-		partialFlag = 1;
-	      }
-	    	      
-	      // now extract!
-	      for (Int_t j = i; j < (i + nParticles); j++) {
-		t->GetEntry(j);
-		if (j == jGamma1) {
-		  if (!gsimFlag) {
-		    mE[0] = tE/0.272;                 // primitive sampling fraction
-		    mPx[0] = CorrectGammaMomentum(0); // correction
-		    mPy[0] = CorrectGammaMomentum(1); // correction
-		    mPz[0] = CorrectGammaMomentum(2); // correction
-		  } else if (gsimFlag) {
-		    mE[0] = tE;
-		    mPx[0] = tPx;	mPy[0] = tPy; mPz[0] = tPz;
-		  }		
-		  mPid[0] = (Int_t) tPid;
-		  mEntry[0] = jGamma1;
-		} else if (j == jGamma2) {
-		  if (!gsimFlag) {
-		    mE[1] = tE/0.272;                 // primitive sampling fraction
-		    mPx[1] = CorrectGammaMomentum(0); // correction
-		    mPy[1] = CorrectGammaMomentum(1); // correction
-		    mPz[1] = CorrectGammaMomentum(2); // correction
-		  } else if (gsimFlag) {
-		    mE[1] = tE;
-		    mPx[1] = tPx;	mPy[1] = tPy; mPz[1] = tPz;
-		  }
-		  mPid[1] = (Int_t) tPid;
-		  mEntry[1] = jGamma2;
-		} else if (j == jPip) {
-		  if (!gsimFlag) {
-		    mE[2] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
-		  } else if (gsimFlag) {
-		    mE[2] = tE;
-		  }
-		  mPx[2] = tPx; mPy[2] = tPy; mPz[2] = tPz;
-		  mPid[2] = (Int_t) tPid;
-		  mEntry[2] = jPip;
-		} else if (j == jPim) {
-		  if (!gsimFlag) {
-		    mE[3] = TMath::Sqrt(tPx*tPx + tPy*tPy + tPz*tPz + kMpi*kMpi); // assigned invariant mass
-		  } else if (gsimFlag) {
-		    mE[3] = tE;
-		  }		  
-		  mPx[3] = tPx; mPy[3] = tPy; mPz[3] = tPz;
-		  mPid[3] = (Int_t) tPid;
-		  mEntry[3] = jPim;
-		}
-		mTargType = (Int_t) tTargType;
-		mQ2 = tQ2;
-		mNu = tNu;
-		mXb = tXb;
-		mYb = mNu/kEbeam;
-		mW = tW;
-		mSector = (Int_t) tSector;
-		mXec = tXec;
-		mYec = tYec;
-		mZec = tZec;
-		mPex = tPex;
-		mPey = tPey;
-		mPez = tPez;
-		// define pions variables
-		pipP2 = mPx[2]*mPx[2] + mPy[2]*mPy[2] + mPz[2]*mPz[2];
-		pipM = TMath::Sqrt(mE[2]*mE[2] - pipP2); // = kMpi
-		pimP2 = mPx[3]*mPx[3] + mPy[3]*mPy[3] + mPz[3]*mPz[3];
-		pimM = TMath::Sqrt(mE[3]*mE[3] - pimP2); // = kMpi
-		pi0Px = mPx[0] + mPx[1];
-		pi0Py = mPy[0] + mPy[1];
-		pi0Pz = mPz[0] + mPz[1];
-		pi0P2 = pi0Px*pi0Px + pi0Py*pi0Py + pi0Pz*pi0Pz;
-		pi0CosTheta = (mPx[0]*mPx[1] + mPy[0]*mPy[1] + mPz[0]*mPz[1])/(mE[0]*mE[1]);
-		pi0M = TMath::Sqrt(2*mE[0]*mE[1]*(1 - pi0CosTheta));
-		pi0E = TMath::Sqrt(pi0M*pi0M + pi0P2);
-		// crossed terms
-		pippimP = mPx[2]*mPx[3] + mPy[2]*mPy[3] + mPz[2]*mPz[3];
-		pippimE = mE[2]*mE[3];
-		pippimM = TMath::Sqrt(pipM*pipM + pimM*pimM + 2*(pippimE - pippimP));
-		// define omega energy and Z
-		wE = mE[0] + mE[1] + mE[2] + mE[3];
-		mZ = wE/mNu;
-		// define omega momentum and Pt2
-		wPx = mPx[0] + mPx[1] + mPx[2] + mPx[3];
-		wPy = mPy[0] + mPy[1] + mPy[2] + mPy[3];
-		wPz = mPz[0] + mPz[1] + mPz[2] + mPz[3];
-		wP2 = wPx*wPx + wPy*wPy + wPz*wPz;
-		// define omega PhiPQ
-		mPhiPQ = PhiPQ(wPx, wPy, wPz);
-		mThetaPQ = ThetaPQ(wPx, wPy, wPz);
-		mCosThetaPQ = ((kEbeam - mPez)*wPz - mPex*wPx - mPey*wPy)/(TMath::Sqrt(wP2*(mQ2 + mNu*mNu)));
-		// define omega Pt2
-		mPt2 = wP2*(1 - mCosThetaPQ*mCosThetaPQ);
-		// define omega mass
-		wM = TMath::Sqrt(wE*wE - wP2);
-		wD = wM - pipM - pimM - pi0M;
-		mEvent = (Int_t) tEvent;
-		nPip = nPipThisEvent;
-		nPim = nPimThisEvent;
-		nGamma = nGammaThisEvent;
-	      }
-	      // and fill
-	      tMix->Fill();
-	    }
-	  }
-	}
+    // reset vectors!
+    combVector.clear();
+    mc_combVector.clear();
+
+    // for data, optimize and jump to next event
+
+    /*
+    if (!simFlag) {
+      t->GetEntry(t->GetEntryNumber(l->GetN() - 1) + 1);
+      i = tEvent;
+    }
     */
-	// end of condition of candidate
-      
-      // reset count variables
-      nPipThisEvent = 0;
-      nPimThisEvent = 0;
-      nGammaThisEvent = 0;
-
-      nMCPipThisEvent = 0;
-      nMCPimThisEvent = 0;
-      nMCGammaThisEvent = 0;
-
-      // sum events
-      if ((Int_t) tmc_Event != -9999) nEvents++;
-      
-     } // end of loop in events
-
-    std::cout << "From a total of " << nEvents << " generated events..." << std::endl;
+    
+    // set tree back to original tree
+    t->SetEntryList(0);
+    
+    // clean some memory
+    gDirectory->Delete(listName + ";1");
+    rootFile->Delete(listName);
+    
     std::cout << std::endl;
-    std::cout << "  There are at least " << nAtLeastMCOmega << " generated events that have at least one omega particle," << std::endl;
-    std::cout << "  we have found the following quantity of generated omegas: " << nMCOmega << "."  << std::endl;
-    std::cout << std::endl;
-    std::cout << "  And there are at least " << nAtLeastOmega << " reconstructed events that have at least one omega particle," << std::endl;
-    std::cout << "  we have found the following quantity of reconstructed omegas: " << nOmega << "."  << std::endl;
-    std::cout << std::endl;
-
-  } // end of sim condition
-  
-  /*
-	} // end of loop in events
-	
-	}
-      */
-  
-  if (!simFlag){
-    std::cout << "From a total of " << nEvents << " events." << std::endl;
-    std::cout << "There are at least " << nAtLeastOmega << " events that have at least one omega particle," << std::endl;
-    std::cout << "we have found the following quantity of omega candidates: " << nOmega << "."  << std::endl;
-    std::cout << std::endl;
-  }
+  } // end of loop in events
 
   /*** Writing tree ***/
 
+  if (simFlag) {
+    std::cout << "From a total of " << t->GetMaximum(eventBranchName)+1 << " generated events." << std::endl;
+    std::cout << "There are at least " << nAtLeastMCOmega << " generated events with at least one omega particle," << std::endl;
+    std::cout << "being in total this amount of generated omega candidates: " << nMCOmega << "."  << std::endl;
+    std::cout << "And also, there are at least " << nAtLeastOmega << " reconstructed events with at least one omega particle," << std::endl;
+    std::cout << "being in total this amount of reconstructed omega candidates: " << nOmega << "."  << std::endl;
+    std::cout << std::endl;
+  } else {
+    std::cout << "From a total of " << t->GetMaximum(eventBranchName) << " events." << std::endl;
+    std::cout << "There are at least " << nAtLeastOmega << " events with at least one omega particle," << std::endl;
+    std::cout << "being in total this amount of omega candidates: " << nOmega << "."  << std::endl;
+    std::cout << std::endl;
+  }
+  
   rootFile->Write();
   rootFile->Close();
 
@@ -1222,6 +1189,7 @@ void assignOptions() {
   if (!simFlag) {
     // ntuple name
     treeName = "ntuple_data";
+    eventBranchName = "evnt";
     // input
     textFile = tmpDir + "/PRU-data-" + targetOption + ".tmp";
     // out
@@ -1229,6 +1197,7 @@ void assignOptions() {
   } else if (simFlag) {
     // ntuple name
     treeName = "ntuple_sim";
+    eventBranchName = "mc_evnt";
     // input
     textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
     if (setOption == "jlab") textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + "-" + NjlabDir + ".tmp";

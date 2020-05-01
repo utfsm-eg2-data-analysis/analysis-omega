@@ -10,6 +10,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <iomanip>
+#include <vector>
 
 #include "TROOT.h"
 #include "TString.h"
