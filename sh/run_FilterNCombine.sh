@@ -1,13 +1,14 @@
 #!/bin/bash
 
-######################################################################
-# ./run_FilterNCombine.sh --targ <target> --set <set> --dttp <dttp>  #
-#     <target> = (D, C, Fe, Pb)                                      #
-#     <dttp>   = (gsim, simrec)                                      #
-#     <set>    = (old, usm, jlab)                                    #
-#                                                                    #
-# EG: ./run_FilterNCombine.sh --targ Pb --set usm --dttp simrec      #
-######################################################################
+###############################################################################
+# ./run_FilterNCombine.sh --targ <target> --set <set> --n <ndir>              #
+#     <target> = (D, C, Fe, Pb)                                               #
+#     <set>    = (data, old, usm, jlab)                                       #
+#     <ndir>   = (00, 01, 02, ...)                                            #
+#                                                                             #
+# EG: ./run_FilterNCombine.sh --targ C --set data                             #
+#     ./run_FilterNCombine.sh --targ D --set jlab --nn 06                     #
+###############################################################################
 
 inputArray=("$@")
 
@@ -17,44 +18,45 @@ while [ $ic -le $((${#inputArray[@]}-1)) ]; do
     tarName=${inputArray[$((ic+1))]}
   elif [ "${inputArray[$ic]}" == "--set" ]; then
     setName=${inputArray[$((ic+1))]}
-  elif [ "${inputArray[$ic]}" == "--dttp" ]; then
-    dataType=${inputArray[$((ic+1))]}
+  elif [ "${inputArray[$ic]}" == "--n" ]; then
+    nDir=${inputArray[$((ic+1))]}
   else
     printf "*** Aborting: Unrecognized argument: ${inputArray[$((ic))]}. ***\n\n";
   fi
   ((ic+=2))
 done
 
-if [[ ${dataType} = "gsim" ]]; then
-  opt="G"
-elif [[ ${dataType} = "simrec" ]]; then
-  opt="R"
-fi
+cd ${PRODIR}
 
-# prev
-# catName=`echo ${input/-*/}`
-# tarName=`echo ${input/*-/}`
+if [[ ${setName} = "data" ]]; then
+  OUDIR=${PRODIR}/out/filterData/${tarName}
+  filelist=${PRODIR}/include/prunedDataFiles-${tarName}.txt
+  tmpfile=${PRODIR}/tmp/PRU-${setName}-${tarName}.tmp
+  opt="-t${tarName} -d"
+elif [[ ${setName} = "jlab" ]]; then
+  OUDIR=${PRODIR}/out/filterSim/${setName}/${tarName}/${nDir}
+  filelist=${PRODIR}/include/prunedSimulFiles-${setName}-${tarName}-${nDir}.txt
+  tmpfile=${PRODIR}/tmp/PRU-${setName}-${tarName}-${nDir}.tmp
+  opt="-t${tarName} -S${setName} -n${nDir}"
+else
+  OUDIR=${PRODIR}/out/filterSim/${setName}/${tarName}
+  filelist=${PRODIR}/include/prunedSimulFiles-${setName}-${tarName}.txt
+  tmpfile=${PRODIR}/tmp/PRU-${setName}-${tarName}.tmp
+  opt="-t${tarName} -S${setName}"
+fi
 
 source ~/.bashrc
 
-OUDIR=${PRODIR}/out/filterSim/${dataType}/${setName}/${tarName}
-TMPDIR=${PRODIR}/tmp
-
-fileslist=${PRODIR}/include/prunedSimulFiles-${setName}-${tarName}.txt # this!
-lines=`wc -l < ${fileslist}`
-
-cd ${PRODIR}
+lines=`wc -l < ${filelist}`
 
 COUNTER=0
 while [ $COUNTER -lt ${lines} ]; do
     let COUNTER=COUNTER+1
-    sed -e "${COUNTER}q;d" ${fileslist} > ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp
-    ./bin/FilterNCombine -t${tarName} -${opt}${setName}
-    inputfile=`head -1 ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp`
+    sed -e "${COUNTER}q;d" ${filelist} > ${tmpfile}
+    ./bin/FilterNCombine ${opt}
+    inputfile=`head -1 ${tmpfile}`
     sufix="${inputfile##*_}"
     sufix="${sufix/.root/}"
-    #echo ${inputfile}
-    #echo ${sufix}
-    mv -v ${OUDIR}/comb_out.root ${OUDIR}/comb_${dataType}${tarName}_${sufix}.root
-    rm -v ${TMPDIR}/PRU4${opt}-${setName}-${tarName}.tmp
+    mv -v ${OUDIR}/comb_out.root ${OUDIR}/comb_${setName}${tarName}_${sufix}.root
+    rm -v ${tmpfile}
 done

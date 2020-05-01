@@ -46,10 +46,8 @@
 TString proDir = getenv("PRODIR");
 TString tmpDir = proDir + "/tmp";
 
-TString dataDir   = proDir + "/out/filterData";
-TString simDir   = proDir + "/out/filterSim"; // new!
-TString gsimDir   = proDir + "/out/filterSim/gsim"; // should update
-TString simrecDir = proDir + "/out/filterSim/simrec"; // should update
+TString dataDir = proDir + "/out/filterData";
+TString simDir  = proDir + "/out/filterSim";
 
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0 = "0.059 < pi0M && pi0M < 0.203"; // mean=0.131 & sigma=0.024
