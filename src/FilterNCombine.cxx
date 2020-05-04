@@ -5,6 +5,9 @@
 /*                                       */
 /*****************************************/
 
+// UPDATE:
+// - added RN option
+
 #include "analysisConfig.h"
 
 /*** Constants ***/
@@ -18,6 +21,7 @@ TString targetOption;
 Int_t   simFlag = 0;
 TString setOption;
 TString NjlabDir;
+TString rnOption;
 
 TString treeName;
 
@@ -25,7 +29,6 @@ TString outDir; // depends on data type
 TString outFile;
 
 // input
-TString textFile;
 TString inputFile;
 
 // There are 23 in total
@@ -77,18 +80,6 @@ int main(int argc, char **argv) {
   // dir structure, just in case
   system("mkdir -p " + outDir);
 
-  /*** Read text file to gather input root file ***/
-
-  std::ifstream inFile(textFile);
-  std::cout << "Reading " << textFile << " ..." << std::endl;
-  TString auxLine;
-  while (inFile >> auxLine) {
-    inputFile = auxLine;
-    std::cout << "  inputFile = " << inputFile << std::endl;
-  }
-  inFile.close();
-  std::cout << std::endl;
-  
   /*** Init tree ***/
   
   // hadrons (t - tree)
@@ -1184,13 +1175,14 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:dS:n:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:n:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'd': simFlag = 0; break;
     case 'S': simFlag = 1; setOption = optarg; break;
-    case 'n': NjlabDir = optarg; break;	    
+    case 'n': NjlabDir = optarg; break;
+    case 'r': rnOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
       exit(0);
@@ -1201,11 +1193,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
 void assignOptions() {
   // for data type
   if (!simFlag) {
+    // set
+    setOption = "data";
     // ntuple name
     treeName = "ntuple_data";
     eventBranchName = "evnt";
     // input
-    textFile = tmpDir + "/PRU-data-" + targetOption + ".tmp";
+    inputFile = proDir + "/out/prunedData/" + targetOption + "/pruned_data_" + rnOption + ".root"; // new
     // out
     outDir = dataDir + "/" + targetOption;
   } else if (simFlag) {
@@ -1213,19 +1207,19 @@ void assignOptions() {
     treeName = "ntuple_sim";
     eventBranchName = "mc_evnt";
     // input
-    textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + ".tmp";
-    if (setOption == "jlab") textFile = tmpDir + "/PRU-" + setOption + "-" + targetOption + "-" + NjlabDir + ".tmp";
+    inputFile = proDir + "/out/prunedSim/" + setOption + "/" + targetOption + "/pruned_sim" + targetOption + "_" + rnOption + ".root"; // new
+    if (setOption == "jlab") inputFile = proDir + "/out/prunedSim/" + setOption + "/" + targetOption + "/" + NjlabDir + "/pruned_sim" + targetOption + "_" + rnOption + ".root"; // new (for jlab)
     // out
     outDir = simDir + "/" + setOption + "/" + targetOption;
     if (setOption == "jlab") outDir += "/" + NjlabDir;
   }
   // regardless of the data type
-  outFile = outDir + "/comb_out.root";
+  outFile = outDir + "/comb_" + setOption + targetOption + "_" + rnOption + ".root";
 }
 
 void printUsage() {
   std::cout << "FilterNCombine program." << std::endl;
-  std::cout << "It must exist a file /tmp/PRU-[set]-[target].tmp with the location of the input root file to filter." << std::endl;
+  std::cout << "It must exist a file /tmp/PRU-[set]-[target]-[rn].tmp with the location of the input root file to filter." << std::endl;
   std::cout << "Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -h" << std::endl;
@@ -1245,6 +1239,10 @@ void printUsage() {
   std::cout << "    selects N dir (exclusive and mandatory for -Sjlab option)" << std::endl;
   std::cout << "    (please, maintain numbering scheme!)" << std::endl;
   std::cout << std::endl;
+  std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
+  std::cout << "    selects run number (mandatory for all)" << std::endl;
+  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
+  std::cout << std::endl;
 }
 
 void printOptions() {
@@ -1253,6 +1251,8 @@ void printOptions() {
   std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << "  NjlabDir       = " << NjlabDir << std::endl;
+  std::cout << "  rnOption       = " << rnOption << std::endl;
+  std::cout << "  inputFile      = " << inputFile << std::endl;
   std::cout << std::endl;
 }
 
