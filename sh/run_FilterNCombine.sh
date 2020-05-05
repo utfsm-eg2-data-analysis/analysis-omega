@@ -13,9 +13,9 @@
 #     ./run_FilterNCombine.sh --targ Fe --set old -rn 132                                  #
 ############################################################################################
 
-####
+#####
 # Functions
-##
+###
 
 function get_run()
 {
@@ -33,9 +33,9 @@ function get_run()
   echo $srn
 }
 
-####
+#####
 # Main
-##
+###
 
 inputArray=("$@")
 
@@ -57,7 +57,9 @@ while [ $ic -le $((${#inputArray[@]}-1)) ]; do
   ((ic+=2))
 done
 
-cd ${PRODIR}
+TMPDIR="${PRODIR}/tmp/FNC"
+mkdir -p ${TMPDIR}
+cd ${TMPDIR}
 
 if [[ ${setName} = "data" ]]; then
   OUDIR=${PRODIR}/out/filterData/${tarName}
@@ -76,8 +78,6 @@ source ~/.bashrc
 for (( ir=$runNumber1; ir<=$runNumber2; ir++ )); do
   srun=$(get_run "$ir")
 
-  TMPDIR="${PRODIR}/tmp/FNC"
-  mkdir -p ${TMPDIR}
   jobfile="${TMPDIR}/job_${setName}${tarName}_${srun}.sh"
   jobname="FNC_${setName}-${tarName}_${srun}"
   
@@ -85,8 +85,8 @@ for (( ir=$runNumber1; ir<=$runNumber2; ir++ )); do
   echo "#PBS -N ${jobname}"                        >> $jobfile
   echo "#PBS -V"                                   >> $jobfile
   echo "#PBS -q utfsm"                             >> $jobfile
-  echo "#PBS -l walltime=06:00:00"                 >> $jobfile
-  echo "#PBS -l cput=06:00:00"                     >> $jobfile
+  echo "#PBS -l walltime=03:00:00"                 >> $jobfile
+  echo "#PBS -l cput=03:00:00"                     >> $jobfile
   echo "#PBS -m ae"                                >> $jobfile
   echo "#PBS -M andres.borquez.14@sansano.usm.cl"  >> $jobfile
   echo ""                                          >> $jobfile
