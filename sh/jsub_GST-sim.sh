@@ -66,7 +66,7 @@ for (( id=$nDir1; id<=$nDir2; id++ )); do
 
   OUDIR=${PRODIR}/out/prunedSim/jlab/${tarName}/${sdir}
   
-  jobfile="${TMPDIR}/job_jlab-${tarName}-${sdir}.sh"
+  jobfile="${TMPDIR}/job_jlab-${tarName}-${sdir}.xml"
   jobname="GST_jlab-${tarName}-${sdir}"
   
   echo ${jobname}
@@ -106,5 +106,5 @@ for (( id=$nDir1; id<=$nDir2; id++ )); do
   echo "</Request>"                                                                          >> $jobfile
   
   echo "Running job ${jobfile}"
-  # jsub --xml ${jobfile}
+  jsub --xml ${jobfile}
 done
