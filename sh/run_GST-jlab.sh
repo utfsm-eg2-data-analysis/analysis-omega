@@ -10,7 +10,7 @@
 ####################################################################
 #                                                                  #
 # Version:                                                         #
-# --- Use it on jlab cluster, in a tmux screen!                    #
+# --- Use it on jlab cluster, in a tmux session!                   #
 # --- Only for jlab simulations!                                   #
 #                                                                  #
 ####################################################################
