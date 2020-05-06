@@ -51,6 +51,7 @@ while [ $ic -le $((${#inputArray[@]}-1)) ]; do
   ((ic+=2))
 done
 
+source /home/borquez/.bashrc
 cd ${PRODIR}
 
 for (( id=$nDir1; id<=$nDir2; id++ )); do
