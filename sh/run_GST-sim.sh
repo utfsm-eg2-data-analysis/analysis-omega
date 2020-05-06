@@ -1,17 +1,21 @@
-#!/bin/bash 
+#!/bin/bash
 
-###############################################################
-# ./run_GST-sim.sh --targ <target> --set <set> --n <ndir>     #
-#     <target> = (D, C, Fe, Pb)                               #
-#     <set> = (old, usm, jlab)                                #
-#     <ndir> = (00, 01, 02, ...)                              # 
-#                                                             #
-# EG: ./run_GST-sim.sh --targ D --set jlab --n 00             #
-#     ./run_GST-sim.sh --targ C --set old                     #
-#     ./run_GST-sim.sh --targ Fe --set usm                    #
-###############################################################
-
-# should work in utfsm and jlab cluster
+#################################################################
+# ./run_GST-sim.sh --targ <target> --set <set> --n <ndir>       #
+#     <target> = (D, C, Fe, Pb)                                 #
+#     <set> = (old, usm, jlab)                                  #
+#     <ndir> = (00, 01, 02, ...)                                # 
+#                                                               #
+# EG: ./run_GST-sim.sh --targ D --set jlab --n 00               #
+#     ./run_GST-sim.sh --targ C --set old                       #
+#     ./run_GST-sim.sh --targ Fe --set usm                      #
+#################################################################
+#                                                               #
+# This version:                                                 #
+# --- should work in utfsm and jlab cluster                     #
+# --- requires the simulFiles-set-target(-ndir).txt in include/ #
+#                                                               #
+#################################################################
 
 inputArray=("$@")
 

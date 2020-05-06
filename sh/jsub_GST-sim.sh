@@ -71,15 +71,13 @@ for (( id=$nDir1; id<=$nDir2; id++ )); do
   
   echo ${jobname}
 
-  filelist=${PRODIR}/include/simulFiles-jlab-${tarName}-${sdir}.txt
-  tmpfile=${PRODIR}/tmp/RAW-jlab-${tarName}-${sdir}.tmp
   opt="-t${tarName} -Sjlab -n${sdir}"
   
   echo "<Request>"                                                                            > $jobfile
   echo "  <Project name=\"eg2a\"></Project>"                                                 >> $jobfile
   echo "  <Track name=\"analysis\"></Track>"                                                 >> $jobfile
   echo "  <Email email=\"andres.borquez.14@sansano.usm.cl\" request=\"true\" job=\"true\"/>" >> $jobfile
-  echo "  <TimeLimit time=\"1440\" unit=\"minutes\"></TimeLimit>"                            >> $jobfile
+  echo "  <TimeLimit time=\"500\" unit=\"minutes\"></TimeLimit>"                             >> $jobfile
   echo "  <DiskSpace space=\"500\" unit=\"MB\"></DiskSpace>"                                 >> $jobfile
   echo "  <Memory space=\"1000\" unit=\"MB\"></Memory>"                                      >> $jobfile
   echo "  <CPU core=\"1\"></CPU>"                                                            >> $jobfile
@@ -89,18 +87,10 @@ for (( id=$nDir1; id<=$nDir2; id++ )); do
   echo "    <Command><![CDATA["                                                              >> $jobfile
   echo "      source ~/.bashrc"                                                              >> $jobfile
   echo "      cd ${PRODIR}"                                                                  >> $jobfile
-  echo "      lines=\`wc -l < ${filelist}\`"                                                 >> $jobfile
-  echo "       "                                                                             >> $jobfile
-  echo "      COUNTER=0"                                                                     >> $jobfile
-  echo "      while [ \$COUNTER -lt \${lines} ]; do"                                         >> $jobfile
-  echo "        let COUNTER=COUNTER+1"                                                       >> $jobfile
-  echo "        rn=\`sed -n \"\$COUNTER{p;q}\" ${filelist}\`"                                >> $jobfile
-  echo "        echo \${rn} > ${tmpfile}"                                                    >> $jobfile
-  echo "        rn=\`echo \${rn/*_/}\`"                                                      >> $jobfile
-  echo "        rn=\`echo \${rn/.*/}\`"                                                      >> $jobfile
-  echo "        ./bin/GetSimpleTuple ${opt}"                                                 >> $jobfile
-  echo "        mv -v ${OUDIR}/pruned_out.root ${OUDIR}/pruned_sim${tarName}_\${rn}.root"    >> $jobfile
-  echo "      done"                                                                          >> $jobfile
+  for (( rn=0; rn<100; rn++ )); do
+    srn=$(get_run "$rn")
+    echo "      ./bin/GetSimpleTuple ${opt} -r${srn}"                                           >> $jobfile
+  done  
   echo "    ]]></Command>"                                                                   >> $jobfile
   echo "  </Job>"                                                                            >> $jobfile
   echo "</Request>"                                                                          >> $jobfile

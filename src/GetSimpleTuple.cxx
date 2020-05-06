@@ -7,8 +7,9 @@
 /***************************************/
 
 // UPDATE:
-// - fixed enormous bug: now it gathers all gsim events
-// - it's working for data, again
+// - added RN as an option
+// PENDANT:
+// - add all files of a data run number
 
 #include "analysisConfig.h"
 
@@ -22,9 +23,11 @@ Int_t   simFlag = 0;
 TString targetOption;
 TString setOption;
 TString NjlabDir;
+TString rnOption; // new!
+TString nFile; // for raw data, don't know how to add it yet
 
 TString outDir;
-TString textFile;
+TString inputFile;
 
 TString outFile;
 TString NtupleName;
@@ -51,57 +54,34 @@ int main(int argc, char **argv) {
   // init ClasTool
   TClasTool *input = new TClasTool();
   input->InitDSTReader("ROOTDSTR");
+  input->Add(inputFile);
     
-  /*** Reading text file to gather root file ***/
-  
-  ifstream in(textFile, ios::in);
+  /*** Beginning Faraday Cup studies ***/
 
-  if (!in) {
-    std::cerr << "Couldn't open file. Terminating..." << std::endl;
-    exit(1);
-  }
-
-  std::cout << "Reading file " << textFile << " ..." << std::endl;
-
-  TString currentFile;
   TChain *c = new TChain(); // fcup
-      
-  while (in >> currentFile) {
-    std::cout << "  currentFile = " << currentFile << std::endl;
-    
-    c->Add(currentFile + "/SCALER"); // fcup
-
-    // add root file to ClasTool
-    input->Add(currentFile);
-  }
-  in.close();
-  
-  /*** Beginning Faraday Cup process ***/
-
-  // fcup studies
-  Int_t Ne = c->GetEntries();
   Double_t fcup = 0; // search for maximum in the run files
-  Double_t currentFC;
-
+    
   // only for data
   if (!simFlag) {
+    // add scaler branch
+    c->Add(inputFile + "/SCALER");
+
+    Int_t Ne = c->GetEntries();
+    Double_t currentFC;
+    
     // looping around tree entries
     for (Int_t i = 0; i < Ne; i++) {
       c->GetEntry(i);
       currentFC = c->GetLeaf("SC_TRGS.Fcup_g2")->GetValue();
-      if (currentFC > fcup) fcup =  currentFC;
+      if (currentFC > fcup) fcup = currentFC;
     }
+    printf("  fcup = %.0f", fcup);
+    std::cout << std::endl;
   }
-  printf("  fcup = %.0f", fcup);
-  std::cout << std::endl;
 
   delete c;
   
   /*** Pruning RAW data ***/
-
-  // obtain electron mass
-  TDatabasePDG pdg;
-  Double_t kMe = pdg.GetParticle(11)->Mass();
 
   // hadron variables
   TString varListHadrons = "TargType:Q2:Nu:Xb:W:SectorEl:ThetaPQ:PhiPQ:Zh:Pt:W2p:Xf:T:P:T4:deltaZ:E:Ee:Pe:Ect:Sct:Ecr:Scr:evnt:Px:Py:Pz:Xe:Ye:Ze:Xec:Yec:Zec:TEc:ECX:ECY:ECZ:Pex:Pey:Pez:Ein:Eout:Eine:Eoute:pid:Betta:vxh:vyh:vzh:fcup";
@@ -447,13 +427,14 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dS:n:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:n:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'S': simFlag = 1; setOption = optarg; break;
     case 'd': simFlag = 0; break;
     case 'n': NjlabDir = optarg; break;
+    case 'r': rnOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
       exit(0);
@@ -463,7 +444,6 @@ inline int parseCommandLine(int argc, char* argv[]) {
 
 void printUsage() {
   std::cout << "GetSimpleTuple program." << std::endl;
-  std::cout << "It must exist a file /tmp/RAW-[set]-[target].tmp with the location of the input root file to prune." << std::endl;
   std::cout << "Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -h" << std::endl;
@@ -483,35 +463,36 @@ void printUsage() {
   std::cout << "    selects N dir (exclusive and mandatory for -Sjlab option)" << std::endl;
   std::cout << "    (please, maintain numbering scheme!)" << std::endl;
   std::cout << std::endl;
+  std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
+  std::cout << "    selects run number (mandatory for all!)" << std::endl;
+  std::cout << "    numbering scheme: 00,...,99     for jlab" << std::endl;
+  std::cout << "                      0000,...,1XXX for old/usm" << std::endl;
+  std::cout << "                      XXXXX         for data" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
   // data type
   if (!simFlag) {
-    // tuple
     NtupleName = "ntuple_data";
-    // input
-    textFile = tmpDir + "/RAW-data-" + targetOption + ".tmp";
-    // analyser
+    inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_" + nFile + " .pass2.root"; // how to add this???
     analyserOption = targetOption;
-    // out
     outDir = proDir + "/out/prunedData/" + targetOption;
     outTitle = "Data of particles";
   } else if (simFlag) {
-    // tuple
     NtupleName = "ntuple_sim";
-    // input
-    textFile = tmpDir + "/RAW-" + setOption + "-" + targetOption + ".tmp";
-    if (setOption == "jlab") textFile = tmpDir + "/RAW-" + setOption + "-" + targetOption + "-" + NjlabDir + ".tmp";
-    // analyser
     analyserOption = "Sim";
-    // out
-    outDir = proDir + "/out/prunedSim/" + setOption + "/" + targetOption;
-    if (setOption == "jlab") outDir += "/" + NjlabDir;
     outTitle = "Simulation of particles";
+    outDir = proDir + "/out/prunedSim/" + setOption + "/" + targetOption;
+    if (setOption == "jlab") {
+      inputFile = rawSimDir_jlab + "/output/" + targetOption + "/" + NjlabDir + "/recsis" + targetOption + "_" + rnOption + ".root";
+      outDir += "/" + NjlabDir;
+    } else if (setOption == "old" || setOption == "usm") {
+      inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + ".root";
+    }
   }
   // regardless of the data type
-  outFile = outDir + "/pruned_out.root";
+  outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
 }
 
 void printOptions() {
@@ -520,6 +501,8 @@ void printOptions() {
   std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << "  NjlabDir       = " << NjlabDir << std::endl;
+  std::cout << "  rnOption       = " << rnOption << std::endl;
+  std::cout << "  inputFile      = " << inputFile << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
   std::cout << std::endl;
 }

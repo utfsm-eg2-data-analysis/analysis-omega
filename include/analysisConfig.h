@@ -49,6 +49,10 @@ TString tmpDir = proDir + "/tmp";
 TString dataDir = proDir + "/out/filterData";
 TString simDir  = proDir + "/out/filterSim";
 
+TString rawSimDir_jlab = "/home/borquez/volatile/omegaSim"; // + /output/<target>/<ndir>/recsis<target>_{00..99}.root
+TString rawSimDir_utfsm = "/eos/user/b/borquez/omegaSim"; // + /<set>/<target>/recsis<target>_{0000..0099}.root
+TString rawDataDir_utfsm = "/data/jlab/mss/clas/eg2a/production/Pass2/Clas"; // + /clas_<rn>_<nfile>.pass2.root
+
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0 = "0.059 < pi0M && pi0M < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
