@@ -1,7 +1,7 @@
 /**************************************/
 /* GetQuantiles.cxx                   */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 

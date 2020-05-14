@@ -1,7 +1,7 @@
 /**************************************/
-/* old_MakePlots.cxx                  */
+/* MakePlots_old.cxx                  */
 /*                                    */
-/* Created by Andrés Bórquez          */
+/* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 

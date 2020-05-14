@@ -1,9 +1,11 @@
 /**************************************/
-/* MakeFits-Final.cxx                 */
+/* MakeFits.cxx                       */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
+
+// DEPRECATED
 
 // bkg-100/bkg-final-fit-A_D-zN.txt files are mandatory!
 // It fits the both peaks with a Gaussian/Lorentzian Function

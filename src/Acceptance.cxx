@@ -1,11 +1,11 @@
 /**************************************/
 /* Acceptance.cxx                     */
 /*                                    */
-/* Author: Andrés Bórquez             */
+/* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 
-// hola
+// Program currently in development.
 
 #include "analysisConfig.h"
 
