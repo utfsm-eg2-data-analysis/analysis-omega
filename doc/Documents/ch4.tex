@@ -54,7 +54,8 @@ The detected particle is identified as an electron if it satisfies the following
 \begin{equation}
     0.8 \times 0.27 \times P < E_{in} + E_{out} < 1.2 \times 0.27 \times P
 \end{equation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{$\pi^{+}$ identification}
 
 All $\pi^{+}$ must satisfy the following requeriments:
@@ -80,7 +81,8 @@ All $\pi^{+}$ must satisfy the following requeriments:
     \item $2.5 < P \le 2.7$, $-1.05 \le \beta < 0.61$ and $m^2 < 0.4$
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{$\pi^{-}$ identification}            
 
 Just as $\pi^{-}$ must satisfy the following requeriments:
@@ -104,29 +106,32 @@ Just as $\pi^{-}$ must satisfy the following requeriments:
         \item $  $
     \end{itemize}
     
+Peo para todos.
 
+Y en especial para mí.
+
+    
 \textbf{EC fiducial cuts.}
 \begin{equation}
     40 < U < 400, \quad V < 360, \quad W < 390 \, (\mbox{cm})
 \end{equation} 
-	    
-		if (Etot(k)<0.15 && Ein(k)<0.085-0.5*Eout(k) &&
-		    ( ( (!(StatCC(k)>0 && Nphe(k)>25)) &&
-		       ( 
-			(0<P && P<=0.5 && T4>-0.87 && T4<0.63)
-			||(0.5<P && P<=1.0 && T4>-0.55 && T4<0.37)
-			||(1.0<P && P<=1.5 && T4>-0.55 && T4<0.38)
-			||(1.5<P && P<=2.0 && T4>-0.60 && T4<0.44)
-			||(2.0<P && P<=2.5 && T4>-1.00 && T4<0.45)
-			 )
-			)
-		      ||(2.5<P && P<=3.0 && T4>-1.00 && T4<0.40)
-		      || (3.0<P && T4>-2.00 && T4<0.45)
-		      )
-		    )
 
+\begin{equation}
+  E_{tot} < 0.15
+  E_{in} < 0.085 - 0.5*E_{out}
+  !StatCC > 0
+  Nphe > 25
+  0 < P \& P \le 0.5 \& T4 > -0.87 \& T4 < 0.63
+  \parallel 0.5 < P \& P \le 1.0 \& T4 > -0.55 \& T4 < 0.37
+  \parallel 1.0 < P \& P \le 1.5 \& T4 > -0.55 \& T4 < 0.38
+  \parallel 1.5 < P \& P \le 2.0 \& T4 > -0.60 \& T4 < 0.44
+  \parallel 2.0 < P \& P \le 2.5 \& T4 > -1.00 \& T4 < 0.45
+  \parallel 2.5 < P \& P \le 3.0 \& T4 > -1.00 \& T4 < 0.40
+  3.0 < P \& T4 > -2.00 \& T4 < 0.45
+\end{equation}
 
-            
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{$\gamma$ identification}
 
 Let's identify photons!
@@ -178,12 +183,18 @@ So, all three researchers agree.
 
 \textbf{Momentum correction.} Using the ECPB bank treatment, studied by Taya and Orlando.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{$\omega$ identification}
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Binning}
 
 
 
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../main"
+%%% End:
