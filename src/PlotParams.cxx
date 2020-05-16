@@ -51,9 +51,13 @@ Double_t fitBkg[4][5], fitBkgError[4][5];
 
 // sigma studies
 Double_t meanConstraint;
-Int_t lineFlag;
 Double_t sigmaRangeUp;
 Double_t sigmaRangeDown;
+Int_t lineFlag;
+
+// fixed ranges for comparison!
+// (0,1,2,3,4) = (mean, sigma, N_omega, N_bkg, SN)
+Double_t plotRange[5][2];
 
 /*** Declaration of functions ***/
 
@@ -115,7 +119,7 @@ int main(int argc, char **argv) {
   meanHist->GetXaxis()->ChangeLabel(-1,-1,0);
   meanHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   meanHist->SetLabelSize(0.1, "Y");
-  meanHist->SetAxisRange(0.34, 0.39, "Y"); // by obs
+  meanHist->SetAxisRange(plotRange[0][0], plotRange[0][1], "Y"); //  new!
   meanHist->SetLineColor(kRed);
   meanHist->SetLineWidth(3);
 
@@ -140,7 +144,8 @@ int main(int argc, char **argv) {
   sigmaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   sigmaHist->SetLabelSize(0.1, "Y");
   sigmaHist->GetYaxis()->SetMaxDigits(2);
-  sigmaHist->SetAxisRange(sigmaRangeDown, sigmaRangeUp, "Y"); // depends on winner
+  sigmaHist->SetAxisRange(plotRange[1][0], plotRange[1][1], "Y"); // new!
+  // sigmaHist->SetAxisRange(sigmaRangeDown, sigmaRangeUp, "Y"); // depends on winner
   sigmaHist->SetLineColor(kBlack);
   sigmaHist->SetLineWidth(3);
 
@@ -167,6 +172,7 @@ int main(int argc, char **argv) {
   omegaHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   omegaHist->SetLabelSize(0.1, "Y");
   omegaHist->GetYaxis()->SetMaxDigits(3);
+  omegaHist->SetAxisRange(plotRange[2][0], plotRange[2][1], "Y"); // new!
   omegaHist->SetLineColor(kMagenta+2);
   omegaHist->SetLineWidth(3);
 
@@ -186,6 +192,7 @@ int main(int argc, char **argv) {
   bkgHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   bkgHist->SetLabelSize(0.1, "Y");
   bkgHist->GetYaxis()->SetMaxDigits(3);
+  bkgHist->SetAxisRange(plotRange[3][0], plotRange[3][1], "Y"); // new!
   bkgHist->SetLineColor(kBlue);
   bkgHist->SetLineWidth(3);
 
@@ -204,7 +211,7 @@ int main(int argc, char **argv) {
   snHist->GetXaxis()->ChangeLabel(-1,-1,0);
   snHist->GetXaxis()->SetNdivisions(kinvarNbins*100 + 4, kFALSE);
   snHist->SetLabelSize(0.1, "Y");
-  snHist->SetAxisRange(0.0, 1.0, "Y"); // by obs
+  snHist->SetAxisRange(plotRange[4][0], plotRange[4][1], "Y"); // new!
   snHist->SetLineColor(kGreen+2);
   snHist->SetLineWidth(3);
 
@@ -279,17 +286,46 @@ void assignOptions() {
   if (kinvarOption == "Q2") {
     kinvarSufix = "-q";
     meanConstraint = 34; // winner, hardcoded
+    plotRange[1][0] = 28e-3; // sigma
+    plotRange[1][1] = 40e-3;
+    plotRange[2][0] = 0.; // N_omega
+    plotRange[2][1] = 5e3;
+    plotRange[3][0] = 0.; // N_bkg
+    plotRange[3][1] = 20e3;
   } else if (kinvarOption == "Nu") {
     kinvarSufix = "-n";
     meanConstraint = 40; // winner, hardcoded
+    plotRange[1][0] = 30e-3; // sigma
+    plotRange[1][1] = 50e-3; // sigma
+    plotRange[2][0] = 0.; // N_omega
+    plotRange[2][1] = 8e3; // N_omega
+    plotRange[3][0] = 0.; // N_bkg
+    plotRange[3][1] = 26e3; // N_bkg
   } else if (kinvarOption == "Z") {
     kinvarSufix = "-z";
     kinvarConstant = 3;
-    meanConstraint = 24; // winner, hardcoded
+    meanConstraint = 26; // winner = 24, hardcoded
+    plotRange[1][0] = 20e-3; // sigma
+    plotRange[1][1] = 36e-3;
+    plotRange[2][0] = 0.; // N_omega
+    plotRange[2][1] = 2.2e3;
+    plotRange[3][0] = 0.; // N_bkg
+    plotRange[3][1] = 10e3;
   } else if (kinvarOption == "Pt2") {
     kinvarSufix = "-p";
     meanConstraint = 38; // winner, hardcoded
+    plotRange[1][0] = 32e-3; // sigma
+    plotRange[1][1] = 44e-3; // sigma
+    plotRange[2][0] = 0.; // N_omega
+    plotRange[2][1] = 6e3; // N_omega
+    plotRange[3][0] = 0.; // N_bkg
+    plotRange[3][1] = 24e3; // N_bkg
   }
+  // regardless of the kinvar
+  plotRange[0][0] = 0.34; // mean
+  plotRange[0][1] = 0.39; // mean
+  plotRange[4][0] = 0.; // SN
+  plotRange[4][1] = 1.;
   // setting the directories
   kinvarDir = "/" + kinvarOption;
   signalDir = "/" + signalOption;
@@ -297,11 +333,11 @@ void assignOptions() {
   bkgSufix = Form("-b%d", bkgOption);
   // output
   inDir = outDir + kinvarDir + signalDir + bkgDir;
-  plotFile = outDir + "/params-" + kinvarOption + "-g" + bkgSufix + ".png";
+  plotFile = outDir + "/params-" + kinvarOption + "-" + signalOption + bkgSufix + ".png";
   // for sigma plot
   meanConstraint *= 1e-3;
-  sigmaRangeUp = meanConstraint + 4e-3;
-  sigmaRangeDown = meanConstraint - 4e-3;
+  sigmaRangeUp = meanConstraint + 10e-3; // deprecated for a while, should decide what to do
+  sigmaRangeDown = meanConstraint - 6e-3;  // deprecated for a while, should decide what to do
 }
 
 void readTextFiles() {

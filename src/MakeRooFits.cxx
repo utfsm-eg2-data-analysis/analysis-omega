@@ -5,11 +5,9 @@
 /*                               */
 /*********************************/
 
-// fits peak with a gaussian function and bkg with a 1st order polynomial
-// - added kinematic dependence as an option
-// update:
-// - added bands of error bars
-// - added poly as an option
+// UPDATE:
+// - added "winner" parameters to be set after choosing a kinvar
+// - added signalOption: bw
 
 #include "analysisConfig.h"
 
@@ -17,6 +15,7 @@
 #include "RooRealVar.h"
 #include "RooConstVar.h"
 #include "RooGaussian.h"
+#include "RooBreitWigner.h"
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
 #include "RooDataHist.h"
@@ -33,11 +32,15 @@ using namespace RooFit;
 
 /*** Hardcoded ***/
 
-// 24,2 was the winner for Z
+// Winner parameters (meanConstraint, sigmaConstraint):
+//  Q2  = (34, 1.5)
+//  Nu  = (40, 1.5)
+//  Z   = (24, 2)
+//  Pt2 = (38, 1.5)
 Double_t meanConstraint = 26e-3;
 Double_t sigmaConstraint = 1e-3;
-Double_t sigmaRangeDown = 2.3e-2;
-Double_t sigmaRangeUp = 3.1e-2; // testing for Pt2
+Double_t sigmaRangeDown = meanConstraint - 4e-3;
+Double_t sigmaRangeUp = meanConstraint + 4e-3;
 
 /*** Global variables ***/
 
@@ -50,6 +53,7 @@ TString inputFile2 = "";
 TString inputFile3 = "";
 TCut    cutTargType;
 Int_t   bkgOption = 1;
+TString signalOption;
 
 // kinematic variable options
 Int_t flagZ = 0;
@@ -73,6 +77,9 @@ Double_t obtMean = 0.37;
 Double_t obtSigma = 1.75e-2;
 Double_t obtEdges[2] = {0.27, 0.47}; // default
 Int_t    obtNbins = 40; // default
+
+Int_t meanConstraintFlag = 0;
+Int_t sigmaConstraintFlag = 0;
 
 /*** Declaration of functions ***/
 
@@ -146,8 +153,6 @@ int main(int argc, char **argv) {
   Double_t meanRangeUp = 0.39; // 0.38
 
   Double_t sigmaIGV = obtSigma;
-  // Double_t sigmaRangeDown = 1.8e-2; Double_t sigmaRangeUp = 2.8e-2; // winner for Z
-  // Double_t sigmaRangeDown = 3.4e-2; Double_t sigmaRangeUp = 4.2e-2; // testing for Pt2
 
   TH1F *dataHist;
   treeExtracted->Draw(Form("wD>>data(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
@@ -157,9 +162,13 @@ int main(int argc, char **argv) {
 
   RooRealVar x("IMD", "IMD (GeV)", fitRangeDown, fitRangeUp);
 
+  // define signal parameters
   RooRealVar omegaMean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
   RooRealVar omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
-  RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);  
+
+  // define signal functions, use them when corresponds
+  RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);
+  RooBreitWigner omegaBW("omega-bw", "omega-bw peak", x, omegaMean, omegaSigma);  
 
   RooRealVar b1("b1", "linear term", 0.1, -10., 10.);
   RooRealVar b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
@@ -168,11 +177,16 @@ int main(int argc, char **argv) {
   RooArgList lbkg(b1);
   if (bkgOption == 2) lbkg.add(b2);
   RooChebychev bkg("bkg", "background", x, lbkg);
+
+  // functions list
+  RooArgList lfunctions(bkg);
+  if (signalOption == "g") lfunctions.add(omega);
+  else if (signalOption == "bw") lfunctions.add(omegaBW);
   
-  // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
+  // model(x) = bkg_yield*bkg(x) + sig_yield*sig(x)
   RooRealVar nsig("N_{#omega}", "omega yields", 0., dataHist->GetEntries());
   RooRealVar nbkg("N_{b}", "bkg yields", 0., dataHist->GetEntries());
-  RooAddPdf model("model", "model", RooArgList(omega, bkg), RooArgList(nsig, nbkg));
+  RooAddPdf model("model", "model", lfunctions, RooArgList(nbkg, nsig)); // RooArgList(omega, bkg)
   
   // define data
   RooDataHist data("data", "my data", x, dataHist);
@@ -372,7 +386,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakeRooFits -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:z:q:n:p:Sb:C:c:")) != -1)
+  while ((c = getopt(argc, argv, "ht:z:q:n:p:Sb:C:c:F:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
@@ -381,9 +395,10 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'n': flagNu = 1; binNumber = atoi(optarg); break;
     case 'p': flagPt2 = 1; binNumber = atoi(optarg); break;
     case 'S': flagNew = 1; break;
+    case 'F': signalOption = optarg; break;
     case 'b': bkgOption = atoi(optarg); break;
-    case 'C': meanConstraint = (Double_t) atof(optarg); break;
-    case 'c': sigmaConstraint = (Double_t) atof(optarg); break;
+    case 'C': meanConstraint = (Double_t) atof(optarg); meanConstraintFlag = 1; break;
+    case 'c': sigmaConstraint = (Double_t) atof(optarg); sigmaConstraintFlag = 1; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./MakeRooFits -h to print usage." << std::endl;
       exit(0);
@@ -397,6 +412,7 @@ void printOptions() {
   std::cout << "  kinvarName      = " << kinvarName << std::endl;
   std::cout << "  binNumber       = " << binNumber << std::endl;
   std::cout << "  flagNew         = " << flagNew << std::endl;
+  std::cout << "  signalOption    = " << signalOption << std::endl;
   std::cout << "  bkgOption       = " << bkgOption << std::endl;
   std::cout << "  meanConstraint  = " << meanConstraint << std::endl;
   std::cout << "  sigmaConstraint = " << sigmaConstraint << std::endl;
@@ -412,6 +428,9 @@ void printUsage() {
   std::cout << "./MakeRooFits -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
+  std::cout << "./MakeRooFits -F[g,bw,ln]" << std::endl;
+  std::cout << "    choose signal function: gaussian, breit-wigner or log-normal" << std::endl;
+  std::cout << std::endl;
   std::cout << "./MakeRooFits -b[1,2]" << std::endl;
   std::cout << "    choose bkg function: 1st order or 2nd order polynomial" << std::endl;
   std::cout << std::endl;
@@ -426,10 +445,10 @@ void printUsage() {
   std::cout << "    plots a default 5sigma range" << std::endl;
   std::cout << "    without this option, it sets a new 5sigma range based on previous results" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -C[float]" << std::endl;
+  std::cout << "./MakeRooFits -C[float > 0]" << std::endl;
   std::cout << "    (*1e-3) sets mean constraint for sigma parameter" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakeRooFits -c[float]" << std::endl;
+  std::cout << "./MakeRooFits -c[float > 0]" << std::endl;
   std::cout << "    (*1e-3) sets width constraint for sigma parameter" << std::endl;
   std::cout << std::endl;
 }
@@ -458,32 +477,45 @@ void assignOptions() {
     highEdge = edgesZ[binNumber+1-3];
     kinvarSufix = Form("-z%d", binNumber);
     kinvarName = "Z";
+    // winner values
+    if (!meanConstraintFlag) meanConstraint = 24e-3;
+    if (!sigmaConstraintFlag) sigmaConstraint = 2e-3;
   } else if (flagQ2) {
     lowEdge = edgesQ2[binNumber-1];
     highEdge = edgesQ2[binNumber+1-1];
     kinvarSufix = Form("-q%d", binNumber);
     kinvarName = "Q2";
+    // winner values
+    if (!meanConstraintFlag) meanConstraint = 34e-3;
+    if (!sigmaConstraintFlag) sigmaConstraint = 1.5e-3;
   } else if (flagNu) {
     lowEdge = edgesNu[binNumber-1];
     highEdge = edgesNu[binNumber+1-1];
     kinvarSufix = Form("-n%d", binNumber);
     kinvarName = "Nu";
+    // winner values
+    if (!meanConstraintFlag) meanConstraint = 40e-3;
+    if (!sigmaConstraintFlag) sigmaConstraint = 1.5e-3;
   } else if (flagPt2) {
     lowEdge = edgesPt2[binNumber-1];
     highEdge = edgesPt2[binNumber+1-1];
     kinvarSufix = Form("-p%d", binNumber);
     kinvarName = "Pt2";
+    // winner values
+    if (!meanConstraintFlag) meanConstraint = 38e-3;
+    if (!sigmaConstraintFlag) sigmaConstraint = 1.5e-3;
   }
   kinvarCut = Form("%f < ", lowEdge) + kinvarName + " && " + kinvarName + Form(" < %f", highEdge);
   kinvarTitle = Form(" (%.02f < ", lowEdge) + kinvarName + Form(" < %.02f)", highEdge);
   // names
-  outDir = outDir + "/" + kinvarName + "/g" + "/b" + bkgOption; // only gaussian, for now
+  outDir = outDir + "/" + kinvarName + "/" + signalOption + "/b" + bkgOption; // new: added signalOption
   plotFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".png";
   textFile = outDir + "/roofit-" + targetOption + kinvarSufix + ".dat";
   pullFile = outDir + "/roofit-" + targetOption + kinvarSufix + "_pull.png";
   // sigma studies
-  meanConstraint *= 1e-3;
-  sigmaConstraint *= 1e-3;
+  if (meanConstraintFlag) meanConstraint *= 1e-3;
+  if (sigmaConstraintFlag) sigmaConstraint *= 1e-3;
+  // reload variables
   sigmaRangeDown = meanConstraint - 4e-3;
   sigmaRangeUp = meanConstraint + 4e-3;
 }

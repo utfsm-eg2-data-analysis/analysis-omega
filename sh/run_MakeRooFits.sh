@@ -1,15 +1,13 @@
 #!/bin/bash
 
-###############################################################
-# ./run_MakeRooFits.sh --bkg <bkgOpt> --kinvar <kinvarOpt>    #
-#     <kinvarOpt> = (Z, Pt2, Q2, Nu)                          #
-#     <bkgOpt> = (1, 2)                                       #
-#                                                             #
-# EG: ./run_MakeRooFits.sh --bkg 1 --kinvar Pt2               #
-###############################################################
-#     <mean>          #
-#     <width>         #
-#######################
+##################################################################################
+# ./run_MakeRooFits.sh  --kinvar <kinvarOpt> --signal <signalOpt> --bkg <bkgOpt> #
+#     <kinvarOpt> = (Z, Pt2, Q2, Nu)                                             #
+#     <signalOpt> = (g, bw)                                                      #
+#     <bkgOpt>    = (1, 2)                                                       #
+#                                                                                #
+# EG: ./run_MakeRooFits.sh --kinvar Pt2 --signal g --bkg 1                       #
+##################################################################################
 
 inputArray=("$@")
 
@@ -17,12 +15,10 @@ ic=0
 while [ $ic -le $((${#inputArray[@]}-1)) ]; do
   if [ "${inputArray[$ic]}" == "--bkg" ]; then
     bkgOpt=${inputArray[$((ic+1))]}
+  elif [ "${inputArray[$ic]}" == "--signal" ]; then
+    signalOpt=${inputArray[$((ic+1))]}
   elif [ "${inputArray[$ic]}" == "--kinvar" ]; then
     kinvarOpt=${inputArray[$((ic+1))]}
-  elif [ "${inputArray[$ic]}" == "--mean" ]; then
-    mean=${inputArray[$((ic+1))]}
-  elif [ "${inputArray[$ic]}" == "--width" ]; then
-    width=${inputArray[$((ic+1))]}
   else
     printf "*** Aborting: Unrecognized argument: ${inputArray[$((ic))]}. ***\n\n";
   fi
@@ -49,20 +45,20 @@ cd ${PRODIR}
 
 while [ ${COUNTER} -le ${END} ]; do
   # Deut
-  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
-  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tD -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt}
 
   # Carbon
-  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
-  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tC -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt}
 
   # Iron
-  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
-  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tFe -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt}
 
   # Lead
-  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width} -S
-  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -b${bkgOpt} -C${mean} -c${width}
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt} -S
+  ./bin/MakeRooFits -tPb -${kinvarOpt}${COUNTER} -F${signalOpt} -b${bkgOpt}
 
   let COUNTER=COUNTER+1
 done
