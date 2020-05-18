@@ -5,9 +5,9 @@
 /*                                    */
 /**************************************/
 
-// draws different 2D plots
-// i'm interested in: data-Q2:Nu, data-Pt2:Z, simrec-Q2:Nu, simrec-Pt2:Z
-// it still uses old filtered wout_ files
+// UPDATE:
+// - new coloring method, thanks to SM and Ahmed!
+// COMMENT: it still uses old filtered wout files
 
 #include "analysisConfig.h"
 
@@ -70,6 +70,17 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile3 + "/outdata");
   
   setAlias_old(treeExtracted);
+
+  // color stuff, smoran
+  const Int_t NRGBs = 5;
+  const Int_t NCont = 255;
+  
+  Double_t stops[NRGBs] = {0.00, 0.34, 0.61, 0.84, 1.00};
+  Double_t red[NRGBs]   = {0.00, 0.00, 0.87, 1.00, 0.51};
+  Double_t green[NRGBs] = {0.00, 0.81, 1.00, 0.20, 0.00};
+  Double_t blue[NRGBs]  = {0.51, 1.00, 0.12, 0.00, 0.00};
+  
+  TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
   
   TH2F *theHist;
   treeExtracted->Draw(YOption + ":" + XOption + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
@@ -81,8 +92,9 @@ int main(int argc, char **argv) {
   c->SetTickx(1);
   c->SetTicky(1);
   gStyle->SetOptStat(0);
-  gStyle->SetPalette(1, 0);
-
+  gStyle->SetNumberContours(NCont); // colors, smoran
+  // gStyle->SetPalette(55); // rainbow
+  
   theHist->SetTitle(YOption + ":" + XOption + " for " + targetOption + titleDraw + titleZ);
   theHist->GetYaxis()->SetTitle(YAxis);
   theHist->GetXaxis()->SetTitle(XAxis);
