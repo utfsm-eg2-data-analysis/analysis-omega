@@ -6,6 +6,14 @@ All particles are organized in rows and we gather information for all detectors 
 
 The detected particle is identified as an electron if it satisfies the following requeriments.
 
+It is a challenge.
+
+\textbf{At the trigger level.} It is required that the elctron has a minimum amount of energy in the electromagnetic calorimenter EC in coincidence with a signal in the Cherenkov Counter (CC).
+
+\textbf{Geometrical match.} It is also required to have a $DC \times CC$ smaller than $\approx 5^\circ$.
+
+
+
 \textbf{Charge.} Must be -1.
 
 \textbf{Regarding the banks.} EVNT status is between 0 and 100. And the number of rows found in the CCPB, ECPB, SCPB banks is different from 0 and their respective status above 0.
@@ -24,37 +32,38 @@ The detected particle is identified as an electron if it satisfies the following
     \left| t_{EC} - \left( t_{SC} - \frac{l_{EC} - l_{SC}}{c} \right) \right| < 5 \, \sigma (\mbox{ns})   
 \end{equation}
 
-\textbf{Number of CC photoelectrons detected.} Default by Hayk.
-\begin{equation}
-    N_{phe} > 25
-\end{equation}
-
-\textbf{Number of CC photoelectrons detected.} Default by Mike.
-\begin{equation}
-    N_{phe} > 28
-\end{equation}
-
-\textbf{Number of CC photoelectrons detected.} Orlando modification is sector dependent. Just as Taya's work.
+\textbf{Number of CC photoelectrons detected.} This coresponds to the number of photelectrons produced by the electron candidate in the Chernekov Counters (CC). Is sector dependent.
 \begin{itemize}
-    \item For sectors 0 and 1, $N_{phe} > 25$.
-    \item For sector 2, $N_{phe} > 26$.
-    \item For sector 3, $N_{phe} > 21$.
-    \item For sectors 4 and 5, $N_{phe} > 28$.
+\item For sectors 0 and 1, $N_{phe} > 25$.
+\item For sector 2, $N_{phe} > 26$.
+\item For sector 3, $N_{phe} > 21$.
+\item For sectors 4 and 5, $N_{phe} > 28$.
 \end{itemize}
 
-\textbf{Sampling Fraction cut.} This is a cut of $2.5 \sigma$ around sampling fraction fit, just as Taya's thesis. I believe Orlando uses the same one. Sector and target dependent.
+\textbf{Sampling Fraction cut.} Objective: prevent misidentification, distinguish between $\pi^-$ and $e^-$.. This is a cut of $2.5 \sigma$ around sampling fraction fit, just as Taya's thesis. I believe Orlando uses the same one. Sector and target dependent.
 \begin{equation}
-    \left| \frac{E_{tot}}{P} - \mu(P) \right| > 2.5 \, \sigma(P)
+  \left| \frac{E_{tot}}{P} - \mu(P) \right| > 2.5 \, \sigma(P)
 \end{equation}
 
-\textbf{What are those?}
+\textbf{Sampling Fraction cut - more methods.} The first method consists in analysing? the distribution of $E_{total}$ versus electron momentum. This 
 \begin{equation}
-	\frac{E_{tot}}{0.27 \times 1.15} - 0.2 < P < \frac{E_{tot}}{0.27 \times 1.15} + 0.4
+  \frac{E_{tot}}{0.27 \times 1.15} - 0.2 < P < \frac{E_{tot}}{0.27 \times 1.15} + 0.4
 \end{equation}
+The second method consists in analysing? the dependence/relationship of the ratios $E_{inner}/P$ and $E_{outer}/P$.
 \begin{equation}
-    0.8 \times 0.27 \times P < E_{in} + E_{out} < 1.2 \times 0.27 \times P
+  0.8 \times 0.27 \times P < E_{in} + E_{out} < 1.2 \times 0.27 \times P
 \end{equation}
 
+\textbf{DIS cuts.} A posterior cut is made:
+\begin{itemize}
+\item $Q^2 > 1$
+\item $W > 2$, to exclude the nucleon resonances
+\item $y = \frac{\nu}{E} < 0.85$, limit the magnitude of radiative corrections
+\end{itemize}
+%\begin{figure}
+%  \centering
+%  
+%\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{$\pi^{+}$ identification}
 
@@ -64,9 +73,19 @@ All $\pi^{+}$ must satisfy the following requeriments:
 
 \textbf{Banks status.} Should be detected in EVNT and DCPB. (Status above 0)
 
-\textbf{High energy $\pi^+$.} Should have $P \ge 2.7$. CC status above 0. $N_{phe} > 25$ and $\chi^2 < 5/57.3$
-                        
-\textbf{Low energy $\pi^+$.} It has a (very strict) momentum dependent identification. It should exist a valid SC status. It is categorized as a low energy $\pi^+$ if it satisfies any of these.
+\textbf{High energy $\pi^+$.} With $P \ge 2.7$. A Cherenkov Counter (CC) identification technique is used. (CC status above 0).
+\begin{itemize}
+\item $N_{phe} > 25$
+\item $\chi^2 < 5/57.3$
+\end{itemize}
+But, how do we get rid of positrons?
+
+\textbf{Low energy $\pi^+$.} With $P < 2.7$. Here is used a time-of-flight (TOF) identification technique. It should exist a valid SC status. We can not determine $\beta$, due to experimental time and momentum resolution.
+\begin{equation}
+  \beta = \frac{P}{E} = \frac{c}{\sqrt{1 + \frac{m^2}{c^2}}}
+\end{equation}
+
+
 \begin{itemize}
     \item $0.0 < P \le 0.25$ and $-1.45 \le \beta < 1.05$
     \item $0.25 < P \le 0.5$ and $-1.44 \le \beta < 1.05$
@@ -82,34 +101,26 @@ All $\pi^{+}$ must satisfy the following requeriments:
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{$\pi^{-}$ identification}
 
-\section{$\pi^{-}$ identification}            
-
-Just as $\pi^{-}$ must satisfy the following requeriments:
-
+To identify the particle as a $\pi^{-}$, it must satisfy the following requeriments:
 
 \textbf{Time correction.} Depends on the particle.
 \begin{equation}
-    \beta = \left(\frac{l_{SC}}{30} - t_{SC}\right)_e - \left(\frac{l_{SC}}{30} \sqrt{\frac{M^2}{P^2} + 1} - t_{SC} \right)_{k} - 0.08
-\end{equation} 
+  \beta = \left(\frac{l_{SC}}{30} - t_{SC}\right)_e - \left(\frac{l_{SC}}{30} \sqrt{\frac{M^2}{P^2} + 1} - t_{SC} \right)_{k} - 0.08
+\end{equation}     
     
-    
-    \begin{itemize}
-        \item $ charge = -1 $
-        \item $ 0 < Status(k) < 100$
-        \item DC status $ > 0 $
-        \item $ E_{tot} < 0.15 \quad\&\quad E_{in} < (0.085 - 0.5 E_{out}) $
-        \item $  $
-        \item $  $
-        \item $  $
-        \item $  $
-        \item $  $
-    \end{itemize}
-    
-Peo para todos.
-
-Y en especial para mí.
-
+\begin{itemize}
+\item $ charge = -1 $
+\item $ 0 < Status(k) < 100$
+\item DC status $ > 0 $
+\item $ E_{tot} < 0.15 \quad\&\quad E_{in} < (0.085 - 0.5 E_{out}) $
+\item $  $
+\item $  $
+\item $  $
+\item $  $
+\item $  $
+\end{itemize}
     
 \textbf{EC fiducial cuts.}
 \begin{equation}
@@ -184,15 +195,24 @@ So, all three researchers agree.
 \textbf{Momentum correction.} Using the ECPB bank treatment, studied by Taya and Orlando.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{$\pi^0$ identification}
+
+A $3\sigma$ cut arount $\pi^0$ invariant mass, after a Gaussian fit over the signal, is done.
+
+% \begin{figure}
+%  \centering
+%  
+%\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{$\omega$ identification}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Binning}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Local Variables:
 %%% mode: latex
