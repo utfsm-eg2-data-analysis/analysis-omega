@@ -1,15 +1,16 @@
 /**************************************/
-/* MakePlots-2D.cxx                   */
+/* MakePlots-2D_old.cxx               */
 /*                                    */
 /* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 
+// OBJECTIVE:
+// - to compare Q2:Nu and Pt2:Z between simrec and data
 // UPDATE:
 // - new coloring method, thanks to SM and Ahmed!
-// - updated to fnc results
-// - added wM, pipP and pimP
-// COMMENT: only works for data
+// COMMENT:
+// - it still uses old filtered wout files
 
 #include "analysisConfig.h"
 
@@ -21,6 +22,8 @@ TString inputFile2 = "";
 TString inputFile3 = "";
 
 // options
+Int_t dataFlag = 0;
+Int_t simFlag = 0;
 TString targetOption;
 TString XOption;
 TString YOption;
@@ -31,8 +34,6 @@ TCut cutAll;
 TCut cutTargType;
 TCut cutZ = "";
 
-TString XVar;
-TString YVar;
 TString XAxis;
 TString YAxis;
 TString XHistProp;
@@ -64,13 +65,15 @@ int main(int argc, char **argv) {
   system("mkdir -p " + outDir);
   
   // setting cuts
-  cutAll = cutDIS && cutPi0 && cutPipPim;
+  cutAll = cutDIS_old && cutPi0_old && cutPipPim_old;
 
   TChain *treeExtracted = new TChain();
-  treeExtracted->Add(inputFile1 + "/mix");
-  treeExtracted->Add(inputFile2 + "/mix");
-  treeExtracted->Add(inputFile3 + "/mix");
+  treeExtracted->Add(inputFile1 + "/outdata");
+  treeExtracted->Add(inputFile2 + "/outdata");
+  treeExtracted->Add(inputFile3 + "/outdata");
   
+  setAlias_old(treeExtracted);
+
   // color stuff, smoran
   const Int_t NRGBs = 5;
   const Int_t NCont = 255;
@@ -83,7 +86,7 @@ int main(int argc, char **argv) {
   TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
   
   TH2F *theHist;
-  treeExtracted->Draw(YVar + ":" + XVar + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
+  treeExtracted->Draw(YOption + ":" + XOption + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
   theHist = (TH2F *)gROOT->FindObject(outPrefix);
   
   /*** Drawing ***/
@@ -93,6 +96,7 @@ int main(int argc, char **argv) {
   c->SetTicky(1);
   gStyle->SetOptStat(0);
   gStyle->SetNumberContours(NCont); // colors, smoran
+  // gStyle->SetPalette(55); // rainbow
   
   theHist->SetTitle(YOption + ":" + XOption + " for " + targetOption + titleDraw + titleZ);
   theHist->GetYaxis()->SetTitle(YAxis);
@@ -117,18 +121,20 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./MakePlots-2D -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./MakePlots-2D_old -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:x:y:z:")) != -1)
+  while ((c = getopt(argc, argv, "hdst:x:y:z:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
+    case 'd': dataFlag = 1; break;
+    case 's': simFlag = 1; break;
     case 't': targetOption = optarg; break;
     case 'x': XOption = optarg; break;
     case 'y': YOption = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./MakePlots-2D -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./MakePlots-2D_old -h to print usage." << std::endl;
       exit(0);
       break;
     }
@@ -139,6 +145,12 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./MakePlots-2D -h" << std::endl;
   std::cout << "  prints help and exit program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D -d" << std::endl;
+  std::cout << "  draw data (default)" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./MakePlots-2D -s" << std::endl;
+  std::cout << "  draw simrec" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots-2D -t[target]" << std::endl;
   std::cout << "  selects target: D | C | Fe | Pb" << std::endl;
@@ -153,12 +165,14 @@ void printUsage() {
   std::cout << "  turns on and selects bin in Z" << std::endl;
   std::cout << std::endl;
   std::cout << "Possible kinematic variables are:" << std::endl;
-  std::cout << "  {Q2, Nu, Z, Pt2, wM, pipP, pimP}" << std::endl;
+  std::cout << "  {Q2, Nu, Z, Pt2}" << std::endl;
   std::cout << std::endl;
 }
 
 void printOptions() {
   std::cout << "Executing MakePlots-2D program. The chosen parameters are:" << std::endl;
+  std::cout << "  dataFlag     = " << dataFlag << std::endl;
+  std::cout << "  simFlag      = " << simFlag << std::endl;
   std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  XOption      = " << XOption << std::endl;
   std::cout << "  YOption      = " << YOption << std::endl;
@@ -168,91 +182,70 @@ void printOptions() {
 
 void assignOptions() {
   // for kind of data
-  outPrefix = "data";
-  titleDraw = " Data";
-  // for targets
-  if (targetOption == "D") {
-    cutTargType = "TargType == 1";
-    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
-    inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
-    inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
-  } else if (targetOption == "C") {
-    cutTargType = "TargType == 2";
-    inputFile1 = dataDir + "/C/comb_C-thickD2.root";
-  } else if (targetOption == "Fe") {
-    cutTargType = "TargType == 2";
-    inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
-  } else if (targetOption == "Pb") {
-    cutTargType = "TargType == 2";
-    inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
+  if (dataFlag) {
+    outPrefix = "data";
+    titleDraw = " Data";
+    // for targets
+    if (targetOption == "D") {
+      cutTargType = "TargType == 1";
+      inputFile1 = dataDir + "/C/wout_C-thickD2.root";
+      inputFile2 = dataDir + "/Fe/wout_Fe-thickD2.root";
+      inputFile3 = dataDir + "/Pb/wout_Pb-thinD2.root";
+    } else if (targetOption == "C") {
+      cutTargType = "TargType == 2";
+      inputFile1 = dataDir + "/C/wout_C-thickD2.root";
+    } else if (targetOption == "Fe") {
+      cutTargType = "TargType == 2";
+      inputFile1 = dataDir + "/Fe/wout_Fe-thickD2.root";
+    } else if (targetOption == "Pb") {
+      cutTargType = "TargType == 2";
+      inputFile1 = dataDir + "/Pb/wout_Pb-thinD2.root";
+    }
+  } else if (simFlag) {
+    outPrefix = "simrec";
+    titleDraw = " Reconstructed";
+    // for targets
+    if (targetOption == "D") {
+      cutTargType = "TargType == 1";
+      inputFile1 = simDir + "/jlab/D/wout_simrecD.root";
+    } else if (targetOption == "C") {
+      cutTargType = "TargType == 2";
+      inputFile1 = simDir + "/jlab/C/wout_simrecC.root";
+    } else if (targetOption == "Fe") {
+      cutTargType = "TargType == 2";
+      inputFile1 = simDir + "/jlab/Fe/wout_simrecFe.root";
+    } else if (targetOption == "Pb") {
+      cutTargType = "TargType == 2";
+      inputFile1 = simDir + "/usm/Pb/wout_simrecPb.root";
+    }
   }
   // x variable
   if (XOption == "Q2") {
-    XVar = XOption;
     XAxis = "Q^{2} (GeV^{2})";
     XHistProp = "200, 1., 4.";
   } else if (XOption == "Nu") {
-    XVar = XOption;
     XAxis = "#nu (GeV)";
     XHistProp = "200, 2.2, 4.2";
   } else if (XOption == "Z") {
-    XVar = XOption;
     XAxis = "Z";
     XHistProp = "200, 0., 1.5";
   } else if (XOption == "Pt2") {
-    XVar = XOption;
     XAxis = "p_{T}^{2} (GeV^{2})";
     XHistProp = "200, 0., 1.5";
-  } else if (XOption == "wM") {
-    XVar = XOption;
-    XAxis = "IM(#pi^{+} #pi^{-} #gamma #gamma) (GeV)";
-    XHistProp = "250, 0., 2.5";
-  } else if (XOption == "pipP") {
-    XVar = "TMath::Sqrt(pipP2)";
-    XAxis = "P(#pi^{+}) (GeV)";
-    XHistProp = "250, 0., 2.5";
-  } else if (XOption == "pimP") {
-    XVar = "TMath::Sqrt(pimP2)";
-    XAxis = "P(#pi^{-}) (GeV)";
-    XHistProp = "250, 0., 2.5";
-  } else if (XOption == "Pt") {
-    XVar = "TMath::Sqrt(Pt2)";
-    XAxis = "p_{T} (GeV)";
-    XHistProp = "200, 0., 2.";
   }
   // y variable
   if (YOption == "Q2") {
-    YVar = YOption;
     YAxis = "Q^{2} (GeV^{2})";
     YHistProp = "200, 1., 4.";
   } else if (YOption == "Nu") {
-    YVar = YOption;
     YAxis = "#nu (GeV)";
     YHistProp = "200, 2.2, 4.2";
   } else if (YOption == "Z") {
-    YVar = YOption;
     YAxis = "Z";
     YHistProp = "200, 0., 1.5";
   } else if (YOption == "Pt2") {
-    YVar = YOption;
     YAxis = "p_{T}^{2} (GeV^{2})";
     YHistProp = "200, 0., 1.5";
-  } else if (YOption == "wM") {
-    YVar = YOption;
-    YAxis = "IM(#pi^{+} #pi^{-} #gamma #gamma) (GeV)";
-    YHistProp = "250, 0., 2.5";
-  } else if (YOption == "pipP") {
-    YVar = "TMath::Sqrt(pipP2)";
-    YAxis = "P(#pi^{+}) (GeV)";
-    YHistProp = "250, 0., 2.5";
-  } else if (YOption == "pimP") {
-    YVar = "TMath::Sqrt(pimP2)";
-    YAxis = "P(#pi^{-}) (GeV)";
-    YHistProp = "250, 0., 2.5";
-  } else if (YOption == "Pt") {
-    YVar = "TMath::Sqrt(Pt2)";
-    YAxis = "p_{T} (GeV)";
-    YHistProp = "200, 0., 2.";
   }
   histProperties = "(" + XHistProp + ", " + YHistProp + ")";
   // for z
