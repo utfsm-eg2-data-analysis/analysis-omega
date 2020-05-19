@@ -10,6 +10,10 @@
 //    Q2, Z, Nu, Pt2, PhiPQ, pi0M}
 // For different sets of targets: D, C, Fe, Pb
 // For data only (for now)
+// UPDATE:
+// - added OS quality cuts
+// - added WB quality cuts
+// PENDING: add dependence on the other variables
 
 #include "analysisConfig.h"
 
@@ -215,6 +219,14 @@ void assignOptions() {
   // for Z binning
   if (binNumberZ) {
     cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    // OS quality cuts
+    /*
+    cutZ = Form("%f < Z && Z < %f && %f < Pt2 && Pt2 < %f && %f < Q2 && Q2 < %f && %f < Nu && Nu < %f",
+		edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3],
+		edgesPt2[0], edgesPt2[5],
+		edgesQ2[0], edgesQ2[5],
+		edgesNu[0], edgesNu[5]);
+    */
     titleZ = Form("in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
