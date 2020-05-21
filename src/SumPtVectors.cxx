@@ -102,10 +102,12 @@ int main() {
   Float_t  sumPt_y;
   Float_t  sumPt_z;
 
-  // define histogram
-  TH1F *theHist = new TH1F("sum p_{T} - x component", "sum p_{T} - x component", 400, -2, 2);
+  // define histograms
+  TH1F *theHist_x = new TH1F("sum pT_x", "sum p_{T} - x component", 400, -2, 2);
+  TH1F *theHist_y = new TH1F("sum pT_y", "sum p_{T} - y component", 400, -2, 2);
+  TH1F *theHist_z = new TH1F("sum pT_z", "sum p_{T} - z component", 400, -2, 2);
 
-  std::cout << "row:PtGamma1_x:PtGamma2_x:PtPip_x:PtPim_x:sumPt_x" << std::endl;
+  // std::cout << "row:PtGamma1_x:PtGamma2_x:PtPip_x:PtPim_x:sumPt_x" << std::endl;
   for (Int_t i = 0; i < treeExtracted->GetEntries(); i++) { // treeExtracted->GetEntries()
     treeExtracted->GetEntry(i);
 
@@ -118,22 +120,38 @@ int main() {
     sumPt_y = PtGamma1.Py() + PtGamma2.Py() + PtPip.Py() + PtPim.Py();
     sumPt_z = PtGamma1.Pz() + PtGamma2.Pz() + PtPip.Pz() + PtPim.Pz();
     
-    std::cout << i << ":" << PtGamma1.Px() << ":" << PtGamma2.Px() << ":" << PtPip.Px() << ":" << PtPim.Px() << ":" << sumPt_x << std::endl;
+    // std::cout << i << ":" << PtGamma1.Px() << ":" << PtGamma2.Px() << ":" << PtPip.Px() << ":" << PtPim.Px() << ":" << sumPt_x << std::endl;
 
-    theHist->Fill(sumPt_x);
+    // fill histograms
+    theHist_x->Fill(sumPt_x);
+    theHist_y->Fill(sumPt_y);
+    theHist_z->Fill(sumPt_z);
   }
   std::cout << std::endl;
 
-  theHist->GetXaxis()->SetTitle("#Sigma p_{T} - x component (GeV)");
-  theHist->GetXaxis()->CenterTitle();
+  theHist_x->GetXaxis()->SetTitle("#Sigma p_{T} - x component (GeV)");
+  theHist_x->GetXaxis()->CenterTitle();
+
+  theHist_y->GetXaxis()->SetTitle("#Sigma p_{T} - y component (GeV)");
+  theHist_y->GetXaxis()->CenterTitle();
+
+  theHist_z->GetXaxis()->SetTitle("#Sigma p_{T} - z component (GeV)");
+  theHist_z->GetXaxis()->CenterTitle();
   
   /*** Drawing ***/
   
-  TCanvas *c = new TCanvas("c", "c", 1000, 1000); 
+  TCanvas *c_x = new TCanvas("c_x", "c_x", 1000, 1000); 
+  theHist_x->Draw("E");
+  c_x->Print(outDir + "/sum-pT-wrt-virt_x.png"); // output file
 
-  theHist->Draw("E");
-  
-  c->Print(plotFile); // output file
+  TCanvas *c_y = new TCanvas("c_y", "c_y", 1000, 1000); 
+  theHist_y->Draw("E");
+  c_y->Print(outDir + "/sum-pT-wrt-virt_y.png"); // output file
+
+  TCanvas *c_z = new TCanvas("c_z", "c_z", 1000, 1000); 
+  theHist_z->Draw("E");
+  c_z->Print(outDir + "/sum-pT-wrt-virt_z.png"); // output file
+
   std::cout << std::endl;
 
   /*** Third check ***/
@@ -165,10 +183,12 @@ int main() {
   /*** Fourth check ***/
   // What happens if the obtain Pt w.r.t. mother, instead of virtual photon?
 
-  // define histogram
-  TH1F *sickHist = new TH1F("sum p_{T} w.r.t. #omega - x component", "sum p_{T} w.r.t. #omega - x component", 100, -0.25, 0.25);
+  // define histograms
+  TH1F *sickHist_x = new TH1F("sum pT_x wrt #omega", "sum p_{T} w.r.t. #omega - x component", 100, -0.25, 0.25);
+  TH1F *sickHist_y = new TH1F("sum pT_y wrt #omega", "sum p_{T} w.r.t. #omega - y component", 100, -0.25, 0.25);
+  TH1F *sickHist_z = new TH1F("sum pT_z wrt #omega", "sum p_{T} w.r.t. #omega - z component", 200, -0.5, 0.5);
   
-  std::cout << "row:PtGamma1_x:PtGamma2_x:PtPip_x:PtPim_x:sumPt_x" << std::endl;
+  // std::cout << "row:PtGamma1_x:PtGamma2_x:PtPip_x:PtPim_x:sumPt_x" << std::endl;
   for (Int_t i = 0; i < treeExtracted->GetEntries(); i++) { // treeExtracted->GetEntries()
     treeExtracted->GetEntry(i);
 
@@ -181,22 +201,41 @@ int main() {
     sumPt_y = PtGamma1.Py() + PtGamma2.Py() + PtPip.Py() + PtPim.Py();
     sumPt_z = PtGamma1.Pz() + PtGamma2.Pz() + PtPip.Pz() + PtPim.Pz();
     
-    std::cout << i << ":" << PtGamma1.Px() << ":" << PtGamma2.Px() << ":" << PtPip.Px() << ":" << PtPim.Px() << ":" << sumPt_x << std::endl;
-    sickHist->Fill(sumPt_x);
+    // std::cout << i << ":" << PtGamma1.Px() << ":" << PtGamma2.Px() << ":" << PtPip.Px() << ":" << PtPim.Px() << ":" << sumPt_x << std::endl;
+    
+    // fill histograms!
+    sickHist_x->Fill(sumPt_x);
+    sickHist_y->Fill(sumPt_y);
+    sickHist_z->Fill(sumPt_z);
   }
   std::cout << std::endl;
 
-  sickHist->GetXaxis()->SetTitle("#Sigma p_{T} - x component (GeV)");
-  sickHist->GetXaxis()->CenterTitle();
+  sickHist_x->GetXaxis()->SetTitle("#Sigma p_{T} - x component (GeV)");
+  sickHist_x->GetXaxis()->CenterTitle();
+
+  sickHist_y->GetXaxis()->SetTitle("#Sigma p_{T} - y component (GeV)");
+  sickHist_y->GetXaxis()->CenterTitle();
+
+  sickHist_z->GetXaxis()->SetTitle("#Sigma p_{T} - z component (GeV)");
+  sickHist_z->GetXaxis()->CenterTitle();
   
   /*** Drawing ***/
   
-  TCanvas *c2 = new TCanvas("c2", "c2", 1000, 1000); 
-  c2->SetLogy();
+  TCanvas *c2_x = new TCanvas("c2_x", "c2_x", 1000, 1000); 
+  c2_x->SetLogy();
+  sickHist_x->Draw("E");
+  c2_x->Print(outDir + "/sum-pT-wrt-omega_x.png"); // output file
+
+  TCanvas *c2_y = new TCanvas("c2_y", "c2_y", 1000, 1000); 
+  c2_y->SetLogy();
+  sickHist_y->Draw("E");
+  c2_y->Print(outDir + "/sum-pT-wrt-omega_y.png"); // output file
+
+  TCanvas *c2_z = new TCanvas("c2_z", "c2_z", 1000, 1000); 
+  c2_z->SetLogy();
+  sickHist_z->Draw("E");
+  c2_z->Print(outDir + "/sum-pT-wrt-omega_z.png"); // output file
   
-  sickHist->Draw("E");
-  
-  c2->Print(outDir + "/test2.png"); // output file
   std::cout << std::endl;
   
   // CONCLUSION

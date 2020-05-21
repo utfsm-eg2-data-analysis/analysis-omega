@@ -7,9 +7,11 @@
 /***************************************/
 
 // UPDATE:
-// - added RN as an option
-// PENDANT:
+// - removed the infamous "mflag" from GetCategorization
+// PENDING:
 // - add all files of a data run number
+// - add scale factor for the fcup values
+// - do the momentum/angular matching for simulations
 
 #include "analysisConfig.h"
 
@@ -146,7 +148,7 @@ int main(int argc, char **argv) {
       varElectrons[34] = t->Xb(1);
 
       // found electron in simrec!
-      if (input->GetNRows("EVNT") > 0 && (t->GetCategorization(0, analyserOption.Data(), true)) == "electron") {	
+      if (input->GetNRows("EVNT") > 0 && (t->GetCategorization(0, analyserOption.Data())) == "electron") {
 	varElectrons[0] = t->Q2();
 	varElectrons[1] = t->W();
 	varElectrons[2] = t->Nu();
@@ -186,12 +188,12 @@ int main(int argc, char **argv) {
 
 	// hadron found in gsim!
       	if (t->Id(i,1) == 22 || t->Id(i,1) == -211 || t->Id(i,1) == 211) {
-	  varHadrons[50] = t->ElecVertTarg(1);
-	  varHadrons[51] = t->Q2(1);
-	  varHadrons[52] = t->Nu(1);
-	  varHadrons[53] = t->Xb(1);
-	  varHadrons[54] = t->W(1);
-	  varHadrons[55] = t->Sector(0,1);
+	  varHadrons[50] = t->ElecVertTarg(1); // mc_TargType
+	  varHadrons[51] = t->Q2(1); // mc_Q2
+	  varHadrons[52] = t->Nu(1); // mc_Nu
+	  varHadrons[53] = t->Xb(1); // mc_Xb
+	  varHadrons[54] = t->W(1); // mc_W
+	  varHadrons[55] = t->Sector(0,1); // mc_Sector
 	  varHadrons[56] = t->ThetaPQ(i,1);
 	  varHadrons[57] = t->PhiPQ(i,1);
 	  varHadrons[58] = t->Zh(i,1);
@@ -244,61 +246,61 @@ int main(int argc, char **argv) {
 	  TString category = t->GetCategorization(i, analyserOption.Data());
 	  
 	  // hadron in simrec found!
-	  if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron" || category == "positron") {
-	    varHadrons[0] = t->ElecVertTarg();
-	    varHadrons[1] = t->Q2();
-	    varHadrons[2] = t->Nu();
-	    varHadrons[3] = t->Xb();
-	    varHadrons[4] = t->W();
-	    varHadrons[5] = t->Sector(0);
-	    varHadrons[6] = t->ThetaPQ(i);
-	    varHadrons[7] = t->PhiPQ(i);
-	    varHadrons[8] = t->Zh(i);
-	    varHadrons[9] = TMath::Sqrt(t->Pt2(i));
-	    varHadrons[10] = t->Mx2(i);
-	    varHadrons[11] = t->Xf(i);
-	    varHadrons[12] = t->T(i);
-	    varHadrons[13] = t->Momentum(i);
-	    varHadrons[14] = t->TimeCorr4(0.139570,i);
-	    varHadrons[15] = (t->Z(i)) - (t->Z(0));
-	    varHadrons[16] = TMath::Max(t->Etot(i), t->Ein(i) + t->Eout(i));
-	    varHadrons[17] = TMath::Max(t->Etot(0), t->Ein(0) + t->Eout(0));
-	    varHadrons[18] = t->Momentum(0);
-	    varHadrons[19] = t->TimeEC(0);
-	    varHadrons[20] = t->TimeSC(0);
-	    varHadrons[21] = t->PathEC(0);
-	    varHadrons[22] = t->PathSC(0);
-	    varHadrons[23] = k;
-	    varHadrons[24] = t->Px(i);
-	    varHadrons[25] = t->Py(i);
-	    varHadrons[26] = t->Pz(i);
-	    varHadrons[27] = t->X(0);
-	    varHadrons[28] = t->Y(0);
-	    varHadrons[29] = t->Z(0);
+	  if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron") {
+	    varHadrons[0] = t->ElecVertTarg(); // TargType
+	    varHadrons[1] = t->Q2();           // Q2
+	    varHadrons[2] = t->Nu();           // Nu
+	    varHadrons[3] = t->Xb();           // Xb
+	    varHadrons[4] = t->W();            // W
+	    varHadrons[5] = t->Sector(0);      // SectorEl
+	    varHadrons[6] = t->ThetaPQ(i);     // ThetaPQ
+	    varHadrons[7] = t->PhiPQ(i);       // PhiPQ
+	    varHadrons[8] = t->Zh(i);          // Zh
+	    varHadrons[9] = TMath::Sqrt(t->Pt2(i)); // Pt
+	    varHadrons[10] = t->Mx2(i);        // W2p
+	    varHadrons[11] = t->Xf(i);         // Xf
+	    varHadrons[12] = t->T(i);          // T
+	    varHadrons[13] = t->Momentum(i);   // P
+	    varHadrons[14] = t->TimeCorr4(0.139570,i); // T4, should be only for pions, not for gammas!
+	    varHadrons[15] = (t->Z(i)) - (t->Z(0)); // deltaZ
+	    varHadrons[16] = TMath::Max(t->Etot(i), t->Ein(i) + t->Eout(i)); // E
+	    varHadrons[17] = TMath::Max(t->Etot(0), t->Ein(0) + t->Eout(0)); // Ee
+	    varHadrons[18] = t->Momentum(0); // Pe
+	    varHadrons[19] = t->TimeEC(0); // Ect (electron!)
+	    varHadrons[20] = t->TimeSC(0); // Sct
+	    varHadrons[21] = t->PathEC(0); // Ecr
+	    varHadrons[22] = t->PathSC(0); // Scr
+	    varHadrons[23] = k; // evnt
+	    varHadrons[24] = t->Px(i); // Px
+	    varHadrons[25] = t->Py(i); // Py
+	    varHadrons[26] = t->Pz(i); // Pz
+	    varHadrons[27] = t->X(0); // Xe
+	    varHadrons[28] = t->Y(0); // Ye
+	    varHadrons[29] = t->Z(0); // Ze
 	    vert = t->GetCorrectedVert();
-	    varHadrons[30] = vert->X(); 
-	    varHadrons[31] = vert->Y(); 
-	    varHadrons[32] = vert->Z(); 
-	    varHadrons[33] = t->TimeEC(i);
-	    varHadrons[34] = t->XEC(i);
-	    varHadrons[35] = t->YEC(i);
-	    varHadrons[36] = t->ZEC(i);
-	    varHadrons[37] = t->Px(0);
-	    varHadrons[38] = t->Py(0);
-	    varHadrons[39] = t->Pz(0);
-	    varHadrons[40] = t->Ein(i);
-	    varHadrons[41] = t->Eout(i);
-	    varHadrons[42] = t->Ein(0);
-	    varHadrons[43] = t->Eout(0);
+	    varHadrons[30] = vert->X(); // Xec
+	    varHadrons[31] = vert->Y(); // Yec
+	    varHadrons[32] = vert->Z(); // Zec
+	    varHadrons[33] = t->TimeEC(i); // TEc (hadron!)
+	    varHadrons[34] = t->XEC(i); // ECX
+	    varHadrons[35] = t->YEC(i); // ECY
+	    varHadrons[36] = t->ZEC(i); // ECZ
+	    varHadrons[37] = t->Px(0); // Pex
+	    varHadrons[38] = t->Py(0); // Pey
+	    varHadrons[39] = t->Pz(0); // Pez
+	    varHadrons[40] = t->Ein(i); // Ein
+	    varHadrons[41] = t->Eout(i); // Eout
+	    varHadrons[42] = t->Ein(0); // Eine
+	    varHadrons[43] = t->Eout(0); // Eoute
 	    varHadrons[44] = ((category == "gamma")?22:
 			      ((category == "pi-")?-211:
 			       (( category == "high energy pion +" || category == "low energy pion +")?211:
-				((category == "s_electron")?11:-11))));
-	    varHadrons[45] = t->Betta(i);
-	    varHadrons[46] = t->X(i);
-	    varHadrons[47] = t->Y(i);
-	    varHadrons[48] = t->Z(i);
-	    varHadrons[49] = fcup; // fcup!
+				((category == "s_electron")?11:-11)))); // pid
+	    varHadrons[45] = t->Betta(i); // Betta
+	    varHadrons[46] = t->X(i); // vxh
+	    varHadrons[47] = t->Y(i); // vyh
+	    varHadrons[48] = t->Z(i); // vzh
+	    varHadrons[49] = fcup; // fcup
 	    rflag = 1;
 	  }
 	} // end of gsim hadron
@@ -313,7 +315,7 @@ int main(int argc, char **argv) {
     /*** FOR DATA ***/
     
     // found electron
-    if (!simFlag && input->GetNRows("EVNT") > 0 && t->GetCategorization(0, analyserOption.Data(), true) == "electron") {	
+    if (!simFlag && input->GetNRows("EVNT") > 0 && t->GetCategorization(0, analyserOption.Data()) == "electron") {	
       varElectrons[0] = t->Q2();
       varElectrons[1] = t->W();
       varElectrons[2] = t->Nu();
@@ -346,7 +348,7 @@ int main(int argc, char **argv) {
 	TString category = t->GetCategorization(i, analyserOption.Data());
 
 	// hadron found!
-	if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron" || category == "positron") {
+	if (category == "gamma" || category == "pi-" || category == "high energy pion +" || category == "low energy pion +" || category == "s_electron") {
 	  varHadrons[0] = t->ElecVertTarg();
 	  varHadrons[1] = t->Q2();
 	  varHadrons[2] = t->Nu();

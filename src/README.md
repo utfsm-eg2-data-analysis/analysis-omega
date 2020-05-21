@@ -1,36 +1,114 @@
-# omegaThesis
+# analysis-omega/src
 
-GetSimpleTuple    : takes RAW data, uses Analyser & ClasTool to filter the signals
-                    and assign the respective identification of particles
+Here are located all the source codes of every program and routine used in the analysis.
 
-FilterNCombine    : takes the pruned data and filters events which have at least one
-	            omega particle, and keep all the possible combinations
+* `GetSimpleTuple`
+  (described below)
 
-MakePlots         : plots different kinematic variables (kinvar) for data, simrec or gsim
+* `FilterNCombine`
+  (described below)
 
-MakePlots-DvsR    : plots the same kinvar for data and simrec
+* `MakePlots`
+  plots different kinematic variables (kinvar) for data, simrec or gsim
 
-MakePlots-2D      : does 2D histograms, generally Q2:Nu and Z:Pt2 for data and simrec
+* `MakePlots-DvsR` ("Data vs Reconstructed")
+  plots the same kinvar for data and simrec
 
-old_MakePlots     : uses the old format (filtered files from OmegaID)
+* `MakePlots-DvsD` ("Data vs Data")
+  plots different kinvar for a same data sample for comparison
+  (for example, IMD vs IM)
 
-GetQuantiles      : fix a kinvar and fix a number! it obtains the equally distributed bins
+* `MakePlots-2D`
+  does 2D histograms, generally `Q2:Nu` and `Z:Pt2` for data and simrec
 
-GetElectronNumber : it obtains the electron numbers, directly from pruned data
+* `GetQuantiles`
+  fix a kinvar and fix a number! it obtains the equally distributed bins
 
-MakeRooFits       : first program for the bkg subtraction
-	            it is suggested to run it twice, to gather better fit ranges
+* `GetElectronNumber`
+  it obtains the electron numbers, directly from pruned data
 
-PlotParams        : plot the parameter results of the fits
+* `MakeRooFits`
+  main program for the bkg subtraction
+  it is suggested to run it twice, to gather better fit ranges
 
-MakeMR-nbs        : from the fits results, calculates MR integrating n*sigma around the
-	            peak
+* `PlotParams`
+  plot the parameter results of the fits
 
-MakeMR-bs         : from the fits results, calculates MR direcly from the omega number
-	            and bkg number parameters
+* `MakeMR-nbs`
+  from the fits results, calculates MR integrating `n*sigma` around the peak
+  `nbs` stands for no background subtraction
 
-Others...
+* `MakeMR-bs`
+  from the fits results, calculates MR direcly from the omega number
+  and bkg number parameters
 
-  SystPi0 Saga
-  DiffractiveProcesses
-  CheckGSIMCards
+* `GetEvents`
+  extract the numbers of events in a raw simulation file
+
+* `MakeSimFits`
+  main program for the Acceptance
+  it is suggested to run it twice, to gather better fit ranges
+
+* `Acceptance`
+  does the acceptance from filtered simulation files
+  
+* `CutFlow`
+  does a cut flow chart from raw data files
+
+Others programs are:
+
+* `Dalitz` Saga
+* `SystPi0` Saga
+* `MakeMR-sn` and `MakeMR-sim`
+* `DiffractiveProcesses`
+* `CheckGSIMCards`
+* `OnLuminosities`
+* `SumPtVectors`
+
+## GetSimpleTuple
+
+Takes raw data, uses `Analyser` and `ClasTool` to filter the signals
+and assign the respective particles identification.
+
+It employs `Analyser` (especifically, the `aborquez/analysis-omega` branch),
+all particle id cuts are described in `Analyser/CUTS.md`
+
+The corrections applied in this stage are:
+
+* Vertex correction
+* Time correction
+* Sampling fraction cut
+* DC fiducial cut
+* EC fiducial cut
+
+## FilterNCombine
+
+Takes the pruned data and keeps every omega candidate,
+
+The corrections applied in this stage are:
+
+* Gamma's energy correction, based on Taisiya's Mineeva Analysis
+* Gamma's momentum correction, using the ECPB treatment
+* Pion's energies derived from detected momentum and pdg mass value
+
+## Post-FilterNCombine
+
+For all the posterior programs (ie: `MakePlots`, `MakeRooFits`, etc.), all the following
+cuts are recommended (they are also described in `include/analysisConfig.h`)
+
+* **(DIS cut)** `Q2 > 1`
+* **(DIS cut)** `W > 2`
+* **(DIS cut)** `y < 0.85`
+* Neutral pion id from reconstruction
+* Kaon's band exclusion
+* Electron/photon opening angle
+* Electron/charged pion vertex matching
+
+More optional cuts:
+
+* **(Quality cuts)** Low momentum cut `P > 0.15` for positive pions
+* **(Quality cuts)** Low momentum cut `P > 0.15` for negative pions
+* **(Quality cuts)** Low momentum cut `P > 0.15` for gammas
+* SC TOF `M^2` for photons
+* Beta cut for pions
+* `PhiPQ` cut

@@ -7,6 +7,18 @@
 
 // UPDATE:
 // - added proper photons energy corrections
+// PENDING:
+// - add most energetic candidate flag
+// - do the momentum/angular matching for omegas
+// - add t
+// - add crossed terms for dalitz plots
+// - add Mx
+// - add opening angle from electron as a vector
+// - add deltaZ from electron as a vector
+// - add beta_meas as a vector
+// - add beta_calc as a vector
+// - add M2_TOF as a vector (for all)
+// - add Pt_{x,y,z} as a vector for every decay particle
 
 #include "analysisConfig.h"
 
@@ -69,7 +81,7 @@ void assignOptions();
 void printOptions();
 
 Float_t CorrectGammaEnergy(Float_t fE); // it also depends on a global variable called "analyserOption"
-Float_t CorrectGammaMomentum(Int_t i); // i stands for component
+Float_t CorrectGammaMomentum(Int_t i);  // i stands for component
 Float_t PhiPQ(Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t ThetaPQ(Float_t fPx, Float_t fPy, Float_t fPz);
 
