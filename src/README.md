@@ -2,11 +2,9 @@
 
 Here are located all the source codes of every program and routine used in the analysis.
 
-* `GetSimpleTuple`
-  (described below)
+* `GetSimpleTuple` (described below)
 
-* `FilterNCombine`
-  (described below)
+* `FilterNCombine` (described below)
 
 * `MakePlots`
   plots different kinematic variables (kinvar) for data, simrec or gsim
@@ -73,13 +71,12 @@ and assign the respective particles identification.
 It employs `Analyser` (especifically, the `aborquez/analysis-omega` branch),
 all particle id cuts are described in `Analyser/CUTS.md`
 
-The corrections applied in this stage are:
+The corrections applied in this stage are: (they are documented in `Analyser/CORR.md`)
 
 * Vertex correction
 * Time correction
 * Sampling fraction cut
 * DC fiducial cut
-* EC fiducial cut
 
 ## FilterNCombine
 
@@ -96,19 +93,21 @@ The corrections applied in this stage are:
 For all the posterior programs (ie: `MakePlots`, `MakeRooFits`, etc.), all the following
 cuts are recommended (they are also described in `include/analysisConfig.h`)
 
-* **(DIS cut)** `Q2 > 1`
-* **(DIS cut)** `W > 2`
-* **(DIS cut)** `y < 0.85`
+* DIS cuts:
+  * `Q2 > 1`
+  * `W > 2`
+  * `y < 0.85`
 * Neutral pion id from reconstruction
-* Kaon's band exclusion
+* Exclusion of charged kaons' band
 * Electron/photon opening angle
 * Electron/charged pion vertex matching
 
 More optional cuts:
 
-* **(Quality cuts)** Low momentum cut `P > 0.15` for positive pions
-* **(Quality cuts)** Low momentum cut `P > 0.15` for negative pions
-* **(Quality cuts)** Low momentum cut `P > 0.15` for gammas
+* Quality cuts:
+  * Low momentum cut `P > 0.15` for positive pions
+  * Low momentum cut `P > 0.15` for negative pions
+  * Low momentum cut `P > 0.15` for gammas
 * SC TOF `M^2` for photons
 * Beta cut for pions
 * `PhiPQ` cut
