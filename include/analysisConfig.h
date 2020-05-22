@@ -1,7 +1,7 @@
 /**************************************/
 /* analysisConfig.h                   */
 /*                                    */
-/* Created by Andrés Bórquez, CCTVAL  */
+/* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 
@@ -95,10 +95,10 @@ const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 95809
 
 // constants
 TDatabasePDG pdg;
-Float_t kMpi = pdg.GetParticle(211)->Mass();
-Float_t kMpi0 = pdg.GetParticle(111)->Mass();
-Float_t kMe = pdg.GetParticle(11)->Mass();
-Float_t kMomega = pdg.GetParticle(223)->Mass();
+const Float_t kMpi = pdg.GetParticle(211)->Mass();
+const Float_t kMpi0 = pdg.GetParticle(111)->Mass();
+const Float_t kMe = pdg.GetParticle(11)->Mass();
+const Float_t kMomega = pdg.GetParticle(223)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
@@ -158,136 +158,43 @@ void setAlias_old(TTree *treeExtracted) {
   treeExtracted->SetAlias("Pomega", "TMath::Sqrt(p2omega)");
 }
 
-void drawHorizontalLine(Double_t y) {
+// good color options: kBlack, kBlue, kRed, kGreen+2, kOrange+7, kGray+{1,2,3}
+void drawHorizontalLine(Double_t y, Color_t cc = kBlack, TString style = "dash") {
+
+  // define style
+  Int_t ss;
+  if (style == "dash") ss = 2;
+  else if (style == "cont") ss = 1;
+
+  // draw line!
   Double_t u;
   gPad->Update(); // necessary
   u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
   // u = (y - y1)/(y2 - y1);
   TLine *liney = new TLine(0.1, u, 0.9, u);
   liney->SetLineWidth(3);
-  liney->SetLineColor(kRed);
-  liney->SetLineStyle(2);
+  liney->SetLineColor(cc);
+  liney->SetLineStyle(ss);
   liney->SetNDC(kTRUE);
   liney->Draw();
 }
 
-void drawBlackHorizontalLine(Double_t y) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-  // u = (y - y1)/(y2 - y1);
-  TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(1);
-  liney->SetLineColor(kBlack);
-  liney->SetLineStyle(1);
-  liney->SetNDC(kTRUE);
-  liney->Draw();
-}
+// good color options: kBlack, kBlue, kRed, kGreen+2, kOrange+7, kGray+{1,2,3}
+void drawVerticalLine(Double_t x, Color_t cc = kBlack, TString style = "dash") {
+  // define style
+  Int_t ss;
+  if (style == "dash") ss = 2;
+  else if (style == "cont") ss = 1;
 
-void drawBlackDashedHorizontalLine(Double_t y) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-  // u = (y - y1)/(y2 - y1);
-  TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(5);
-  liney->SetLineColor(kBlack);
-  liney->SetLineStyle(2);
-  liney->SetNDC(kTRUE);
-  liney->Draw();
-}
-
-void drawGrayHorizontalLine(Double_t y) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-  // u = (y - y1)/(y2 - y1);
-  TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(3);
-  liney->SetLineColor(kGray+2);
-  liney->SetLineStyle(2);
-  liney->SetNDC(kTRUE);
-  liney->Draw();
-}
-
-void drawOrangeHorizontalLine(Double_t y) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (y - gPad->GetY1())/(gPad->GetY2() - gPad->GetY1());
-  // u = (y - y1)/(y2 - y1);
-  TLine *liney = new TLine(0.1, u, 0.9, u);
-  liney->SetLineWidth(3);
-  liney->SetLineColor(kOrange+7);
-  liney->SetLineStyle(2);
-  liney->SetNDC(kTRUE);
-  liney->Draw();
-}
-
-void drawVerticalLineBlack(Double_t x) {
+  // draw line!
   Double_t u;
   gPad->Update(); // necessary
   u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
   // u = (x - x1)/(x2 - x1);
   TLine *linex = new TLine(u, 0.1, u, 0.9);
   linex->SetLineWidth(3);
-  linex->SetLineColor(kBlack);
-  linex->SetLineStyle(2);
-  linex->SetNDC(kTRUE);
-  linex->Draw();
-}
-
-void drawVerticalLine(Double_t x) {
-  drawVerticalLineBlack(x);
-}
-
-void drawVerticalLineRed(Double_t x) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-  // u = (x - x1)/(x2 - x1);
-  TLine *linex = new TLine(u, 0.1, u, 0.9);
-  linex->SetLineWidth(3);
-  linex->SetLineColor(kRed);
-  linex->SetLineStyle(2);
-  linex->SetNDC(kTRUE);
-  linex->Draw();
-}
-
-void drawVerticalLineGrayest(Double_t x) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-  // u = (x - x1)/(x2 - x1);
-  TLine *linex = new TLine(u, 0.1, u, 0.9);
-  linex->SetLineWidth(3);
-  linex->SetLineColor(kGray+3);
-  linex->SetLineStyle(2);
-  linex->SetNDC(kTRUE);
-  linex->Draw();
-}
-
-void drawVerticalLineGrayer(Double_t x) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-  // u = (x - x1)/(x2 - x1);
-  TLine *linex = new TLine(u, 0.1, u, 0.9);
-  linex->SetLineWidth(3);
-  linex->SetLineColor(kGray+2);
-  linex->SetLineStyle(2);
-  linex->SetNDC(kTRUE);
-  linex->Draw();
-}
-
-void drawVerticalLineGray(Double_t x) {
-  Double_t u;
-  gPad->Update(); // necessary
-  u = (x - gPad->GetX1())/(gPad->GetX2() - gPad->GetX1());
-  // u = (x - x1)/(x2 - x1);
-  TLine *linex = new TLine(u, 0.1, u, 0.9);
-  linex->SetLineWidth(3);
-  linex->SetLineColor(kGray+1);
-  linex->SetLineStyle(2);
+  linex->SetLineColor(cc);
+  linex->SetLineStyle(ss);
   linex->SetNDC(kTRUE);
   linex->Draw();
 }

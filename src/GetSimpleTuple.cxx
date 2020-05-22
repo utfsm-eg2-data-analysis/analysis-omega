@@ -6,12 +6,14 @@
 /*                                     */
 /***************************************/
 
-// UPDATE:
+// UPDATED:
 // - removed the infamous "mflag" from GetCategorization
+// - add all files of a data run number!
 // PENDING:
-// - add all files of a data run number
-// - add scale factor for the fcup values
 // - do the momentum/angular matching for simulations
+// CAN WAIT:
+// - add scale factor for the fcup values
+// - need to modify the fcup thing...
 
 #include "analysisConfig.h"
 
@@ -25,8 +27,7 @@ Int_t   simFlag = 0;
 TString targetOption;
 TString setOption;
 TString NjlabDir;
-TString rnOption; // new!
-TString nFile; // for raw data, don't know how to add it yet
+TString rnOption;
 
 TString outDir;
 TString inputFile;
@@ -59,10 +60,10 @@ int main(int argc, char **argv) {
   input->Add(inputFile);
     
   /*** Beginning Faraday Cup studies ***/
-
-  TChain *c = new TChain(); // fcup
+  
+  // TChain *c = new TChain(); // fcup
   Double_t fcup = 0; // search for maximum in the run files
-    
+  /*  
   // only for data
   if (!simFlag) {
     // add scaler branch
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
   }
 
   delete c;
-  
+  */
   /*** Pruning RAW data ***/
 
   // hadron variables
@@ -477,7 +478,7 @@ void assignOptions() {
   // data type
   if (!simFlag) {
     NtupleName = "ntuple_data";
-    inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_" + nFile + " .pass2.root"; // how to add this???
+    inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_*.pass2.root";
     analyserOption = targetOption;
     outDir = proDir + "/out/prunedData/" + targetOption;
     outTitle = "Data of particles";

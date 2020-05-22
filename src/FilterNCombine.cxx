@@ -19,6 +19,8 @@
 // - add beta_calc as a vector
 // - add M2_TOF as a vector (for all)
 // - add Pt_{x,y,z} as a vector for every decay particle
+// - add aaaall the other variables invented in analysisConfig.h/setAlias()
+// - add a way to have the P of all photons
 
 #include "analysisConfig.h"
 
