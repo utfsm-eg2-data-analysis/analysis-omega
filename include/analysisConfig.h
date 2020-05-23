@@ -160,7 +160,6 @@ void setAlias_old(TTree *treeExtracted) {
 
 // good color options: kBlack, kBlue, kRed, kGreen+2, kOrange+7, kGray+{1,2,3}
 void drawHorizontalLine(Double_t y, Color_t cc = kBlack, TString style = "dash") {
-
   // define style
   Int_t ss;
   if (style == "dash") ss = 2;
@@ -204,6 +203,8 @@ TString particleName(Int_t particleID) {
   else if (particleID == 111) return "pi0";
   else if (particleID == 211) return "pip";
   else if (particleID == -211) return "pim";
+  else if (particleID == 22) return "gamma";
+  else if (particleID == 11) return "electron";
 }
 
 void setAlias(TTree *treeExtracted) {
