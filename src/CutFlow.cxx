@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   
   // define TIdentificator
   TIdentificator *t = new TIdentificator(input);
-  Long_t nEntries = (Long_t) input->GetEntries(); // get total number of events
+  Int_t nEvents = (Int_t) input->GetEntries(); // get total number of events
       
   // define electron counters
   Int_t c00 = 0; // no cut
@@ -76,8 +76,21 @@ int main(int argc, char **argv) {
   Int_t g02 = 0; // speed of light
   Int_t g03 = 0; // min energy
   Int_t g04 = 0; // EC fid cuts
+
+  // define pi+ counters
+  Int_t p00 = 0; // no cut, number_ev > 1
+  Int_t p01 = 0; // status
+  Int_t p02 = 0; // charge
+  Int_t p03 = 0; // momentum and time dependent cuts
   
-  // start TIdentificator
+  // define pi- counters
+  Int_t m00 = 0; // no cut, number_ev > 1
+  Int_t m01 = 0; // status
+  Int_t m02 = 0; // charge
+  Int_t m03 = 0; // energy band
+  Int_t m04 = 0; // cc, nphe, P and time dependent cuts
+  
+  // jump to first event, mandatory!
   input->Next();
 
   // define number of rows
@@ -88,7 +101,7 @@ int main(int argc, char **argv) {
   Int_t number_ev = input->GetNRows("EVNT");
   
   // loop around events
-  for (Int_t n = 0; n < 100; n++) { // nEntries
+  for (Int_t n = 0; n < 500; n++) { // nEvents
 
     // update number of rows
     number_dc = input->GetNRows("DCPB");
@@ -175,13 +188,68 @@ int main(int argc, char **argv) {
 	}
       }
       
-    } else if (partName == "pip") { // end of partname condition
+    } else if (partName == "pi+") { // end of partname condition
 
+      // k > 0, don't forget that!
+      for (Int_t k = 1; k < number_ev; k++) {
+	p00++;
+      
+	if (t->Status(k) > 0 && t->Status(k) < 100 && t->StatDC(k) > 0 && t->DCStatus(k) > 0) {
+	  p01++;
+	  if (t->Charge(k) == 1) {
+	    p02++;
 
+	    Float_t P = t->Momentum(k);
+	    Float_t T4 = t->TimeCorr4(kMpi, k);
+	      
+	    if ((P >= 2.7 && number_cc != 0 && t->StatCC(k) > 0 && t->Nphe(k) > 25 && t->Chi2CC(k) < 5/57.3) || // high energy pi+
+		((P < 2.7 && number_sc != 0 && t->StatSC(k) > 0) && ((P > 0 && P <= 0.25 && T4 >= -1.45 && T4 <= 1.05) || // low energy pi+
+								     (P > 0.25 && P <= 0.5 && T4 >= -1.44 && T4 <= 1.05) || 
+								     (P > 0.5 && P <= 0.75 && T4 >= -1.44 && T4 <= 1.05) ||
+								     (P > 0.75 && P <= 1 && T4 >= -1.4 && T4 <= 1.05) ||
+								     (P > 1 && P <= 1.25 && T4 >= -1.35 && T4 <= 1.03) ||
+								     (P > 1.25 && P <= 1.5 && T4 >= -1.35 && T4 <= 0.95) ||
+								     (P > 1.5 && P <= 1.75 && T4 >= -1.35 && T4 <= 0.87) ||
+								     (P > 1.75 && P <= 2 && T4 >= -1.25 && T4 <= 0.68) ||
+								     (P > 2 && P <= 2.25 && T4 >= -0.95 && T4 <= 0.65) ||
+								     (P > 2.25 && P <= 2.5 && T4 >= -1.05 && T4 <= 0.61 && t->Mass2(k) < 0.5) ||
+								     (P > 2.5 && P < 2.7 && T4 >= -1.05 && T4 <= 0.61 && t->Mass2(k) < 0.4)))
+		) {
+	      p03++;
+	    }
+	  }
+	}
+      }
+  
+    } else if (partName == "pi-") { // end of partname condition
 
-    } else if (partName == "pim") { // end of partname condition
+      // k > 0, don't forget that!
+      for (Int_t k = 1; k < number_ev; k++) {
+	m00++;
+	if (t->Status(k) > 0 && t->Status(k) < 100 && t->StatDC(k) > 0 && t->DCStatus(k) > 0) {
+	  m01++;
+	  if (t->Charge(k) == -1) {
+	    m02++;
+	    if (t->Etot(k) < 0.15 && t->Ein(k) < (0.085 - 0.5*t->Eout(k))) {
+	      m03++;
 
-
+	      Float_t P = t->Momentum(k);
+	      Float_t T4 = t->TimeCorr4(kMpi, k);
+	      
+	      if (((!(t->StatCC(k) > 0 && t->Nphe(k) > 25)) && ((0 < P && P <= 0.5 && T4 > -0.87 && T4 < 0.63) ||
+								(0.5 < P && P <= 1.0 && T4 > -0.55 && T4 < 0.37) ||
+								(1.0 < P && P <= 1.5 && T4 > -0.55 && T4 < 0.38) ||
+								(1.5 < P && P <= 2.0 && T4 > -0.60 && T4 < 0.44) ||
+								(2.0 < P && P <= 2.5 && T4 > -1.00 && T4 < 0.45)
+								))
+		  || (2.5 < P && P <= 3.0 && T4 > -1.00 && T4 < 0.40)
+		  || (3.0 < P && T4 > -2.00 && T4 < 0.45)) {
+		m04++;
+	      }
+	    }
+	  }
+	}
+      }
       
     } // end of partname condition
 
@@ -216,6 +284,17 @@ int main(int argc, char **argv) {
     theHist->SetBinContent(3, g02);
     theHist->SetBinContent(4, g03);
     theHist->SetBinContent(5, g04); // nCuts = 5
+  } else if (partName == "pi+") {
+    theHist->SetBinContent(1, p00);
+    theHist->SetBinContent(2, p01);
+    theHist->SetBinContent(3, p02);
+    theHist->SetBinContent(4, p03); // nCuts = 4
+  } else if (partName == "pi-") {
+    theHist->SetBinContent(1, m00);
+    theHist->SetBinContent(2, m01);
+    theHist->SetBinContent(3, m02);
+    theHist->SetBinContent(4, m03);
+    theHist->SetBinContent(5, m04); // nCuts = 5
   }
 
   theHist->GetXaxis()->CenterLabels();
@@ -265,10 +344,10 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./CutFlow -p[pid]" << std::endl;
   std::cout << "  selects particle by its pid number" << std::endl;
-  std::cout << "  electron =   11" << std::endl;
-  std::cout << "  gamma    =   22" << std::endl;
-  std::cout << "  pi+      =  211" << std::endl;
-  std::cout << "  pi-      = -211" << std::endl;
+  std::cout << "    electron =   11" << std::endl;
+  std::cout << "    gamma    =   22" << std::endl;
+  std::cout << "    pi+      =  211" << std::endl;
+  std::cout << "    pi-      = -211" << std::endl;
   std::cout << std::endl;  
 }
 
@@ -288,14 +367,15 @@ void assignOptions() {
     nCuts = 5;
     partTitle = "Photons'";
   } else if (partOption == 211) {
-    nCuts = 0;
+    nCuts = 4;
     partTitle = "#pi^{+}";
   } else if (partOption == -211) {
-    nCuts = 0;
+    nCuts = 5;
     partTitle = "#pi^{-}";
   }
   partName = particleName(partOption); // defined in analysisConfig.h
-  // for targets, nothig yet
+  // for target option
+  
   // names
   plotFile = outDir + "/cutflow-" + targetOption + "-" + partName + ".png";
 }

@@ -95,6 +95,7 @@ const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 95809
 
 // constants
 TDatabasePDG pdg;
+const Float_t kMproton = pdg.GetParticle(2212)->Mass();
 const Float_t kMpi = pdg.GetParticle(211)->Mass();
 const Float_t kMpi0 = pdg.GetParticle(111)->Mass();
 const Float_t kMe = pdg.GetParticle(11)->Mass();
@@ -201,10 +202,11 @@ void drawVerticalLine(Double_t x, Color_t cc = kBlack, TString style = "dash") {
 TString particleName(Int_t particleID) {
   if (particleID == 223) return "omega";
   else if (particleID == 111) return "pi0";
-  else if (particleID == 211) return "pip";
-  else if (particleID == -211) return "pim";
+  else if (particleID == 211) return "pi+";
+  else if (particleID == -211) return "pi-";
   else if (particleID == 22) return "gamma";
   else if (particleID == 11) return "electron";
+  else return "";
 }
 
 void setAlias(TTree *treeExtracted) {
@@ -215,7 +217,6 @@ void setAlias(TTree *treeExtracted) {
 
   treeExtracted->SetAlias("swD", Form("wD + 2*%f + %f", kMpi, kMpi0));
 }
-
 
 /*
     // my own normalization
