@@ -39,8 +39,8 @@ inline int parseCommandLine(int argc, char* argv[]);
 void assignOptions();
 
 RVec<Int_t> SortByMomentum(RVec<Int_t> row, RVec<Float_t> momentum);
-Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, Int_t m);
-Bool_t NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row);
+Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, Int_t m, Float_t angle);
+RVec<Int_t> NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row);
 
 void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_t> gsimPip_row, RVec<Int_t> gsimPim_row,
 	      RVec<Int_t> simrecElectron_row, RVec<Int_t> simrecGamma_row, RVec<Int_t> simrecPip_row, RVec<Int_t> simrecPim_row);
@@ -181,6 +181,7 @@ int main(int argc, char **argv) {
 
       /*** ANGULAR MATCHING ***/
 
+      std::cout << "...starting angular matching..." << std::endl;
       simrecElectron_row = NewAngularMatching(simrecElectron_row, gsimElectron_row);
       simrecGamma_row = NewAngularMatching(simrecGamma_row, gsimGamma_row);
       simrecPip_row = NewAngularMatching(simrecPip_row, gsimPip_row);
@@ -300,10 +301,10 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
 	      << std::setw(14) << particleName(t->Id(gsimElectron_row[j], 1))
 	      << std::setw(14) << t->Momentum(gsimElectron_row[j], 1)
 	      << std::setw(4)  << "||";
-    if (j < (Int_t) simrecElectron_row.size()) {
+    if (j < (Int_t) simrecElectron_row.size() && simrecElectron_row[j] != -1) {
       std::cout << std::setw(14) << simrecElectron_row[j]
-		    << std::setw(14) << t->GetCategorization(simrecElectron_row[j], analyserOption)
-		    << std::setw(14) << t->Momentum(simrecElectron_row[j], 0) << std::endl;
+		<< std::setw(14) << t->GetCategorization(simrecElectron_row[j], analyserOption)
+		<< std::setw(14) << t->Momentum(simrecElectron_row[j], 0) << std::endl;
     } else {
       std::cout << std::setw(14) << "-9999"
 		<< std::setw(14) << "-9999"
@@ -318,7 +319,7 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
 	      << std::setw(14) << particleName(t->Id(gsimGamma_row[j], 1))
 	      << std::setw(14) << t->Momentum(gsimGamma_row[j], 1)
 	      << std::setw(4) << "||";
-    if (j < (Int_t) simrecGamma_row.size()) {
+    if (j < (Int_t) simrecGamma_row.size() && simrecGamma_row[j] != -1) {
       std::cout << std::setw(14) << simrecGamma_row[j]
 		<< std::setw(14) << t->GetCategorization(simrecGamma_row[j], analyserOption)
 		<< std::setw(14) << t->Momentum(simrecGamma_row[j], 0) << std::endl;
@@ -336,12 +337,12 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
 		<< std::setw(14) << particleName(t->Id(gsimPip_row[j], 1))
 		<< std::setw(14) << t->Momentum(gsimPip_row[j], 1)
 		<< std::setw(4)  << "||";
-    if (j < (Int_t) simrecPip_row.size()) {
+    if (j < (Int_t) simrecPip_row.size() && simrecPip_row[j] != -1) {
       std::cout << std::setw(14) << simrecPip_row[j]
 		<< std::setw(14) << t->GetCategorization(simrecPip_row[j], analyserOption)
 		<< std::setw(14) << t->Momentum(simrecPip_row[j], 0) << std::endl;
     } else {
-      std::cout <<std::setw(14) << "-9999"
+      std::cout << std::setw(14) << "-9999"
 		<< std::setw(14) << "-9999"
 		<< std::setw(14) << "-9999" << std::endl;
     }
@@ -354,7 +355,7 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
 	      << std::setw(14) << particleName(t->Id(gsimPim_row[j], 1))
 	      << std::setw(14) << t->Momentum(gsimPim_row[j], 1)
 	      << std::setw(4)  << "||";
-    if (j < (Int_t) simrecPim_row.size()) {
+    if (j < (Int_t) simrecPim_row.size() && simrecPim_row[j] != -1) {
       std::cout << std::setw(14) << simrecPim_row[j]
 		<< std::setw(14) << t->GetCategorization(simrecPim_row[j], analyserOption)
 		<< std::setw(14) << t->Momentum(simrecPim_row[j], 0) << std::endl;
@@ -367,8 +368,8 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
  
   std::cout << std::endl;
 }
-
-Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, Int_t m) {
+  
+Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, Int_t m, Float_t angle) {
 
   // returns true if the respective n-row for simrec and m-row for gsim meet the angular matching condition
 
@@ -376,36 +377,61 @@ Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, In
   TVector3 simrec_Pvec(t->Px(simrec_row[n],0), t->Py(simrec_row[n],0), t->Pz(simrec_row[n],0));
   TVector3 gsim_Pvec(t->Px(gsim_row[m],1), t->Py(gsim_row[m],1), t->Pz(gsim_row[m],1));
   
-  if (360*simrec_Pvec.Angle(gsim_Pvec)/(2*TMath::Pi()) < 15) {
-    return kTRUE;
-  } else {
-    return kFALSE;
-  }
+  return (360*simrec_Pvec.Angle(gsim_Pvec)/(2*TMath::Pi()) < angle);
 }
 
 RVec<Int_t> NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row) {
 
+  // OBJECTIVE: match the simrec rows with the gsim rows, under angular matching
   // returns a new "simrec_row2" that has these features:
   // - the same size of the "gsim_row" vector
-  
-  RVec<Int_t> simrec_row2;
-  RVec<Int_t> gsim_used;
-  Int_t wasUsed;
-  
-  for (Int_t m = 0; m < (Int_t) gsim_row.size(); m++) {
-    for (Int_t n = 0; n < (Int_t) simrec_row.size(); n++) {
+  // - simrec rows in the same position than the matched gsim vector
+  // - empty rows are filled with "-1"
 
-      wasUsed = std::find(gsim_used.begin(), gsim_used.end(), gsim_row[m]);
+  // define vector sizes - loop length
+  Int_t N = (Int_t) simrec_row.size();
+  Int_t M = (Int_t) gsim_row.size();
+  
+  // define output vector
+  RVec<Int_t> simrec_row2;
+  simrec_row2.resize(M, -1); // M ints with value -1
+  
+  RVec<Int_t> simrec_notused;
+  RVec<Int_t> gsim_used;
+
+  Bool_t wasUsed;
+  
+  // n, m are vectors' positions
+  for (Int_t n = 0; n < N; n++) {
+    for (Int_t m = 0; m < M; m++) {
+
+      // std::find function returns an iterator to the first element in the range ["first","last"[ that compares equal to "value"
+      // if no such element is found, the function returns "last"
+      wasUsed = (std::find(gsim_used.begin(), gsim_used.end(), gsim_row[m]) != gsim_used.end());
       
-      if (AngularMatching(simrec_row, gsim_row, n, m) && !wasUsed) {
-	simrec_row2.push_back(simrec_row[n]);
-	gsim_used.push_back(gsim_row[m]);
-      } else {
-	simrec_row2.push_back(-1);
+      if (AngularMatching(simrec_row, gsim_row, n, m, 10) && !wasUsed) {
+	simrec_row2[m] = simrec_row[n];   // assign to output vector
+	gsim_used.push_back(gsim_row[m]); // add gsim_row to gsim_used
+	m = M;                            // jump to next iteration in n
+      } else if (m == M-1) { // last m for a certain n, and haven't found pair yet
+	simrec_notused.push_back(simrec_row[n]);
       }
       
     } // end of gsim loop
-  } // end of simrec loop  
+  } // end of simrec loop
+
+  // fill output vector with not-used simrec_row
+  if ((Int_t) simrec_notused.size() != 0) {
+    Int_t counter = 0;
+    for (Int_t q = 0; q < M; q++) {
+      if (simrec_row2[q] == -1 && counter < (Int_t) simrec_notused.size()) {
+	simrec_row2[q] = simrec_notused[counter]; // assign first element found in not-used vector
+	counter++;                                // jump to next element in not-used vector
+      }
+    }
+  }
+  
+  return simrec_row2;
 }
 
 // ok, now i know how to match... just put a condition!!
