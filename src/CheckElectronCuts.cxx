@@ -7,10 +7,7 @@
 
 // Checking the electrons' EC-SC coincidence time cut on data
 // UPDATE:
-// - added input/output options
-// - added all other cuts
-// PENDING:
-// - add target option
+// - added target and rn options for bulk execution
 
 #include "analysisConfig.h"
 
@@ -20,14 +17,12 @@
 /*** Global variables ***/
 
 TString outDir = proDir + "/out/CheckElectronCut";
+TString inputFile;
 TString outFile;
 
-TString inputFile;
-// TString inputFile = rawDataDir_utfsm + "/clas_42011_00.pass2.root"; // _*.pass2.root
-TString textFile;
-
+// optionsx
 TString targetOption;
-TString cutOption;
+TString rnOption;
 
 TString outTitle = "Electrons EC SC coincidence time cut";
 
@@ -50,101 +45,85 @@ int main(int argc, char **argv) {
   // define output file
   TFile *rootFile = new TFile(outFile, "RECREATE", outTitle); // output file
   
-  /*** Reading file ***/
+  // define histogram and value
+  TH1F *theHist_final = new TH1F("tECtSC_" + rnOption, "Electrons (t_{EC} - t_{SC}) distribution", 250, -5., 5.);
   
-  std::cout << "Reading " << textFile << " ..." << std::endl;
-  std::ifstream inFile(textFile);
+  // init ClasTool
+  TClasTool *input = new TClasTool();
+  input->InitDSTReader("ROOTDSTR");
+  input->Add(inputFile);
   
-  TString rn;
-  while (inFile >> rn) {
-    
-    std::cout << "rn = " << rn << std::endl;
-    // inputFile = "/home/borquez/Downloads/clas_" + rn + "_*.pass2.root"; // _*.pass2.root (HP)
-    inputFile = rawDataDir_utfsm + "/clas_" + rn + "_*.pass2.root"; // (utfsm cluster)
-        
-    // define histogram and value
-    TH1F *theHist_final = new TH1F("tECtSC_" + rn, "Electrons (t_{EC} - t_{SC}) distribution", 250, -5., 5.);
+  // define TIdentificator
+  TIdentificator *t = new TIdentificator(input);
+  Long_t nEntries = (Long_t) input->GetEntries();
   
-    // init ClasTool
-    TClasTool *input = new TClasTool();
-    input->InitDSTReader("ROOTDSTR");
-    input->Add(inputFile);
+  // jump to first event!
+  input->Next();
+  
+  // define number of rows
+  Int_t number_dc = input->GetNRows("DCPB");
+  Int_t number_cc = input->GetNRows("CCPB");
+  Int_t number_sc = input->GetNRows("SCPB");
+  Int_t number_ec = input->GetNRows("ECPB");
+  Int_t number_ev = input->GetNRows("EVNT");
+  
+  // loop around events
+  for (Int_t n = 0; n < nEntries; n++) {
     
-    // define TIdentificator
-    TIdentificator *t = new TIdentificator(input);
-    Long_t nEntries = (Long_t) input->GetEntries();
+    // update number of rows
+    number_dc = input->GetNRows("DCPB");
+    number_cc = input->GetNRows("CCPB");
+    number_sc = input->GetNRows("SCPB");
+    number_ec = input->GetNRows("ECPB");
+    number_ev = input->GetNRows("EVNT");
     
-    // jump to first event!
-    input->Next();
-    
-    // define number of rows
-    Int_t number_dc = input->GetNRows("DCPB");
-    Int_t number_cc = input->GetNRows("CCPB");
-    Int_t number_sc = input->GetNRows("SCPB");
-    Int_t number_ec = input->GetNRows("ECPB");
-    Int_t number_ev = input->GetNRows("EVNT");
-    
-    // loop around events
-    for (Int_t n = 0; n < nEntries; n++) {
+    // loop around rows
+    for (Int_t k = 0; k < number_ev; k++) {
       
-      // update number of rows
-      number_dc = input->GetNRows("DCPB");
-      number_cc = input->GetNRows("CCPB");
-      number_sc = input->GetNRows("SCPB");
-      number_ec = input->GetNRows("ECPB");
-      number_ev = input->GetNRows("EVNT");
+      // update electrons' UVW vector
+      TVector3 *ECxyz = new TVector3(t->XEC(k), t->YEC(k), t->ZEC(k));
+      TVector3 *ECuvw = t->XYZToUVW(ECxyz);
       
-      // loop around rows
-      for (Int_t k = 0; k < number_ev; k++) {
-	
-	// update electrons' UVW vector
-	TVector3 *ECxyz = new TVector3(t->XEC(k), t->YEC(k), t->ZEC(k));
-	TVector3 *ECuvw = t->XYZToUVW(ECxyz);
-	
-	Bool_t statusCuts = t->Status(k) > 0 && t->Status(k) < 100 && t->StatCC(k) > 0 && t->StatSC(k) > 0 && t->StatDC(k) > 0 && t->StatEC(k) > 0 && t->DCStatus(k) > 0 && t->SCStatus(k) == 33;
-	Bool_t numberCuts = number_cc != 0 && number_ec != 0 && number_sc != 0;
-	Bool_t condition = t->Charge(k) == -1 &&
-	  (t->Nphe(k) > (t->Sector(k)==0 || t->Sector(k)==1)*25 + (t->Sector(k)==2)*26 + (t->Sector(k)==3)*21 + (t->Sector(k)==4 || t->Sector(k)==5)*28) &&
-	  t->Momentum(k) > 0.64 &&
-	  t->Ein(k) > 0.06 &&
-	  t->SampFracCheck(targetOption) &&
-	  (t->Etot(k) / 0.27 / 1.15 + 0.4 > t->Momentum(k)) &&
-	  (t->Etot(k) / 0.27 / 1.15 - 0.2 < t->Momentum(k)) &&
-	  (t->Ein(k) + t->Eout(k) > 0.8 * 0.27 * t->Momentum(k)) &&
-	  (t->Ein(k) + t->Eout(k) < 1.2 * 0.27 * t->Momentum(k)) &&
-	  t->Eout(k) > 0 &&
-	  ECuvw->X() > 40 && ECuvw->X() < 400 && ECuvw->Y() >= 0 && ECuvw->Y() < 360 && ECuvw->Z() >= 0 && ECuvw->Z() < 390;
-	
-	// fill histograms
-	if (condition) theHist_final->Fill(t->TimeEC(k) - t->TimeSC(k)); // mike
-      } // end of loop in rows
+      Bool_t statusCuts = t->Status(k) > 0 && t->Status(k) < 100 && t->StatCC(k) > 0 && t->StatSC(k) > 0 && t->StatDC(k) > 0 && t->StatEC(k) > 0 && t->DCStatus(k) > 0 && t->SCStatus(k) == 33;
+      Bool_t numberCuts = number_cc != 0 && number_ec != 0 && number_sc != 0;
+      Bool_t condition = t->Charge(k) == -1 &&
+	(t->Nphe(k) > (t->Sector(k)==0 || t->Sector(k)==1)*25 + (t->Sector(k)==2)*26 + (t->Sector(k)==3)*21 + (t->Sector(k)==4 || t->Sector(k)==5)*28) &&
+	t->Momentum(k) > 0.64 &&
+	t->Ein(k) > 0.06 &&
+	t->SampFracCheck(targetOption) &&
+	(t->Etot(k) / 0.27 / 1.15 + 0.4 > t->Momentum(k)) &&
+	(t->Etot(k) / 0.27 / 1.15 - 0.2 < t->Momentum(k)) &&
+	(t->Ein(k) + t->Eout(k) > 0.8 * 0.27 * t->Momentum(k)) &&
+	(t->Ein(k) + t->Eout(k) < 1.2 * 0.27 * t->Momentum(k)) &&
+	t->Eout(k) > 0 &&
+	ECuvw->X() > 40 && ECuvw->X() < 400 && ECuvw->Y() >= 0 && ECuvw->Y() < 360 && ECuvw->Z() >= 0 && ECuvw->Z() < 390;
       
+      // fill histograms
+      if (condition) theHist_final->Fill(t->TimeEC(k) - t->TimeSC(k)); // mike
+    } // end of loop in rows
+    
       // jump to next event
-      input->Next();
-    } // end of loop in events
-    
-    theHist_final->GetXaxis()->SetTitle("(ns)");
-    theHist_final->SetLineColor(kGreen+2);
-    theHist_final->SetLineWidth(3);
-    
-    /*** Drawing ***/
-    
-    // TCanvas *c = new TCanvas("c", "c", 1000, 1000);
-    gStyle->SetOptStat("emr");
-    
-    // draw hist
-    theHist_final->Draw("HIST"); // mike's suggestion
-    // drawVerticalLine(theHist_final->GetMean(), kGreen+2, "dash");
-    
-    // save plot? nah
-    // c->Write();
-    
-    // write all present objects into root file
-    rootFile->Write();
-  } // end of reading text file
-
-  // stop reading text file and close root file
-  inFile.close();
+    input->Next();
+  } // end of loop in events
+  
+  theHist_final->GetXaxis()->SetTitle("(ns)");
+  theHist_final->SetLineColor(kGreen+2);
+  theHist_final->SetLineWidth(3);
+  
+  /*** Drawing ***/
+  
+  // TCanvas *c = new TCanvas("c", "c", 1000, 1000);
+  gStyle->SetOptStat("emr");
+  
+  // draw hist
+  theHist_final->Draw("HIST"); // mike's suggestion
+  // drawVerticalLine(theHist_final->GetMean(), kGreen+2, "dash");
+  
+  // save plot? nah
+  // c->Write();
+  
+  // write all present objects into root file and close it
+  rootFile->Write();
   rootFile->Close();
   
   return 0;
@@ -158,10 +137,11 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./CheckElectronCuts -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:")) != -1)
+  while ((c = getopt(argc, argv, "ht:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
+    case 'r': rnOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./CheckElectronCuts -h to print usage." << std::endl;
       exit(0);
@@ -178,25 +158,24 @@ void printUsage() {
   std::cout << "./CutFlow -t[target]" << std::endl;
   std::cout << "  selects target: C, Fe, Pb" << std::endl;
   std::cout << std::endl;
+  std::cout << "./CutFlow -r[rn]" << std::endl;
+  std::cout << "  selects run number" << std::endl;
+  std::cout << std::endl;
 }
 
 void printOptions() {
   std::cout << "Executing CheckElectronCuts program. The chosen parameters are:" << std::endl;
   std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  rnOption     = " << rnOption << std::endl;
   std::cout << std::endl;
 }
 
 void assignOptions() {
-  // targets
-  if (targetOption == "C") {
-    textFile = proDir + "/include/C-thickD2rn.txt";
-  } else if (targetOption == "Fe") {
-    textFile = proDir + "/include/Fe-thickD2rn.txt";    
-  } else if (targetOption == "Pb") {
-    textFile = proDir + "/include/Pb-thinD2rn.txt";
-  }
-  // regardless of the cut option
-  outFile = outDir + "/cec-" + targetOption + ".root";  
+  // targets (ARE NEEDED BECAUSE OF SAMPLING FRAC CUT)
+  // then, for all
+  // inputFile = "/home/borquez/Downloads/clas_" + rnOption + "_*.pass2.root"; // _*.pass2.root (HP)
+  inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_*.pass2.root"; // (utfsm cluster)
+  outFile = outDir + "/cec-" + targetOption + "_" + rnOption + ".root";  
 }
 
 
