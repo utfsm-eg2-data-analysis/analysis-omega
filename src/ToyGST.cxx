@@ -433,9 +433,3 @@ RVec<Int_t> NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row) {
   
   return simrec_row2;
 }
-
-// ok, now i know how to match... just put a condition!!
-// doesn't work... i'm showing just when momentum order also obeys the match...
-// now, the questions are:
-//   how do i prevent excluding those who doesn't match the condition ??? :c
-//   how do i put
