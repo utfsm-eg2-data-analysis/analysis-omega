@@ -20,7 +20,7 @@ TString outDir = proDir + "/out/CheckElectronCut";
 TString inputFile;
 TString outFile;
 
-// optionsx
+// options
 TString targetOption;
 TString rnOption;
 
