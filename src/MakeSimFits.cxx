@@ -226,18 +226,18 @@ int main(int argc, char **argv) {
   frame2->GetYaxis()->CenterTitle();
   frame2->Draw();
   
-  drawHorizontalLine(3);
-  drawBlackHorizontalLine(0);
-  drawHorizontalLine(-3);
+  drawHorizontalLine(3, kRed, "dash");
+  drawHorizontalLine(0, kBlack, "cont");
+  drawHorizontalLine(-3, kRed, "dash");
 
   c->cd(1);
   cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   frame->Draw();
   
   // draw lines
-  drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
-  drawVerticalLineBlack(omegaMean.getValV());
-  drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
+  drawVerticalLine(omegaMean.getValV() - 3*omegaSigma.getValV(), kGray+2, "dash");
+  drawVerticalLine(omegaMean.getValV(), kBlack, "dash");
+  drawVerticalLine(omegaMean.getValV() + 3*omegaSigma.getValV(), kGray+2, "dash");
   
   c->Print(plotFile); // output file    
   

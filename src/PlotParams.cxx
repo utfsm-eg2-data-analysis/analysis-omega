@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
   Double_t mean_avg;
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) mean_avg += meanHist->GetBinContent(i);
   mean_avg = mean_avg/(4.*kinvarNbins);
-  drawGrayHorizontalLine(mean_avg);
+  drawHorizontalLine(mean_avg, kGray+2, "dash");
 
   /*** SIGMA ***/
   
@@ -154,9 +154,9 @@ int main(int argc, char **argv) {
   Double_t sigma_avg;
   for (Int_t i = 1; i <= (4*kinvarNbins); i++) sigma_avg += sigmaHist->GetBinContent(i);
   sigma_avg = sigma_avg/(4.*kinvarNbins);
-  drawGrayHorizontalLine(sigma_avg);
+  drawHorizontalLine(sigma_avg, kGray+2, "dash");
 
-  if (lineFlag) drawOrangeHorizontalLine(meanConstraint);
+  if (lineFlag) drawHorizontalLine(meanConstraint, kOrange+7, "dash");
 
   /*** OMEGA NUMBER ***/
   

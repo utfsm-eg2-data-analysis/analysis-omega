@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     else if (i == (Nquantiles - 1)) std::cout << yq[i] << std::endl;
     else std::cout << yq[i] << ", ";
     // draw line
-    if (i != (Nquantiles - 1)) drawVerticalLineRed(yq[i]);
+    if (i != (Nquantiles - 1)) drawVerticalLine(yq[i], kRed, "dash");
   }
 
   c->Print(plotFile); // output file

@@ -304,7 +304,7 @@ int main(int argc, char **argv) {
   
   LeadMRdiff_gr->Draw("P");
   
-  drawBlackHorizontalLine(0);
+  drawHorizontalLine(0, kBlack, "cont");
 
   TLegend *l2 = new TLegend(0.15, 0.15, 0.3, 0.3);
   l2->AddEntry(CarbonMRdiff_gr, "Carbon", "p");

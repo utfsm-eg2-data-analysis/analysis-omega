@@ -187,8 +187,8 @@ int main(int argc, char **argv) {
   dataHist2->Draw("COLZ");
 
   // testing the cut
-  drawBlackDashedHorizontalLine(0.48*0.48);
-  drawBlackDashedHorizontalLine(0.51*0.51);
+  drawHorizontalLine(0.48*0.48, kBlack, "dash");
+  drawHorizontalLine(0.51*0.51, kBlack, "dash");
   
   // normalization
   //dataHist2->Scale(1/dataHist2->GetEntries());

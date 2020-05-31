@@ -283,9 +283,9 @@ int main(int argc, char **argv) {
   
   pullHist->Draw("HIST B");
     
-  drawHorizontalLine(3);
-  drawBlackHorizontalLine(0);
-  drawHorizontalLine(-3);
+  drawHorizontalLine(3, kRed, "dash");
+  drawHorizontalLine(0, kBlack, "cont");
+  drawHorizontalLine(-3, kRed, "dash");
 
   /*** Finish drawing ***/
   
@@ -302,9 +302,9 @@ int main(int argc, char **argv) {
   */
   
   // draw lines
-  drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
-  drawVerticalLineBlack(omegaMean.getValV());
-  drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
+  drawVerticalLine(omegaMean.getValV() - 3*omegaSigma.getValV(), kGray+2, "dash");
+  drawVerticalLine(omegaMean.getValV(), kBlack, "dash");
+  drawVerticalLine(omegaMean.getValV() + 3*omegaSigma.getValV(), kGray+2, "dash");
   
   c->Print(plotFile); // output file
 

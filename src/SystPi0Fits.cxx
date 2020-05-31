@@ -207,9 +207,9 @@ int main(int argc, char **argv) {
   frame->Draw();
   
   // draw lines
-  drawVerticalLineGrayest(omegaMean.getValV() - 3*omegaSigma.getValV());
-  drawVerticalLineBlack(omegaMean.getValV());
-  drawVerticalLineGrayest(omegaMean.getValV() + 3*omegaSigma.getValV());
+  drawVerticalLine(omegaMean.getValV() - 3*omegaSigma.getValV(), kGray+2, "dash");
+  drawVerticalLine(omegaMean.getValV(), kBlack, "dash");
+  drawVerticalLine(omegaMean.getValV() + 3*omegaSigma.getValV(), kGray+2, "dash");
   
   c->Print(plotFile); // output file
 

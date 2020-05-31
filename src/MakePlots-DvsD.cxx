@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
     theHistA->Draw("SAME HIST");
 
     // line!
-    drawVerticalLineRed(kMomega);
+    drawVerticalLine(kMomega, kRed, "dash");
     
     TLegend *l = new TLegend(0.7, 0.7, 0.9, 0.9);
     l->AddEntry(theHistA, "IM", "l");
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
     theHist3->Draw("SAME HIST");
 
     // line, new!
-    drawVerticalLineRed(kMomega);
+    drawVerticalLine(kMomega, kRed, "dash");
     
     TLegend *l = new TLegend(0.7, 0.7, 0.85, 0.85);
     l->AddEntry(theHist0, "Deuterium", "l");
