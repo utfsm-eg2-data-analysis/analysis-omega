@@ -5,7 +5,8 @@
 /*                                     */
 /***************************************/
 
-// TESTING
+// UPDATE:
+// - if nElectron > 1, select the one who obeys DIS
 
 #include "analysisConfig.h"
 
@@ -31,7 +32,16 @@ TString analyserOption = "Sim";
 Int_t simFlag;
 TString inputFile;
 
+// define TIdentificator object as global
 TIdentificator *t;
+
+// define ntuple list of variables
+
+
+TString varListParticles = "TargType:Q2:Nu:Xb:W:SectorEl:ThetaPQ:PhiPQ:Zh:Pt:W2p:Xf:T:P:T4:deltaZ:E:Ee:Pe:Ect:Sct:Ecr:Scr:evnt:Px:Py:Pz:Xe:Ye:Ze:Xec:Yec:Zec:TEc:ECX:ECY:ECZ:Pex:Pey:Pez:Ein:Eout:Eine:Eoute:pid:Betta:vxh:vyh:vzh";
+
+//                         " 0:1: 2:   3:   4:   5:  6:  7:  8:  9: 10: 11:   12:      13:    14:15: 16: 17: 18"
+TString varListElectrons = "Q2:W:Nu:vxec:vyec:vzec:vxe:vye:vze:Pex:Pey:Pez:event:TargType:sector:Xb:ECX:ECY:ECZ";
 
 /*** Declaration of functions ***/
 
@@ -44,6 +54,8 @@ RVec<Int_t> NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row);
 
 void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_t> gsimPip_row, RVec<Int_t> gsimPim_row,
 	      RVec<Int_t> simrecElectron_row, RVec<Int_t> simrecGamma_row, RVec<Int_t> simrecPip_row, RVec<Int_t> simrecPim_row);
+void ResetVectors(RVec<Int_t> gsimElectron, RVec<Int_t> gsimGamma, RVec<Int_t> gsimPip, RVec<Int_t> gsimPim,
+		  RVec<Int_t> simrecElectron, RVec<Int_t> simrecGamma, RVec<Int_t> simrecPip, RVec<Int_t> simrecPim);
 
 int main(int argc, char **argv) {
 
@@ -182,6 +194,7 @@ int main(int argc, char **argv) {
       /*** ANGULAR MATCHING ***/
 
       std::cout << "...starting angular matching..." << std::endl;
+      
       simrecElectron_row = NewAngularMatching(simrecElectron_row, gsimElectron_row);
       simrecGamma_row = NewAngularMatching(simrecGamma_row, gsimGamma_row);
       simrecPip_row = NewAngularMatching(simrecPip_row, gsimPip_row);
@@ -193,26 +206,10 @@ int main(int argc, char **argv) {
 	       simrecElectron_row, simrecGamma_row, simrecPip_row, simrecPim_row);
 
       // reset memory
-      
-      gsimElectron_P.clear();
-      gsimElectron_row.clear();
-      gsimGamma_P.clear();
-      gsimGamma_row.clear();
-      
-      gsimPip_P.clear();
-      gsimPip_row.clear();
-      gsimPim_P.clear();
-      gsimPim_row.clear();
-
-      simrecElectron_P.clear();
-      simrecElectron_row.clear();
-      simrecGamma_P.clear();
-      simrecGamma_row.clear();
-      
-      simrecPip_P.clear();
-      simrecPip_row.clear();
-      simrecPim_P.clear();
-      simrecPim_row.clear();
+      ResetVectors(gsimElectron_row, gsimGamma_row, gsimPip_row, gsimPim_row,
+		   simrecElectron_row, simrecGamma_row, simrecPip_row, simrecPim_row);
+      ResetVectors(gsimElectron_P, gsimGamma_P, gsimPip_P, gsimPim_P,
+		   simrecElectron_P, simrecGamma_P, simrecPip_P, simrecPim_P);
       
     } else if (!simFlag) { // end of simulation condition & beginning of data condition
 
@@ -228,7 +225,7 @@ int main(int argc, char **argv) {
 	
       } // end of loop in particles      
 
-    } // END OF DATA CONDITION
+    } // end of data condition
     
     /*** NEXT EVENT! ***/
 
@@ -239,6 +236,8 @@ int main(int argc, char **argv) {
     
   return 0;
 }
+
+/*** Input/output functions ***/
 
 inline int parseCommandLine(int argc, char* argv[]) {
   int c;
@@ -285,6 +284,8 @@ RVec<Int_t> SortByMomentum(RVec<Int_t> row, RVec<Float_t> momentum) {
 void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_t> gsimPip_row, RVec<Int_t> gsimPim_row,
 	      RVec<Int_t> simrecElectron_row, RVec<Int_t> simrecGamma_row, RVec<Int_t> simrecPip_row, RVec<Int_t> simrecPim_row) {
 
+  // debug function
+  
   std::cout << std::left
 	    << std::setw(14) << "gsim_row"
 	    << std::setw(14) << "gsim_categ"
@@ -368,6 +369,23 @@ void PrintAll(RVec<Int_t> gsimElectron_row, RVec<Int_t> gsimGamma_row, RVec<Int_
  
   std::cout << std::endl;
 }
+
+void ResetVectors(RVec<Int_t> gsimElectron, RVec<Int_t> gsimGamma, RVec<Int_t> gsimPip, RVec<Int_t> gsimPim,
+		  RVec<Int_t> simrecElectron, RVec<Int_t> simrecGamma, RVec<Int_t> simrecPip, RVec<Int_t> simrecPim) {
+
+  // cleans memory, clears all vectors
+  // can be used for "_row" and "P" vectors
+  
+  gsimElectron.clear();
+  gsimGamma.clear();      
+  gsimPip.clear();
+  gsimPim.clear();
+  
+  simrecElectron.clear();
+  simrecGamma.clear();
+  simrecPip.clear();
+  simrecPim.clear();
+}
   
 Bool_t AngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row, Int_t n, Int_t m, Float_t angle) {
 
@@ -432,4 +450,128 @@ RVec<Int_t> NewAngularMatching(RVec<Int_t> simrec_row, RVec<Int_t> gsim_row) {
   }
   
   return simrec_row2;
+}
+
+Int_t ChooseElectron(RVec<Int_t> Electron_row, Int_t kind) {
+
+  // selects first electron that meet DIS requirements: Q2 > 1 and W > 1
+
+  // define winner
+  Int_t winner;
+  
+  if ((Int_t) Electron_row.size() > 1) {
+    
+    for (Int_t i = 0; i < (Int_t) Electron_row.size(), i++) {
+      if (t->Q2(Electron_row[0]) > 1. && t->W(Electron_row[0]) > 2.) winner = Electron_row[0];
+    }
+    
+  } else {
+    return Electron_row[0];
+  }
+  
+  return winner;
+}
+
+/*** Filling tree functions ***/
+
+void SetElectronVars(Float_t *e_vars, TIdentificator *t, Int_t k, bool sim) {
+
+  TVector3 *vert;
+  
+  if (!simFlag) {
+    // variables reminder
+    //  0:1: 2:   3:   4:   5:  6:  7:  8:  9: 10: 11:   12
+    // Q2:W:Nu:vxec:vyec:vzec:vxe:vye:vze:Pex:Pey:Pez:event
+    e_vars[0] = t -> Q2();
+    e_vars[1] = t -> W();
+    e_vars[2] = t -> Nu();
+    vert = t->GetCorrectedVert();
+    Float_t vxec=vert->X(); 
+    Float_t vyec=vert->Y(); 
+    Float_t vzec=vert->Z(); 
+    e_vars[3] = vxec; 
+    e_vars[4] = vyec; 
+    e_vars[5] = vzec;
+    e_vars[6] = t->X(0);
+    e_vars[7] = t->Y(0);
+    e_vars[8] = t->Z(0);
+    e_vars[9] = t -> Px(0);
+    e_vars[10] = t -> Py(0);
+    e_vars[11] = t -> Pz(0);
+    e_vars[12] = k;
+  } else if ( sim == 1 ) {
+    e_vars[0] = t -> Q2(1);
+    e_vars[1] = t -> W(1);
+    e_vars[2] = t -> Nu(1);
+    e_vars[3] = 0;
+    e_vars[4] = 0;
+    e_vars[5] = 0;
+    e_vars[6] = t -> X(0,1);
+    e_vars[7] = t -> Y(0,1);
+    e_vars[8] = t -> Z(0,1);
+    e_vars[9] = t -> Px(0,1);
+    e_vars[10] = t -> Py(0,1);
+    e_vars[11] = t -> Pz(0,1);
+    e_vars[12] = k;
+  }
+}
+
+void SetParticleVars(Float_t * particle_vars, TIdentificator * t, Int_t k, Int_t i, bool sim, TString category) {
+  Int_t f = 0;
+  if ( sim == 0 ) {
+    particle_vars[f] = t -> ElecVertTarg(); f++;
+    particle_vars[f] = t -> Q2(); f++;
+    particle_vars[f] = t -> Nu(); f++;
+    particle_vars[f] = t -> Xb(); f++;
+    particle_vars[f] = t -> W(); f++;
+    particle_vars[f] = t -> Sector(0); f++;
+    particle_vars[f] = t -> ThetaPQ(i); f++;
+    particle_vars[f] = t -> PhiPQ(i); f++;
+    particle_vars[f] = t -> Zh(i); f++;
+    particle_vars[f] = TMath::Sqrt(t -> Pt2(i)); f++;
+    particle_vars[f] = t -> Mx2(i); f++;
+    particle_vars[f] = t -> Xf(i); f++;
+    particle_vars[f] = t -> T(i); f++;
+    particle_vars[f] = t -> Momentum(i); f++;
+    particle_vars[f] = t -> TimeCorr4(0.139570,i); f++;
+    particle_vars[f] = (t -> Z(i)) - (t -> Z(0)); f++;
+    particle_vars[f] = k; f++;	      
+    particle_vars[f] = ((category == "gamma")?22:
+			((category == "pi-")?-211:
+			 (( category == "high energy pion +" || category == "low energy pion +")?211:
+			  ((category == "s_electron")?11:-11)
+			  )
+			 )
+			); f++;
+    particle_vars[f] = t -> ThetaLab(i); f++;
+    particle_vars[f] = t -> PhiLab(i); f++;
+    particle_vars[f] = t -> Px(i); f++;
+    particle_vars[f] = t -> Py(i); f++;
+    particle_vars[f] = t -> Pz(i); f++;
+  } else if ( sim == 1 ) {
+    Int_t f = 0;
+    particle_vars[f] = t -> ElecVertTarg(1); f++;
+    particle_vars[f] = t -> Q2(1); f++;
+    particle_vars[f] = t -> Nu(1); f++;
+    particle_vars[f] = t -> Xb(1); f++;
+    particle_vars[f] = t -> W(1); f++;
+    particle_vars[f] = t -> Sector(0,1); f++;
+    particle_vars[f] = t -> ThetaPQ(i,1); f++;
+    particle_vars[f] = t -> PhiPQ(i,1); f++;
+    particle_vars[f] = t -> Zh(i,1); f++;
+    particle_vars[f] = TMath::Sqrt(t -> Pt2(i,1)); f++;
+    particle_vars[f] = t -> Mx2(i,1); f++;
+    particle_vars[f] = t -> Xf(i,1); f++;
+    particle_vars[f] = t -> T(i,1); f++;
+    particle_vars[f] = t -> Momentum(i,1); f++;
+    particle_vars[f] = 0; f++;//t -> TimeCorr4(0.139570,i);
+    particle_vars[f] = (t -> Z(i,1)) - (t -> Z(0,1)); f++;
+    particle_vars[f] = k; f++;
+    particle_vars[f] = t -> Id(i,1); f++;
+    particle_vars[f] = t -> ThetaLab(i,1); f++;
+    particle_vars[f] = t -> PhiLab(i,1); f++;
+    particle_vars[f] = t -> Px(i,1); f++;
+    particle_vars[f] = t -> Py(i,1); f++;
+    particle_vars[f] = t -> Pz(i,1); f++;
+  }
 }
