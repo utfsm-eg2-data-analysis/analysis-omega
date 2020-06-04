@@ -209,6 +209,16 @@ TString particleName(Int_t particleID) {
   else return "";
 }
 
+Int_t particleID(TString particleName) {
+  if (particleName == "omega") return 223;
+  else if (particleName == "pi0") return 111;
+  else if (particleName == "pi+") return 211;
+  else if (particleName == "pi-") return -211;
+  else if (particleName == "gamma") return 22;
+  else if (particleName == "electron") return 11;
+  else return 0;
+}
+
 void setAlias(TTree *treeExtracted) {
   treeExtracted->SetAlias("Pl2", "wP2*CosThetaPQ*CosThetaPQ");
   treeExtracted->SetAlias("absQ", "TMath::Sqrt(Nu*Nu + Q2)");

@@ -35,7 +35,7 @@ INCLUDES := -I$(ANALYSER)/include\
                -I$(CLASTOOL)/include -I$(PRODIR)/include
 LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
-               -L$(ANALYSER)/slib/ -lTIdentificator -lSpectrum -lEG
+               -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
 
 PROG := MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
