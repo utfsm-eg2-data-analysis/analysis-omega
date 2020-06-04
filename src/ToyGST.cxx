@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
   input->Next();
 
   // loop around events
-  for (Int_t k = 0; k < 500; k++) { // nEvents
+  for (Int_t k = 0; k < nEvents; k++) { // nEvents
     
     // simulation condition
     if (simFlag) {
@@ -155,8 +155,6 @@ int main(int argc, char **argv) {
 	
       } // end of loop 1
 
-      std::cout << "loop 1 for both simrec and gsim passed!" << std::endl;
-      
       /*** DIS ELECTRON FOR GENERATED ***/
 
       // if there is more than one electron in generated!
@@ -167,8 +165,6 @@ int main(int argc, char **argv) {
       } else {
 	ge = -1; // prevent seg fault
       }
-
-      std::cout << "generated passed the DIS test!" << std::endl;
       
       /*** DIS ELECTRON FOR RECONSTRUCTED ***/
 	    
@@ -180,8 +176,6 @@ int main(int argc, char **argv) {
       } else {
 	ke = -1; // prevent seg fault
       }
-
-      std::cout << "reconstructed passed the DIS test!" << std::endl;
 
       // loop 2 only if a generated electron was found!
       if (ge >= 0) {
@@ -206,40 +200,25 @@ int main(int argc, char **argv) {
 	} // end of loop 2
       } // end of important condition-gsim
             
-      std::cout << "loop 2 for both gsim and simrec passed!" << std::endl;
-      
-      std::cout << std::endl;
-                  
       /*** SORTING BY PARTICLE AND MOMENTUM ***/
 
       // gsim
       gsimGamma_row = SortByMomentum(gsimGamma_row, 1);
-      gsimPip_row = SortByMomentum(gsimPip_row, 1);
-      gsimPim_row = SortByMomentum(gsimPim_row, 1);
+      gsimPip_row   = SortByMomentum(gsimPip_row, 1);
+      gsimPim_row   = SortByMomentum(gsimPim_row, 1);
 
       // simrec
       simrecGamma_row = SortByMomentum(simrecGamma_row, 0);
-      simrecPip_row = SortByMomentum(simrecPip_row, 0);
-      simrecPim_row = SortByMomentum(simrecPim_row, 0);
+      simrecPip_row   = SortByMomentum(simrecPip_row, 0);
+      simrecPim_row   = SortByMomentum(simrecPim_row, 0);
             
-      /*** FILLING ***/
-
-      PrintAll(ge, gsimGamma_row, gsimPip_row, gsimPim_row,
-	       ke, simrecGamma_row, simrecPip_row, simrecPim_row);
-
       /*** ANGULAR MATCHING ***/
 
-      std::cout << "...starting angular matching..." << std::endl;
       simrecGamma_row = NewAngularMatching(simrecGamma_row, gsimGamma_row);
-      simrecPip_row = NewAngularMatching(simrecPip_row, gsimPip_row);
-      simrecPim_row = NewAngularMatching(simrecPim_row, gsimPim_row);
+      simrecPip_row   = NewAngularMatching(simrecPip_row, gsimPip_row);
+      simrecPim_row   = NewAngularMatching(simrecPim_row, gsimPim_row);
 
-      /*** FILLING V2 ***/
-
-      PrintAll(ge, gsimGamma_row, gsimPip_row, gsimPim_row,
-	       ke, simrecGamma_row, simrecPip_row, simrecPim_row);
-
-      /*** FILLING V3 ***/
+      /*** FILLING ***/
       
       FillElectron_Sim(k, ge, ke);
       FillParticles_Sim(k, ge, gsimGamma_row, ke, simrecGamma_row);
@@ -270,11 +249,8 @@ int main(int argc, char **argv) {
 	
 	if (t->GetCategorization(p, 0, analyserOption) == "electron") {
 	  dataElectron_row.push_back(p);
-	  std::cout << "electron found at " << p << std::endl;
 	}
       } // end of loop 1
-
-      std::cout << "loop 1 passed! with " << (Int_t) dataElectron_row.size() << " electrons found!" << std::endl;
       
       // just in case that there is more than one electron in data!
       if ((Int_t) dataElectron_row.size() > 1) {
@@ -285,8 +261,6 @@ int main(int argc, char **argv) {
 	ke = -1;
       }
 
-      std::cout << "DIS electron test passed!" << std::endl;
-      
       // loop 2 in detected particles only when an electron was detected!
       if (ke >= 0) {
 	for (Int_t q = 0; q < input->GetNRows("EVNT"); q++) {
@@ -302,13 +276,7 @@ int main(int argc, char **argv) {
 	} // end of loop 2 in detected particles
       }
 
-      std::cout << "loop 2 passed!" << std::endl;
-
       /*** FILLING ***/
-      
-      PrintAll_Data(ke, dataGamma_row, dataPip_row, dataPim_row);
-
-      /*** FILLING V2 ***/
       
       FillElectron_Data(k, ke);
       FillParticles_Data(k, ke, dataGamma_row);
@@ -326,7 +294,6 @@ int main(int argc, char **argv) {
     
     /*** NEXT EVENT! ***/
 
-    std::cout << std::endl;
     input->Next();
     
   } // end of loop in events
