@@ -17,14 +17,19 @@ using namespace ROOT::VecOps;
 /*** Global variables ***/
 
 // options
-TString outDir = proDir + "/out/ToyGST";
-TString analyserOption;
+TString testOption;
+TString targetOption;
+TString setOption;
+TString jlabNDir;
+TString rnOption;
 
 // to be assigned
 Int_t simFlag;
 TString inputFile;
+TString outDir;
 TString outFile;
 TString outTitle;
+TString analyserOption;
 
 // electron variables for sim
 TString varListElectrons_sim = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:Sector:TargType:Px:Py:Pz:P:Betta:Etot:Ein:Eout:vxec:vyec:vzec:XEC:YEC:ZEC:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt:mc_Q2:mc_W:mc_Nu:mc_Xb:mc_Yb:mc_vxe:mc_vye:mc_vze:mc_Sector:mc_TargType:mc_Px:mc_Py:mc_Pz:mc_P:mc_Betta"; // ready!
@@ -53,6 +58,8 @@ TIdentificator *t;
 
 int parseCommandLine(int argc, char* argv[]);
 void assignOptions();
+void printOptions();
+void printUsage();
 
 Int_t ChooseElectron(RVec<Int_t> Electron_row, Int_t kind);
 RVec<Int_t> SortByMomentum(RVec<Int_t> row, Int_t kind);
@@ -73,6 +80,10 @@ int main(int argc, char **argv) {
 
   parseCommandLine(argc, argv);
   assignOptions();
+  printOptions();
+
+  // dir structure, just in case
+  system("mkdir -p " + outDir);
   
   // init ClasTool
   TClasTool *input = new TClasTool();
@@ -329,15 +340,49 @@ int main(int argc, char **argv) {
 
 /*** Input/output functions ***/
 
+void printUsage() {
+  std::cout << "ToyGST program. Usage is:" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -h" << std::endl;
+  std::cout << "    prints usage and exit program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -t[target]" << std::endl;
+  std::cout << "    selects target: D, C, Fe, Pb" << std::endl;
+  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -d" << std::endl;
+  std::cout << "    gets tuples from data" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -S[old,usm,jlab]" << std::endl;
+  std::cout << "    gets tuples from set of simulations" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -n[00,01,02,...]" << std::endl;
+  std::cout << "    selects N dir (exclusive and mandatory for -Sjlab option)" << std::endl;
+  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./ToyGST -r[0001,...,9999]" << std::endl;
+  std::cout << "    selects run number (mandatory for all!)" << std::endl;
+  std::cout << "    numbering scheme: 00,...,99     for jlab" << std::endl;
+  std::cout << "                      0000,...,1XXX for old/usm" << std::endl;
+  std::cout << "                      XXXXX         for data" << std::endl;
+  std::cout << std::endl;
+}
+
 int parseCommandLine(int argc, char* argv[]) {
   int c;
   if (argc == 1) {
     std::cerr << "Empty command line. Execute ./bin/ToyGST -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ha:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:n:r:T:")) != -1)
     switch (c) {
-    case 'a': analyserOption = optarg; break;
+    case 'h': printUsage(); exit(0); break;
+    case 't': targetOption = optarg; break;
+    case 'S': simFlag = 1; setOption = optarg; break;
+    case 'd': simFlag = 0; break;
+    case 'n': jlabNDir = optarg; break;
+    case 'r': rnOption = optarg; break;
+    case 'T': testOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/ToyGST -h to print usage." << std::endl;
       exit(0);
@@ -346,18 +391,55 @@ int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-
-  if (analyserOption == "Sim") {
+  // first, check for testOption... to run at HP VM
+  if (testOption == "Sim") {
     simFlag = 1;
     inputFile = "/home/borquez/Downloads/recsisC_0028.root";
-    outFile = outDir + "/pruned_sim.root";
+    outDir = proDir + "/out/ToyGST";
+    outFile = outDir + "/test_sim.root";
     outTitle = "Simulation of particles";
-  } else if (analyserOption == "C") {
+    analyserOption = testOption;
+  } else if (testOption == "C") {
     simFlag = 0;
     inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root";
-    outFile = outDir + "/pruned_data.root";
+    outDir = proDir + "/out/ToyGST";
+    outFile = outDir + "/test_data.root";
     outTitle = "Data of particles";
-  }
+    analyserOption = testOption;
+  } else {
+    // data type
+    if (!simFlag) {
+      inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_*.pass2.root"; // *: all files of the rn
+      analyserOption = targetOption;
+      outDir = proDir + "/out/ToyGST/data/" + targetOption;
+      outTitle = "Data of particles";
+    } else if (simFlag) {
+      analyserOption = "Sim";
+      outTitle = "Simulation of particles";
+      outDir = proDir + "/out/ToyGST/" + setOption + "/" + targetOption;
+      if (setOption == "jlab") {
+	inputFile = rawSimDir_jlab + "/output/" + targetOption + "/" + jlabNDir + "/recsis" + targetOption + "_" + rnOption + ".root";
+	outDir += "/" + jlabNDir;
+      } else if (setOption == "old" || setOption == "usm") {
+	inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + ".root";
+      }
+    }
+    // regardless of the data type
+    outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
+  } // end of no-test condition
+}
+
+void printOptions() {
+  std::cout << "Executing ToyGST program. The chosen parameters are: " << std::endl;
+  std::cout << "  testOption     = " << testOption << std::endl;
+  std::cout << "  targetOption   = " << targetOption << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
+  std::cout << "  setOption      = " << setOption << std::endl;
+  std::cout << "  jlabNDir       = " << jlabNDir << std::endl;
+  std::cout << "  rnOption       = " << rnOption << std::endl;
+  std::cout << "  inputFile      = " << inputFile << std::endl;
+  std::cout << "  analyserOption = " << analyserOption << std::endl;
+  std::cout << std::endl;
 }
 
 /*** Vector functions ***/
