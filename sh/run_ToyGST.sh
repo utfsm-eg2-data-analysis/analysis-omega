@@ -1,13 +1,14 @@
 #!/bin/bash
 
 ################################
-# ./run_CEC.sh <target>        #
+# ./run_ToyGST.sh <target>     #
 #     <target> = (C, Fe, Pb)   #
 #                              #
-# EG: ./run_CEC.sh Pb          #
+# EG: ./run_GST-data.sh Pb     #
 ################################
 
 # only for utfsm cluster
+# for data (by now)
 
 tarName="$@"
 
@@ -19,7 +20,7 @@ elif [[ ${tarName} = "Pb" ]]; then
   rnlist=${PRODIR}/include/Pb-thinD2rn.txt
 fi
 
-OUDIR=${PRODIR}/out/CheckElectronCut
+OUDIR=${PRODIR}/out/ToyGST/data/${tarName}
 mkdir -p ${OUDIR}
 mkdir -p ${OUDIR}/tmp
 
@@ -31,12 +32,12 @@ cd ${PRODIR}
 lines=`wc -l < ${rnlist}`
 
 COUNTER=0
-while [ ${COUNTER} -lt ${lines} ]; do
+while [ $COUNTER -lt ${lines} ]; do
   let COUNTER=COUNTER+1
   rn=`sed -n "$COUNTER{p;q}" ${rnlist}`
 
-  jobfile="${OUDIR}/tmp/cec_${tarName}_${rn}.sh"
-  jobname="CEC_${tarName}_${rn}"
+  jobfile="${OUDIR}/tmp/ToyGST_data${tarName}_${rn}.sh"
+  jobname="ToyGST_data${tarName}_${rn}"
 
   echo ${jobname}
 
@@ -44,13 +45,13 @@ while [ ${COUNTER} -lt ${lines} ]; do
   echo "#PBS -N ${jobname}"                            >> ${jobfile}
   echo "#PBS -V"                                       >> ${jobfile}
   echo "#PBS -q utfsm"                                 >> ${jobfile}
-  echo "#PBS -l walltime=01:00:00"                     >> ${jobfile}
-  echo "#PBS -l cput=01:00:00"                         >> ${jobfile}
+  echo "#PBS -l walltime=24:00:00"                     >> ${jobfile}
+  echo "#PBS -l cput=24:00:00"                         >> ${jobfile}
   echo "#PBS -m ae"                                    >> ${jobfile}
   echo "#PBS -M andres.borquez.14@sansano.usm.cl"      >> ${jobfile}
   echo ""                                              >> ${jobfile}
   echo "cd ${PRODIR}"                                  >> ${jobfile}
-  echo "./bin/CheckElectronCuts -t${tarName} -r${rn}"  >> ${jobfile}
+  echo "./bin/ToyGST -d -t${tarName} -r${rn}"          >> ${jobfile}
 
   echo "Submitting job ${jobfile}..."
   qsub $jobfile
