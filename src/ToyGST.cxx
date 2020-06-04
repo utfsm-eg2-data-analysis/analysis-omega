@@ -17,22 +17,34 @@ using namespace ROOT::VecOps;
 /*** Global variables ***/
 
 // options
-TString outDir = proDir + "/out"; // for test only
+TString outDir = proDir + "/out/ToyGST";
 TString analyserOption;
 
 // to be assigned
 Int_t simFlag;
 TString inputFile;
 TString outFile;
-TString NtupleName;
 TString outTitle;
 
-// electron variables as global
-TString varListElectrons_sim = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:Sector:TargType:Px:Py:Pz:P:Betta:Etot:Ein:Eout:vxec:vyec:vzec:XEC:YEC:ZEC:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt:mc_Q2:mc_W:mc_Nu:mc_Xb:mc_Yb:mc_vxe:mc_vye:mc_vze:mc_Sector:mc_TargType:mc_Px:mc_Py:mc_Pz:mc_P:mc_Betta";
+// electron variables for sim
+TString varListElectrons_sim = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:Sector:TargType:Px:Py:Pz:P:Betta:Etot:Ein:Eout:vxec:vyec:vzec:XEC:YEC:ZEC:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt:mc_Q2:mc_W:mc_Nu:mc_Xb:mc_Yb:mc_vxe:mc_vye:mc_vze:mc_Sector:mc_TargType:mc_Px:mc_Py:mc_Pz:mc_P:mc_Betta"; // ready!
 Float_t varElectrons_sim[55];
 
-TString varListParticles_sim = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:Sector:TargType:Pxe:Pye:Pze:Pe:BettaEl:Etote:Eine:Eoute:vxec:vyec:vzec:XEC:YEC:ZEC:Zh:ThetaPQ:Pt2:Pl2:PhiPQ:Mx2:T:vxh:vyh:vzh:Sector:Px:Py:Pz:P:Betta:Mass2:Etot:Ein:Eout:XECh:YECh:ZECh:pid:T4:deltaZ:evnt:mc_Q2:mc_W:mc_Nu:mc_Xb:mc_Yb:mc_vxec:mc_vyec:mc_vzec:mc_SectorEl:mc_TargType:mc_Pex:mc_Pey:mc_Pez:mc_Pe:mc_BettaEl:mc_Zh:mc_ThetaPQ:mc_Pt2:mc_Pl2:mc_PhiPQ:mc_Mx2:mc_T:mc_vxh:mc_vyh:mc_vzh:mc_Sector:mc_Px:mc_Py:mc_Pz:mc_P:mc_Betta:mc_Mass2:mc_pid:mc_deltaZ";
-Float_t varParticles_sim[85];
+// particle variables for sim
+TString varListParticles_sim = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:SectorEl:TargType:Pex:Pey:Pez:Pe:BettaEl:Etote:Eine:Eoute:vxec:vyec:vzec:XECe:YECe:ZECe:StatDCEl:DCStatusEl:StatECEl:ECStatusEl:TimeECEl:PathECEl:Chi2ECEl:StatSCEl:SCStatusEl:TimeSCEl:PathSCEl:StatCCEl:CCStatusEl:Chi2CCEl:StatusEl:Zh:ThetaPQ:Pt2:Pl2:PhiPQ:Mx2:T:vxh:vyh:vzh:Sector:Px:Py:Pz:P:Betta:Mass2:Etot:Ein:Eout:XEC:YEC:ZEC:pid:T4:deltaZ:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt:mc_Q2:mc_W:mc_Nu:mc_Xb:mc_Yb:mc_vxe:mc_vye:mc_vze:mc_SectorEl:mc_TargType:mc_Pex:mc_Pey:mc_Pez:mc_Pe:mc_BettaEl:mc_Zh:mc_ThetaPQ:mc_Pt2:mc_Pl2:mc_PhiPQ:mc_Mx2:mc_T:mc_vxh:mc_vyh:mc_vzh:mc_Sector:mc_Px:mc_Py:mc_Pz:mc_P:mc_Betta:mc_Mass2:mc_pid:mc_deltaZ";
+Float_t varParticles_sim[115];
+
+// electron variables for data
+TString varListElectrons_data = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:Sector:TargType:Px:Py:Pz:P:Betta:Etot:Ein:Eout:vxec:vyec:vzec:XEC:YEC:ZEC:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt";
+Float_t varElectrons_data[40];
+
+// particle variables for data
+TString varListParticles_data = "Q2:W:Nu:Xb:Yb:vxe:vye:vze:SectorEl:TargType:Pex:Pey:Pez:Pe:BettaEl:Etote:Eine:Eoute:vxec:vyec:vzec:XECe:YECe:ZECe:StatDCEl:DCStatusEl:StatECEl:ECStatusEl:TimeECEl:PathECEl:Chi2ECEl:StatSCEl:SCStatusEl:TimeSCEl:PathSCEl:StatCCEl:CCStatusEl:Chi2CCEl:StatusEl:Zh:ThetaPQ:Pt2:Pl2:PhiPQ:Mx2:T:vxh:vyh:vzh:Sector:Px:Py:Pz:P:Betta:Mass2:Etot:Ein:Eout:XEC:YEC:ZEC:pid:T4:deltaZ:StatDC:DCStatus:StatEC:ECStatus:TimeEC:PathEC:Chi2EC:StatSC:SCStatus:TimeSC:PathSC:StatCC:CCStatus:Chi2CC:Status:evnt";
+Float_t varParticles_data[81];
+
+// define ntuples as global
+TNtuple *tElectrons;
+TNtuple *tParticles;
 
 // define TIdentificator object as global
 TIdentificator *t;
@@ -51,8 +63,11 @@ void PrintAll(Int_t ge, RVec<Int_t> gsimGamma_row, RVec<Int_t> gsimPip_row, RVec
 	      Int_t ke, RVec<Int_t> simrecGamma_row, RVec<Int_t> simrecPip_row, RVec<Int_t> simrecPim_row);
 void PrintAll_Data(Int_t ke, RVec<Int_t> dataGamma_row, RVec<Int_t> dataPip_row, RVec<Int_t> dataPim_row);
 
-void FillElectron_Sim(Int_t evnt, Int_t ge, Int_t ke, TNtuple* tElectrons);
-void FillParticles_Sim(Int_t evnt, Int_t ge, RVec<Int_t> gsim_row, Int_t ke, RVec<Int_t> simrec_row, TNtuple* tParticles);
+void FillElectron_Sim(Int_t evnt, Int_t ge, Int_t ke); // , TNtuple* tElectrons
+void FillParticles_Sim(Int_t evnt, Int_t ge, RVec<Int_t> gsim_row, Int_t ke, RVec<Int_t> simrec_row); // , TNtuple* tParticles
+
+void FillElectron_Data(Int_t evnt, Int_t ke); // , TNtuple* tElectrons
+void FillParticles_Data(Int_t evnt, Int_t ke, RVec<Int_t> data_row); // , TNtuple* tParticles
 
 int main(int argc, char **argv) {
 
@@ -73,10 +88,15 @@ int main(int argc, char **argv) {
 
   // define output file
   TFile *rootFile = new TFile(outFile, "RECREATE", outTitle);
-  
-  // define tuples
-  TNtuple *tElectrons = new TNtuple("ntuple_e", "All electrons", varListElectrons_sim);
-  TNtuple *tParticles = new TNtuple(NtupleName, "Stable particles", varListParticles_sim);
+
+  // setup ntuples
+  if (simFlag) {
+    tElectrons = new TNtuple("ntuple_e", "All electrons", varListElectrons_sim);
+    tParticles = new TNtuple("ntuple_sim", "Stable particles", varListParticles_sim);
+  } else if (!simFlag) {
+    tElectrons = new TNtuple("ntuple_e", "All electrons", varListElectrons_data);
+    tParticles = new TNtuple("ntuple_data", "Stable particles", varListParticles_data);
+  }
   
   // define sorting vectors for gsim
   RVec<Int_t> gsimElectron_row;
@@ -104,7 +124,7 @@ int main(int argc, char **argv) {
   input->Next();
 
   // loop around events
-  for (Int_t k = 0; k < 9; k++) { // nEvents
+  for (Int_t k = 0; k < 500; k++) { // nEvents
     
     // simulation condition
     if (simFlag) {
@@ -210,10 +230,10 @@ int main(int argc, char **argv) {
 
       /*** FILLING V3 ***/
       
-      FillElectron_Sim(k, ge, ke, tElectrons);
-      FillParticles_Sim(k, ge, gsimGamma_row, ke, simrecGamma_row, tParticles);
-      FillParticles_Sim(k, ge, gsimPip_row, ke, simrecPip_row, tParticles);
-      FillParticles_Sim(k, ge, gsimPim_row, ke, simrecPim_row, tParticles);
+      FillElectron_Sim(k, ge, ke);
+      FillParticles_Sim(k, ge, gsimGamma_row, ke, simrecGamma_row);
+      FillParticles_Sim(k, ge, gsimPip_row, ke, simrecPip_row);
+      FillParticles_Sim(k, ge, gsimPim_row, ke, simrecPim_row);
       
       // reset memory
       gsimElectron_row.clear();
@@ -230,17 +250,20 @@ int main(int argc, char **argv) {
       
     } else if (!simFlag) { // end of simulation condition & beginning of data condition
 
+      /*** DATA ***/
+      
       // loop 1 in detected particles
       for (Int_t p = 0; p < input->GetNRows("EVNT"); p++) {
 
 	/*** DATA ELECTRONS ***/
 	
-	if (t->GetCategorization(p, 0, analyserOption) == "electron") dataElectron_row.push_back(p);
-	//std::cout << "electron found at " << p << std::endl;
-	
+	if (t->GetCategorization(p, 0, analyserOption) == "electron") {
+	  dataElectron_row.push_back(p);
+	  std::cout << "electron found at " << p << std::endl;
+	}
       } // end of loop 1
 
-      //std::cout << "loop 1 passed! with " << (Int_t) dataElectron_row.size() << " electrons found!" << std::endl;
+      std::cout << "loop 1 passed! with " << (Int_t) dataElectron_row.size() << " electrons found!" << std::endl;
       
       // just in case that there is more than one electron in data!
       if ((Int_t) dataElectron_row.size() > 1) {
@@ -251,7 +274,7 @@ int main(int argc, char **argv) {
 	ke = -1;
       }
 
-      //std::cout << "DIS electron test passed!" << std::endl;
+      std::cout << "DIS electron test passed!" << std::endl;
       
       // loop 2 in detected particles only when an electron was detected!
       if (ke >= 0) {
@@ -266,12 +289,21 @@ int main(int argc, char **argv) {
 	  }
 	
 	} // end of loop 2 in detected particles
-
-	PrintAll_Data(ke, dataGamma_row, dataPip_row, dataPim_row);
       }
+
+      std::cout << "loop 2 passed!" << std::endl;
+
+      /*** FILLING ***/
       
-      // std::cout << "loop 2 passed!" << std::endl;
+      PrintAll_Data(ke, dataGamma_row, dataPip_row, dataPim_row);
+
+      /*** FILLING V2 ***/
       
+      FillElectron_Data(k, ke);
+      FillParticles_Data(k, ke, dataGamma_row);
+      FillParticles_Data(k, ke, dataPip_row);
+      FillParticles_Data(k, ke, dataPim_row);
+            
       // reset memory
       dataElectron_row.clear();
       dataGamma_row.clear();      
@@ -317,13 +349,11 @@ void assignOptions() {
 
   if (analyserOption == "Sim") {
     simFlag = 1;
-    NtupleName = "ntuple_sim";
     inputFile = "/home/borquez/Downloads/recsisC_0028.root";
     outFile = outDir + "/pruned_sim.root";
     outTitle = "Simulation of particles";
   } else if (analyserOption == "C") {
     simFlag = 0;
-    NtupleName = "ntuple_data";
     inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root";
     outFile = outDir + "/pruned_data.root";
     outTitle = "Data of particles";
@@ -451,34 +481,37 @@ void PrintAll_Data(Int_t ke, RVec<Int_t> dataGamma_row, RVec<Int_t> dataPip_row,
 	    << std::setw(14) << "data_categ"
 	    << std::setw(14) << "data_P" << std::endl;
 
-  // the electron
-  std::cout << std::left
-	    << std::setw(14) << ke
-	    << std::setw(14) << "electron"
-	    << std::setw(14) << t->Momentum(ke, 0) << std::endl;
   
-  // gammas
-  for (Int_t j = 0; j < (Int_t) dataGamma_row.size(); j++) {
+  // the electron
+  if (ke >= 0) {
     std::cout << std::left
-	      << std::setw(14) << dataGamma_row[j]
-	      << std::setw(14) << "gamma"
-	      << std::setw(14) << t->Momentum(dataGamma_row[j], 0) << std::endl;
-  }
-
-  // pip
-  for (Int_t j = 0; j < (Int_t) dataPip_row.size(); j++) {
+	      << std::setw(14) << ke
+	      << std::setw(14) << t->GetCategorization(ke,0,analyserOption)
+	      << std::setw(14) << t->Momentum(ke, 0) << std::endl;
+  
+    // gammas
+    for (Int_t j = 0; j < (Int_t) dataGamma_row.size(); j++) {
+      std::cout << std::left
+		<< std::setw(14) << dataGamma_row[j]
+		<< std::setw(14) << t->GetCategorization(dataGamma_row[j],ke,analyserOption)
+		<< std::setw(14) << t->Momentum(dataGamma_row[j], 0) << std::endl;
+    }
+    
+    // pip
+    for (Int_t j = 0; j < (Int_t) dataPip_row.size(); j++) {
       std::cout << std::left
 		<< std::setw(14) << dataPip_row[j]
-		<< std::setw(14) << "pi+"
+		<< std::setw(14) << t->GetCategorization(dataPip_row[j],ke,analyserOption)
 		<< std::setw(14) << t->Momentum(dataPip_row[j], 0) << std::endl;
-  }
-
-  // pim
-  for (Int_t j = 0; j < (Int_t) dataPim_row.size(); j++) {
-    std::cout << std::left
-	      << std::setw(14) << dataPim_row[j]
-	      << std::setw(14) << "pi-"
-	      << std::setw(14) << t->Momentum(dataPim_row[j], 0) << std::endl;
+    }
+    
+    // pim
+    for (Int_t j = 0; j < (Int_t) dataPim_row.size(); j++) {
+      std::cout << std::left
+		<< std::setw(14) << dataPim_row[j]
+		<< std::setw(14) << t->GetCategorization(dataPim_row[j],ke,analyserOption)
+		<< std::setw(14) << t->Momentum(dataPim_row[j], 0) << std::endl;
+    }
   }
  
   std::cout << std::endl;
@@ -576,7 +609,7 @@ Int_t ChooseElectron(RVec<Int_t> Electron_row, Int_t kind) {
   return DISrow;
 }
 
-void FillElectron_Sim(Int_t evnt, Int_t ge, Int_t ke, TNtuple* tElectrons) {
+void FillElectron_Sim(Int_t evnt, Int_t ge, Int_t ke) {
 
   // 15 vars depend on kind: 5 electron vars, 3 position, 4 momentum, 1 sector, 1 targtype, 1 betta
   
@@ -650,18 +683,15 @@ void FillElectron_Sim(Int_t evnt, Int_t ge, Int_t ke, TNtuple* tElectrons) {
     varElectrons_sim[52] = t->Pz(ge,1);
     varElectrons_sim[53] = t->Momentum(ge,1);
     varElectrons_sim[54] = t->Betta(ge,1);
-  }
-  
-  tElectrons->Fill(varElectrons_sim);
 
+    tElectrons->Fill(varElectrons_sim);
+  }
+    
   // clear array
   for (Int_t q = 0; q < 55; q++) varElectrons_sim[q] = -9999.;
 }
 
-void FillParticles_Sim(Int_t evnt,
-		       Int_t ge, RVec<Int_t> gsim_row, 
-		       Int_t ke, RVec<Int_t> simrec_row,
-		       TNtuple* tParticles) {
+void FillParticles_Sim(Int_t evnt, Int_t ge, RVec<Int_t> gsim_row, Int_t ke, RVec<Int_t> simrec_row) {
 
   TVector3 *vert;
   Float_t mass;
@@ -705,88 +735,287 @@ void FillParticles_Sim(Int_t evnt,
 	varParticles_sim[21] = t->XEC(ke);
 	varParticles_sim[22] = t->YEC(ke);
 	varParticles_sim[23] = t->ZEC(ke);
+	varParticles_sim[24] = t->StatDC(ke); // DC
+	varParticles_sim[25] = t->DCStatus(ke);
+	varParticles_sim[26] = t->StatEC(ke); // EC
+	varParticles_sim[27] = t->ECStatus(ke);
+	varParticles_sim[28] = t->TimeEC(ke);
+	varParticles_sim[29] = t->PathEC(ke);
+	varParticles_sim[30] = t->Chi2EC(ke);
+	varParticles_sim[31] = t->StatSC(ke); // SC
+	varParticles_sim[32] = t->SCStatus(ke);
+	varParticles_sim[33] = t->TimeSC(ke);
+	varParticles_sim[34] = t->PathSC(ke);
+	varParticles_sim[35] = t->StatCC(ke); // CC
+	varParticles_sim[36] = t->CCStatus(ke);
+	varParticles_sim[37] = t->Chi2CC(ke);
+	varParticles_sim[38] = t->Status(ke); // Status
 	// rec particle
 	if (t->GetCategorization(k,ke,analyserOption) == "pi+" || t->GetCategorization(k,ke,analyserOption) == "pi-") mass = 0.1396;
 	else if (t->GetCategorization(k,ke,analyserOption) == "gamma") mass = 0.;
-	varParticles_sim[24] = t->Zh(k,ke,0,mass);
-	varParticles_sim[25] = t->ThetaPQ(k,ke,0);
-	varParticles_sim[26] = t->Pt2(k,ke,0);
-	varParticles_sim[27] = t->Pl2(k,ke,0);
-	varParticles_sim[28] = t->PhiPQ(k,ke,0);
-	varParticles_sim[29] = t->Mx2(k,ke,0,mass);
-	varParticles_sim[30] = t->T(k,ke,0,mass);
-	varParticles_sim[31] = t->X(k,0);
-	varParticles_sim[32] = t->Y(k,0);
-	varParticles_sim[33] = t->Z(k,0);
-	varParticles_sim[34] = t->Sector(k,0);
-	varParticles_sim[35] = t->Px(k,0);
-	varParticles_sim[36] = t->Py(k,0);
-	varParticles_sim[37] = t->Pz(k,0);
-	varParticles_sim[38] = t->Momentum(k,0);
-	varParticles_sim[39] = t->Betta(k,0);
-	varParticles_sim[40] = t->Mass2(k,0);
-	varParticles_sim[41] = t->Etot(k);
-	varParticles_sim[42] = t->Ein(k);
-	varParticles_sim[43] = t->Eout(k);
-	varParticles_sim[44] = t->XEC(k);
-	varParticles_sim[45] = t->YEC(k);
-	varParticles_sim[46] = t->ZEC(k);
-	varParticles_sim[47] = particleID(t->GetCategorization(k,ke,analyserOption));
-	varParticles_sim[48] = t->TimeCorr4(k,ke,mass);
-	varParticles_sim[49] = t->Z(k,0) - t->Z(ke,0);
+	varParticles_sim[39] = t->Zh(k,ke,0,mass);
+	varParticles_sim[40] = t->ThetaPQ(k,ke,0);
+	varParticles_sim[41] = t->Pt2(k,ke,0);
+	varParticles_sim[42] = t->Pl2(k,ke,0);
+	varParticles_sim[43] = t->PhiPQ(k,ke,0);
+	varParticles_sim[44] = t->Mx2(k,ke,0,mass);
+	varParticles_sim[45] = t->T(k,ke,0,mass);
+	varParticles_sim[46] = t->X(k,0);
+	varParticles_sim[47] = t->Y(k,0);
+	varParticles_sim[48] = t->Z(k,0);
+	varParticles_sim[49] = t->Sector(k,0);
+	varParticles_sim[50] = t->Px(k,0);
+	varParticles_sim[51] = t->Py(k,0);
+	varParticles_sim[52] = t->Pz(k,0);
+	varParticles_sim[53] = t->Momentum(k,0);
+	varParticles_sim[54] = t->Betta(k,0);
+	varParticles_sim[55] = t->Mass2(k,0);
+	varParticles_sim[56] = t->Etot(k);
+	varParticles_sim[57] = t->Ein(k);
+	varParticles_sim[58] = t->Eout(k);
+	varParticles_sim[59] = t->XEC(k);
+	varParticles_sim[60] = t->YEC(k);
+	varParticles_sim[61] = t->ZEC(k);
+	varParticles_sim[62] = particleID(t->GetCategorization(k,ke,analyserOption));
+	varParticles_sim[63] = t->TimeCorr4(k,ke,mass);
+	varParticles_sim[64] = t->Z(k,0) - t->Z(ke,0);
+	varParticles_sim[65] = t->StatDC(k); // DC
+	varParticles_sim[66] = t->DCStatus(k);
+	varParticles_sim[67] = t->StatEC(k); // EC
+	varParticles_sim[68] = t->ECStatus(k);
+	varParticles_sim[69] = t->TimeEC(k);
+	varParticles_sim[70] = t->PathEC(k);
+	varParticles_sim[71] = t->Chi2EC(k);
+	varParticles_sim[72] = t->StatSC(k); // SC
+	varParticles_sim[73] = t->SCStatus(k);
+	varParticles_sim[74] = t->TimeSC(k);
+	varParticles_sim[75] = t->PathSC(k);
+	varParticles_sim[76] = t->StatCC(k); // CC
+	varParticles_sim[77] = t->CCStatus(k);
+	varParticles_sim[78] = t->Chi2CC(k);
+	varParticles_sim[79] = t->Status(k); // Status
       } else { // fill with emptiness
-	for (Int_t q = 0; q < 50; q++) varParticles_sim[q] = -9999.;
+	for (Int_t q = 0; q < 80; q++) varParticles_sim[q] = -9999.;
       } // end of simrec
       
       // then gsim
       g = gsim_row[j];
-      varParticles_sim[50] = evnt;
+      varParticles_sim[80] = evnt;
       // gen electron
-      varParticles_sim[51] = t->Q2(ge,1);
-      varParticles_sim[52] = t->W(ge,1);
-      varParticles_sim[53] = t->Nu(ge,1);
-      varParticles_sim[54] = t->Xb(ge,1);
-      varParticles_sim[55] = t->Yb(ge,1);
-      varParticles_sim[56] = t->X(ge,1);
-      varParticles_sim[57] = t->Y(ge,1);
-      varParticles_sim[58] = t->Z(ge,1);
-      varParticles_sim[59] = t->Sector(ge,1);
-      varParticles_sim[60] = t->ElecVertTarg(ge,1);
-      varParticles_sim[61] = t->Px(ge,1);
-      varParticles_sim[62] = t->Py(ge,1);
-      varParticles_sim[63] = t->Pz(ge,1);
-      varParticles_sim[64] = t->Momentum(ge,1);
-      varParticles_sim[65] = t->Betta(ge,1);
+      varParticles_sim[81] = t->Q2(ge,1);
+      varParticles_sim[82] = t->W(ge,1);
+      varParticles_sim[83] = t->Nu(ge,1);
+      varParticles_sim[84] = t->Xb(ge,1);
+      varParticles_sim[85] = t->Yb(ge,1);
+      varParticles_sim[86] = t->X(ge,1);
+      varParticles_sim[87] = t->Y(ge,1);
+      varParticles_sim[88] = t->Z(ge,1);
+      varParticles_sim[89] = t->Sector(ge,1);
+      varParticles_sim[90] = t->ElecVertTarg(ge,1);
+      varParticles_sim[91] = t->Px(ge,1);
+      varParticles_sim[92] = t->Py(ge,1);
+      varParticles_sim[93] = t->Pz(ge,1);
+      varParticles_sim[94] = t->Momentum(ge,1);
+      varParticles_sim[95] = t->Betta(ge,1);
       // gen particle
       if (t->Id(g,1) == 211 || t->Id(g,1) == -211) mass = 0.1396;
       else if (t->Id(g,1) == 22) mass = 0.;
-      varParticles_sim[66] = t->Zh(g,ge,1,mass);
-      varParticles_sim[67] = t->ThetaPQ(g,ge,1);
-      varParticles_sim[68] = t->Pt2(g,ge,1);
-      varParticles_sim[69] = t->Pl2(g,ge,1);
-      varParticles_sim[70] = t->PhiPQ(g,ge,1);
-      varParticles_sim[71] = t->Mx2(g,ge,1,mass);
-      varParticles_sim[72] = t->T(g,ge,1,mass);
-      varParticles_sim[73] = t->X(g,1);
-      varParticles_sim[74] = t->Y(g,1);
-      varParticles_sim[75] = t->Z(g,1);
-      varParticles_sim[76] = t->Sector(g,1);
-      varParticles_sim[77] = t->Px(g,1);
-      varParticles_sim[78] = t->Py(g,1);
-      varParticles_sim[79] = t->Pz(g,1);
-      varParticles_sim[80] = t->Momentum(g,1);
-      varParticles_sim[81] = t->Betta(g,1);
-      varParticles_sim[82] = t->Mass2(g,1);
-      varParticles_sim[83] = t->Id(g,1);
-      varParticles_sim[84] = t->Z(g,1) - t->Z(ge,1);
+      varParticles_sim[96] = t->Zh(g,ge,1,mass);
+      varParticles_sim[97] = t->ThetaPQ(g,ge,1);
+      varParticles_sim[98] = t->Pt2(g,ge,1);
+      varParticles_sim[99] = t->Pl2(g,ge,1);
+      varParticles_sim[100] = t->PhiPQ(g,ge,1);
+      varParticles_sim[101] = t->Mx2(g,ge,1,mass);
+      varParticles_sim[102] = t->T(g,ge,1,mass);
+      varParticles_sim[103] = t->X(g,1);
+      varParticles_sim[104] = t->Y(g,1);
+      varParticles_sim[105] = t->Z(g,1);
+      varParticles_sim[106] = t->Sector(g,1);
+      varParticles_sim[107] = t->Px(g,1);
+      varParticles_sim[108] = t->Py(g,1);
+      varParticles_sim[109] = t->Pz(g,1);
+      varParticles_sim[110] = t->Momentum(g,1);
+      varParticles_sim[111] = t->Betta(g,1);
+      varParticles_sim[112] = t->Mass2(g,1);
+      varParticles_sim[113] = t->Id(g,1);
+      varParticles_sim[114] = t->Z(g,1) - t->Z(ge,1);
 	
       tParticles->Fill(varParticles_sim);
       
       // clear array
-      for (Int_t q = 0; q < 85; q++) varParticles_sim[q] = -9999.;
+      for (Int_t q = 0; q < 115; q++) varParticles_sim[q] = -9999.;
     } // end of loop in gsim particles
   } // end of important condition
 
   // just in case, clear array again
-  for (Int_t q = 0; q < 85; q++) varParticles_sim[q] = -9999.;
+  for (Int_t q = 0; q < 115; q++) varParticles_sim[q] = -9999.;
+}
+
+void FillElectron_Data(Int_t evnt, Int_t ke) {
+
+  // 15 vars depend on kind: 5 electron vars, 3 position, 4 momentum, 1 sector, 1 targtype, 1 betta
+  
+  TVector3 *vert;
+
+  // data
+  if (ke >= 0) {
+    varElectrons_data[0] = t->Q2(ke,0);
+    varElectrons_data[1] = t->W(ke,0);
+    varElectrons_data[2] = t->Nu(ke,0);
+    varElectrons_data[3] = t->Xb(ke,0);
+    varElectrons_data[4] = t->Yb(ke,0);
+    varElectrons_data[5] = t->X(ke,0);
+    varElectrons_data[6] = t->Y(ke,0);
+    varElectrons_data[7] = t->Z(ke,0);
+    varElectrons_data[8] = t->Sector(ke,0);
+    varElectrons_data[9] = t->ElecVertTarg(ke,0);
+    varElectrons_data[10] = t->Px(ke,0);
+    varElectrons_data[11] = t->Py(ke,0);
+    varElectrons_data[12] = t->Pz(ke,0);
+    varElectrons_data[13] = t->Momentum(ke,0);
+    varElectrons_data[14] = t->Betta(ke,0);
+    varElectrons_data[15] = t->Etot(ke);
+    varElectrons_data[16] = t->Ein(ke);
+    varElectrons_data[17] = t->Eout(ke);
+    vert = t->GetCorrectedVert(ke);
+    Float_t vxec = vert->X();
+    Float_t vyec = vert->Y();
+    Float_t vzec = vert->Z();
+    varElectrons_data[18] = vxec;
+    varElectrons_data[19] = vyec;
+    varElectrons_data[20] = vzec;
+    varElectrons_data[21] = t->XEC(ke);
+    varElectrons_data[22] = t->YEC(ke);
+    varElectrons_data[23] = t->ZEC(ke);
+    varElectrons_data[24] = t->StatDC(ke); // DC
+    varElectrons_data[25] = t->DCStatus(ke);
+    varElectrons_data[26] = t->StatEC(ke); // EC
+    varElectrons_data[27] = t->ECStatus(ke);
+    varElectrons_data[28] = t->TimeEC(ke);
+    varElectrons_data[29] = t->PathEC(ke);
+    varElectrons_data[30] = t->Chi2EC(ke);
+    varElectrons_data[31] = t->StatSC(ke); // SC
+    varElectrons_data[32] = t->SCStatus(ke);
+    varElectrons_data[33] = t->TimeSC(ke);
+    varElectrons_data[34] = t->PathSC(ke);
+    varElectrons_data[35] = t->StatCC(ke); // CC
+    varElectrons_data[36] = t->CCStatus(ke);
+    varElectrons_data[37] = t->Chi2CC(ke);
+    varElectrons_data[38] = t->Status(ke); // Status
+    varElectrons_data[39] = evnt;
+
+    tElectrons->Fill(varElectrons_data);
+  }
+  
+  // clear array, just in case
+  for (Int_t q = 0; q < 40; q++) varElectrons_data[q] = -9999.;
+}
+
+void FillParticles_Data(Int_t evnt, Int_t ke, RVec<Int_t> data_row) {
+
+  TVector3 *vert;
+  Float_t mass;
+  Int_t k;
+  
+  // there must be an electron to define the event
+  if (ke >= 0) {
+    
+    for (Int_t j = 0; j < (Int_t) data_row.size(); j++) {
+      k = data_row[j];      
+      // electron
+      varParticles_data[0] = t->Q2(ke,0); 
+      varParticles_data[1] = t->W(ke,0);
+      varParticles_data[2] = t->Nu(ke,0);
+      varParticles_data[3] = t->Xb(ke,0);
+      varParticles_data[4] = t->Yb(ke,0);
+      varParticles_data[5] = t->X(ke,0);
+      varParticles_data[6] = t->Y(ke,0);
+      varParticles_data[7] = t->Z(ke,0);
+      varParticles_data[8] = t->Sector(ke,0);
+      varParticles_data[9] = t->ElecVertTarg(ke,0);
+      varParticles_data[10] = t->Px(ke,0);
+      varParticles_data[11] = t->Py(ke,0);
+      varParticles_data[12] = t->Pz(ke,0);
+      varParticles_data[13] = t->Momentum(ke,0);
+      varParticles_data[14] = t->Betta(ke,0);
+      varParticles_data[15] = t->Etot(ke);
+      varParticles_data[16] = t->Ein(ke);
+      varParticles_data[17] = t->Eout(ke);
+      vert = t->GetCorrectedVert(ke);
+      Float_t vxec = vert->X();
+      Float_t vyec = vert->Y();
+      Float_t vzec = vert->Z();
+      varParticles_data[18] = vxec;
+      varParticles_data[19] = vyec;
+      varParticles_data[20] = vzec;
+      varParticles_data[21] = t->XEC(ke);
+      varParticles_data[22] = t->YEC(ke);
+      varParticles_data[23] = t->ZEC(ke);
+      varParticles_data[24] = t->StatDC(ke); // DC
+      varParticles_data[25] = t->DCStatus(ke);
+      varParticles_data[26] = t->StatEC(ke); // EC
+      varParticles_data[27] = t->ECStatus(ke);
+      varParticles_data[28] = t->TimeEC(ke);
+      varParticles_data[29] = t->PathEC(ke);
+      varParticles_data[30] = t->Chi2EC(ke);
+      varParticles_data[31] = t->StatSC(ke); // SC
+      varParticles_data[32] = t->SCStatus(ke);
+      varParticles_data[33] = t->TimeSC(ke);
+      varParticles_data[34] = t->PathSC(ke);
+      varParticles_data[35] = t->StatCC(ke); // CC
+      varParticles_data[36] = t->CCStatus(ke);
+      varParticles_data[37] = t->Chi2CC(ke);
+      varParticles_data[38] = t->Status(ke); // Status
+      // particle
+      if (t->GetCategorization(k,ke,analyserOption) == "pi+" || t->GetCategorization(k,ke,analyserOption) == "pi-") mass = 0.1396;
+      else if (t->GetCategorization(k,ke,analyserOption) == "gamma") mass = 0.;
+      varParticles_data[39] = t->Zh(k,ke,0,mass);
+      varParticles_data[40] = t->ThetaPQ(k,ke,0);
+      varParticles_data[41] = t->Pt2(k,ke,0);
+      varParticles_data[42] = t->Pl2(k,ke,0);
+      varParticles_data[43] = t->PhiPQ(k,ke,0);
+      varParticles_data[44] = t->Mx2(k,ke,0,mass);
+      varParticles_data[45] = t->T(k,ke,0,mass);
+      varParticles_data[46] = t->X(k,0);
+      varParticles_data[47] = t->Y(k,0);
+      varParticles_data[48] = t->Z(k,0);
+      varParticles_data[49] = t->Sector(k,0);
+      varParticles_data[50] = t->Px(k,0);
+      varParticles_data[51] = t->Py(k,0);
+      varParticles_data[52] = t->Pz(k,0);
+      varParticles_data[53] = t->Momentum(k,0);
+      varParticles_data[54] = t->Betta(k,0);
+      varParticles_data[55] = t->Mass2(k,0);
+      varParticles_data[56] = t->Etot(k);
+      varParticles_data[57] = t->Ein(k);
+      varParticles_data[58] = t->Eout(k);
+      varParticles_data[59] = t->XEC(k);
+      varParticles_data[60] = t->YEC(k);
+      varParticles_data[61] = t->ZEC(k);
+      varParticles_data[62] = particleID(t->GetCategorization(k,ke,analyserOption));
+      varParticles_data[63] = t->TimeCorr4(k,ke,mass);
+      varParticles_data[64] = t->Z(k,0) - t->Z(ke,0);
+      varParticles_data[65] = t->StatDC(k); // DC
+      varParticles_data[66] = t->DCStatus(k);
+      varParticles_data[67] = t->StatEC(k); // EC
+      varParticles_data[68] = t->ECStatus(k);
+      varParticles_data[69] = t->TimeEC(k);
+      varParticles_data[70] = t->PathEC(k);
+      varParticles_data[71] = t->Chi2EC(k);
+      varParticles_data[72] = t->StatSC(k); // SC
+      varParticles_data[73] = t->SCStatus(k);
+      varParticles_data[74] = t->TimeSC(k);
+      varParticles_data[75] = t->PathSC(k);
+      varParticles_data[76] = t->StatCC(k); // CC
+      varParticles_data[77] = t->CCStatus(k);
+      varParticles_data[78] = t->Chi2CC(k);
+      varParticles_data[79] = t->Status(k); // Status
+      varParticles_data[80] = evnt;
+
+      tParticles->Fill(varParticles_data);      
+    } // end of loop
+  }
+  
+  // clear array, just in case
+  for (Int_t q = 0; q < 81; q++) varParticles_data[q] = -9999.;
 }
