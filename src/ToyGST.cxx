@@ -388,7 +388,7 @@ void assignOptions() {
 	inputFile = rawSimDir_jlab + "/output/" + targetOption + "/" + jlabNDir + "/recsis" + targetOption + "_" + rnOption + ".root";
 	outDir += "/" + jlabNDir;
       } else if (setOption == "old" || setOption == "usm") {
-	inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + ".root";
+	inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + "*.root"; // *: convenient amount of files
       }
     }
     // regardless of the data type
