@@ -117,6 +117,6 @@ while [ ${COUNTER} -lt ${lines} ]; do
     echo "./bin/ToyGST -${inputOption} -t${tarName} -r${rn}" >> ${jobfile}
     
     echo "Submitting job ${jobfile}"
-    # qsub $jobfile
+    qsub $jobfile
 done
 
