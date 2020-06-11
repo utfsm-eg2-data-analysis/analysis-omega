@@ -49,7 +49,7 @@ mkdir -p ${OUDIR}
 INDIR=${SIMDIR}/output/${tarName}/${nDir}
 
 # obtain the last run number
-lines=`ls -1 ${SIMDIR}/${tarName}/${nDir} | wc -l`
+lines=`ls -1 ${INDIR} | wc -l`
 
 # testing...
 #jobfile=
