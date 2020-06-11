@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
   printOptions();
 
   // dir structure, just in case
-  system("mkdir -p " + outDir);
+  if (setOption != "jlab") system("mkdir -p " + outDir);
   
   // init ClasTool
   TClasTool *input = new TClasTool();
@@ -385,14 +385,18 @@ void assignOptions() {
       outTitle = "Simulation of particles";
       outDir = proDir + "/out/ToyGST/" + setOption + "/" + targetOption;
       if (setOption == "jlab") {
-	inputFile = rawSimDir_jlab + "/output/" + targetOption + "/" + jlabNDir + "/recsis" + targetOption + "_" + rnOption + ".root";
-	outDir += "/" + jlabNDir;
+	inputFile = "recsis" + targetOption + "_" + rnOption + ".root"; // from node dir
+	outDir = ""; // just in case
       } else if (setOption == "old" || setOption == "usm") {
 	inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + "*.root"; // *: convenient amount of files
       }
     }
-    // regardless of the data type
-    outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
+    // no longer independent of the data type
+    if (setOption == "jlab") {
+      outFile = "pruned" + targetOption + "_" + rnOption + ".root"; // into node dir
+    } else {
+      outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
+    }
   } // end of no-test condition
 }
 
