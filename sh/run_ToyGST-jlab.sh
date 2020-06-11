@@ -68,11 +68,11 @@ execfile="${PRODIR}/sh/ToyGST-jlab.sh"
 
 # handling exceptions
 if [[ "${tarName}" == "D" && "${nDir}" == "00" ]]; then
-    COUNTER=7
+    COUNTER=6
 elif [[ "${tarName}" == "C" && "${nDir}" == "00" ]]; then
-    COUNTER=7
+    COUNTER=6
 elif [[ "${tarName}" == "Fe" && "${nDir}" == "00" ]]; then
-    COUNTER=7
+    COUNTER=6
 else
     COUNTER=0
 fi
