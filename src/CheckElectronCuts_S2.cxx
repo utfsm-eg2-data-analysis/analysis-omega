@@ -113,13 +113,44 @@ int main() {
   // draw lines: mean and 3sigma range around it
   drawVerticalLine(theHist_final->GetMean(), kGreen+2, "dash"); // just for comparison
   drawVerticalLine(fitParams[1], kBlue+1, "dash");
+  drawVerticalLine(0.7, kRed, "dash");
+  drawVerticalLine(0.7 - 5*0.35, kRed, "cont");
+  drawVerticalLine(0.7 + 5*0.35, kRed, "cont");
   drawVerticalLine(fitParams[1] - 5*fitParams[2], kBlue, "cont");
-  drawVerticalLine(fitParams[1] - 3*fitParams[2], kBlue+1, "cont");
-  drawVerticalLine(fitParams[1] + 3*fitParams[2], kBlue+1, "cont");
+  // drawVerticalLine(fitParams[1] - 3*fitParams[2], kBlue+1, "cont");
+  // drawVerticalLine(fitParams[1] + 3*fitParams[2], kBlue+1, "cont");
   drawVerticalLine(fitParams[1] + 5*fitParams[2], kBlue, "cont");
-
+    
   // save plot
   c->Print(plotFile);
+
+  // for testing
+  TAxis *axis = theHist_final->GetXaxis();
+
+  Int_t xmin_pc = 0.7 - 5*0.35;
+  Int_t xmax_pc = 0.7 + 5*0.35;
+
+  Int_t bmin_pc = axis->FindBin(xmin_pc);
+  Int_t bmax_pc = axis->FindBin(xmax_pc);
+
+  Double_t integral_pc = theHist_final->Integral(bmin_pc, bmax_pc);
+  integral_pc -= theHist_final->GetBinContent(bmin_pc)*(xmin_pc - axis->GetBinLowEdge(bmin_pc))/axis->GetBinWidth(bmin_pc);
+  integral_pc -= theHist_final->GetBinContent(bmax_pc)*(axis->GetBinUpEdge(bmax_pc) - xmax_pc)/axis->GetBinWidth(bmax_pc);
+
+  Int_t xmin_nc = fitParams[1] - 5*fitParams[2];
+  Int_t xmax_nc = fitParams[1] + 5*fitParams[2];
+  
+  Int_t bmin_nc = axis->FindBin(xmin_nc);
+  Int_t bmax_nc = axis->FindBin(xmax_nc);
+
+  Double_t integral_nc = theHist_final->Integral(bmin_nc, bmax_nc);
+  integral_nc -= theHist_final->GetBinContent(bmin_nc)*(xmin_nc - axis->GetBinLowEdge(bmin_nc))/axis->GetBinWidth(bmin_nc);
+  integral_nc -= theHist_final->GetBinContent(bmax_nc)*(axis->GetBinUpEdge(bmax_nc) - xmax_nc)/axis->GetBinWidth(bmax_nc);
+  
+  std::cout << "no cut yield   = " << theHist_final->GetEntries() << std::endl;
+  std::cout << "prev cut yield = " << integral_pc << std::endl;
+  std::cout << "new cut yield  = " << integral_nc << std::endl;
+  std::cout << "diff = " << integral_pc - integral_nc << std::endl;
   
   return 0;
 }
