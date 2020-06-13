@@ -20,7 +20,6 @@ using namespace ROOT::VecOps;
 TString testOption;
 TString targetOption;
 TString setOption;
-TString jlabNDir;
 TString rnOption;
 
 // to be assigned
@@ -341,13 +340,12 @@ int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/ToyGST -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dS:n:r:T:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:r:T:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'S': simFlag = 1; setOption = optarg; break;
     case 'd': simFlag = 0; break;
-    case 'n': jlabNDir = optarg; break;
     case 'r': rnOption = optarg; break;
     case 'T': testOption = optarg; break;
     default:
@@ -406,7 +404,6 @@ void printOptions() {
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  setOption      = " << setOption << std::endl;
-  std::cout << "  jlabNDir       = " << jlabNDir << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
   std::cout << "  inputFile      = " << inputFile << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
