@@ -40,6 +40,7 @@
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
 #include "TNtuple.h"
+#include "TLorentzVector.h"
 
 /*** Global variables ***/
 

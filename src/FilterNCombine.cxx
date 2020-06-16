@@ -32,43 +32,56 @@ Float_t tevnt;
 
 /*** Output/original variables ***/
 
-// (90 variables for data)
-// electron (40) (39+1new)
+// (101 variables for data)
+// electron (40)
 Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 Float_t oP2e;
 Float_t oStatDCEl, oDCStatusEl, oStatECEl, oECStatusEl, oTimeECEl, oPathECEl, oChi2ECEl, oStatSCEl, oSCStatusEl, oTimeSCEl, oPathSCEl, oStatCCEl, oCCStatusEl, oChi2CCEl, oStatusEl;
-// particle (51) (41+10new)
-Float_t oZ, oThetaPQ, oPt2, oPl2, oPhiPQ, oMx2, oT, ovxh, ovyh, ovzh, oSector, oPx, oPy, oPz, oP, oBetta, oMass2, oEtot, oEin, oEout, oXEC, oYEC, oZEC, oPid, oT4, odeltaZ;
-Float_t oCosThetaPQ, oP2, oM, oBettaCalc, oEtrue, oEcorr, odeltaTheta, oPxu, oPyu, oPzu;
+// particle (59) (16 + 3*6 + 10 + 15)
+Float_t ovxh, ovyh, ovzh, oSector, oBetta, oMass2, oEtot, oEin, oEout, oXEC, oYEC, oZEC, oPid, oT4, odeltaZ, oM;
+Float_t oE_prev, oPx_prev, oPy_prev, oPz_prev, oP2_prev, oP_prev;
+Float_t oE_true, oPx_true, oPy_true, oPz_true, oP2_true, oP_true;
+Float_t oE_corr, oPx_corr, oPy_corr, oPz_corr, oP2_corr, oP_corr;
+Float_t oZ, oThetaPQ, oPt2, oPl2, oPhiPQ, oMx2, oT, oCosThetaPQ, oBettaCalc, odeltaTheta;
 Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStatSC, oSCStatus, oTimeSC, oPathSC, oStatCC, oCCStatus, oChi2CC, oStatus;
-// event (2) (1+1new)
+// event (2)
 Float_t oEvent;
 Float_t oEntry; // debug purposes
 
 /*** Output/mix variables ***/
 
-// (??? variables for data)
+// (194 variables for data)
 // electron (40) (39+1new)
 Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 Float_t mP2e;
 Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mChi2CCEl, mStatusEl;
-// particles (51) (41+10new)
-Float_t mZ[4], mThetaPQ[4], mPt2[4], mPl2[4], mPhiPQ[4], mMx2[4], mT[4], mvxh[4], mvyh[4], mvzh[4], mSector[4], mPx[4], mPy[4], mPz[4], mP[4], mBetta[4], mMass2[4], mEtot[4], mEin[4], mEout[4], mXEC[4], mYEC[4], mZEC[4], mPid[4], mT4[4], mdeltaZ[4];
-Float_t mCosThetaPQ[4], mP2[4], mM[4], mBettaCalc[4], mEtrue[4], mEcorr[4], mdeltaTheta[4], mPxu[4], mPyu[4], mPzu[4];
+// particles (59) (16 + 3*6 + 10 + 15)
+Float_t mvxh[4], mvyh[4], mvzh[4], mSector[4], mBetta[4], mMass2[4], mEtot[4], mEin[4], mEout[4], mXEC[4], mYEC[4], mZEC[4], mPid[4], mT4[4], mdeltaZ[4], mM[4];
+Float_t mE_prev[4], mPx_prev[4], mPy_prev[4], mPz_prev[4], mP2_prev[4], mP_prev[4];
+Float_t mE_true[4], mPx_true[4], mPy_true[4], mPz_true[4], mP2_true[4], mP_true[4];
+Float_t mE_corr[4], mPx_corr[4], mPy_corr[4], mPz_corr[4], mP2_corr[4], mP_corr[4];
+Float_t mZ[4], mThetaPQ[4], mPt2[4], mPl2[4], mPhiPQ[4], mMx2[4], mT[4], mCosThetaPQ[4], mBettaCalc[4], mdeltaTheta[4];
 Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4], mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mChi2CC[4], mStatus[4];
-// event related (2) (1+1new)
-Float_t mEvent;
-Float_t mEntry[4];
-// omega (20) (all new)
-Float_t wZ, wCosThetaPQ, wThetaPQ, wPt2, wPl2, wPhiPQ, wMx2, wT, wPx, wPy, wPz, wP, wP2, wE, wEprev, wBettaCalc, wdeltaTheta, wD, wM, wSD;
-// pi0 (8) (all new)
-Float_t pi0Px, pi0Py, pi0Pz, pi0P2, pi0P, pi0E, pi0M, pi0CosTheta;
-// crossed terms (9) (all new)
+// pi0 (24) (3*8new)
+Float_t pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0P2_prev, pi0P_prev, pi0E_prev, pi0M_prev, pi0Theta_prev;
+Float_t pi0Px_true, pi0Py_true, pi0Pz_true, pi0P2_true, pi0P_true, pi0E_true, pi0M_true, pi0Theta_true;
+Float_t pi0Px_corr, pi0Py_corr, pi0Pz_corr, pi0P2_corr, pi0P_corr, pi0E_corr, pi0M_corr, pi0Theta_corr;
+// omega (57) (3*19new)
+Float_t wPx_prev, wPy_prev, wPz_prev, wP_prev, wP2_prev, wE_prev;
+Float_t wZ_prev, wCosThetaPQ_prev, wThetaPQ_prev, wPt2_prev, wPl2_prev, wPhiPQ_prev, wMx2_prev, wT_prev, wBettaCalc_prev, wdeltaTheta_prev, wD_prev, wM_prev, wSD_prev;
+Float_t wPx_true, wPy_true, wPz_true, wP_true, wP2_true, wE_true;
+Float_t wZ_true, wCosThetaPQ_true, wThetaPQ_true, wPt2_true, wPl2_true, wPhiPQ_true, wMx2_true, wT_true, wBettaCalc_true, wdeltaTheta_true, wD_true, wM_true, wSD_true;
+Float_t wPx_corr, wPy_corr, wPz_corr, wP_corr, wP2_corr, wE_corr;
+Float_t wZ_corr, wCosThetaPQ_corr, wThetaPQ_corr, wPt2_corr, wPl2_corr, wPhiPQ_corr, wMx2_corr, wT_corr, wBettaCalc_corr, wdeltaTheta_corr, wD_corr, wM_corr, wSD_corr;
+// crossed terms (9)
 Float_t pippimP, pippimE, pippimM;
 Float_t pippi0P, pippi0E, pippi0M;
 Float_t pimpi0P, pimpi0E, pimpi0M;
-// number of particles (3) (all new)
+// number of particles (3)
 Float_t nPip, nPim, nGamma;
+// event related (2)
+Float_t mEvent;
+Float_t mEntry[4];
 
 /*** Options ***/
 
@@ -158,7 +171,7 @@ int main(int argc, char **argv) {
   Int_t start, finish;
   if (!simFlag) {
     start = (Int_t) t->GetMinimum(eventBranchName);
-    finish = 10000; // (Int_t) t->GetMaximum(eventBranchName);
+    finish = (Int_t) t->GetMaximum(eventBranchName); // 10000
   } else if (simFlag) {
     start = 0;
     finish = (Int_t) t->GetMaximum(eventBranchName);
@@ -168,8 +181,8 @@ int main(int argc, char **argv) {
   // i = event number
   for (Int_t i = start; i <= finish; i++) { // t->GetMinimum(eventBranchName), t->GetMaximum(eventBranchName)
     
-    std::cout << "Current event number: " << i << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    // std::cout << "Current event number: " << i << std::endl;
+    // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     
     TString theCondition;
     TString listName = Form("elist_%d", i);
@@ -187,10 +200,10 @@ int main(int argc, char **argv) {
     for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
       Int_t jj = t->GetEntryNumber(j);
       t->GetEntry(jj);
-      std::cout << "  Entry number: " << jj << std::endl;
-      std::cout << "  pid:          " << tpid << std::endl;
-      // std::cout << "  mc_pid:       " << tmc_Pid << std::endl;
-      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      // std::cout << "  Entry number: " << jj << std::endl;
+      // std::cout << "  pid:          " << tpid << std::endl;
+      // // std::cout << "  mc_pid:       " << tmc_Pid << std::endl;
+      // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
       // count the data/simrec particles
       if (tpid == (Float_t) 211) nPipThisEvent++;
       if (tpid == (Float_t) -211) nPimThisEvent++;
@@ -202,13 +215,13 @@ int main(int argc, char **argv) {
     }
     
     // show counts
-    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
-    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
-    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    // std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-    // std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-    // std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    // std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    // std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    // std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
+    // // std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+    // // std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+    // // std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     // (as you can see, these conditions are not exclusive)
     // candidate appeared for data/simrec
@@ -225,10 +238,10 @@ int main(int argc, char **argv) {
       nMCOmega += nMCCombThisEvent;
     }
 
-    std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
-    std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
-    std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    // std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
+    // // std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
+    // // std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** ORIGINAL ***/
 
@@ -461,13 +474,13 @@ int main(int argc, char **argv) {
       
     // PART 3: fill
 
-    std::cout << "  candidates for data:" << std::endl;
-    for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    // std::cout << "  candidates for simrec:" << std::endl;
-    // for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    // std::cout << "  candidates for gsim:" << std::endl;
-    // for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    // std::cout << "  candidates for data:" << std::endl;
+    for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    // // std::cout << "  candidates for simrec:" << std::endl;
+    // for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    // // std::cout << "  candidates for gsim:" << std::endl;
+    // for (Int_t c = 0; c < nMCCombThisEvent; c++) // std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     // extract
     for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations
@@ -478,7 +491,10 @@ int main(int argc, char **argv) {
 	  
       } // end of loop in particles
 
+      AssignPi0Variables();
+      AssignOmegaVariables();
       AssignMoreVariables(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+      
       tMix->Fill();      
     } // end of loop in combinations
 
@@ -520,29 +536,29 @@ int main(int argc, char **argv) {
     gDirectory->Delete(listName + ";1");
     rootFile->Delete(listName);
     
-    std::cout << std::endl;
+    // std::cout << std::endl;
   } // end of loop in events
 
   /*** Writing tree ***/
 
   if (simFlag) {
-    std::cout << "From a total of " << nEvents << " generated events." << std::endl;
-    std::cout << "There are at least " << nAtLeastMCOmega << " generated events with at least one omega particle," << std::endl;
-    std::cout << "being in total this amount of generated omega candidates: " << nMCOmega << "."  << std::endl;
-    std::cout << "Also, there are at least " << nAtLeastOmega << " reconstructed events with at least one omega particle," << std::endl;
-    std::cout << "being in total this amount of reconstructed omega candidates: " << nOmega << "."  << std::endl;
-    std::cout << std::endl;
+    // std::cout << "From a total of " << nEvents << " generated events." << std::endl;
+    // std::cout << "There are at least " << nAtLeastMCOmega << " generated events with at least one omega particle," << std::endl;
+    // std::cout << "being in total this amount of generated omega candidates: " << nMCOmega << "."  << std::endl;
+    // std::cout << "Also, there are at least " << nAtLeastOmega << " reconstructed events with at least one omega particle," << std::endl;
+    // std::cout << "being in total this amount of reconstructed omega candidates: " << nOmega << "."  << std::endl;
+    // std::cout << std::endl;
   } else {
-    std::cout << "From a total of " << nEvents << " events." << std::endl;
-    std::cout << "There are at least " << nAtLeastOmega << " events with at least one omega particle," << std::endl;
-    std::cout << "being in total this amount of omega candidates: " << nOmega << "."  << std::endl;
-    std::cout << std::endl;
+    // std::cout << "From a total of " << nEvents << " events." << std::endl;
+    // std::cout << "There are at least " << nAtLeastOmega << " events with at least one omega particle," << std::endl;
+    // std::cout << "being in total this amount of omega candidates: " << nOmega << "."  << std::endl;
+    // std::cout << std::endl;
   }
   
   rootFile->Write();
   rootFile->Close();
 
-  std::cout << "File " << outFile << " has been created!" << std::endl;
+  // std::cout << "File " << outFile << " has been created!" << std::endl;
   
   return 0;
 }
@@ -602,39 +618,39 @@ void assignOptions() {
 }
 
 void printUsage() {
-  std::cout << "FilterNCombine program." << std::endl;
-  std::cout << "The input file should have this name scheme: " << std::endl;
-  std::cout << "    for data     = out/ToyGST/data/[target]/pruned[target]_[rn].root" << std::endl;
-  std::cout << "    for old/usm  = out/ToyGST/[set]/[target]/pruned[target]_[rn].root" << std::endl;
-  std::cout << "    for jlab     = pruned[target]_[rn].root" << std::endl;
-  std::cout << "Usage is:" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -h" << std::endl;
-  std::cout << "    prints this message and exits program" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
-  std::cout << "    filters the respective target" << std::endl;
-  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -d" << std::endl;
-  std::cout << "    filters data" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -S[old, usm, jlab]" << std::endl;
-  std::cout << "    filters sim for chosen set" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
-  std::cout << "    selects run number (mandatory for all)" << std::endl;
-  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
-  std::cout << std::endl;
+  // std::cout << "FilterNCombine program." << std::endl;
+  // std::cout << "The input file should have this name scheme: " << std::endl;
+  // std::cout << "    for data     = out/ToyGST/data/[target]/pruned[target]_[rn].root" << std::endl;
+  // std::cout << "    for old/usm  = out/ToyGST/[set]/[target]/pruned[target]_[rn].root" << std::endl;
+  // std::cout << "    for jlab     = pruned[target]_[rn].root" << std::endl;
+  // std::cout << "Usage is:" << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "./FilterNCombine -h" << std::endl;
+  // std::cout << "    prints this message and exits program" << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
+  // std::cout << "    filters the respective target" << std::endl;
+  // std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "./FilterNCombine -d" << std::endl;
+  // std::cout << "    filters data" << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "./FilterNCombine -S[old, usm, jlab]" << std::endl;
+  // std::cout << "    filters sim for chosen set" << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
+  // std::cout << "    selects run number (mandatory for all)" << std::endl;
+  // std::cout << "    (please, maintain numbering scheme!)" << std::endl;
+  // std::cout << std::endl;
 }
 
 void printOptions() {
-  std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
-  std::cout << "  targetOption   = " << targetOption << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
-  std::cout << "  setOption      = " << setOption << std::endl;
-  std::cout << "  rnOption       = " << rnOption << std::endl;
-  std::cout << "  inputFile      = " << inputFile << std::endl;
-  std::cout << "  setOption      = " << setOption << std::endl;
-  std::cout << std::endl;
+  // std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
+  // std::cout << "  targetOption   = " << targetOption << std::endl;
+  // std::cout << "  simFlag        = " << simFlag << std::endl;
+  // std::cout << "  setOption      = " << setOption << std::endl;
+  // std::cout << "  rnOption       = " << rnOption << std::endl;
+  // std::cout << "  inputFile      = " << inputFile << std::endl;
+  // std::cout << "  setOption      = " << setOption << std::endl;
+  // std::cout << std::endl;
 }
