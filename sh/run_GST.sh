@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#################################################################
-# ./run_ToyGST-Sim.sh <set> <target>                            #
-#     <target> = (D, C, Fe, Pb)                                 #
-#     <set> = (old, usm, jlab)                                  #
-#                                                               #
-# EG: ./run_ToyGST-Sim.sh data C                                #
-#     ./run_ToyGST-Sim.sh old Fe                                #
-#     ./run_ToyGST-Sim.sh usm D                                 #
-#################################################################
+##########################################################
+# ./run_GST.sh <set> <target>                            #
+#     <target> = (D, C, Fe, Pb)                          #
+#     <set> = (data, old, usm)                           #
+#                                                        #
+# EG: ./run_GST.sh data C                                #
+#     ./run_GST.sh old Fe                                #
+#     ./run_GST.sh usm D                                 #
+##########################################################
 
 #####
 # Functions
@@ -57,7 +57,7 @@ source ~/.bashrc
 
 cd ${PRODIR}
 
-OUDIR=${PRODIR}/out/ToyGST/${setName}/${tarName}
+OUDIR=${PRODIR}/out/GetSimpleTuple/${setName}/${tarName}
 mkdir -p ${OUDIR}
 mkdir -p ${OUDIR}/tmp
 
@@ -99,22 +99,22 @@ while [ ${COUNTER} -lt ${lines} ]; do
 	rn=$(get_num "$((COUNTER-1))") # sim starts from 00 (due to filenames)
     fi
 
-    jobfile="${OUDIR}/tmp/ToyGST_${setName}${tarName}_${rn}.sh"
+    jobfile="${OUDIR}/tmp/GST_${setName}${tarName}_${rn}.sh"
     jobname="GST_${setName}${tarName}_${rn}"
     
     echo ${jobname}
     
-    echo "#!/bin/bash"                                        > ${jobfile}
-    echo "#PBS -N ${jobname}"                                >> ${jobfile}
-    echo "#PBS -V"                                           >> ${jobfile}
-    echo "#PBS -q utfsm"                                     >> ${jobfile}
-    echo "#PBS -l walltime=24:00:00"                         >> ${jobfile}
-    echo "#PBS -l cput=24:00:00"                             >> ${jobfile}
-    echo "#PBS -m ae"                                        >> ${jobfile}
-    echo "#PBS -M andres.borquez.14@sansano.usm.cl"          >> ${jobfile}
-    echo ""                                                  >> ${jobfile}
-    echo "cd ${PRODIR}"                                      >> ${jobfile}
-    echo "./bin/ToyGST -${inputOption} -t${tarName} -r${rn}" >> ${jobfile}
+    echo "#!/bin/bash"                                                > ${jobfile}
+    echo "#PBS -N ${jobname}"                                        >> ${jobfile}
+    echo "#PBS -V"                                                   >> ${jobfile}
+    echo "#PBS -q utfsm"                                             >> ${jobfile}
+    echo "#PBS -l walltime=2:00:00"                                  >> ${jobfile}
+    echo "#PBS -l cput=2:00:00"                                      >> ${jobfile}
+    echo "#PBS -m ae"                                                >> ${jobfile}
+    echo "#PBS -M andres.borquez.14@sansano.usm.cl"                  >> ${jobfile}
+    echo ""                                                          >> ${jobfile}
+    echo "cd ${PRODIR}"                                              >> ${jobfile}
+    echo "./bin/GetSimpleTuple -${inputOption} -t${tarName} -r${rn}" >> ${jobfile}
     
     echo "Submitting job ${jobfile}"
     qsub $jobfile

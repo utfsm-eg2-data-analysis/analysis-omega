@@ -24,7 +24,7 @@ COUNTER=0
 while [ ${COUNTER} -lt ${dirs} ]; do
     let COUNTER=COUNTER+1
     ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_ToyGST-jlab.sh ${tarName} ${ndir}
+    ./run_GST-jlab.sh ${tarName} ${ndir}
 done
 
 # Carbon
@@ -36,7 +36,7 @@ COUNTER=1
 while [ ${COUNTER} -lt ${dirs} ]; do
     let COUNTER=COUNTER+1
     ndir=$(get_num "$((COUNTER-1))") # start at 01
-    ./run_ToyGST-jlab.sh ${tarName} ${ndir}
+    ./run_GST-jlab.sh ${tarName} ${ndir}
 done
 
 # Iron
@@ -48,7 +48,7 @@ COUNTER=0
 while [ ${COUNTER} -lt ${dirs} ]; do
     let COUNTER=COUNTER+1
     ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_ToyGST-jlab.sh ${tarName} ${ndir}
+    ./run_GST-jlab.sh ${tarName} ${ndir}
 done
 
 # Lead
@@ -60,5 +60,5 @@ COUNTER=0
 while [ ${COUNTER} -lt ${dirs} ]; do
     let COUNTER=COUNTER+1
     ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_ToyGST-jlab.sh ${tarName} ${ndir}
+    ./run_GST-jlab.sh ${tarName} ${ndir}
 done
