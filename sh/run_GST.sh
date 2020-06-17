@@ -62,7 +62,6 @@ mkdir -p ${OUDIR}
 mkdir -p ${OUDIR}/tmp
 
 # how to obtain the run numbers
-SIMDIR=/eos/user/b/borquez/omegaSim
 if [ "${setName}" == "data" ]; then
     if [[ ${tarName} = "C" ]]; then
 	rnlist=${PRODIR}/include/C-thickD2rn.txt
@@ -113,10 +112,10 @@ while [ ${COUNTER} -lt ${lines} ]; do
     echo "#PBS -m ae"                                                >> ${jobfile}
     echo "#PBS -M andres.borquez.14@sansano.usm.cl"                  >> ${jobfile}
     echo ""                                                          >> ${jobfile}
+    echo "source /user/b/borquez/.bashrc"                            >> ${jobfile}
     echo "cd ${PRODIR}"                                              >> ${jobfile}
     echo "./bin/GetSimpleTuple -${inputOption} -t${tarName} -r${rn}" >> ${jobfile}
     
     echo "Submitting job ${jobfile}"
-    qsub $jobfile
+    qsub ${jobfile}
 done
-
