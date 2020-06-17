@@ -300,6 +300,8 @@ int main(int argc, char **argv) {
   // write and close output file
   rootFile->Write();
   rootFile->Close();
+
+  std::cout << "File " << outFile << " has been created!" << std::endl;
   
   return 0;
 }
@@ -333,7 +335,7 @@ void printUsage() {
   std::cout << "                      XXXXX         for data" << std::endl;
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -T[Sim,C]" << std::endl;
-  std::cout << "    exclusive options for debugging at HP VM" << std::endl;
+  std::cout << "    exclusive options for debugging" << std::endl;
   std::cout << std::endl;
 }
 
@@ -398,7 +400,7 @@ void assignOptions() {
     } else {
       outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
     }
-  } // end of no-test condition
+  } // end of test condition
 }
 
 void printOptions() {
