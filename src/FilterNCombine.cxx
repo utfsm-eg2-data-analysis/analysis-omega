@@ -616,13 +616,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-  // first, check for testOption... to run at HP VM
+  // first, check for testOption
   if (testOption == "Sim") {
     simFlag = 1;
     targetOption = "C";
     treeName = "ntuple_sim";
     eventBranchName = "mc_evnt";
-    inputFile = "/home/borquez/analysis-omega/out/GetSimpleTuple/test_sim.root";
+    inputFile = proDir + "/out/GetSimpleTuple/test_sim.root";
     outDir = proDir + "/out/FilterNCombine";
     outFile = outDir + "/test_fnc_sim.root";
     analyserOption = testOption;
@@ -632,7 +632,7 @@ void assignOptions() {
     targetOption = "C";
     treeName = "ntuple_data";
     eventBranchName = "evnt";
-    inputFile = "/home/borquez/analysis-omega/out/GetSimpleTuple/test_data.root";
+    inputFile = proDir + "/out/GetSimpleTuple/test_data.root";
     outDir = proDir + "/out/FilterNCombine";
     outFile = outDir + "/test_fnc_data.root";
     analyserOption = testOption;
@@ -642,18 +642,16 @@ void assignOptions() {
       setOption = "data";
       treeName = "ntuple_data";
       eventBranchName = "evnt";
-      inputFile = proDir + "/out/GetSimpleTuple/data/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
-      outDir = proDir + "/out/FilterNCombine/data/" + targetOption;
       analyserOption = targetOption;
     } else if (simFlag) {
       treeName = "ntuple_sim";
       eventBranchName = "mc_evnt";
-      inputFile = proDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
-      outDir = proDir + "/out/FilterNCombine/" + setOption + "/" + targetOption;
       analyserOption = "Sim";
     }
     // for everyone
-    outFile = outDir + "/comb_" + setOption + targetOption + "_" + rnOption + ".root";
+    inputFile = proDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
+    outDir  = proDir + "/out/FilterNCombine/" + setOption + "/" + targetOption;
+    outFile = outDir + "/comb" + targetOption + "_" + rnOption + ".root";
   } // end of test condition
 }
 
