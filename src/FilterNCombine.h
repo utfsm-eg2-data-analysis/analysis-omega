@@ -6,7 +6,7 @@ extern Float_t kEbeam;
 
 /*** Input variables ***/
 
-// (83 variables for data)
+// (83 variables for data/simrec)
 // electron (40)
 extern Float_t tQ2, tW, tNu, tXb, tYb, tvxe, tvye, tvze, tSectorEl, tTargType, tPex, tPey, tPez, tPe, tBettaEl, tEtote, tEine, tEoute, tvxec, tvyec, tvzec, tXECe, tYECe, tZECe;
 extern Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tNpheEl, tChi2CCEl, tStatusEl;
@@ -15,6 +15,11 @@ extern Float_t tZh, tThetaPQ, tPt2, tPl2, tPhiPQ, tMx2, tT, tvxh, tvyh, tvzh, tS
 extern Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tNphe, tChi2CC, tStatus;
 // event (1)
 extern Float_t tevnt;
+// (34 variables for montecarlo)
+// electron (15)
+extern Float_t mc_tQ2, mc_tW, mc_tNu, mc_tXb, mc_tYb, mc_tvxe, mc_tvye, mc_tvze, mc_tSectorEl, mc_tTargType, mc_tPex, mc_tPey, mc_tPez, mc_tPe, mc_tBettaEl;
+// particle (19)
+extern Float_t mc_tZh, mc_tThetaPQ, mc_tPt2, mc_tPl2, mc_tPhiPQ, mc_tMx2, mc_tT, mc_tvxh, mc_tvyh, mc_tvzh, mc_tSector, mc_tPx, mc_tPy, mc_tPz, mc_tP, mc_tBetta, mc_tMass2, mc_tpid, mc_tdeltaZ;
 
 /*** Output/original variables ***/
 
@@ -33,6 +38,14 @@ extern Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC
 // event (2)
 extern Float_t oEvent;
 extern Float_t oEntry; // debug purposes
+// (41 variables for montecarlo)
+// electron (16)
+extern Float_t mc_oQ2, mc_oW, mc_oNu, mc_oXb, mc_oYb, mc_oXe, mc_oYe, mc_oZe, mc_oSectorEl, mc_oTargType, mc_oPex, mc_oPey, mc_oPez, mc_oPe, mc_oBettaEl;
+extern Float_t mc_oP2e;
+// particle (25)
+extern Float_t mc_ovxh, mc_ovyh, mc_ovzh, mc_oSector, mc_oBetta, mc_oMass2, mc_oPid, mc_odeltaZ, mc_oM;
+extern Float_t mc_oE, mc_oPx, mc_oPy, mc_oPz, mc_oP2, mc_oP;
+extern Float_t mc_oZ, mc_oThetaPQ, mc_oPt2, mc_oPl2, mc_oPhiPQ, mc_oMx2, mc_oT, mc_oCosThetaPQ, mc_oBettaCalc, mc_odeltaTheta;
 
 /*** Output/mix variables ***/
 
@@ -69,6 +82,25 @@ extern Float_t nPip, nPim, nGamma;
 // event related (2)
 extern Float_t mEvent;
 extern Float_t mEntry[4];
+// (72 variables for montecarlo)
+// electron (16)
+extern Float_t mc_mQ2, mc_mW, mc_mNu, mc_mXb, mc_mYb, mc_mXe, mc_mYe, mc_mZe, mc_mSectorEl, mc_mTargType, mc_mPex, mc_mPey, mc_mPez, mc_mPe, mc_mBettaEl;
+extern Float_t mc_mP2e;
+// particle (25)
+extern Float_t mc_mvxh[4], mc_mvyh[4], mc_mvzh[4], mc_mSector[4], mc_mBetta[4], mc_mMass2[4], mc_mPid[4], mc_mdeltaZ[4], mc_mM[4];
+extern Float_t mc_mE[4], mc_mPx[4], mc_mPy[4], mc_mPz[4], mc_mP2[4], mc_mP[4];
+extern Float_t mc_mZ[4], mc_mThetaPQ[4], mc_mPt2[4], mc_mPl2[4], mc_mPhiPQ[4], mc_mMx2[4], mc_mT[4], mc_mCosThetaPQ[4], mc_mBettaCalc[4], mc_mdeltaTheta[4];
+// pi0 (8)
+extern Float_t mc_pi0Px, mc_pi0Py, mc_pi0Pz, mc_pi0P2, mc_pi0P, mc_pi0E, mc_pi0M, mc_pi0Theta;
+// omega (19)
+extern Float_t mc_wPx, mc_wPy, mc_wPz, mc_wP, mc_wP2, mc_wE;
+extern Float_t mc_wZ, mc_wCosThetaPQ, mc_wThetaPQ, mc_wPt2, mc_wPl2, mc_wPhiPQ, mc_wMx2, mc_wT, mc_wBettaCalc, mc_wdeltaTheta, mc_wD, mc_wM, mc_wSD;
+// crossed terms (9)
+extern Float_t mc_pippimP, mc_pippimE, mc_pippimM;
+extern Float_t mc_pippi0P, mc_pippi0E, mc_pippi0M;
+extern Float_t mc_pimpi0P, mc_pimpi0E, mc_pimpi0M;
+// number of particles (3)
+extern Float_t mc_nPip, mc_nPim, mc_nGamma;
 
 /*** Declaration of functions ***/
 
@@ -175,9 +207,48 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
   chain->SetBranchAddress("Status", &tStatus);
   // evnt related (1)
   chain->SetBranchAddress("evnt", &tevnt);
+  if (simFlag) {
+    // (34 variables for montecarlo)
+    // electron (15)
+    chain->SetBranchAddress("mc_Q2", &mc_tQ2);
+    chain->SetBranchAddress("mc_W", &mc_tW);
+    chain->SetBranchAddress("mc_Nu", &mc_tNu);
+    chain->SetBranchAddress("mc_Xb", &mc_tXb);
+    chain->SetBranchAddress("mc_Yb", &mc_tYb);
+    chain->SetBranchAddress("mc_vxe", &mc_tvxe);
+    chain->SetBranchAddress("mc_vye", &mc_tvye);
+    chain->SetBranchAddress("mc_vze", &mc_tvze);
+    chain->SetBranchAddress("mc_SectorEl", &mc_tSectorEl);
+    chain->SetBranchAddress("mc_TargType", &mc_tTargType);
+    chain->SetBranchAddress("mc_Pex", &mc_tPex);
+    chain->SetBranchAddress("mc_Pey", &mc_tPey);
+    chain->SetBranchAddress("mc_Pez", &mc_tPez);
+    chain->SetBranchAddress("mc_Pe", &mc_tPe);
+    chain->SetBranchAddress("mc_BettaEl", &mc_tBettaEl);
+    // particle (19)
+    chain->SetBranchAddress("mc_Zh", &mc_tZh);
+    chain->SetBranchAddress("mc_ThetaPQ", &mc_tThetaPQ);
+    chain->SetBranchAddress("mc_Pt2", &mc_tPt2);
+    chain->SetBranchAddress("mc_Pl2", &mc_tPl2);
+    chain->SetBranchAddress("mc_PhiPQ", &mc_tPhiPQ);
+    chain->SetBranchAddress("mc_Mx2", &mc_tMx2);
+    chain->SetBranchAddress("mc_T", &mc_tT);
+    chain->SetBranchAddress("mc_vxh", &mc_tvxh);
+    chain->SetBranchAddress("mc_vyh", &mc_tvyh);
+    chain->SetBranchAddress("mc_vzh", &mc_tvzh);
+    chain->SetBranchAddress("mc_Sector", &mc_tSector);
+    chain->SetBranchAddress("mc_Px", &mc_tPx);
+    chain->SetBranchAddress("mc_Py", &mc_tPy);
+    chain->SetBranchAddress("mc_Pz", &mc_tPz);
+    chain->SetBranchAddress("mc_P", &mc_tP);
+    chain->SetBranchAddress("mc_Betta", &mc_tBetta);
+    chain->SetBranchAddress("mc_Mass2", &mc_tMass2);
+    chain->SetBranchAddress("mc_pid", &mc_tpid);
+    chain->SetBranchAddress("mc_deltaZ", &mc_tdeltaZ);
+  }
 }
 
-void SetOutputBranches(TTree *tree, TString option) {
+void SetOutputBranches(TTree *tree, TString option, Int_t simFlag) {
   if (option == "original") {
     // electron (41)
     // all (25)
@@ -291,6 +362,52 @@ void SetOutputBranches(TTree *tree, TString option) {
     // event-related (2)
     tree->Branch("Event", &oEvent);
     tree->Branch("Entry", &oEntry);
+    // (41 variables for montecarlo)
+    if (simFlag) {
+      // electron (16)
+      tree->Branch("mc_Q2", &mc_oQ2);
+      tree->Branch("mc_W", &mc_oW);
+      tree->Branch("mc_Nu", &mc_oNu);
+      tree->Branch("mc_Xb", &mc_oXb);
+      tree->Branch("mc_Yb", &mc_oYb);
+      tree->Branch("mc_Xe", &mc_oXe);
+      tree->Branch("mc_Ye", &mc_oYe);
+      tree->Branch("mc_Ze", &mc_oZe);
+      tree->Branch("mc_SectorEl", &mc_oSectorEl);
+      tree->Branch("mc_TargType", &mc_oTargType);
+      tree->Branch("mc_Pex", &mc_oPex);
+      tree->Branch("mc_Pey", &mc_oPey);
+      tree->Branch("mc_Pez", &mc_oPez);
+      tree->Branch("mc_Pe", &mc_oPe);
+      tree->Branch("mc_BettaEl", &mc_oBettaEl);
+      tree->Branch("mc_P2e", &mc_oP2e);
+      // particle (25)
+      tree->Branch("mc_vxh", &mc_ovxh);
+      tree->Branch("mc_vyh", &mc_ovyh);
+      tree->Branch("mc_vzh", &mc_ovzh);
+      tree->Branch("mc_Sector", &mc_oSector);
+      tree->Branch("mc_Betta", &mc_oBetta);
+      tree->Branch("mc_Mass2", &mc_oMass2);
+      tree->Branch("mc_Pid", &mc_oPid);
+      tree->Branch("mc_deltaZ", &mc_odeltaZ);
+      tree->Branch("mc_M", &mc_oM);
+      tree->Branch("mc_E", &mc_oE);
+      tree->Branch("mc_Px", &mc_oPx);
+      tree->Branch("mc_Py", &mc_oPy);
+      tree->Branch("mc_Pz", &mc_oPz);
+      tree->Branch("mc_P2", &mc_oP2);
+      tree->Branch("mc_P", &mc_oP);
+      tree->Branch("mc_Z", &mc_oZ);
+      tree->Branch("mc_ThetaPQ", &mc_oThetaPQ);
+      tree->Branch("mc_Pt2", &mc_oPt2);
+      tree->Branch("mc_Pl2", &mc_oPl2);
+      tree->Branch("mc_PhiPQ", &mc_oPhiPQ);
+      tree->Branch("mc_Mx2", &mc_oMx2);
+      tree->Branch("mc_T", &mc_oT);
+      tree->Branch("mc_CosThetaPQ", &mc_oCosThetaPQ);
+      tree->Branch("mc_BettaCalc", &mc_oBettaCalc);
+      tree->Branch("mc_deltaTheta", &mc_odeltaTheta);
+    }
   } else if (option == "mix") {
     // electron (41)
     tree->Branch("Q2", &mQ2);
@@ -504,6 +621,95 @@ void SetOutputBranches(TTree *tree, TString option) {
     // event related (2)
     tree->Branch("Entry", &mEntry, "Entry[4]/F");
     tree->Branch("Event", &mEvent);
+    // (72 variables for montecarlo)
+    if (simFlag) {
+      // electron (16)
+      tree->Branch("mc_Q2", &mc_mQ2);
+      tree->Branch("mc_W", &mc_mW);
+      tree->Branch("mc_Nu", &mc_mNu);
+      tree->Branch("mc_Xb", &mc_mXb);
+      tree->Branch("mc_Yb", &mc_mYb);
+      tree->Branch("mc_Xe", &mc_mXe);
+      tree->Branch("mc_Ye", &mc_mYe);
+      tree->Branch("mc_Ze", &mc_mZe);
+      tree->Branch("mc_SectorEl", &mc_mSectorEl);
+      tree->Branch("mc_TargType", &mc_mTargType);
+      tree->Branch("mc_Pex", &mc_mPex);
+      tree->Branch("mc_Pey", &mc_mPey);
+      tree->Branch("mc_Pez", &mc_mPez);
+      tree->Branch("mc_Pe", &mc_mPe);
+      tree->Branch("mc_BettaEl", &mc_mBettaEl);
+      tree->Branch("mc_P2e", &mc_mP2e);
+      // particle (25)
+      tree->Branch("mc_vxh", &mc_mvxh, "mc_vxh[4]/F");
+      tree->Branch("mc_vyh", &mc_mvyh, "mc_vyh[4]/F");
+      tree->Branch("mc_vzh", &mc_mvzh, "mc_vzh[4]/F");
+      tree->Branch("mc_Sector", &mc_mSector, "mc_Sector[4]/F");
+      tree->Branch("mc_Betta", &mc_mBetta, "mc_Betta[4]/F");
+      tree->Branch("mc_Mass2", &mc_mMass2, "mc_Mass2[4]/F");
+      tree->Branch("mc_Pid", &mc_mPid, "mc_Pid[4]/F");
+      tree->Branch("mc_deltaZ", &mc_mdeltaZ, "mc_deltaZ[4]/F");
+      tree->Branch("mc_M", &mc_mM, "mc_M[4]/F");
+      tree->Branch("mc_E", &mc_mE, "mc_E[4]/F");
+      tree->Branch("mc_Px", &mc_mPx, "mc_Px[4]/F");
+      tree->Branch("mc_Py", &mc_mPy, "mc_Py[4]/F");
+      tree->Branch("mc_Pz", &mc_mPz, "mc_Pz[4]/F");
+      tree->Branch("mc_P2", &mc_mP2, "mc_P2[4]/F");
+      tree->Branch("mc_P", &mc_mP, "mc_P[4]/F");
+      tree->Branch("mc_Z", &mc_mZ, "mc_Z[4]/F");
+      tree->Branch("mc_ThetaPQ", &mc_mThetaPQ, "mc_ThetaPQ[4]/F");
+      tree->Branch("mc_Pt2", &mc_mPt2, "mc_Pt2[4]/F");
+      tree->Branch("mc_Pl2", &mc_mPl2, "mc_Pl2[4]/F");
+      tree->Branch("mc_PhiPQ", &mc_mPhiPQ, "mc_PhiPQ[4]/F");
+      tree->Branch("mc_Mx2", &mc_mMx2, "mc_Mx2[4]/F");
+      tree->Branch("mc_T", &mc_mT, "mc_T[4]/F");
+      tree->Branch("mc_CosThetaPQ", &mc_mCosThetaPQ, "mc_CosThetaPQ[4]/F");
+      tree->Branch("mc_BettaCalc", &mc_mBettaCalc, "mc_BettaCalc[4]/F");
+      tree->Branch("mc_deltaTheta", &mc_mdeltaTheta, "mc_deltaTheta[4]/F");
+      // pi0 (8)
+      tree->Branch("mc_pi0Px", &mc_pi0Px);
+      tree->Branch("mc_pi0Py", &mc_pi0Py);
+      tree->Branch("mc_pi0Pz", &mc_pi0Pz);
+      tree->Branch("mc_pi0P2", &mc_pi0P2);
+      tree->Branch("mc_pi0P", &mc_pi0P);
+      tree->Branch("mc_pi0E", &mc_pi0E);
+      tree->Branch("mc_pi0M", &mc_pi0M);
+      tree->Branch("mc_pi0Theta", &mc_pi0Theta);
+      // omega (19)
+      tree->Branch("mc_wPx", &mc_wPx);
+      tree->Branch("mc_wPy", &mc_wPy);
+      tree->Branch("mc_wPz", &mc_wPz);
+      tree->Branch("mc_wP", &mc_wP);
+      tree->Branch("mc_wP2", &mc_wP2);
+      tree->Branch("mc_wE", &mc_wE);
+      tree->Branch("mc_wZ", &mc_wZ);
+      tree->Branch("mc_wCosThetaPQ", &mc_wCosThetaPQ);
+      tree->Branch("mc_wThetaPQ", &mc_wThetaPQ);
+      tree->Branch("mc_wPt2", &mc_wPt2);
+      tree->Branch("mc_wPl2", &mc_wPl2);
+      tree->Branch("mc_wPhiPQ", &mc_wPhiPQ);
+      tree->Branch("mc_wMx2", &mc_wMx2);
+      tree->Branch("mc_wT", &mc_wT);
+      tree->Branch("mc_wBettaCalc", &mc_wBettaCalc);
+      tree->Branch("mc_wdeltaTheta", &mc_wdeltaTheta);
+      tree->Branch("mc_wD", &mc_wD);
+      tree->Branch("mc_wM", &mc_wM);
+      tree->Branch("mc_wSD", &mc_wSD);
+      // crossed terms (9)
+      tree->Branch("mc_pippimP", &mc_pippimP);
+      tree->Branch("mc_pippimE", &mc_pippimE);
+      tree->Branch("mc_pippimM", &mc_pippimM);
+      tree->Branch("mc_pippi0P", &mc_pippi0P);
+      tree->Branch("mc_pippi0E", &mc_pippi0E);
+      tree->Branch("mc_pippi0M", &mc_pippi0M);
+      tree->Branch("mc_pimpi0P", &mc_pimpi0P);
+      tree->Branch("mc_pimpi0E", &mc_pimpi0E);
+      tree->Branch("mc_pimpi0M", &mc_pimpi0M);
+      // number of particles (3)
+      tree->Branch("mc_nPip", &mc_nPip);
+      tree->Branch("mc_nPim", &mc_nPim);
+      tree->Branch("mc_nGamma", &mc_nGamma);
+    }
   }
 }
 
