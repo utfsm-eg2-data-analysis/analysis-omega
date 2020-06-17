@@ -361,17 +361,19 @@ int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-  // first, check for testOption... to run at HP VM
+  // first, check for testOption
   if (testOption == "Sim") {
     simFlag = 1;
-    inputFile = "/home/borquez/Downloads/recsisC_0028.root";
+    if (hostName == "") inputFile = "/home/borquez/Downloads/recsisC_0028.root"; // at HP VM
+    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/eos/user/b/borquez/Downloads/recsisC_0028.root"; // at UTFSM cluster
     outDir = proDir + "/out/GetSimpleTuple";
     outFile = outDir + "/test_sim.root";
     outTitle = "Simulation of particles";
     analyserOption = testOption;
   } else if (testOption == "C") {
     simFlag = 0;
-    inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root";
+    if (hostName == "") inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root"; // at HP VM
+    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = rawDataDir_utfsm + "/clas_42011_00.pass2.root"; // at UTFSM cluster
     outDir = proDir + "/out/GetSimpleTuple";
     outFile = outDir + "/test_data.root";
     outTitle = "Data of particles";

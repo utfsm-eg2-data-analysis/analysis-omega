@@ -44,6 +44,7 @@
 
 /*** Global variables ***/
 
+TString hostName = getenv("HOSTNAME");
 TString proDir = getenv("PRODIR");
 TString tmpDir = proDir + "/tmp";
 
