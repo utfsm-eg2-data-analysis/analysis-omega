@@ -5,11 +5,6 @@
 /*                                       */
 /*****************************************/
 
-// PENDING:
-// - do the momentum/angular matching for omegas
-// - add Pt_{x,y,z} as a vector for every decay particle -> Pt2 should be enough... I can derive it
-// - add a way to have the P of all photons -> just sum mP[0] with mP[1} hist
-
 #include "FilterNCombine.h"
 
 /*** Constants ***/
@@ -20,30 +15,30 @@ Float_t kEbeam = 5.014;
 
 /*** Input variables ***/
 
-// (81 variables for data)
-// electron (39)
+// (83 variables for data)
+// electron (40)
 Float_t tQ2, tW, tNu, tXb, tYb, tvxe, tvye, tvze, tSectorEl, tTargType, tPex, tPey, tPez, tPe, tBettaEl, tEtote, tEine, tEoute, tvxec, tvyec, tvzec, tXECe, tYECe, tZECe;
-Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tChi2CCEl, tStatusEl;
-// particle (41)
+Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tNpheEl, tChi2CCEl, tStatusEl;
+// particle (42)
 Float_t tZh, tThetaPQ, tPt2, tPl2, tPhiPQ, tMx2, tT, tvxh, tvyh, tvzh, tSector, tPx, tPy, tPz, tP, tBetta, tMass2, tEtot, tEin, tEout, tXEC, tYEC, tZEC, tpid, tT4, tdeltaZ;
-Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tChi2CC, tStatus;
+Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tNphe, tChi2CC, tStatus;
 // event (1)
 Float_t tevnt;
 
 /*** Output/original variables ***/
 
 // (101 variables for data)
-// electron (40)
+// electron (41)
 Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 Float_t oP2e;
-Float_t oStatDCEl, oDCStatusEl, oStatECEl, oECStatusEl, oTimeECEl, oPathECEl, oChi2ECEl, oStatSCEl, oSCStatusEl, oTimeSCEl, oPathSCEl, oStatCCEl, oCCStatusEl, oChi2CCEl, oStatusEl;
-// particle (59) (16 + 3*6 + 10 + 15)
+Float_t oStatDCEl, oDCStatusEl, oStatECEl, oECStatusEl, oTimeECEl, oPathECEl, oChi2ECEl, oStatSCEl, oSCStatusEl, oTimeSCEl, oPathSCEl, oStatCCEl, oCCStatusEl, oNpheEl, oChi2CCEl, oStatusEl;
+// particle (60) (16 + 3*6 + 10 + 16)
 Float_t ovxh, ovyh, ovzh, oSector, oBetta, oMass2, oEtot, oEin, oEout, oXEC, oYEC, oZEC, oPid, oT4, odeltaZ, oM;
 Float_t oE_prev, oPx_prev, oPy_prev, oPz_prev, oP2_prev, oP_prev;
 Float_t oE_true, oPx_true, oPy_true, oPz_true, oP2_true, oP_true;
 Float_t oE_corr, oPx_corr, oPy_corr, oPz_corr, oP2_corr, oP_corr;
 Float_t oZ, oThetaPQ, oPt2, oPl2, oPhiPQ, oMx2, oT, oCosThetaPQ, oBettaCalc, odeltaTheta;
-Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStatSC, oSCStatus, oTimeSC, oPathSC, oStatCC, oCCStatus, oChi2CC, oStatus;
+Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStatSC, oSCStatus, oTimeSC, oPathSC, oStatCC, oCCStatus, oNphe, oChi2CC, oStatus;
 // event (2)
 Float_t oEvent;
 Float_t oEntry; // debug purposes
@@ -51,17 +46,18 @@ Float_t oEntry; // debug purposes
 /*** Output/mix variables ***/
 
 // (194 variables for data)
-// electron (40) (39+1new)
+// electron (41)
 Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 Float_t mP2e;
-Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mChi2CCEl, mStatusEl;
-// particles (59) (16 + 3*6 + 10 + 15)
+Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mNpheEl, mChi2CCEl, mStatusEl;
+// particles (60) (16 + 3*6 + 10 + 16)
 Float_t mvxh[4], mvyh[4], mvzh[4], mSector[4], mBetta[4], mMass2[4], mEtot[4], mEin[4], mEout[4], mXEC[4], mYEC[4], mZEC[4], mPid[4], mT4[4], mdeltaZ[4], mM[4];
 Float_t mE_prev[4], mPx_prev[4], mPy_prev[4], mPz_prev[4], mP2_prev[4], mP_prev[4];
 Float_t mE_true[4], mPx_true[4], mPy_true[4], mPz_true[4], mP2_true[4], mP_true[4];
 Float_t mE_corr[4], mPx_corr[4], mPy_corr[4], mPz_corr[4], mP2_corr[4], mP_corr[4];
 Float_t mZ[4], mThetaPQ[4], mPt2[4], mPl2[4], mPhiPQ[4], mMx2[4], mT[4], mCosThetaPQ[4], mBettaCalc[4], mdeltaTheta[4];
-Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4], mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mChi2CC[4], mStatus[4];
+Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4];
+Float_t mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mNphe[4], mChi2CC[4], mStatus[4];
 // pi0 (24) (3*8new)
 Float_t pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0P2_prev, pi0P_prev, pi0E_prev, pi0M_prev, pi0Theta_prev;
 Float_t pi0Px_true, pi0Py_true, pi0Pz_true, pi0P2_true, pi0P_true, pi0E_true, pi0M_true, pi0Theta_true;
@@ -85,6 +81,7 @@ Float_t mEntry[4];
 
 /*** Options ***/
 
+TString testOption;
 TString targetOption;
 Int_t   simFlag = 0;
 TString setOption;
@@ -558,7 +555,7 @@ int main(int argc, char **argv) {
   rootFile->Write();
   rootFile->Close();
 
-  // std::cout << "File " << outFile << " has been created!" << std::endl;
+  std::cout << "File " << outFile << " has been created!" << std::endl;
   
   return 0;
 }
@@ -571,13 +568,14 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:dS:r:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dS:r:T:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'd': simFlag = 0; break;
     case 'S': simFlag = 1; setOption = optarg; break;
     case 'r': rnOption = optarg; break;
+    case 'T': testOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
       exit(0);
@@ -586,71 +584,85 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-  // for data type
-  if (!simFlag) {
-    // set
-    setOption = "data";
-    // ntuple name
-    treeName = "ntuple_data";
-    eventBranchName = "evnt";
-    // input
-    // inputFile = proDir + "/out/prunedData/" + targetOption + "/pruned_data_" + rnOption + ".root";
-    inputFile = proDir + "/out/ToyGST/data/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root"; // new
-    // out
-    outDir = dataDir + "/" + targetOption;
-    // new!
-    analyserOption = targetOption;
-  } else if (simFlag) {
-    // ntuple name
+  // first, check for testOption... to run at HP VM
+  if (testOption == "Sim") {
+    simFlag = 1;
+    targetOption = "C";
     treeName = "ntuple_sim";
     eventBranchName = "mc_evnt";
-    // input
-    inputFile = proDir + "/out/prunedSim/" + setOption + "/" + targetOption + "/pruned_sim" + targetOption + "_" + rnOption + ".root"; // new
-    // if (setOption == "jlab") inputFile = proDir + "/out/prunedSim/" + setOption + "/" + targetOption + "/" + jlabNDir + "/pruned_sim" + targetOption + "_" + rnOption + ".root"; // new (for jlab)
-    // out
-    outDir = simDir + "/" + setOption + "/" + targetOption;
-    // if (setOption == "jlab") outDir += "/" + jlabNDir;
-    // new!
-    analyserOption = "Sim";
-  }
-  // regardless of the data type
-  outFile = outDir + "/comb_" + setOption + targetOption + "_" + rnOption + ".root";
+    inputFile = "/home/borquez/analysis-omega/out/GetSimpleTuple/test_sim.root";
+    outDir = proDir + "/out/FilterNCombine";
+    outFile = outDir + "/test_fnc_sim.root";
+    analyserOption = testOption;
+  } else if (testOption == "C") {
+    simFlag = 0;
+    setOption = "data";
+    targetOption = "C";
+    treeName = "ntuple_data";
+    eventBranchName = "evnt";
+    inputFile = "/home/borquez/analysis-omega/out/GetSimpleTuple/test_data.root";
+    outDir = proDir + "/out/FilterNCombine";
+    outFile = outDir + "/test_fnc_data.root";
+    analyserOption = testOption;
+  } else {
+    // for data type
+    if (!simFlag) {
+      setOption = "data";
+      treeName = "ntuple_data";
+      eventBranchName = "evnt";
+      inputFile = proDir + "/out/GetSimpleTuple/data/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
+      outDir = proDir + "/out/FilterNCombine/data/" + targetOption;
+      analyserOption = targetOption;
+    } else if (simFlag) {
+      treeName = "ntuple_sim";
+      eventBranchName = "mc_evnt";
+      inputFile = proDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
+      outDir = proDir + "/out/FilterNCombine/" + setOption + "/" + targetOption;
+      analyserOption = "Sim";
+    }
+    // for everyone
+    outFile = outDir + "/comb_" + setOption + targetOption + "_" + rnOption + ".root";
+  } // end of test condition
 }
 
 void printUsage() {
-  // std::cout << "FilterNCombine program." << std::endl;
-  // std::cout << "The input file should have this name scheme: " << std::endl;
-  // std::cout << "    for data     = out/ToyGST/data/[target]/pruned[target]_[rn].root" << std::endl;
-  // std::cout << "    for old/usm  = out/ToyGST/[set]/[target]/pruned[target]_[rn].root" << std::endl;
-  // std::cout << "    for jlab     = pruned[target]_[rn].root" << std::endl;
-  // std::cout << "Usage is:" << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "./FilterNCombine -h" << std::endl;
-  // std::cout << "    prints this message and exits program" << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
-  // std::cout << "    filters the respective target" << std::endl;
-  // std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "./FilterNCombine -d" << std::endl;
-  // std::cout << "    filters data" << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "./FilterNCombine -S[old, usm, jlab]" << std::endl;
-  // std::cout << "    filters sim for chosen set" << std::endl;
-  // std::cout << std::endl;
-  // std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
-  // std::cout << "    selects run number (mandatory for all)" << std::endl;
-  // std::cout << "    (please, maintain numbering scheme!)" << std::endl;
-  // std::cout << std::endl;
+  std::cout << "FilterNCombine program." << std::endl;
+  std::cout << "The input file should have this name scheme: " << std::endl;
+  std::cout << "    for data    = out/GetSimpleTuple/data/[target]/pruned[target]_[rn].root" << std::endl;
+  std::cout << "    for old/usm = out/GetSimpleTuple/[set]/[target]/pruned[target]_[rn].root" << std::endl;
+  std::cout << "    for jlab    = pruned[target]_[rn].root" << std::endl;
+  std::cout << "Usage is:" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -h" << std::endl;
+  std::cout << "    prints this message and exits program" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
+  std::cout << "    filters the respective target" << std::endl;
+  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -d" << std::endl;
+  std::cout << "    filters data" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -S[old, usm, jlab]" << std::endl;
+  std::cout << "    filters sim for chosen set" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -r[0001,...,9999]" << std::endl;
+  std::cout << "    selects run number (mandatory for all)" << std::endl;
+  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
+  std::cout << std::endl;
+  std::cout << "./FilterNCombine -T[Sim,C]" << std::endl;
+  std::cout << "    exclusive test options for debugging" << std::endl;
+  std::cout << std::endl;
 }
 
 void printOptions() {
-  // std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
-  // std::cout << "  targetOption   = " << targetOption << std::endl;
-  // std::cout << "  simFlag        = " << simFlag << std::endl;
-  // std::cout << "  setOption      = " << setOption << std::endl;
-  // std::cout << "  rnOption       = " << rnOption << std::endl;
-  // std::cout << "  inputFile      = " << inputFile << std::endl;
-  // std::cout << "  setOption      = " << setOption << std::endl;
-  // std::cout << std::endl;
+  std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
+  std::cout << "  testOption     = " << testOption << std::endl;
+  std::cout << "  targetOption   = " << targetOption << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
+  std::cout << "  setOption      = " << setOption << std::endl;
+  std::cout << "  rnOption       = " << rnOption << std::endl;
+  std::cout << "  inputFile      = " << inputFile << std::endl;
+  std::cout << "  setOption      = " << setOption << std::endl;
+  std::cout << std::endl;
 }

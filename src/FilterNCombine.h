@@ -6,30 +6,30 @@ extern Float_t kEbeam;
 
 /*** Input variables ***/
 
-// (81 variables for data)
-// electron (39)
+// (83 variables for data)
+// electron (40)
 extern Float_t tQ2, tW, tNu, tXb, tYb, tvxe, tvye, tvze, tSectorEl, tTargType, tPex, tPey, tPez, tPe, tBettaEl, tEtote, tEine, tEoute, tvxec, tvyec, tvzec, tXECe, tYECe, tZECe;
-extern Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tChi2CCEl, tStatusEl;
-// particle (41)
+extern Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tNpheEl, tChi2CCEl, tStatusEl;
+// particle (42)
 extern Float_t tZh, tThetaPQ, tPt2, tPl2, tPhiPQ, tMx2, tT, tvxh, tvyh, tvzh, tSector, tPx, tPy, tPz, tP, tBetta, tMass2, tEtot, tEin, tEout, tXEC, tYEC, tZEC, tpid, tT4, tdeltaZ;
-extern Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tChi2CC, tStatus;
+extern Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tNphe, tChi2CC, tStatus;
 // event (1)
 extern Float_t tevnt;
 
 /*** Output/original variables ***/
 
 // (101 variables for data)
-// electron (40)
+// electron (41)
 extern Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 extern Float_t oP2e;
-extern Float_t oStatDCEl, oDCStatusEl, oStatECEl, oECStatusEl, oTimeECEl, oPathECEl, oChi2ECEl, oStatSCEl, oSCStatusEl, oTimeSCEl, oPathSCEl, oStatCCEl, oCCStatusEl, oChi2CCEl, oStatusEl;
-// particle (59) (16 + 3*6 + 10 + 15)
+extern Float_t oStatDCEl, oDCStatusEl, oStatECEl, oECStatusEl, oTimeECEl, oPathECEl, oChi2ECEl, oStatSCEl, oSCStatusEl, oTimeSCEl, oPathSCEl, oStatCCEl, oCCStatusEl, oNpheEl, oChi2CCEl, oStatusEl;
+// particle (60) (16 + 3*6 + 10 + 16)
 extern Float_t ovxh, ovyh, ovzh, oSector, oBetta, oMass2, oEtot, oEin, oEout, oXEC, oYEC, oZEC, oPid, oT4, odeltaZ, oM;
 extern Float_t oE_prev, oPx_prev, oPy_prev, oPz_prev, oP2_prev, oP_prev;
 extern Float_t oE_true, oPx_true, oPy_true, oPz_true, oP2_true, oP_true;
 extern Float_t oE_corr, oPx_corr, oPy_corr, oPz_corr, oP2_corr, oP_corr;
 extern Float_t oZ, oThetaPQ, oPt2, oPl2, oPhiPQ, oMx2, oT, oCosThetaPQ, oBettaCalc, odeltaTheta;
-extern Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStatSC, oSCStatus, oTimeSC, oPathSC, oStatCC, oCCStatus, oChi2CC, oStatus;
+extern Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStatSC, oSCStatus, oTimeSC, oPathSC, oStatCC, oCCStatus, oNphe, oChi2CC, oStatus;
 // event (2)
 extern Float_t oEvent;
 extern Float_t oEntry; // debug purposes
@@ -37,17 +37,18 @@ extern Float_t oEntry; // debug purposes
 /*** Output/mix variables ***/
 
 // (194 variables for data)
-// electron (40) (39+1new)
+// electron (41)
 extern Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 extern Float_t mP2e;
-extern Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mChi2CCEl, mStatusEl;
-// particles (59) (16 + 3*6 + 10 + 15)
+extern Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mNpheEl, mChi2CCEl, mStatusEl;
+// particles (60) (16 + 3*6 + 10 + 16)
 extern Float_t mvxh[4], mvyh[4], mvzh[4], mSector[4], mBetta[4], mMass2[4], mEtot[4], mEin[4], mEout[4], mXEC[4], mYEC[4], mZEC[4], mPid[4], mT4[4], mdeltaZ[4], mM[4];
 extern Float_t mE_prev[4], mPx_prev[4], mPy_prev[4], mPz_prev[4], mP2_prev[4], mP_prev[4];
 extern Float_t mE_true[4], mPx_true[4], mPy_true[4], mPz_true[4], mP2_true[4], mP_true[4];
 extern Float_t mE_corr[4], mPx_corr[4], mPy_corr[4], mPz_corr[4], mP2_corr[4], mP_corr[4];
 extern Float_t mZ[4], mThetaPQ[4], mPt2[4], mPl2[4], mPhiPQ[4], mMx2[4], mT[4], mCosThetaPQ[4], mBettaCalc[4], mdeltaTheta[4];
-extern Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4], mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mChi2CC[4], mStatus[4];
+extern Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4];
+extern Float_t mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mNphe[4], mChi2CC[4], mStatus[4];
 // pi0 (24) (3*8new)
 extern Float_t pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0P2_prev, pi0P_prev, pi0E_prev, pi0M_prev, pi0Theta_prev;
 extern Float_t pi0Px_true, pi0Py_true, pi0Pz_true, pi0P2_true, pi0P_true, pi0E_true, pi0M_true, pi0Theta_true;
@@ -84,7 +85,8 @@ Float_t BettaCalc(Float_t fP, Float_t fPid);
 void SetInputBranches(TChain *chain, Int_t simFlag) {
   // init all variables
   chain->SetBranchStatus("*", 1);
-  // electron (39)
+  // electron (40)
+  // all (24)
   chain->SetBranchAddress("TargType", &tTargType);
   chain->SetBranchAddress("Q2", &tQ2);
   chain->SetBranchAddress("W", &tW);
@@ -109,6 +111,7 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
   chain->SetBranchAddress("XECe", &tXECe);
   chain->SetBranchAddress("YECe", &tYECe);
   chain->SetBranchAddress("ZECe", &tZECe);
+  // status (16)
   chain->SetBranchAddress("StatDCEl", &tStatDCEl);
   chain->SetBranchAddress("DCStatusEl", &tDCStatusEl);
   chain->SetBranchAddress("StatECEl", &tStatECEl);
@@ -122,9 +125,11 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
   chain->SetBranchAddress("PathSCEl", &tPathSCEl);
   chain->SetBranchAddress("StatCCEl", &tStatCCEl);
   chain->SetBranchAddress("CCStatusEl", &tCCStatusEl);
+  chain->SetBranchAddress("NpheEl", &tNpheEl);
   chain->SetBranchAddress("Chi2CCEl", &tChi2CCEl);
   chain->SetBranchAddress("StatusEl", &tStatusEl);  
-  // particle (41)
+  // particle (42)
+  // all (26)
   chain->SetBranchAddress("Zh", &tZh);
   chain->SetBranchAddress("Pt2", &tPt2);
   chain->SetBranchAddress("Pl2", &tPl2);
@@ -151,6 +156,7 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
   chain->SetBranchAddress("Mass2", &tMass2);
   chain->SetBranchAddress("T4", &tT4);
   chain->SetBranchAddress("deltaZ", &tdeltaZ);
+  // status (16)
   chain->SetBranchAddress("StatDC", &tStatDC);
   chain->SetBranchAddress("DCStatus", &tDCStatus);
   chain->SetBranchAddress("StatEC", &tStatEC);
@@ -164,6 +170,7 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
   chain->SetBranchAddress("PathSC", &tPathSC);
   chain->SetBranchAddress("StatCC", &tStatCC);
   chain->SetBranchAddress("CCStatus", &tCCStatus);
+  chain->SetBranchAddress("Nphe", &tNphe);
   chain->SetBranchAddress("Chi2CC", &tChi2CC);
   chain->SetBranchAddress("Status", &tStatus);
   // evnt related (1)
@@ -172,7 +179,8 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
 
 void SetOutputBranches(TTree *tree, TString option) {
   if (option == "original") {
-    // electron (40)
+    // electron (41)
+    // all (25)
     tree->Branch("Q2", &oQ2);
     tree->Branch("W",  &oW);
     tree->Branch("Nu", &oNu);
@@ -211,6 +219,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("PathSCEl", &oPathSCEl);
     tree->Branch("StatCCEl", &oStatCCEl);
     tree->Branch("CCStatusEl", &oCCStatusEl);
+    tree->Branch("NpheEl", &oNpheEl);
     tree->Branch("Chi2CCEl", &oChi2CCEl);
     tree->Branch("StatusEl", &oStatusEl);
     // independent (16)
@@ -262,7 +271,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("T", &oT);
     tree->Branch("BettaCalc", &oBettaCalc);
     tree->Branch("deltaTheta", &odeltaTheta);
-    // status (15)
+    // status (16)
     tree->Branch("StatDC", &oStatDC);
     tree->Branch("DCStatus", &oDCStatus);
     tree->Branch("StatEC", &oStatEC);
@@ -276,13 +285,14 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("PathSC", &oPathSC);
     tree->Branch("StatCC", &oStatCC);
     tree->Branch("CCStatus", &oCCStatus);
+    tree->Branch("Nphe", &oNphe);
     tree->Branch("Chi2CC", &oChi2CC);
     tree->Branch("Status", &oStatus);
     // event-related (2)
     tree->Branch("Event", &oEvent);
     tree->Branch("Entry", &oEntry);
   } else if (option == "mix") {
-    // electron (40)
+    // electron (41)
     tree->Branch("Q2", &mQ2);
     tree->Branch("W", &mW);
     tree->Branch("Nu", &mNu);
@@ -321,6 +331,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("PathSCEl", &mPathSCEl);
     tree->Branch("StatCCEl", &mStatCCEl);
     tree->Branch("CCStatusEl", &mCCStatusEl);
+    tree->Branch("NpheEl", &mNpheEl);
     tree->Branch("Chi2CCEl", &mChi2CCEl);
     tree->Branch("StatusEl", &mStatusEl);
     // independent (16)
@@ -372,7 +383,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("T", &mT, "T[4]/F");
     tree->Branch("deltaTheta", &mdeltaTheta, "deltaTheta[4]/F");
     tree->Branch("BettaCalc", &mBettaCalc, "BettaCalc[4]/F");
-    // status (15)
+    // status (16)
     tree->Branch("StatDC", &mStatDC, "StatDC[4]/F");
     tree->Branch("DCStatus", &mDCStatus, "DCStatus[4]/F");
     tree->Branch("StatEC", &mStatEC, "StatEC[4]/F");
@@ -386,6 +397,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("PathSC", &mPathSC, "PathSC[4]/F");
     tree->Branch("StatCC", &mStatCC, "StatCC[4]/F");
     tree->Branch("CCStatus", &mCCStatus, "CCStatus[4]/F");
+    tree->Branch("Nphe", &mNphe, "Nphe[4]/F");
     tree->Branch("Chi2CC", &mChi2CC, "Chi2CC[4]/F");
     tree->Branch("Status", &mStatus, "Status[4]/F");
     // pi0 prev (8)
@@ -497,7 +509,7 @@ void SetOutputBranches(TTree *tree, TString option) {
 
 void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserOption) {
   if (option == "original") {
-    // electron (40) (39+1new) : nothing to correct or modify here
+    // electron (41)
     oQ2 = tQ2;
     oW  = tW;
     oNu = tNu;
@@ -536,6 +548,7 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     oPathSCEl   = tPathSCEl;
     oStatCCEl   = tStatCCEl;
     oCCStatusEl = tCCStatusEl;
+    oNpheEl     = tNpheEl;
     oChi2CCEl   = tChi2CCEl;
     oStatusEl   = tStatusEl;
     // independent variables (16)
@@ -587,7 +600,7 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     oT = oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - oQ2;
     oBettaCalc = BettaCalc(oP_corr, oPid);
     odeltaTheta = DeltaTheta(oPx_corr, oPy_corr, oPz_corr);
-    // status (15)
+    // status (16)
     oStatDC   = tStatDC;
     oDCStatus = tDCStatus;
     oStatEC   = tStatEC;
@@ -601,13 +614,14 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     oPathSC   = tPathSC;
     oStatCC   = tStatCC;
     oCCStatus = tCCStatus;
+    oNphe     = tNphe;
     oChi2CC   = tChi2CC;
     oStatus   = tStatus;
-    // event-related (2) (1+1new)
+    // event-related (2)
     oEvent = tevnt;
     oEntry = (Float_t) entry;
   } else if (option == "mix") {
-    // electron (40) (39+1new)
+    // electron (41)
     mQ2 = tQ2;
     mW  = tW;
     mNu = tNu;
@@ -646,6 +660,7 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     mPathSCEl   = tPathSCEl;
     mStatCCEl   = tStatCCEl;
     mCCStatusEl = tCCStatusEl;
+    mNpheEl     = tNpheEl;
     mChi2CCEl   = tChi2CCEl;
     mStatusEl   = tStatusEl;
     // independent variables (16)
@@ -697,7 +712,7 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     mMx2[index] = mW*mW + mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - 2*kMproton*mZ[index]*mNu;
     mT[index] = mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - mQ2;
     mBettaCalc[index] = BettaCalc(mP_corr[index], mPid[index]);
-    // status (15)
+    // status (16)
     mStatDC[index]   = tStatDC;
     mDCStatus[index] = tDCStatus;
     mStatEC[index]   = tStatEC;
@@ -711,6 +726,7 @@ void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserO
     mPathSC[index]   = tPathSC;
     mStatCC[index]   = tStatCC;
     mCCStatus[index] = tCCStatus;
+    mNphe[index]     = tNphe;
     mChi2CC[index]   = tChi2CC;
     mStatus[index]   = tStatus;
     // event related (2)
@@ -833,7 +849,7 @@ void AssignOmegaVariables() {
   wdeltaTheta_corr = DeltaTheta(wPx_corr, wPy_corr, wPz_corr);
 }
 
-void AssignMoreVariables(Int_t nGamma, Int_t nPip, Int_t nPim) {
+void AssignMoreVariables(Int_t fnGamma, Int_t fnPip, Int_t fnPim) {
   // (these variables depend that all the other variables from decay particles are set and ready)
 
   // crossed terms (9), assuming P_corr and E_corr as the final versions
@@ -847,9 +863,9 @@ void AssignMoreVariables(Int_t nGamma, Int_t nPip, Int_t nPim) {
   pimpi0E = mE_corr[3]*pi0E_corr;
   pimpi0M = TMath::Sqrt(kMpi*kMpi + pi0M_corr*pi0M_corr + 2*(pimpi0E - pimpi0P));
   // number of particles (3)
-  nGamma = (Float_t) nGamma;
-  nPip   = (Float_t) nPip;
-  nPim   = (Float_t) nPim;
+  nGamma = (Float_t) fnGamma;
+  nPip   = (Float_t) fnPip;
+  nPim   = (Float_t) fnPim;
 }
 
 /*** Mathematical functions ***/
