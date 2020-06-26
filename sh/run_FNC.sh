@@ -8,7 +8,6 @@
 # EG: ./run_FNC.sh data C		    #
 #     ./run_FNC.sh old Fe		    #
 #     ./run_FNC.sh usm D		    #
-#                                           #
 #############################################
 
 #####
@@ -34,16 +33,16 @@ function get_num()
 inputArray=("$@")
 
 ic=0
-while [ $ic -le $((${#inputArray[@]}-1)) ]; do
-  if [ "${inputArray[$ic]}" == "data" ]; then
+while [[ $ic -le $((${#inputArray[@]}-1)) ]]; do
+  if [[ "${inputArray[$ic]}" == "data" ]]; then
     setName=${inputArray[$((ic))]}
     tarName=${inputArray[$((ic+1))]}
     inputOption="d"
-  elif [ "${inputArray[$ic]}" == "old" ]; then
+  elif [[ "${inputArray[$ic]}" == "old" ]]; then
     setName=${inputArray[$((ic))]}
     tarName=${inputArray[$((ic+1))]}
     inputOption="S${setName}"
-  elif [ "${inputArray[$ic]}" == "usm" ]; then
+  elif [[ "${inputArray[$ic]}" == "usm" ]]; then
     setName=${inputArray[$((ic))]}
     tarName=${inputArray[$((ic+1))]}
     inputOption="S${setName}"
@@ -62,8 +61,8 @@ OUDIR=${PRODIR}/out/FilterNCombine/${setName}/${tarName}
 mkdir -p ${OUDIR}
 mkdir -p ${OUDIR}/tmp
 
-# how to obtain the run numbers
-if [ "${setName}" == "data" ]; then
+# how to obtain the run numbers (MUST UPDATE FOR SIMULATIONS!)
+if [[ "${setName}" == "data" ]]; then
     if [[ ${tarName} = "C" ]]; then
 	rnlist=${PRODIR}/include/C-thickD2rn.txt
     elif [[ ${tarName} = "Fe" ]]; then
@@ -72,13 +71,13 @@ if [ "${setName}" == "data" ]; then
 	rnlist=${PRODIR}/include/Pb-thinD2rn.txt
     fi
     lines=`wc -l < ${rnlist}`
-elif [ "${setName}" == "old" ]; then
+elif [[ "${setName}" == "old" ]]; then
     if [[ ${tarName} = "C" ]]; then
 	lines=2
     elif [[ ${tarName} = "Fe" ]]; then
 	lines=1
     fi
-elif [ "${setName}" == "usm" ]; then
+elif [[ "${setName}" == "usm" ]]; then
     if [[ ${tarName} = "D" ]]; then
 	lines=16
     elif [[ ${tarName} = "C" ]]; then
@@ -91,9 +90,9 @@ elif [ "${setName}" == "usm" ]; then
 fi
 
 COUNTER=0
-while [ ${COUNTER} -lt ${lines} ]; do
+while [[ ${COUNTER} -lt ${lines} ]]; do
     let COUNTER=COUNTER+1
-    if [ "${setName}" == "data" ]; then
+    if [[ "${setName}" == "data" ]]; then
 	rn=`sed -n "$COUNTER{p;q}" ${rnlist}` # data starts from 1 (due to line number)
     else
 	rn=$(get_num "$((COUNTER-1))") # sim starts from 00 (due to filenames)
@@ -108,8 +107,8 @@ while [ ${COUNTER} -lt ${lines} ]; do
     echo "#PBS -N ${jobname}"                                        >> ${jobfile}
     echo "#PBS -V"                                                   >> ${jobfile}
     echo "#PBS -q utfsm"                                             >> ${jobfile}
-    echo "#PBS -l walltime=24:00:00"                                 >> ${jobfile}
-    echo "#PBS -l cput=24:00:00"                                     >> ${jobfile}
+    echo "#PBS -l walltime=36:00:00"                                 >> ${jobfile}
+    echo "#PBS -l cput=36:00:00"                                     >> ${jobfile}
     echo "#PBS -m ae"                                                >> ${jobfile}
     echo "#PBS -M andres.borquez.14@sansano.usm.cl"                  >> ${jobfile}
     echo ""                                                          >> ${jobfile}

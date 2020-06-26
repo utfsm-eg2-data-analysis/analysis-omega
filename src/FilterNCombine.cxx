@@ -693,6 +693,5 @@ void printOptions() {
   std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
   std::cout << "  inputFile      = " << inputFile << std::endl;
-  std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << std::endl;
 }
