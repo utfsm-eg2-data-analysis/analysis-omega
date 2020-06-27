@@ -19,7 +19,6 @@ using namespace ROOT::VecOps;
 // options
 TString testOption;
 TString targetOption;
-TString setOption;
 TString rnOption;
 
 // to be assigned
@@ -80,9 +79,6 @@ int main(int argc, char **argv) {
   parseCommandLine(argc, argv);
   assignOptions();
   printOptions();
-
-  // dir structure, just in case
-  if (setOption != "jlab") system("mkdir -p " + outDir);
   
   // init ClasTool
   TClasTool *input = new TClasTool();
@@ -316,23 +312,17 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -t[target]" << std::endl;
   std::cout << "    selects target: D, C, Fe, Pb" << std::endl;
-  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -d" << std::endl;
   std::cout << "    gets tuples from data" << std::endl;
   std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -S[old,usm,jlab]" << std::endl;
-  std::cout << "    gets tuples from set of simulations" << std::endl;
+  std::cout << "./GetSimpleTuple -S" << std::endl;
+  std::cout << "    gets tuples from simulations" << std::endl;
   std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -n[00,01,02,...]" << std::endl;
-  std::cout << "    selects N dir (exclusive and mandatory for -Sjlab option)" << std::endl;
-  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -r[0001,...,9999]" << std::endl;
-  std::cout << "    selects run number (mandatory for all!)" << std::endl;
-  std::cout << "    numbering scheme: 00,...,99     for jlab" << std::endl;
-  std::cout << "                      0000,...,1XXX for old/usm" << std::endl;
-  std::cout << "                      XXXXX         for data" << std::endl;
+  std::cout << "./GetSimpleTuple -r[run number]" << std::endl;
+  std::cout << "    selects run number" << std::endl;
+  std::cout << "    numbering scheme for data files = clas_<run number>_*.pass2.root" << std::endl;
+  std::cout << "    numbering scheme for sim files  = recsis<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -T[Sim,C]" << std::endl;
   std::cout << "    exclusive options for debugging" << std::endl;
@@ -345,11 +335,11 @@ int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dS:r:T:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dSr:T:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
-    case 'S': simFlag = 1; setOption = optarg; break;
+    case 'S': simFlag = 1; break;
     case 'd': simFlag = 0; break;
     case 'r': rnOption = optarg; break;
     case 'T': testOption = optarg; break;
@@ -364,8 +354,11 @@ void assignOptions() {
   // first, check for testOption
   if (testOption == "Sim") {
     simFlag = 1;
-    if (hostName == "") inputFile = "/home/borquez/Downloads/recsisC_0028.root"; // at HP VM
-    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/eos/user/b/borquez/Downloads/recsisC_0028.root"; // at UTFSM cluster
+    if (hostName == "") inputFile = "/home/borquez/Downloads/recsisC_10.root"; // at HP VM
+    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/eos/user/b/borquez/Downloads/recsisC_10.root"; // at UTFSM cluster
+    else if (hostName == "ifarm1801.jlab.org" ||
+	     hostName == "ifarm1802.jlab.org" ||
+	     hostName == "ifarm1901.jlab.org") inputFile = "/home/borquez/volatile/test/recsisC_10.root"; // at JLAB cluster
     outDir = proDir + "/out/GetSimpleTuple";
     outFile = outDir + "/test_sim.root";
     outTitle = "Simulation of particles";
@@ -373,7 +366,10 @@ void assignOptions() {
   } else if (testOption == "C") {
     simFlag = 0;
     if (hostName == "") inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root"; // at HP VM
-    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = rawDataDir_utfsm + "/clas_42011_00.pass2.root"; // at UTFSM cluster
+    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/data/jlab/mss/clas/eg2a/production/Pass2/Clas/clas_42011_00.pass2.root"; // at UTFSM cluster
+    else if (hostName == "ifarm1801.jlab.org" ||
+	     hostName == "ifarm1802.jlab.org" ||
+	     hostName == "ifarm1901.jlab.org") inputFile = "/home/borquez/volatile/test/clas_42011_00.pass2.root"; // at JLAB cluster
     outDir = proDir + "/out/GetSimpleTuple";
     outFile = outDir + "/test_data.root";
     outTitle = "Data of particles";
@@ -381,27 +377,18 @@ void assignOptions() {
   } else {
     // data type
     if (!simFlag) {
-      inputFile = rawDataDir_utfsm + "/clas_" + rnOption + "_*.pass2.root"; // *: all files of the rn
-      analyserOption = targetOption;
-      outDir = proDir + "/out/GetSimpleTuple/data/" + targetOption;
       outTitle = "Data of particles";
+      analyserOption = targetOption;
+      inputFile = "clas_" + rnOption + "_*.pass2.root"; // *: all files of the rn, from the node dir
+      outDir = ""; // node dir
     } else if (simFlag) {
-      analyserOption = "Sim";
       outTitle = "Simulation of particles";
-      outDir = proDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption;
-      if (setOption == "jlab") {
-	inputFile = "recsis" + targetOption + "_" + rnOption + ".root"; // from node dir
-	outDir = ""; // just in case
-      } else if (setOption == "old" || setOption == "usm") {
-	inputFile = rawSimDir_utfsm + "/" + setOption + "/" + targetOption + "/recsis" + targetOption + "_" + rnOption + "*.root"; // *: convenient amount of files
-      }
+      analyserOption = "Sim";
+      inputFile = "recsis" + targetOption + "_" + rnOption + ".root"; // from node dir
+      outDir = ""; // node dir
     }
     // no longer independent of the data type
-    if (setOption == "jlab") {
-      outFile = "pruned" + targetOption + "_" + rnOption + ".root"; // into node dir
-    } else {
-      outFile = outDir + "/pruned" + targetOption + "_" + rnOption + ".root";
-    }
+    outFile = "pruned" + targetOption + "_" + rnOption + ".root"; // into node dir
   } // end of test condition
 }
 
@@ -410,7 +397,6 @@ void printOptions() {
   std::cout << "  testOption     = " << testOption << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  simFlag        = " << simFlag << std::endl;
-  std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
   std::cout << "  inputFile      = " << inputFile << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
