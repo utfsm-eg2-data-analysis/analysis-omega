@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# This script sends everything!
+
+#####
+# Functions
+###
+
 function get_num()
 {
   sr=$1
@@ -12,53 +18,34 @@ function get_num()
   echo $srn
 }
 
+#####
+# Main
+##
+
 source ~/.bashrc
-cd ${PRODIR}/sh
+cd ${PRODIR}/sh/jlab
 
-# Deuterium
+# Data
+./send_GST.sh data C
+./send_GST.sh data Fe
+./send_GST.sh data Pb
 
-tarName="D"
-dirs=45
+# Simulations/old
+./send_GST.sh old C
+./send_GST.sh old Fe
 
-COUNTER=0
-while [ ${COUNTER} -lt ${dirs} ]; do
-    let COUNTER=COUNTER+1
-    ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_GST-jlab.sh ${tarName} ${ndir}
-done
+# Simulations/usm
+./send_GST.sh usm D
+./send_GST.sh usm C
+./send_GST.sh usm Fe
+./send_GST.sh usm Pb
 
-# Carbon
-
-tarName="C"
-dirs=8
-
-COUNTER=1
-while [ ${COUNTER} -lt ${dirs} ]; do
-    let COUNTER=COUNTER+1
-    ndir=$(get_num "$((COUNTER-1))") # start at 01
-    ./run_GST-jlab.sh ${tarName} ${ndir}
-done
-
-# Iron
-
-tarName="Fe"
-dirs=11
-
-COUNTER=0
-while [ ${COUNTER} -lt ${dirs} ]; do
-    let COUNTER=COUNTER+1
-    ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_GST-jlab.sh ${tarName} ${ndir}
-done
-
-# Lead
-
-tarName="Pb"
-dirs=4
-
-COUNTER=0
-while [ ${COUNTER} -lt ${dirs} ]; do
-    let COUNTER=COUNTER+1
-    ndir=$(get_num "$((COUNTER-1))") # start at 00
-    ./run_GST-jlab.sh ${tarName} ${ndir}
+# Simulations/jlab
+targets=("D" "C" "Fe" "Pb")
+ndirs=(46 10 13 4)
+for ((i=0; i < ${#targets[@]}; i++)); do
+    for ((j=1; j <= ${ndirs[i]}; j++)); do
+	ndir=$(get_num "$j")
+        ./send_GST.sh jlab ${targets[i]} ${ndir}
+    done
 done
