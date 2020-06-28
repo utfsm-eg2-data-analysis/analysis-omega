@@ -61,9 +61,18 @@ mkdir -p ${OUDIR}
 
 # set input option
 if [[ "${setOption}" == "data" ]]; then
+    if [[ ${tarName} = "C" ]]; then
+	rnlist=${PRODIR}/include/C-thickD2rn.txt
+    elif [[ ${tarName} = "Fe" ]]; then
+	rnlist=${PRODIR}/include/Fe-thickD2rn.txt
+    elif [[ ${tarName} = "Pb" ]]; then
+	rnlist=${PRODIR}/include/Pb-thinD2rn.txt
+    fi
     inputOption="-d"
+    nfiles=$(wc -l < ${rnlist})
 else
     inputOption="-S"
+    nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
 
 # declaration of variables
@@ -81,7 +90,6 @@ thebinary="${PRODIR}/bin/FilterNCombine"
 #outrootfile=
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
-nfiles=$(ls -1 ${DATADIR} | wc -l)
 for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
