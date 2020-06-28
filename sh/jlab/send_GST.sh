@@ -68,7 +68,7 @@ if [[ "${setOption}" == "data" ]]; then
     fi
     DATADIR="/mss/clas/eg2a/production/Pass2/Clas"
     inputOption="-d"
-    lines=`wc -l < ${rnlist}`
+    nfiles=$(wc -l < ${rnlist})
 else
     if [[ "${setOption}" == "old" ]]; then
 	DATADIR="/home/borquez/volatile/omegaSim/old/${tarName}"
@@ -78,7 +78,7 @@ else
 	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}/${nDir}"
     fi
     inputOption="-S"
-    lines=`ls -1 ${DATADIR} | wc -l`
+    nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
 
 # declaration of variables
@@ -96,12 +96,10 @@ thebinary="${PRODIR}/bin/GetSimpleTuple"
 #outrootfile=
 execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
-COUNTER=0
-while [[ ${COUNTER} -lt ${lines} ]]; do
-    # update counter
-    let COUNTER=COUNTER+1
+for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
+    # update rn value
     if [[ "${setOption}" == "data" ]]; then
-	rn=$(sed -n "$COUNTER{p;q}" $rnlist)
+	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
     elif [[ "${setOption}" == "usm" || "${setOption}" == "old" ]]; then
 	rn=$(get_num "$COUNTER") # old and usm start at 1
     elif [[ "${setOption}" == "jlab" ]]; then
@@ -124,7 +122,7 @@ while [[ ${COUNTER} -lt ${lines} ]]; do
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
     echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}

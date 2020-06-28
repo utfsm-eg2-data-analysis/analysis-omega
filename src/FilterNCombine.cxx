@@ -116,7 +116,6 @@ Float_t mc_nPip, mc_nPim, mc_nGamma;
 TString testOption;
 TString targetOption;
 Int_t   simFlag = 0;
-TString setOption;
 TString rnOption;
 TString analyserOption; // new, for photon's energy correction
 
@@ -600,14 +599,13 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:dS:r:T:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dSr:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'd': simFlag = 0; break;
-    case 'S': simFlag = 1; setOption = optarg; break;
+    case 'S': simFlag = 1; break;
     case 'r': rnOption = optarg; break;
-    case 'T': testOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
       exit(0);
@@ -616,82 +614,47 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-  // first, check for testOption
-  if (testOption == "Sim") {
-    simFlag = 1;
-    targetOption = "C";
-    treeName = "ntuple_sim";
-    eventBranchName = "mc_evnt";
-    inputFile = proDir + "/out/GetSimpleTuple/test_sim.root";
-    outDir = proDir + "/out/FilterNCombine";
-    outFile = outDir + "/test_fnc_sim.root";
-    analyserOption = testOption;
-  } else if (testOption == "C") {
-    simFlag = 0;
-    setOption = "data";
-    targetOption = "C";
+  // for data type
+  if (!simFlag) {
     treeName = "ntuple_data";
     eventBranchName = "evnt";
-    inputFile = proDir + "/out/GetSimpleTuple/test_data.root";
-    outDir = proDir + "/out/FilterNCombine";
-    outFile = outDir + "/test_fnc_data.root";
-    analyserOption = testOption;
-  } else {
-    // for data type
-    if (!simFlag) {
-      setOption = "data";
-      treeName = "ntuple_data";
-      eventBranchName = "evnt";
-      analyserOption = targetOption;
-    } else if (simFlag) {
-      treeName = "ntuple_sim";
-      eventBranchName = "mc_evnt";
-      analyserOption = "Sim";
-    }
-    // for everyone
-    inputFile = proDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption + "/pruned" + targetOption + "_" + rnOption + ".root";
-    outDir  = proDir + "/out/FilterNCombine/" + setOption + "/" + targetOption;
-    outFile = outDir + "/comb" + targetOption + "_" + rnOption + ".root";
-  } // end of test condition
+    analyserOption = targetOption;
+  } else if (simFlag) {
+    treeName = "ntuple_sim";
+    eventBranchName = "mc_evnt";
+    analyserOption = "Sim";
+  }
+  // for everyone
+  inputFile = "pruned" + targetOption + "_" + rnOption + ".root"; // at node dir
+  outDir  = ""; // just in case, node dir
+  outFile = "comb" + targetOption + "_" + rnOption + ".root"; // at node dir
 }
 
 void printUsage() {
-  std::cout << "FilterNCombine program." << std::endl;
-  std::cout << "The input file should have this name scheme: " << std::endl;
-  std::cout << "    for data    = out/GetSimpleTuple/data/[target]/pruned[target]_[rn].root" << std::endl;
-  std::cout << "    for old/usm = out/GetSimpleTuple/[set]/[target]/pruned[target]_[rn].root" << std::endl;
-  std::cout << "    for jlab    = pruned[target]_[rn].root" << std::endl;
-  std::cout << "Usage is:" << std::endl;
+  std::cout << "FilterNCombine program. Usage is:" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -h" << std::endl;
   std::cout << "    prints this message and exits program" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
   std::cout << "    filters the respective target" << std::endl;
-  std::cout << "    IMPORTANT: D option is only for simulations" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -d" << std::endl;
   std::cout << "    filters data" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -S[old, usm, jlab]" << std::endl;
-  std::cout << "    filters sim for chosen set" << std::endl;
+  std::cout << "./FilterNCombine -S" << std::endl;
+  std::cout << "    filters sim" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -r[0001,...,9999]" << std::endl;
-  std::cout << "    selects run number (mandatory for all)" << std::endl;
-  std::cout << "    (please, maintain numbering scheme!)" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -T[Sim,C]" << std::endl;
-  std::cout << "    exclusive test options for debugging" << std::endl;
+  std::cout << "./FilterNCombine -r[run number]" << std::endl;
+  std::cout << "    selects run number" << std::endl;
+  std::cout << "    numbering scheme for input files = pruned<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
 }
 
 void printOptions() {
   std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
-  std::cout << "  testOption     = " << testOption << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
-  std::cout << "  setOption      = " << setOption << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
-  std::cout << "  inputFile      = " << inputFile << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << std::endl;
 }

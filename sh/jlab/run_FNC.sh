@@ -3,7 +3,8 @@
 # set env
 source /home/borquez/.bashrc
 
+inputOption=
 tarName=
 rn=
 
-./FilterNCombine -t${tarName} -Sjlab -r${rn}
+./FilterNCombine -t${tarName} ${inputOption} -r${rn}

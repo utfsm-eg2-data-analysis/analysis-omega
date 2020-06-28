@@ -2,12 +2,14 @@
 
 ##############################################################
 # ./send_FNC.sh <set> <target> <ndir>                        #
+#     <set>    = (data, old, usm, jlab)                      #
 #     <target> = (D, C, Fe, Pb)                              #
-#     <ndir>   = integer(00, 01, 02, ...)                    #
+#     <ndir>   = (01, 02, ...)                               #
 #                                                            #
-# EG: ./send_FNC.sh C 09                                     #
-#     ./send_FNC.sh Fe 04                                    #
-#     ./send_FNC.sh D 35                                     #
+# EG: ./send_FNC.sh data C                                   #
+#     ./send_FNC.sh old Fe                                   #
+#     ./send_FNC.sh usm D                                    #
+#     ./send_FNC.sh jlab Pb 02                               #
 ##############################################################
 
 #####
@@ -27,65 +29,76 @@ function get_num()
 }
 
 #####
-# Main
+# Input
 ###
 
 inputArray=("$@")
 
-tarName=${inputArray[$((0))]}
-nDir=${inputArray[$((1))]}
+setOption="${inputArray[0]}"
+tarName="${inputArray[1]}"
+nDir="${inputArray[2]}"
+
+#####
+# Main
+###
 
 # set env
 source ~/.bashrc
-
 cd ${PRODIR}
 
 # define important dirs
-XMLDIR=${PRODIR}/xml/${tarName}/${nDir}
+if [[ "$setOption" == "jlab" ]]; then
+    DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}/${nDir}
+    XMLDIR=${PRODIR}/xml/${setOption}/${tarName}/${nDir}
+    OUDIR=${PRODIR}/out/FilterNCombine/${setOption}/${tarName}/${nDir}    
+else
+    DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}
+    XMLDIR=${PRODIR}/xml/${setOption}/${tarName}
+    OUDIR=${PRODIR}/out/FilterNCombine/${setOption}/${tarName}
+fi
 mkdir -p ${XMLDIR}
-SIMDIR=/home/borquez/volatile/omegaSim
-OUDIR=${PRODIR}/out/GetSimpleTuple/jlab/${tarName}/${nDir}
 mkdir -p ${OUDIR}
-INDIR=${SIMDIR}/output/${tarName}/${nDir}
 
-# obtain the last run number
-lines=`ls -1 ${INDIR} | wc -l`
+# set input option
+if [[ "${setOption}" == "data" ]]; then
+    inputOption="-d"
+else
+    inputOption="-S"
+fi
 
-# testing...
+# declaration of variables
 #jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="analysis"
+jobtrack="analysis" # "debug"
 jobos="general"
 #jobname=
-jobtime="30"
-jobspace="1"
-jobmemory="1"
+jobtime="36" # hours
+jobspace="1" # GB
+jobmemory="6" # GB
 thebinary="${PRODIR}/bin/FilterNCombine"
 #inrootfile=
 #outrootfile=
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
-# handling exceptions
-if [[ "${tarName}" == "D" && "${nDir}" == "00" ]]; then
-    COUNTER=6
-elif [[ "${tarName}" == "C" && "${nDir}" == "00" ]]; then
-    COUNTER=6
-elif [[ "${tarName}" == "Fe" && "${nDir}" == "00" ]]; then
-    COUNTER=6
-else
-    COUNTER=0
-fi
-	
-while [ ${COUNTER} -lt ${lines} ]; do
-    let COUNTER=COUNTER+1
-    rn=$(get_num "$((COUNTER-1))") # start at (06, 06, 06, 00) respectively
-    # rn=$(get_num "99") # test
+nfiles=$(ls -1 ${DATADIR} | wc -l)
+for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
+    # update rn value
+    if [[ "${setOption}" == "data" ]]; then
+	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
+    elif [[ "${setOption}" == "usm" || "${setOption}" == "old" ]]; then
+	rn=$(get_num "$COUNTER") # old and usm start at 1
+    elif [[ "${setOption}" == "jlab" ]]; then
+	rn=$(get_num "$(($COUNTER - 1))") # jlab files start at 0
+    fi
 
-    jobname="GST_${tarName}-${nDir}_${rn}"
+    # setting jobname
+    if [[ "${setOption}" == "jlab" ]]; then
+	jobname="FNC_${setOption}-${tarName}-${nDir}_${rn}"
+    else
+	jobname="FNC_${setOption}-${tarName}_${rn}"
+    fi
     jobfile="${XMLDIR}/${jobname}.xml"
-    inrootfile="${INDIR}/recsis${tarName}_${rn}.root"
-    outrootfile="${OUDIR}/pruned${tarName}_${rn}.root"
 
     echo ${jobname}
 
@@ -95,19 +108,25 @@ while [ ${COUNTER} -lt ${lines} ]; do
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
     echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
+    # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine\"/>"                   >> ${jobfile}
-    echo "  <Input src=\"${execfile}\"   dest=\"send_FNC.sh\"/>"                      >> ${jobfile}
+    echo "  <Input src=\"${execfile}\"   dest=\"run_FNC.sh\"/>"                       >> ${jobfile}
+    inrootfile="${DATADIR}/pruned${tarName}_${rn}.root"
     echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\"/>"      >> ${jobfile}
+    # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
+    echo "    sed -i \"s|^inputOption=|inputOption=${inputOption}|g\" run_FNC.sh"     >> ${jobfile}
     echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_FNC.sh"                 >> ${jobfile}
-    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_FNC.sh"                 >> ${jobfile}
+    echo "    sed -i \"s|^rn=|rn=${rn}|g\" run_FNC.sh"                                >> ${jobfile}
     echo "    chmod 755 ./run_FNC.sh"                                                 >> ${jobfile}
     echo "    sh run_FNC.sh"                                                          >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
+    # set outputs
+    outrootfile="${OUDIR}/comb${tarName}_${rn}.root"
     echo "  <Output src=\"comb${tarName}_${rn}.root\" dest=\"${outrootfile}\"/>"      >> ${jobfile}
     echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
@@ -115,6 +134,6 @@ while [ ${COUNTER} -lt ${lines} ]; do
     echo "  </Job>"                                                                   >> ${jobfile}
     echo "</Request>"                                                                 >> ${jobfile}
 
-    echo "Submitting job ${jobfile}"
+    echo "Submitting job: ${jobfile}"
     jsub --xml ${jobfile}
 done
