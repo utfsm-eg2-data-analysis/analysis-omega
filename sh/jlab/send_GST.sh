@@ -85,19 +85,19 @@ fi
 #jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # testing... "analysis"
+jobtrack="analysis" # "debug"
 jobos="general"
 #jobname=
-jobtime="2" # hours
+jobtime="30" # minutes
 jobspace="10" # GB
-jobmemory="1" # GB
+jobmemory="6" # GB
 thebinary="${PRODIR}/bin/GetSimpleTuple"
 #inrootfile=
 #outrootfile=
 execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
 COUNTER=0
-while [[ ${COUNTER} -lt 1 ]]; do # testing... ${lines}
+while [[ ${COUNTER} -lt ${lines} ]]; do
     # update counter
     let COUNTER=COUNTER+1
     if [[ "${setOption}" == "data" ]]; then
@@ -134,7 +134,7 @@ while [[ ${COUNTER} -lt 1 ]]; do # testing... ${lines}
     if [[ "$setOption" == "data" ]]; then
 	for file in ${DATADIR}/clas_${rn}*; do
 	    inrootfile=$(readlink -f $file)
-	    echo "  <Input src=\"mss:${inrootfile##/w}\" dest=\"${file##*/}\"/>"          >> ${jobfile}
+	    echo "  <Input src=\"mss:${inrootfile##/w}\" dest=\"${file##*/}\"/>"      >> ${jobfile}
 	done
     else
 	inrootfile="${DATADIR}/recsis${tarName}_${rn}.root"
