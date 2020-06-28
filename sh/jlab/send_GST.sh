@@ -77,7 +77,7 @@ else
     elif [[ "${setOption}" == "jlab" ]]; then
 	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}/${nDir}"
     fi
-    inputOption="-S${setOption}"
+    inputOption="-S"
     lines=`ls -1 ${DATADIR} | wc -l`
 fi
 
