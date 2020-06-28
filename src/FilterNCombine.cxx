@@ -121,7 +121,6 @@ TString analyserOption; // new, for photon's energy correction
 
 TString treeName;
 
-TString outDir; // depends on data type
 TString outFile;
 
 // input
@@ -143,9 +142,6 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
   
-  // dir structure, just in case
-  system("mkdir -p " + outDir);
-
   /*** Init tree ***/
   
   // hadrons (t - tree)
@@ -626,7 +622,6 @@ void assignOptions() {
   }
   // for everyone
   inputFile = "pruned" + targetOption + "_" + rnOption + ".root"; // at node dir
-  outDir  = ""; // just in case, node dir
   outFile = "comb" + targetOption + "_" + rnOption + ".root"; // at node dir
 }
 

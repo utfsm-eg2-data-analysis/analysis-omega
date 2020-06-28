@@ -17,14 +17,13 @@ using namespace ROOT::VecOps;
 /*** Global variables ***/
 
 // options
-TString testOption;
 TString targetOption;
 TString rnOption;
 
 // to be assigned
 Int_t simFlag;
 TString inputFile;
-TString outDir;
+
 TString outFile;
 TString outTitle;
 TString analyserOption;
@@ -324,9 +323,6 @@ void printUsage() {
   std::cout << "    numbering scheme for data files = clas_<run number>_*.pass2.root" << std::endl;
   std::cout << "    numbering scheme for sim files  = recsis<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -T[Sim,C]" << std::endl;
-  std::cout << "    exclusive options for debugging" << std::endl;
-  std::cout << std::endl;
 }
 
 int parseCommandLine(int argc, char* argv[]) {
@@ -335,14 +331,13 @@ int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dSr:T:")) != -1)
+  while ((c = getopt(argc, argv, "ht:dSr:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
     case 'S': simFlag = 1; break;
     case 'd': simFlag = 0; break;
     case 'r': rnOption = optarg; break;
-    case 'T': testOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
       exit(0);
@@ -351,54 +346,25 @@ int parseCommandLine(int argc, char* argv[]) {
 }
 
 void assignOptions() {
-  // first, check for testOption
-  if (testOption == "Sim") {
-    simFlag = 1;
-    if (hostName == "") inputFile = "/home/borquez/Downloads/recsisC_10.root"; // at HP VM
-    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/eos/user/b/borquez/Downloads/recsisC_10.root"; // at UTFSM cluster
-    else if (hostName == "ifarm1801.jlab.org" ||
-	     hostName == "ifarm1802.jlab.org" ||
-	     hostName == "ifarm1901.jlab.org") inputFile = "/home/borquez/volatile/test/recsisC_10.root"; // at JLAB cluster
-    outDir = proDir + "/out/GetSimpleTuple";
-    outFile = outDir + "/test_sim.root";
-    outTitle = "Simulation of particles";
-    analyserOption = testOption;
-  } else if (testOption == "C") {
-    simFlag = 0;
-    if (hostName == "") inputFile = "/home/borquez/Downloads/clas_42011_00.pass2.root"; // at HP VM
-    else if (hostName == "ui02.hpc.utfsm.cl") inputFile = "/data/jlab/mss/clas/eg2a/production/Pass2/Clas/clas_42011_00.pass2.root"; // at UTFSM cluster
-    else if (hostName == "ifarm1801.jlab.org" ||
-	     hostName == "ifarm1802.jlab.org" ||
-	     hostName == "ifarm1901.jlab.org") inputFile = "/home/borquez/volatile/test/clas_42011_00.pass2.root"; // at JLAB cluster
-    outDir = proDir + "/out/GetSimpleTuple";
-    outFile = outDir + "/test_data.root";
-    outTitle = "Data of particles";
-    analyserOption = testOption;
-  } else {
     // data type
     if (!simFlag) {
       outTitle = "Data of particles";
       analyserOption = targetOption;
       inputFile = "clas_" + rnOption + "_*.pass2.root"; // *: all files of the rn, from the node dir
-      outDir = ""; // node dir
     } else if (simFlag) {
       outTitle = "Simulation of particles";
       analyserOption = "Sim";
       inputFile = "recsis" + targetOption + "_" + rnOption + ".root"; // from node dir
-      outDir = ""; // node dir
     }
     // no longer independent of the data type
     outFile = "pruned" + targetOption + "_" + rnOption + ".root"; // into node dir
-  } // end of test condition
 }
 
 void printOptions() {
   std::cout << "Executing GetSimpleTuple program. The chosen parameters are: " << std::endl;
-  std::cout << "  testOption     = " << testOption << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
-  std::cout << "  inputFile      = " << inputFile << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
   std::cout << std::endl;
 }
