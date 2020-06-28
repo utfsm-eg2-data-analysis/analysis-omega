@@ -134,7 +134,7 @@ while [[ ${COUNTER} -lt 1 ]]; do # testing... ${lines}
     if [[ "$setOption" == "data" ]]; then
 	for file in ${DATADIR}/clas_${rn}*; do
 	    inrootfile=$(readlink -f $file)
-	    echo "  <Input src=\"mss:${inrootfile}\" dest=\"${file##*/}\"/>"          >> ${jobfile}
+	    echo "  <Input src=\"mss:${inrootfile##/w}\" dest=\"${file##*/}\"/>"          >> ${jobfile}
 	done
     else
 	inrootfile="${DATADIR}/recsis${tarName}_${rn}.root"
