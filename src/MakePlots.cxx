@@ -29,7 +29,7 @@ Int_t   dataFlag   = 0;
 Int_t   simrecFlag = 0;
 Int_t   gsimFlag   = 0;
 TString targetOption;
-TString kinvarOption = "wM";
+TString kinvarOption = "wM_corr";
 Int_t   binNumberZ = 0; // 0: off | [3-7]: on
 
 TCut cutTargType;
@@ -87,7 +87,42 @@ int main(int argc, char **argv) {
   TCanvas *c = new TCanvas("c", "c", 1366, 768); 
   c->SetGrid();
   
-  theHist->Draw("E");
+  theHist->Draw("HIST"); // comment if allstat
+
+  /*** Beginning of status parenthesis ***/
+
+  TCut statusCuts_electrons = "StatusEl > 0 && StatusEl < 100 && StatCCEl > 0 && StatSCEl > 0 && StatDCEl > 0 && StatECEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
+
+  TCut statusCuts_pip = "Status[2] > 0 && Status[2] < 100 && StatDC[2] > 0 && DCStatus[2] > 0";
+  TCut statusCuts_pip_le = "P_corr[2] < 2.7 && StatSC[2] > 0";
+  TCut statusCuts_pip_he = "P_corr[2] >= 2.7 && Nphe[2] > 25 && StatCC[2] > 0 && Chi2CC[2] < 5./57.3";
+
+  TCut statusCuts_pim = "Status[3] > 0 && Status[3] < 100 && StatDC[3] > 0 && DCStatus[3] > 0";
+  TCut statusCuts_pim_le = "P_corr[3] <= 2.5 && !(StatCC[3] > 0 && Nphe[3] > 25)";
+  TCut statusCuts_pim_he = "P_corr[3] > 2.5";
+
+  TH1F *testHist;
+  // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_electrons, "goff"); // elstat
+  // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he), "goff"); // ppstat
+  // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he), "goff"); // pmstat
+  treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ &&
+   		                                                 statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he) &&
+   		                                                 statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he) &&
+  		                                                 statusCuts_electrons, "goff"); // allstat
+  testHist = (TH1F *)gROOT->FindObject("test");
+
+  // testHist->SetLineColor(kOrange+7); // elstat
+  // testHist->SetLineColor(kBlue); // ppstat
+  // testHist->SetLineColor(kRed); // pmstat
+  testHist->SetLineColor(kGreen+3); // allstat
+  testHist->SetLineWidth(3);
+
+  testHist->Draw("HIST SAME");
+  // testHist->Draw("HIST"); // allstat
+  
+  /*** End of status parenthesis ***/
+
+  drawVerticalLine(0.782, kRed);
   
   c->Print(plotFile); // output file
 }
@@ -147,8 +182,8 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./MakePlots -k[kinvar]" << std::endl;
   std::cout << "    sets kinvar to draw, it can be: " << std::endl;
-  std::cout << "    wM (omega invariant mass)" << std::endl;
-  std::cout << "    wD (omega invariant mass difference)" << std::endl;
+  std::cout << "    wM_corr (omega invariant mass)" << std::endl;
+  std::cout << "    wD_corr (omega invariant mass difference)" << std::endl;
   std::cout << "    Q2" << std::endl;
   std::cout << "    Nu" << std::endl;
   std::cout << "    Z" << std::endl;
@@ -168,20 +203,21 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
-      inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
-      inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/C/comb_dataC.root";
+      inputFile2 = dataDir + "/Fe/comb_dataFe.root";
+      inputFile3 = dataDir + "/Pb/comb_dataPb.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+      inputFile1 = dataDir + "/C/comb_dataC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
+      inputFile1 = dataDir + "/Fe/comb_dataFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/Pb/comb_dataPb.root";
     }
-  } else if (simrecFlag) {
+  }
+  /* else if (simrecFlag) {
     outPrefix = "simrec";
     titleDraw = " Reconstructed ";
     // for targets
@@ -215,10 +251,12 @@ void assignOptions() {
       cutTargType = "TargType == 2";
       inputFile1 = simDir + "/usm/Pb/comb_gsimPb.root";
     }
+ 
   }
+  */
   // for Z binning
   if (binNumberZ) {
-    cutZ = Form("%f < Z && Z < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    cutZ = Form("%f < wZ_corr && wZ_corr < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     // OS quality cuts
     /*
     cutZ = Form("%f < Z && Z < %f && %f < Pt2 && Pt2 < %f && %f < Q2 && Q2 < %f && %f < Nu && Nu < %f",
@@ -227,15 +265,19 @@ void assignOptions() {
 		edgesQ2[0], edgesQ2[5],
 		edgesNu[0], edgesNu[5]);
     */
-    titleZ = Form("in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form("in (%.02f < wZ_corr < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
   // for kinvar
-  if (kinvarOption == "wM") {
+  if (kinvarOption == "wM_corr") {
     titleKinvar = "IM(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IM (GeV)";
     histProperties = "(250, 0., 2.5.)";
-  } else if (kinvarOption == "wD") {
+  } else if (kinvarOption == "wM_true") {
+    titleKinvar = "IM(#pi^{+} #pi^{-} #pi^{0}) for ";
+    titleAxis = "IM (GeV)";
+    histProperties = "(250, 0., 2.5.)";
+  } else if (kinvarOption == "wD_corr") {
     titleKinvar = "IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IMD (GeV)";
     histProperties = "(200, 0., 1.6)";

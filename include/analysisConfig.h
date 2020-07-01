@@ -48,19 +48,17 @@ TString hostName = getenv("HOSTNAME");
 TString proDir = getenv("PRODIR");
 TString tmpDir = proDir + "/tmp";
 
-TString dataDir = proDir + "/out/filterData";
-TString simDir  = proDir + "/out/filterSim";
-
-TString rawSimDir_jlab = "/home/borquez/volatile/omegaSim"; // + /output/<target>/<ndir>/recsis<target>_{00..99}.root
-TString rawSimDir_utfsm = "/eos/user/b/borquez/omegaSim"; // + /<set>/<target>/recsis<target>_{0000..0099}.root
-TString rawDataDir_utfsm = "/data/jlab/mss/clas/eg2a/production/Pass2/Clas"; // + /clas_<rn>_<nfile>.pass2.root
+TString dataDir = proDir + "/out/FilterNCombine/data";
+TString simDir_old  = proDir + "/out/FilterNCombine/old";
+TString simDir_usm  = proDir + "/out/FilterNCombine/usm";
+TString simDir_jlab = proDir + "/out/FilterNCombine/jlab";
 
 TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
-TCut cutPi0 = "0.059 < pi0M && pi0M < 0.203"; // mean=0.131 & sigma=0.024
+TCut cutPi0 = "0.059 < pi0M_corr && pi0M_corr < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
 // cut for pi0 from MW
-TCut cutPi0_MW = "0.059 < pi0M && pi0M < 0.209"; // mean=0.134 & sigma=0.025
+TCut cutPi0_MW = "0.059 < pi0M_corr && pi0M_corr < 0.209"; // mean=0.134 & sigma=0.025
 
 // cut for pi0 from GSIM files
 TCut cutPi0_gsim = "0.132 < mpi0 && mpi0 < 0.138";
