@@ -37,7 +37,8 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
 
-PROG := GetSimpleTuple FilterNCombine # QuickFit CheckStatusCuts CheckElectronCuts_S2 MakePlots GetQuantiles CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
+PROG := GetSimpleTuple FilterNCombine MakePlots CheckStatusCuts_flow # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
+	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents Acceptance MakeMR-compare SumPtVectors CutFlow\
 	QualityCuts CheckElectronCuts # GetSimpleTuple_old Test MakePlots_old MakePlots-2D_old

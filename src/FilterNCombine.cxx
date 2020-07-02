@@ -113,11 +113,10 @@ Float_t mc_nPip, mc_nPim, mc_nGamma;
 
 /*** Options ***/
 
-TString testOption;
 TString targetOption;
-Int_t   simFlag = 0;
 TString rnOption;
-TString analyserOption; // new, for photon's energy correction
+Int_t   simFlag = 0;
+TString analyserOption; // for photon's energy correction
 
 TString treeName;
 
@@ -148,17 +147,17 @@ int main(int argc, char **argv) {
   TChain *t = new TChain();
   t->Add(inputFile + "/" + treeName); // input
 
-  SetInputBranches(t, simFlag);
+  SetInputBranches(t);
   
   /*** Output settings ***/
   
   TFile *rootFile = new TFile(outFile, "RECREATE", "Omega Meson Filtered Combinations"); // output
 
   TTree *tOriginal = new TTree("original", "Original particles");
-  SetOutputBranches(tOriginal, "original", simFlag);
+  SetOutputBranches(tOriginal, "original");
 
   TTree *tMix = new TTree("mix", "Combination of particles");
-  SetOutputBranches(tMix, "mix", simFlag);
+  SetOutputBranches(tMix, "mix");
   
   /*** START FILTERING ***/
 
@@ -195,7 +194,7 @@ int main(int argc, char **argv) {
   Int_t start, finish;
   if (!simFlag) {
     start = (Int_t) t->GetMinimum(eventBranchName);
-    finish = (Int_t) t->GetMaximum(eventBranchName); // 10000
+    finish = 100; // (Int_t) t->GetMaximum(eventBranchName);
   } else if (simFlag) {
     start = 0;
     finish = (Int_t) t->GetMaximum(eventBranchName);
@@ -205,17 +204,14 @@ int main(int argc, char **argv) {
   // i = event number
   for (Int_t i = start; i <= finish; i++) { // t->GetMinimum(eventBranchName), t->GetMaximum(eventBranchName)
     
-    // std::cout << "Current event number: " << i << std::endl;
-    // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << "Current event number: " << i << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     
-    TString theCondition;
+    TString isFromSameEvent = Form("evnt == %d", i);;
     TString listName = Form("elist_%d", i);
 
-    if (simFlag) theCondition = Form("evnt == %d || mc_evnt == %d", i, i);
-    else theCondition = Form("evnt == %d", i);
-
     // selects all entries from the same event
-    t->Draw(">>" + listName, theCondition, "entrylist");
+    t->Draw(">>" + listName, isFromSameEvent, "entrylist");
     l = (TEntryList*) gDirectory->Get(listName);
     t->SetEntryList(l);
       
@@ -224,28 +220,28 @@ int main(int argc, char **argv) {
     for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
       Int_t jj = t->GetEntryNumber(j);
       t->GetEntry(jj);
-      // std::cout << "  Entry number: " << jj << std::endl;
-      // std::cout << "  pid:          " << tpid << std::endl;
-      // // std::cout << "  mc_pid:       " << tmc_Pid << std::endl;
-      // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      std::cout << "  Entry number: " << jj << std::endl;
+      std::cout << "  pid:          " << tpid << std::endl;
+      std::cout << "  mc_pid:       " << mc_tpid << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
       // count the data/simrec particles
       if (tpid == (Float_t) 211) nPipThisEvent++;
       if (tpid == (Float_t) -211) nPimThisEvent++;
       if (tpid == (Float_t) 22) nGammaThisEvent++;
       // count the gsim particles
-      // if (tmc_Pid == (Float_t) 211) nMCPipThisEvent++;
-      // if (tmc_Pid == (Float_t) -211) nMCPimThisEvent++;
-      // if (tmc_Pid == (Float_t) 22) nMCGammaThisEvent++;
+      if (mc_tpid == (Float_t) 211) nMCPipThisEvent++;
+      if (mc_tpid == (Float_t) -211) nMCPimThisEvent++;
+      if (mc_tpid == (Float_t) 22) nMCGammaThisEvent++;
     }
     
     // show counts
-    // std::cout << "  nPip     = " << nPipThisEvent << std::endl;
-    // std::cout << "  nPim     = " << nPimThisEvent << std::endl;
-    // std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    // // std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-    // // std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-    // // std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
+    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     // (as you can see, these conditions are not exclusive)
     // candidate appeared for data/simrec
@@ -263,9 +259,9 @@ int main(int argc, char **argv) {
     }
 
     // std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
-    // // std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
-    // // std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
+    std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** ORIGINAL ***/
 
@@ -280,12 +276,14 @@ int main(int argc, char **argv) {
 	Int_t jj = t->GetEntryNumber(j);
 	t->GetEntry(jj);
 
-        AssignVariables("original", jj, 5, analyserOption); // 5 won't mind, it's just there...
+        AssignOriginalVariables(jj); // AOV(Int_t entry = jj)
 	tOriginal->Fill();
 
       } // end of particles loop
     } // end of candidate condition
-      
+
+    std::cout << "fill original READY!" << std::endl;
+    
     /*** THE MIXING ***/
 
     // PART 1: obtain & keep combinations from simrec
@@ -309,7 +307,7 @@ int main(int argc, char **argv) {
 	  Int_t jj = t->GetEntryNumber(j);
 	  t->GetEntry(jj);
 	  if (tpid == (Float_t) 211 && jj > jPip) {
-	    jPip = jj;      // tag pip
+	    jPip = jj;             // tag pip
 	    j = (Int_t) l->GetN(); // break search
 	  }
 	}
@@ -327,7 +325,7 @@ int main(int argc, char **argv) {
 	    Int_t jj = t->GetEntryNumber(j);
 	    t->GetEntry(jj);
 	    if (tpid == (Float_t) -211 && jj > jPim) {
-	      jPim = jj; // tag pim
+	      jPim = jj;             // tag pim
 	      j = (Int_t) l->GetN(); // break search
 	    }
 	  }
@@ -354,7 +352,7 @@ int main(int argc, char **argv) {
 		Int_t jj = t->GetEntryNumber(j);
 		t->GetEntry(jj);
 		if (tpid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
-		  jGamma1 = jj;  // tag gamma1
+		  jGamma1 = jj;          // tag gamma1
 		  j = (Int_t) l->GetN(); // break search for j
 		}
 	      }
@@ -368,7 +366,7 @@ int main(int argc, char **argv) {
 	      Int_t jj = t->GetEntryNumber(j);
 	      t->GetEntry(jj);
 	      if (tpid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
-		jGamma2 = jj;  // tag gamma2
+		jGamma2 = jj;          // tag gamma2
 		j = (Int_t) l->GetN(); // break search for j
 	      }
 	    }
@@ -391,6 +389,8 @@ int main(int argc, char **argv) {
       } // end of loop in pi+
 
     } // end of at-least-one-omega condition
+
+    std::cout << "PART 1: obtain & keep combinations from simrec READY!" << std::endl;
     
     // PART 2: obtain & keep combinations from gsim
 
@@ -412,10 +412,10 @@ int main(int argc, char **argv) {
 	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
 	  Int_t jj = t->GetEntryNumber(j);
 	  t->GetEntry(jj);
-	  // if (tmc_Pid == (Float_t) 211 && jj > jPip) {
-	  //   jPip = jj;      // tag pip
-	  //   j = (Int_t) l->GetN(); // break search
-	  // }
+	  if (mc_tpid == (Float_t) 211 && jj > jPip) {
+	    jPip = jj;             // tag pip
+	    j = (Int_t) l->GetN(); // break search
+	  }
 	}
 	
 	// force a new beginning for the other particles
@@ -430,10 +430,10 @@ int main(int argc, char **argv) {
 	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
 	    Int_t jj = t->GetEntryNumber(j);
 	    t->GetEntry(jj);
-	    // if (tmc_Pid == (Float_t) -211 && jj > jPim) {
-	    //   jPim = jj; // tag pim
-	    //   j = (Int_t) l->GetN(); // break search
-	    // }
+	    if (mc_tpid == (Float_t) -211 && jj > jPim) {
+	      jPim = jj;             // tag pim
+	      j = (Int_t) l->GetN(); // break search
+	    }
 	  }
 	  
 	  // force a new beginning for the other particles
@@ -457,10 +457,10 @@ int main(int argc, char **argv) {
 	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
 		Int_t jj = t->GetEntryNumber(j);
 		t->GetEntry(jj);
-		// if (tmc_Pid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
-		//   jGamma1 = jj;  // tag gamma1
-		//   j = (Int_t) l->GetN(); // break search for j
-		// }
+		if (mc_tpid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
+		  jGamma1 = jj;          // tag gamma1
+		  j = (Int_t) l->GetN(); // break search for j
+		}
 	      }
 	      jGamma2 = 0; // resets gamma2
 	      partialFlag = 0;
@@ -471,10 +471,10 @@ int main(int argc, char **argv) {
 	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
 	      Int_t jj = t->GetEntryNumber(j);
 	      t->GetEntry(jj);
-	      // if (tmc_Pid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
-	      // 	jGamma2 = jj;  // tag gamma2
-	      // 	j = (Int_t) l->GetN(); // break search for j
-	      // }
+	      if (mc_tpid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
+	      	jGamma2 = jj;          // tag gamma2
+	      	j = (Int_t) l->GetN(); // break search for j
+	      }
 	    }
 	    
 	    // fix partial comb
@@ -495,23 +495,25 @@ int main(int argc, char **argv) {
       } // end of loop in pi+
 
     } // end of at-least-one-omega condition
-      
+
+    std::cout << "PART 2: obtain & keep combinations gsim READY!" << std::endl;
+    
     // PART 3: fill
 
     // std::cout << "  candidates for data:" << std::endl;
-    for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    // // std::cout << "  candidates for simrec:" << std::endl;
-    // for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    // // std::cout << "  candidates for gsim:" << std::endl;
-    // for (Int_t c = 0; c < nMCCombThisEvent; c++) // std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    // for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    std::cout << "  candidates for simrec:" << std::endl;
+    for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    std::cout << "  candidates for gsim:" << std::endl;
+    for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     // extract
     for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 4; pp++) { // loop on particles
 	
 	  t->GetEntry(combVector[cc][pp]);
-	  AssignVariables("mix", combVector[cc][pp], pp, analyserOption);
+	  AssignMixVariables(combVector[cc][pp], pp); // (entry, index)
 	  
       } // end of loop in particles
 
@@ -522,6 +524,8 @@ int main(int argc, char **argv) {
       tMix->Fill();      
     } // end of loop in combinations
 
+    std::cout << "PART 3: fill combinations in mix READY!" << std::endl;
+    
     // reset count variables
     nPipThisEvent = 0;
     nPimThisEvent = 0;
@@ -559,8 +563,9 @@ int main(int argc, char **argv) {
     // clean some memory
     gDirectory->Delete(listName + ";1");
     rootFile->Delete(listName);
-    
-    // std::cout << std::endl;
+
+    std::cout << "finished event" << std::endl;
+    std::cout << std::endl;
   } // end of loop in events
 
   /*** Writing tree ***/
@@ -620,9 +625,9 @@ void assignOptions() {
     eventBranchName = "mc_evnt";
     analyserOption = "Sim";
   }
-  // for everyone
-  inputFile = "pruned" + targetOption + "_" + rnOption + ".root"; // at node dir
-  outFile = "comb" + targetOption + "_" + rnOption + ".root"; // at node dir
+  // for everyone, at node dir
+  inputFile = "pruned" + targetOption + "_" + rnOption + ".root";
+  outFile = "comb" + targetOption + "_" + rnOption + ".root";
 }
 
 void printUsage() {

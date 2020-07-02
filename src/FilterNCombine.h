@@ -15,7 +15,7 @@ extern Float_t tZh, tThetaPQ, tPt2, tPl2, tPhiPQ, tMx2, tT, tvxh, tvyh, tvzh, tS
 extern Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tNphe, tChi2CC, tStatus;
 // event (1)
 extern Float_t tevnt;
-// (34 variables for montecarlo)
+// (34 variables for gsim)
 // electron (15)
 extern Float_t mc_tQ2, mc_tW, mc_tNu, mc_tXb, mc_tYb, mc_tvxe, mc_tvye, mc_tvze, mc_tSectorEl, mc_tTargType, mc_tPex, mc_tPey, mc_tPez, mc_tPe, mc_tBettaEl;
 // particle (19)
@@ -23,7 +23,7 @@ extern Float_t mc_tZh, mc_tThetaPQ, mc_tPt2, mc_tPl2, mc_tPhiPQ, mc_tMx2, mc_tT,
 
 /*** Output/original variables ***/
 
-// (101 variables for data)
+// (101 variables for data/simrec)
 // electron (41)
 extern Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 extern Float_t oP2e;
@@ -38,7 +38,7 @@ extern Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC
 // event (2)
 extern Float_t oEvent;
 extern Float_t oEntry; // debug purposes
-// (41 variables for montecarlo)
+// (41 variables for gsim)
 // electron (16)
 extern Float_t mc_oQ2, mc_oW, mc_oNu, mc_oXb, mc_oYb, mc_oXe, mc_oYe, mc_oZe, mc_oSectorEl, mc_oTargType, mc_oPex, mc_oPey, mc_oPez, mc_oPe, mc_oBettaEl;
 extern Float_t mc_oP2e;
@@ -49,7 +49,7 @@ extern Float_t mc_oZ, mc_oThetaPQ, mc_oPt2, mc_oPl2, mc_oPhiPQ, mc_oMx2, mc_oT, 
 
 /*** Output/mix variables ***/
 
-// (194 variables for data)
+// (194 variables for data/simrec)
 // electron (41)
 extern Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 extern Float_t mP2e;
@@ -82,7 +82,7 @@ extern Float_t nPip, nPim, nGamma;
 // event related (2)
 extern Float_t mEvent;
 extern Float_t mEntry[4];
-// (72 variables for montecarlo)
+// (72 variables for gsim)
 // electron (16)
 extern Float_t mc_mQ2, mc_mW, mc_mNu, mc_mXb, mc_mYb, mc_mXe, mc_mYe, mc_mZe, mc_mSectorEl, mc_mTargType, mc_mPex, mc_mPey, mc_mPez, mc_mPe, mc_mBettaEl;
 extern Float_t mc_mP2e;
@@ -102,11 +102,16 @@ extern Float_t mc_pimpi0P, mc_pimpi0E, mc_pimpi0M;
 // number of particles (3)
 extern Float_t mc_nPip, mc_nPim, mc_nGamma;
 
+/*** Options ***/
+
+extern Int_t simFlag;
+extern TString analyserOption;
+
 /*** Declaration of functions ***/
 
 Float_t ParticleMass(Float_t fPid);
-Float_t CorrectEnergy(TString option, TString analyserOption);
-Float_t CorrectMomentum(TString option, TString analyserOption, TString component);
+Float_t CorrectEnergy(TString option);
+Float_t CorrectMomentum(TString option, TString component);
 Float_t PhiPQ(Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t ThetaPQ(Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t DeltaTheta(Float_t fPx, Float_t fPy, Float_t fPz);
@@ -114,7 +119,8 @@ Float_t BettaCalc(Float_t fP, Float_t fPid);
 
 /*** Functions ***/
 
-void SetInputBranches(TChain *chain, Int_t simFlag) {
+void SetInputBranches(TChain *chain) {
+  // (uses simFlag as global var)
   // init all variables
   chain->SetBranchStatus("*", 1);
   // electron (40)
@@ -245,10 +251,12 @@ void SetInputBranches(TChain *chain, Int_t simFlag) {
     chain->SetBranchAddress("mc_Mass2", &mc_tMass2);
     chain->SetBranchAddress("mc_pid", &mc_tpid);
     chain->SetBranchAddress("mc_deltaZ", &mc_tdeltaZ);
+    std::cout << "SIB simflag redy" << std::endl;
   }
 }
 
-void SetOutputBranches(TTree *tree, TString option, Int_t simFlag) {
+void SetOutputBranches(TTree *tree, TString option) {
+  // (uses simFlag as global var)
   if (option == "original") {
     // electron (41)
     // all (25)
@@ -407,6 +415,7 @@ void SetOutputBranches(TTree *tree, TString option, Int_t simFlag) {
       tree->Branch("mc_CosThetaPQ", &mc_oCosThetaPQ);
       tree->Branch("mc_BettaCalc", &mc_oBettaCalc);
       tree->Branch("mc_deltaTheta", &mc_odeltaTheta);
+      std::cout << "SOB orig simflag redy" << std::endl;
     }
   } else if (option == "mix") {
     // electron (41)
@@ -713,232 +722,279 @@ void SetOutputBranches(TTree *tree, TString option, Int_t simFlag) {
   }
 }
 
-void AssignVariables(TString option, Int_t entry, Int_t index, TString analyserOption) {
-  if (option == "original") {
-    // electron (41)
-    oQ2 = tQ2;
-    oW  = tW;
-    oNu = tNu;
-    oXb = tXb;
-    oYb = tYb;
-    oXe = tvxe;
-    oYe = tvye;
-    oZe = tvze;
-    oSectorEl = tSectorEl;
-    oTargType = tTargType;
-    oPex = tPex;
-    oPey = tPey;
-    oPez = tPez;
-    oPe  = tPe;
-    oP2e = tPe*tPe;
-    oBettaEl = tBettaEl;
-    oEtote = tEtote;
-    oEine  = tEine;
-    oEoute = tEoute;
-    oXec = tvxec;
-    oYec = tvyec;
-    oZec = tvzec;
-    oXECe = tXECe;
-    oYECe = tYECe;
-    oZECe = tZECe;
-    oStatDCEl   = tStatDCEl;
-    oDCStatusEl = tDCStatusEl;
-    oStatECEl   = tStatECEl;
-    oECStatusEl = tECStatusEl;
-    oTimeECEl   = tTimeECEl;
-    oPathECEl   = tPathECEl;
-    oChi2ECEl   = tChi2ECEl;
-    oStatSCEl   = tStatSCEl;
-    oSCStatusEl = tSCStatusEl;
-    oTimeSCEl   = tTimeSCEl;
-    oPathSCEl   = tPathSCEl;
-    oStatCCEl   = tStatCCEl;
-    oCCStatusEl = tCCStatusEl;
-    oNpheEl     = tNpheEl;
-    oChi2CCEl   = tChi2CCEl;
-    oStatusEl   = tStatusEl;
-    // independent variables (16)
-    ovxh = tvxh;
-    ovyh = tvyh;
-    ovzh = tvzh;
-    oSector = tSector;
-    oEtot = tEtot;
-    oEin  = tEin;
-    oEout = tEout;
-    oXEC = tXEC;
-    oYEC = tYEC;
-    oZEC = tZEC;
-    odeltaZ = tdeltaZ;
-    oBetta = tBetta;
-    oMass2 = tMass2;
-    oT4 = tT4;
-    oPid = tpid;
-    oM = ParticleMass(tpid);
-    // prev (6)
-    oE_prev  = CorrectEnergy("prev", analyserOption);
-    oPx_prev = tPx;
-    oPy_prev = tPy;
-    oPz_prev = tPz;
-    oP_prev  = tP;
-    oP2_prev = tP*tP;
-    // true (6)
-    oE_true  = CorrectEnergy("true", analyserOption);
-    oPx_true = CorrectMomentum("x", "true", analyserOption);
-    oPy_true = CorrectMomentum("y", "true", analyserOption);
-    oPz_true = CorrectMomentum("z", "true", analyserOption);
-    oP2_true = oPx_true*oPx_true + oPy_true*oPy_true + + oPz_true*oPz_true;
-    oP_true  = TMath::Sqrt(oP2_true);
-    // corr (6)
-    oE_corr  = CorrectEnergy("corr", analyserOption);
-    oPx_corr = CorrectMomentum("x", "corr", analyserOption);
-    oPy_corr = CorrectMomentum("y", "corr", analyserOption);
-    oPz_corr = CorrectMomentum("z", "corr", analyserOption);
-    oP2_corr = oPx_corr*oPx_corr + oPy_corr*oPy_corr + + oPz_corr*oPz_corr;
-    oP_corr  = TMath::Sqrt(oP2_corr);
-    // remaining (10)
-    oZ = oE_corr/oNu;
-    oPhiPQ = PhiPQ(oPx_corr, oPy_corr, oPz_corr);
-    oThetaPQ = ThetaPQ(oPx_corr, oPy_corr, oPz_corr);
-    oCosThetaPQ = ((kEbeam - oPez)*oPz_corr - oPex*oPx_corr - oPey*oPy_corr)/(TMath::Sqrt(oP2_corr*(oQ2 + oNu*oNu)));
-    oPt2 = oP2_corr*(1 - oCosThetaPQ*oCosThetaPQ);
-    oPl2 = oP2_corr*oCosThetaPQ*oCosThetaPQ;
-    oMx2 = tW*tW + oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - 2*kMproton*oZ*oNu;
-    oT = oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - oQ2;
-    oBettaCalc = BettaCalc(oP_corr, oPid);
-    odeltaTheta = DeltaTheta(oPx_corr, oPy_corr, oPz_corr);
-    // status (16)
-    oStatDC   = tStatDC;
-    oDCStatus = tDCStatus;
-    oStatEC   = tStatEC;
-    oECStatus = tECStatus;
-    oTimeEC   = tTimeEC;
-    oPathEC   = tPathEC;
-    oChi2EC   = tChi2EC;
-    oStatSC   = tStatSC;
-    oSCStatus = tSCStatus;
-    oTimeSC   = tTimeSC;
-    oPathSC   = tPathSC;
-    oStatCC   = tStatCC;
-    oCCStatus = tCCStatus;
-    oNphe     = tNphe;
-    oChi2CC   = tChi2CC;
-    oStatus   = tStatus;
-    // event-related (2)
-    oEvent = tevnt;
-    oEntry = (Float_t) entry;
-  } else if (option == "mix") {
-    // electron (41)
-    mQ2 = tQ2;
-    mW  = tW;
-    mNu = tNu;
-    mXb = tXb;
-    mYb = tYb;
-    mXe = tvxe;
-    mYe = tvye;
-    mZe = tvze;
-    mSectorEl = tSectorEl;
-    mTargType = tTargType;
-    mPex = tPex;
-    mPey = tPey;
-    mPez = tPez;
-    mPe = tPe;
-    mP2e = tPe*tPe;
-    mBettaEl = tBettaEl;
-    mEtote = tEtote;
-    mEine  = tEine;
-    mEoute = tEoute;
-    mXec = tvxec;
-    mYec = tvyec;
-    mZec = tvzec;
-    mXECe = tXECe;
-    mYECe = tYECe;
-    mZECe = tZECe;
-    mStatDCEl   = tStatDCEl;
-    mDCStatusEl = tDCStatusEl;
-    mStatECEl   = tStatECEl;
-    mECStatusEl = tECStatusEl;
-    mTimeECEl   = tTimeECEl;
-    mPathECEl   = tPathECEl;
-    mChi2ECEl   = tChi2ECEl;
-    mStatSCEl   = tStatSCEl;
-    mSCStatusEl = tSCStatusEl;
-    mTimeSCEl   = tTimeSCEl;
-    mPathSCEl   = tPathSCEl;
-    mStatCCEl   = tStatCCEl;
-    mCCStatusEl = tCCStatusEl;
-    mNpheEl     = tNpheEl;
-    mChi2CCEl   = tChi2CCEl;
-    mStatusEl   = tStatusEl;
-    // independent variables (16)
-    mvxh[index] = tvxh;
-    mvyh[index] = tvyh;
-    mvzh[index] = tvzh;
-    mSector[index] = tSector;
-    mXEC[index] = tXEC;
-    mYEC[index] = tYEC;
-    mZEC[index] = tZEC;
-    mEtot[index] = tEtot;
-    mEin[index]  = tEin;
-    mEout[index] = tEout;
-    mdeltaZ[index] = tdeltaZ;
-    mT4[index] = tT4;
-    mMass2[index] = tMass2;
-    mBetta[index] = tBetta;
-    mPid[index] = tpid;
-    mM[index] = ParticleMass(tpid);
-    // prev (6)
-    mE_prev[index]  = CorrectEnergy("prev", "");
-    mPx_prev[index] = tPx;
-    mPy_prev[index] = tPy;
-    mPz_prev[index] = tPz;
-    mP_prev[index]  = tP;
-    mP2_prev[index] = tP*tP;
-    // true (6)
-    mE_true[index]  = CorrectEnergy("true", analyserOption);
-    mPx_true[index] = CorrectMomentum("x", "true", analyserOption);
-    mPy_true[index] = CorrectMomentum("y", "true", analyserOption);
-    mPz_true[index] = CorrectMomentum("z", "true", analyserOption);
-    mP2_true[index] = mPx_true[index]*mPx_true[index] + mPy_true[index]*mPy_true[index] + mPz_true[index]*mPz_true[index];
-    mP_true[index]  = TMath::Sqrt(mP2_true[index]);
-    // corr (6)
-    mE_corr[index]  = CorrectEnergy("corr", analyserOption);
-    mPx_corr[index] = CorrectMomentum("x", "corr", analyserOption);
-    mPy_corr[index] = CorrectMomentum("y", "corr", analyserOption);
-    mPz_corr[index] = CorrectMomentum("z", "corr", analyserOption);
-    mP2_corr[index] = mPx_corr[index]*mPx_corr[index] + mPy_corr[index]*mPy_corr[index] + mPz_corr[index]*mPz_corr[index];
-    mP_corr[index]  = TMath::Sqrt(mP2_corr[index]);
-    // remaining (10)
-    mZ[index] = mE_corr[index]/mNu;
-    mPhiPQ[index] = PhiPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
-    mThetaPQ[index] = ThetaPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
-    mCosThetaPQ[index] = ((kEbeam - mPez)*mPz_corr[index] - mPex*mPx_corr[index] - mPey*mPy_corr[index])/(TMath::Sqrt(mP2_corr[index]*(mQ2 + mNu*mNu)));
-    mPt2[index] = mP2_corr[index]*(1 - mCosThetaPQ[index]*mCosThetaPQ[index]);
-    mPl2[index] = mP2_corr[index]*mCosThetaPQ[index]*mCosThetaPQ[index];
-    mdeltaTheta[index] = DeltaTheta(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
-    mMx2[index] = mW*mW + mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - 2*kMproton*mZ[index]*mNu;
-    mT[index] = mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - mQ2;
-    mBettaCalc[index] = BettaCalc(mP_corr[index], mPid[index]);
-    // status (16)
-    mStatDC[index]   = tStatDC;
-    mDCStatus[index] = tDCStatus;
-    mStatEC[index]   = tStatEC;
-    mECStatus[index] = tECStatus;
-    mTimeEC[index]   = tTimeEC;
-    mPathEC[index]   = tPathEC;
-    mChi2EC[index]   = tChi2EC;
-    mStatSC[index]   = tStatSC;
-    mSCStatus[index] = tSCStatus;
-    mTimeSC[index]   = tTimeSC;
-    mPathSC[index]   = tPathSC;
-    mStatCC[index]   = tStatCC;
-    mCCStatus[index] = tCCStatus;
-    mNphe[index]     = tNphe;
-    mChi2CC[index]   = tChi2CC;
-    mStatus[index]   = tStatus;
-    // event related (2)
-    mEvent = tevnt;
-    mEntry[index] = entry;
+void AssignOriginalVariables(Int_t entry) {
+  std::cout << "AOV simflag initiating" << std::endl;
+  // electron (41)
+  oQ2 = tQ2;
+  oW  = tW;
+  oNu = tNu;
+  oXb = tXb;
+  oYb = tYb;
+  oXe = tvxe;
+  oYe = tvye;
+  oZe = tvze;
+  oSectorEl = tSectorEl;
+  oTargType = tTargType;
+  oPex = tPex;
+  oPey = tPey;
+  oPez = tPez;
+  oPe  = tPe;
+  oP2e = tPe*tPe;
+  oBettaEl = tBettaEl;
+  oEtote = tEtote;
+  oEine  = tEine;
+  oEoute = tEoute;
+  oXec = tvxec;
+  oYec = tvyec;
+  oZec = tvzec;
+  oXECe = tXECe;
+  oYECe = tYECe;
+  oZECe = tZECe;
+  oStatDCEl   = tStatDCEl;
+  oDCStatusEl = tDCStatusEl;
+  oStatECEl   = tStatECEl;
+  oECStatusEl = tECStatusEl;
+  oTimeECEl   = tTimeECEl;
+  oPathECEl   = tPathECEl;
+  oChi2ECEl   = tChi2ECEl;
+  oStatSCEl   = tStatSCEl;
+  oSCStatusEl = tSCStatusEl;
+  oTimeSCEl   = tTimeSCEl;
+  oPathSCEl   = tPathSCEl;
+  oStatCCEl   = tStatCCEl;
+  oCCStatusEl = tCCStatusEl;
+  oNpheEl     = tNpheEl;
+  oChi2CCEl   = tChi2CCEl;
+  oStatusEl   = tStatusEl;
+  // independent variables (16)
+  ovxh = tvxh;
+  ovyh = tvyh;
+  ovzh = tvzh;
+  oSector = tSector;
+  oEtot = tEtot;
+  oEin  = tEin;
+  oEout = tEout;
+  oXEC = tXEC;
+  oYEC = tYEC;
+  oZEC = tZEC;
+  odeltaZ = tdeltaZ;
+  oBetta = tBetta;
+  oMass2 = tMass2;
+  oT4 = tT4;
+  oPid = tpid;
+  oM = ParticleMass(tpid);
+  // prev (6)
+  oE_prev  = CorrectEnergy("prev");
+  oPx_prev = tPx;
+  oPy_prev = tPy;
+  oPz_prev = tPz;
+  oP_prev  = tP;
+  oP2_prev = tP*tP;
+  // true (6)
+  oE_true  = CorrectEnergy("true");
+  oPx_true = CorrectMomentum("x", "true");
+  oPy_true = CorrectMomentum("y", "true");
+  oPz_true = CorrectMomentum("z", "true");
+  oP2_true = oPx_true*oPx_true + oPy_true*oPy_true + + oPz_true*oPz_true;
+  oP_true  = TMath::Sqrt(oP2_true);
+  // corr (6)
+  oE_corr  = CorrectEnergy("corr");
+  oPx_corr = CorrectMomentum("x", "corr");
+  oPy_corr = CorrectMomentum("y", "corr");
+  oPz_corr = CorrectMomentum("z", "corr");
+  oP2_corr = oPx_corr*oPx_corr + oPy_corr*oPy_corr + + oPz_corr*oPz_corr;
+  oP_corr  = TMath::Sqrt(oP2_corr);
+  // remaining (10)
+  oZ = oE_corr/oNu;
+  oPhiPQ = PhiPQ(oPx_corr, oPy_corr, oPz_corr);
+  oThetaPQ = ThetaPQ(oPx_corr, oPy_corr, oPz_corr);
+  oCosThetaPQ = ((kEbeam - oPez)*oPz_corr - oPex*oPx_corr - oPey*oPy_corr)/(TMath::Sqrt(oP2_corr*(oQ2 + oNu*oNu)));
+  oPt2 = oP2_corr*(1 - oCosThetaPQ*oCosThetaPQ);
+  oPl2 = oP2_corr*oCosThetaPQ*oCosThetaPQ;
+  oMx2 = tW*tW + oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - 2*kMproton*oZ*oNu;
+  oT = oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - oQ2;
+  oBettaCalc = BettaCalc(oP_corr, oPid);
+  odeltaTheta = DeltaTheta(oPx_corr, oPy_corr, oPz_corr);
+  // status (16)
+  oStatDC   = tStatDC;
+  oDCStatus = tDCStatus;
+  oStatEC   = tStatEC;
+  oECStatus = tECStatus;
+  oTimeEC   = tTimeEC;
+  oPathEC   = tPathEC;
+  oChi2EC   = tChi2EC;
+  oStatSC   = tStatSC;
+  oSCStatus = tSCStatus;
+  oTimeSC   = tTimeSC;
+  oPathSC   = tPathSC;
+  oStatCC   = tStatCC;
+  oCCStatus = tCCStatus;
+  oNphe     = tNphe;
+  oChi2CC   = tChi2CC;
+  oStatus   = tStatus;
+  // event-related (2)
+  oEvent = tevnt;
+  oEntry = (Float_t) entry;
+  if (simFlag) {
+    // electron (16)
+    mc_oQ2 = mc_tQ2;
+    mc_oW = mc_tW;
+    mc_oNu = mc_tNu;
+    mc_oXb = mc_tXb;
+    mc_oYb = mc_tYb;
+    mc_oXe = mc_tvxe;
+    mc_oYe = mc_tvye;
+    mc_oZe = mc_tvze;
+    mc_oSectorEl = mc_tSectorEl;
+    mc_oTargType = mc_tTargType;
+    mc_oPex = mc_tPex;
+    mc_oPey = mc_tPey;
+    mc_oPez = mc_tPez;
+    mc_oPe = mc_tPe;
+    mc_oBettaEl = mc_tBettaEl;
+    mc_oP2e = mc_oPe*mc_oPe; // new
+    // particle (25)
+    mc_ovxh = mc_tvxh;
+    mc_ovyh = mc_tvyh;
+    mc_ovzh = mc_tvzh;
+    mc_oSector = mc_tSector;
+    mc_oBetta = mc_tBetta;
+    mc_oMass2 = mc_tMass2;
+    mc_oPid = mc_tpid;
+    mc_odeltaZ = mc_tdeltaZ;
+    mc_oPx = mc_tPx;
+    mc_oPy = mc_tPy;
+    mc_oPz = mc_tPz;
+    mc_oP = mc_tP;
+    mc_oZ = mc_tZh;
+    mc_oThetaPQ = mc_tThetaPQ;
+    mc_oPt2 = mc_tPt2;
+    mc_oPl2 = mc_tPl2;
+    mc_oPhiPQ = mc_tPhiPQ;
+    mc_oMx2 = mc_tMx2;
+    mc_oT = mc_tT;
+    mc_oP2 = mc_oP*mc_oP; // new
+    mc_oM  = ParticleMass(mc_oPid); // new
+    mc_oE  = TMath::Sqrt(mc_oP2 + mc_oM*mc_oM); // new
+    mc_oCosThetaPQ = ((kEbeam - mc_oPez)*mc_oPz - mc_oPex*mc_oPx - mc_oPey*mc_oPy)/(TMath::Sqrt(mc_oP2*(mc_oQ2 + mc_oNu*mc_oNu))); // new
+    mc_oBettaCalc  = BettaCalc(mc_oP, mc_oPid); // new
+    mc_odeltaTheta = DeltaTheta(mc_oPx, mc_oPy, mc_oPz); // new
+    std::cout << "AOV simflag redy" << std::endl;
   }
+}
+
+void AssignMixVariables(Float_t entry, Int_t index) {
+  // electron (41)
+  mQ2 = tQ2;
+  mW  = tW;
+  mNu = tNu;
+  mXb = tXb;
+  mYb = tYb;
+  mXe = tvxe;
+  mYe = tvye;
+  mZe = tvze;
+  mSectorEl = tSectorEl;
+  mTargType = tTargType;
+  mPex = tPex;
+  mPey = tPey;
+  mPez = tPez;
+  mPe = tPe;
+  mP2e = tPe*tPe;
+  mBettaEl = tBettaEl;
+  mEtote = tEtote;
+  mEine  = tEine;
+  mEoute = tEoute;
+  mXec = tvxec;
+  mYec = tvyec;
+  mZec = tvzec;
+  mXECe = tXECe;
+  mYECe = tYECe;
+  mZECe = tZECe;
+  mStatDCEl   = tStatDCEl;
+  mDCStatusEl = tDCStatusEl;
+  mStatECEl   = tStatECEl;
+  mECStatusEl = tECStatusEl;
+  mTimeECEl   = tTimeECEl;
+  mPathECEl   = tPathECEl;
+  mChi2ECEl   = tChi2ECEl;
+  mStatSCEl   = tStatSCEl;
+  mSCStatusEl = tSCStatusEl;
+  mTimeSCEl   = tTimeSCEl;
+  mPathSCEl   = tPathSCEl;
+  mStatCCEl   = tStatCCEl;
+  mCCStatusEl = tCCStatusEl;
+  mNpheEl     = tNpheEl;
+  mChi2CCEl   = tChi2CCEl;
+  mStatusEl   = tStatusEl;
+  // independent variables (16)
+  mvxh[index] = tvxh;
+  mvyh[index] = tvyh;
+  mvzh[index] = tvzh;
+  mSector[index] = tSector;
+  mXEC[index] = tXEC;
+  mYEC[index] = tYEC;
+  mZEC[index] = tZEC;
+  mEtot[index] = tEtot;
+  mEin[index]  = tEin;
+  mEout[index] = tEout;
+  mdeltaZ[index] = tdeltaZ;
+  mT4[index] = tT4;
+  mMass2[index] = tMass2;
+  mBetta[index] = tBetta;
+  mPid[index] = tpid;
+  mM[index] = ParticleMass(tpid);
+  // prev (6)
+  mE_prev[index]  = CorrectEnergy("prev");
+  mPx_prev[index] = tPx;
+  mPy_prev[index] = tPy;
+  mPz_prev[index] = tPz;
+  mP_prev[index]  = tP;
+  mP2_prev[index] = tP*tP;
+  // true (6)
+  mE_true[index]  = CorrectEnergy("true");
+  mPx_true[index] = CorrectMomentum("x", "true");
+  mPy_true[index] = CorrectMomentum("y", "true");
+  mPz_true[index] = CorrectMomentum("z", "true");
+  mP2_true[index] = mPx_true[index]*mPx_true[index] + mPy_true[index]*mPy_true[index] + mPz_true[index]*mPz_true[index];
+  mP_true[index]  = TMath::Sqrt(mP2_true[index]);
+  // corr (6)
+  mE_corr[index]  = CorrectEnergy("corr");
+  mPx_corr[index] = CorrectMomentum("x", "corr");
+  mPy_corr[index] = CorrectMomentum("y", "corr");
+  mPz_corr[index] = CorrectMomentum("z", "corr");
+  mP2_corr[index] = mPx_corr[index]*mPx_corr[index] + mPy_corr[index]*mPy_corr[index] + mPz_corr[index]*mPz_corr[index];
+  mP_corr[index]  = TMath::Sqrt(mP2_corr[index]);
+  // remaining (10)
+  mZ[index] = mE_corr[index]/mNu;
+  mPhiPQ[index] = PhiPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
+  mThetaPQ[index] = ThetaPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
+  mCosThetaPQ[index] = ((kEbeam - mPez)*mPz_corr[index] - mPex*mPx_corr[index] - mPey*mPy_corr[index])/(TMath::Sqrt(mP2_corr[index]*(mQ2 + mNu*mNu)));
+  mPt2[index] = mP2_corr[index]*(1 - mCosThetaPQ[index]*mCosThetaPQ[index]);
+  mPl2[index] = mP2_corr[index]*mCosThetaPQ[index]*mCosThetaPQ[index];
+  mdeltaTheta[index] = DeltaTheta(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
+  mMx2[index] = mW*mW + mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - 2*kMproton*mZ[index]*mNu;
+  mT[index] = mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - mQ2;
+  mBettaCalc[index] = BettaCalc(mP_corr[index], mPid[index]);
+  // status (16)
+  mStatDC[index]   = tStatDC;
+  mDCStatus[index] = tDCStatus;
+  mStatEC[index]   = tStatEC;
+  mECStatus[index] = tECStatus;
+  mTimeEC[index]   = tTimeEC;
+  mPathEC[index]   = tPathEC;
+  mChi2EC[index]   = tChi2EC;
+  mStatSC[index]   = tStatSC;
+  mSCStatus[index] = tSCStatus;
+  mTimeSC[index]   = tTimeSC;
+  mPathSC[index]   = tPathSC;
+  mStatCC[index]   = tStatCC;
+  mCCStatus[index] = tCCStatus;
+  mNphe[index]     = tNphe;
+  mChi2CC[index]   = tChi2CC;
+  mStatus[index]   = tStatus;
+  // event related (2)
+  mEvent = tevnt;
+  mEntry[index] = entry;
 }
 
 void AssignPi0Variables() {
@@ -1078,11 +1134,14 @@ void AssignMoreVariables(Int_t fnGamma, Int_t fnPip, Int_t fnPim) {
 
 Float_t ParticleMass(Float_t fPid) {
   TDatabasePDG fPDG;
+
+  if (fPid == -9999) return -9999;
+  
   return fPDG.GetParticle((Int_t) fPid)->Mass();
 }
 
-Float_t CorrectEnergy(TString option, TString analyserOption) {
-  // (global variables: tEtot, tEin, tEout, tpid, tP)
+Float_t CorrectEnergy(TString option) {
+  // (global variables: tEtot, tEin, tEout, tpid, tP, analyserOption)
   
   // for charged pions, assign energy from measured momentum and pdg mass
   // for gammas, there are 3 options
@@ -1092,7 +1151,7 @@ Float_t CorrectEnergy(TString option, TString analyserOption) {
 
   Float_t fE;
   Float_t corrFactor;
-  
+
   if (tpid == 22) {
     if (option == "prev") {
       fE = tP;
@@ -1123,7 +1182,7 @@ Float_t CorrectEnergy(TString option, TString analyserOption) {
   return fE;
 }
 
-Float_t CorrectMomentum(TString component, TString option, TString analyserOption) {
+Float_t CorrectMomentum(TString component, TString option) {
   // (global variables: tXEC, tYEC, tZEC, tvzec, tpid)
   
   // for charged pions, do nothing
@@ -1154,9 +1213,9 @@ Float_t CorrectMomentum(TString component, TString option, TString analyserOptio
     Float_t theta_gam = TMath::ASin(Rt/R);
     Float_t phi_gam = TMath::ATan2(tYEC, tXEC);
     
-    fP[0] = CorrectEnergy(option, analyserOption)*TMath::Sin(theta_gam)*TMath::Cos(phi_gam); // x
-    fP[1] = CorrectEnergy(option, analyserOption)*TMath::Sin(theta_gam)*TMath::Sin(phi_gam); // y
-    fP[2] = CorrectEnergy(option, analyserOption)*TMath::Cos(theta_gam);                     // z
+    fP[0] = CorrectEnergy(option)*TMath::Sin(theta_gam)*TMath::Cos(phi_gam); // x
+    fP[1] = CorrectEnergy(option)*TMath::Sin(theta_gam)*TMath::Sin(phi_gam); // y
+    fP[2] = CorrectEnergy(option)*TMath::Cos(theta_gam);                     // z
 
     fPcorr = fP[i];
   } else if (tpid == 211 || tpid == -211) {
