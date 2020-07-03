@@ -125,9 +125,6 @@ TString outFile;
 // input
 TString inputFile;
 
-// new
-TString eventBranchName;
-
 /*** Declaration of functions ***/
 
 int parseCommandLine(int argc, char* argv[]);
@@ -169,8 +166,6 @@ int main(int argc, char **argv) {
 
   Int_t nOmega = 0;
   Int_t nAtLeastOmega = 0;
-
-  Int_t nEvents = 0;
   
   // mc counting variables
   Int_t nMCPipThisEvent = 0;
@@ -191,18 +186,14 @@ int main(int argc, char **argv) {
   TEntryList *l;
 
   // on the loop
-  Int_t start, finish;
-  if (!simFlag) {
-    start = (Int_t) t->GetMinimum(eventBranchName);
-    finish = 100; // (Int_t) t->GetMaximum(eventBranchName);
-  } else if (simFlag) {
-    start = 0;
-    finish = (Int_t) t->GetMaximum(eventBranchName);
-  }
+  Int_t start = (Int_t) t->GetMinimum("evnt");
+  Int_t finish = 100; // (Int_t) t->GetMaximum("evnt");
+
+  std::cout << "!! start: " << start << " - finish: " << finish << std::endl;
   
   // loop in events
   // i = event number
-  for (Int_t i = start; i <= finish; i++) { // t->GetMinimum(eventBranchName), t->GetMaximum(eventBranchName)
+  for (Int_t i = start; i <= finish; i++) {
     
     std::cout << "Current event number: " << i << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
@@ -222,7 +213,7 @@ int main(int argc, char **argv) {
       t->GetEntry(jj);
       std::cout << "  Entry number: " << jj << std::endl;
       std::cout << "  pid:          " << tpid << std::endl;
-      std::cout << "  mc_pid:       " << mc_tpid << std::endl;
+      if (simFlag) std::cout << "  mc_pid:       " << mc_tpid << std::endl;
       std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
       // count the data/simrec particles
       if (tpid == (Float_t) 211) nPipThisEvent++;
@@ -238,9 +229,11 @@ int main(int argc, char **argv) {
     std::cout << "  nPip     = " << nPipThisEvent << std::endl;
     std::cout << "  nPim     = " << nPimThisEvent << std::endl;
     std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    if (simFlag) {
+      std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+      std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+      std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    }
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     // (as you can see, these conditions are not exclusive)
@@ -258,9 +251,12 @@ int main(int argc, char **argv) {
       nMCOmega += nMCCombThisEvent;
     }
 
-    // std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
-    std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
-    std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+    if (!simFlag) {
+      std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
+    } else {
+      std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
+      std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+    }
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
 
     /*** ORIGINAL ***/
@@ -276,17 +272,17 @@ int main(int argc, char **argv) {
 	Int_t jj = t->GetEntryNumber(j);
 	t->GetEntry(jj);
 
-        AssignOriginalVariables(jj); // AOV(Int_t entry = jj)
+	AssignOriginalVariables(jj, nCombThisEvent); // AOV(Int_t entry, Int_t nCombInSimrec)	
 	tOriginal->Fill();
 
       } // end of particles loop
     } // end of candidate condition
 
-    std::cout << "fill original READY!" << std::endl;
+    std::cout << "  !! Fill original ready!" << std::endl;
     
     /*** THE MIXING ***/
 
-    // PART 1: obtain & keep combinations from simrec
+    // PART 1: obtain & keep combinations from data/simrec
     
     // tag
     Int_t jPip = 0;
@@ -390,7 +386,7 @@ int main(int argc, char **argv) {
 
     } // end of at-least-one-omega condition
 
-    std::cout << "PART 1: obtain & keep combinations from simrec READY!" << std::endl;
+    std::cout << "  !! Obtain & keep combinations from data/simrec ready!" << std::endl;
     
     // PART 2: obtain & keep combinations from gsim
 
@@ -496,35 +492,75 @@ int main(int argc, char **argv) {
 
     } // end of at-least-one-omega condition
 
-    std::cout << "PART 2: obtain & keep combinations gsim READY!" << std::endl;
+    std::cout << "  !! Obtain & keep combinations from gsim ready!" << std::endl;
     
     // PART 3: fill
 
-    // std::cout << "  candidates for data:" << std::endl;
-    // for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    std::cout << "  candidates for simrec:" << std::endl;
-    for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    std::cout << "  candidates for gsim:" << std::endl;
-    for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-
+    if (!simFlag) {
+      std::cout << "  candidates for data:" << std::endl;
+      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    } else {
+      std::cout << "  candidates for simrec:" << std::endl;
+      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+      std::cout << "  candidates for gsim:" << std::endl;
+      for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    }
+    
     // extract
     for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 4; pp++) { // loop on particles
-	
+
+	// about AMV:
+	// case 1: (no simrec in the entry)
+	// we have to fill two vectors... this step will fill the MC vector of particles, and fill the REC vector of particles with null values
+	// eg: {gammaA, gammaB, pip, pim} - {null}
+	//     {gammaA, gammaC, pip, pim} - {null}
+	//     {gammaB, gammaC, pip, pim} - {null}
+	// OK!!
+	// 
+	// case 2: (there is simrec in the entry!)
+	// this step will fill the MC vector of particles and fill the REC vector of particles
+	// eg2: {gammaA, gammaB, pip, pim} - {rec gammaA, rec gammaB, rec pip, rec pim}
+	//      {gammaA, gammaC, pip, pim} - {null value}
+	//      {gammaB, gammaC, pip, pim} - {null value}
+	// OK!!
+
+	// obvious conditions for data, necessary conditions for simrec
+	if (nCombThisEvent && cc < nCombThisEvent) {
 	  t->GetEntry(combVector[cc][pp]);
-	  AssignMixVariables(combVector[cc][pp], pp); // (entry, index)
-	  
+	  AssignMixVariables(combVector[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
+	} else {
+	  NullMixSIMRECVariables(pp); // NMSV()
+	}
+
+	// gsim
+        if (simFlag && cc < nMCCombThisEvent) {
+	  t->GetEntry(mc_combVector[cc][pp]);
+	  AssignMixGSIMVariables(mc_combVector[cc][pp], pp); // AMGV(entry, index)
+	}
+	
       } // end of loop in particles
 
-      AssignPi0Variables();
-      AssignOmegaVariables();
-      AssignMoreVariables(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+      // after assigning each decay particle, assign the composite variables
+      // data & simrec
+      if (nCombThisEvent) { 
+	AssignPi0Variables();
+	AssignOmegaVariables();
+	AssignMoreVariables(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+      }
+      
+      // gsim
+      if (simFlag){
+	AssignPi0GSIMVariables();
+	AssignOmegaGSIMVariables();
+	AssignMoreGSIMVariables(nMCGammaThisEvent, nMCPipThisEvent, nMCPimThisEvent);
+      }
       
       tMix->Fill();      
     } // end of loop in combinations
 
-    std::cout << "PART 3: fill combinations in mix READY!" << std::endl;
+    std::cout << "  !! Fill combinations in mix ready!" << std::endl;
     
     // reset count variables
     nPipThisEvent = 0;
@@ -537,57 +573,36 @@ int main(int argc, char **argv) {
     nMCGammaThisEvent = 0;
     nMCCombThisEvent = 0;
 
-    // update event counter
-    nEvents++;
-    
     // reset vectors!
     combVector.clear();
     mc_combVector.clear();
 
-    // for data
-    Int_t ii;
+    // jump to next event number (exclusively for data)
     if (!simFlag) {
-      ii = t->GetEntryNumber(l->GetN() - 1); // look last entry from event list
+      // get last entry from current event list
+      Int_t ii = t->GetEntryNumber(l->GetN() - 1);
+      t->GetEntry(ii + 1);
+      // stand in first entry of the next event
+      i = (Int_t) tevnt - 1;
     }
-    
+
     // set tree back to original tree
     t->SetEntryList(0);
 
-    // for data
-    if (!simFlag) {
-      if (i == (Int_t) t->GetMaximum(eventBranchName)) break; // break infinite loop
-      t->GetEntry(ii+1); // stand in first entry of the next event
-      i = (Int_t) tevnt - 1; // jump to next event number
-    }
-    
     // clean some memory
     gDirectory->Delete(listName + ";1");
     rootFile->Delete(listName);
-
-    std::cout << "finished event" << std::endl;
+    
+    std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
   } // end of loop in events
 
   /*** Writing tree ***/
-
-  if (simFlag) {
-    // std::cout << "From a total of " << nEvents << " generated events." << std::endl;
-    // std::cout << "There are at least " << nAtLeastMCOmega << " generated events with at least one omega particle," << std::endl;
-    // std::cout << "being in total this amount of generated omega candidates: " << nMCOmega << "."  << std::endl;
-    // std::cout << "Also, there are at least " << nAtLeastOmega << " reconstructed events with at least one omega particle," << std::endl;
-    // std::cout << "being in total this amount of reconstructed omega candidates: " << nOmega << "."  << std::endl;
-    // std::cout << std::endl;
-  } else {
-    // std::cout << "From a total of " << nEvents << " events." << std::endl;
-    // std::cout << "There are at least " << nAtLeastOmega << " events with at least one omega particle," << std::endl;
-    // std::cout << "being in total this amount of omega candidates: " << nOmega << "."  << std::endl;
-    // std::cout << std::endl;
-  }
   
   rootFile->Write();
   rootFile->Close();
 
-  std::cout << "File " << outFile << " has been created!" << std::endl;
+  std::cout << "This file has been created: " << outFile << std::endl;
   
   return 0;
 }
@@ -618,11 +633,9 @@ void assignOptions() {
   // for data type
   if (!simFlag) {
     treeName = "ntuple_data";
-    eventBranchName = "evnt";
     analyserOption = targetOption;
   } else if (simFlag) {
     treeName = "ntuple_sim";
-    eventBranchName = "mc_evnt";
     analyserOption = "Sim";
   }
   // for everyone, at node dir
