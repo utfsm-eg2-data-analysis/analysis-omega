@@ -1,8 +1,9 @@
+# analysis-omega/include
 
-Here are the hard configuration for the analysis, such as the:
-- binning
-- run numbers
-- data location
-- sim location
+Here are located all the hard configuration files for the analysis, such as:
 
-One could argue that Analyser should be here too..
+* Binning
+
+* Run numbers
+
+* Useful functions and constants for code development

@@ -249,7 +249,7 @@ void SetInputBranches(TChain *chain) {
     chain->SetBranchAddress("mc_Mass2", &mc_tMass2);
     chain->SetBranchAddress("mc_pid", &mc_tpid);
     chain->SetBranchAddress("mc_deltaZ", &mc_tdeltaZ);
-    std::cout << "  !! SIB simflag ready!" << std::endl;
+    // std::cout << "  !! SIB simflag ready!" << std::endl;
   }
 }
 
@@ -413,7 +413,7 @@ void SetOutputBranches(TTree *tree, TString option) {
       tree->Branch("mc_CosThetaPQ", &mc_oCosThetaPQ);
       tree->Branch("mc_BettaCalc", &mc_oBettaCalc);
       tree->Branch("mc_deltaTheta", &mc_odeltaTheta);
-      std::cout << "  !! SOB orig simflag ready!" << std::endl;
+      // std::cout << "  !! SOB orig simflag ready!" << std::endl;
     }
   } else if (option == "mix") {
     // electron (41)
@@ -722,7 +722,7 @@ void SetOutputBranches(TTree *tree, TString option) {
 
 void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
   // (uses simFlag as global var)
-  std::cout << "  !! AOV initiating..." << std::endl;
+  // std::cout << "  !! AOV initiating..." << std::endl;
   if (nCombInSimrec) {
     // electron (41)
     oQ2 = tQ2;
@@ -990,12 +990,12 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     mc_oCosThetaPQ = ((kEbeam - mc_oPez)*mc_oPz - mc_oPex*mc_oPx - mc_oPey*mc_oPy)/(TMath::Sqrt(mc_oP2*(mc_oQ2 + mc_oNu*mc_oNu))); // recalc
     mc_oBettaCalc  = BettaCalc(mc_oP, mc_oPid); // recalc
     mc_odeltaTheta = DeltaTheta(mc_oPx, mc_oPy, mc_oPz); // recalc
-    std::cout << "  !! AOV simflag ready" << std::endl;
+    // std::cout << "  !! AOV simflag ready" << std::endl;
   }
 }
 
 void NullMixSIMRECVariables(Int_t index) {
-  std::cout << "  !! NMSV initiating..." << std::endl;
+  // std::cout << "  !! NMSV initiating..." << std::endl;
   // electron (41)
   mQ2 = -9999;
   mW  = -9999;
@@ -1205,11 +1205,11 @@ void NullMixSIMRECVariables(Int_t index) {
   nGamma = -9999;
   nPip   = -9999;
   nPim   = -9999;
-  std::cout << "  !! NMSV ready!" << std::endl;
+  // std::cout << "  !! NMSV ready!" << std::endl;
 }
 
 void AssignMixVariables(Float_t entry, Int_t index) {
-  std::cout << "  !! AMV initiating..." << std::endl;
+  // std::cout << "  !! AMV initiating..." << std::endl;
   // requirement: particle is not null
   if (tpid != -9999) {
     // electron (41)
@@ -1329,7 +1329,7 @@ void AssignMixVariables(Float_t entry, Int_t index) {
 }
 
 void AssignMixGSIMVariables(Float_t entry, Int_t index) {
-  std::cout << "  !! AMGV initiating..." << std::endl;
+  // std::cout << "  !! AMGV initiating..." << std::endl;
   // event related (2) -> only non-null
   mEvent = tevnt;
   mEntry[index] = entry;
@@ -1376,11 +1376,11 @@ void AssignMixGSIMVariables(Float_t entry, Int_t index) {
   mc_mCosThetaPQ[index] = ((kEbeam - mc_mPez)*mc_mPz[index] - mc_mPex*mc_mPx[index] - mc_mPey*mc_mPy[index])/(TMath::Sqrt(mc_mP2[index]*(mc_mQ2 + mc_mNu*mc_mNu))); // recalc
   mc_mdeltaTheta[index] = DeltaTheta(mc_mPx[index], mc_mPy[index], mc_mPz[index]); // recalc
   mc_mBettaCalc[index] = BettaCalc(mc_mP[index], mc_mPid[index]); // recalc
-  std::cout << "  !! AMGV ready!" << std::endl;
+  // std::cout << "  !! AMGV ready!" << std::endl;
 }
 
 void AssignPi0Variables() {
-  std::cout << "  !! APi0V initiating..." << std::endl;
+  // std::cout << "  !! APi0V initiating..." << std::endl;
   // pi0 prev (8)
   TLorentzVector Gamma1_prev(mPx_prev[0], mPy_prev[0], mPz_prev[0], mE_prev[0]);
   TLorentzVector Gamma2_prev(mPx_prev[1], mPy_prev[1], mPz_prev[1], mE_prev[1]);
@@ -1417,11 +1417,11 @@ void AssignPi0Variables() {
   pi0M_corr  = Pi0_corr.M();
   pi0E_corr  = Pi0_corr.E();
   pi0Theta_corr = TMath::RadToDeg()*Gamma1_corr.Vect().Angle(Gamma2_corr.Vect());
-  std::cout << "  !! APi0V ready!" << std::endl;
+  // std::cout << "  !! APi0V ready!" << std::endl;
 }
 
 void AssignPi0GSIMVariables() {
-  std::cout << "  !! APi0GV initiating..." << std::endl;
+  // std::cout << "  !! APi0GV initiating..." << std::endl;
   // pi0 (8)
   TLorentzVector mc_Gamma1(mc_mPx[0], mc_mPy[0], mc_mPz[0], mc_mE[0]);
   TLorentzVector mc_Gamma2(mc_mPx[1], mc_mPy[1], mc_mPz[1], mc_mE[1]);
@@ -1434,11 +1434,11 @@ void AssignPi0GSIMVariables() {
   mc_pi0E  = mc_Pi0.E();
   mc_pi0M  = mc_Pi0.M();
   mc_pi0Theta = TMath::RadToDeg()*mc_Gamma1.Vect().Angle(mc_Gamma2.Vect());
-  std::cout << "  !! APi0GV ready!" << std::endl;
+  // std::cout << "  !! APi0GV ready!" << std::endl;
 }
 
 void AssignOmegaVariables() {
-  std::cout << "  !! AomegaV initiating..." << std::endl;
+  // std::cout << "  !! AomegaV initiating..." << std::endl;
   // omega prev (6+13)
   TLorentzVector Pi0_prev(pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0E_prev);
   TLorentzVector Pip_prev(mPx_prev[2], mPy_prev[2], mPz_prev[2], mE_prev[2]);
@@ -1511,11 +1511,11 @@ void AssignOmegaVariables() {
   wT_corr = wM_corr*wM_corr - 2*wZ_corr*mNu*mNu + 2*TMath::Sqrt(wPl2_corr*(mNu*mNu + mQ2)) - mQ2;
   wBettaCalc_corr = BettaCalc(wP_corr, 223);
   wdeltaTheta_corr = DeltaTheta(wPx_corr, wPy_corr, wPz_corr);
-  std::cout << "  !! AomegaV ready!" << std::endl;
+  // std::cout << "  !! AomegaV ready!" << std::endl;
 }
 
 void AssignOmegaGSIMVariables() {
-  std::cout << "  !! AomegaGV initiating..." << std::endl;
+  // std::cout << "  !! AomegaGV initiating..." << std::endl;
   // omega (19)
   TLorentzVector mc_Pi0(mc_pi0Px,  mc_pi0Py,  mc_pi0Pz,  mc_pi0E);
   TLorentzVector mc_Pip(mc_mPx[2], mc_mPy[2], mc_mPz[2], mc_mE[2]);
@@ -1540,12 +1540,12 @@ void AssignOmegaGSIMVariables() {
   mc_wT = mc_wM*mc_wM - 2*mc_wZ*mc_mNu*mc_mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - mc_mQ2;
   mc_wMx2 = mc_mW*mc_mW + mc_wM*mc_wM - 2*mc_wZ*mc_mNu*mc_mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - 2*kMproton*mc_wZ*mc_mNu;
   mc_wCosThetaPQ = ((kEbeam - mc_mPez)*mc_wPz - mc_mPex*mc_wPx - mc_mPey*mc_wPy)/(TMath::Sqrt(mc_wP2*(mc_mQ2 + mc_mNu*mc_mNu)));
-  std::cout << "  !! AomegaGV ready!" << std::endl;
+  // std::cout << "  !! AomegaGV ready!" << std::endl;
 }
 
 void AssignMoreVariables(Int_t fnGamma, Int_t fnPip, Int_t fnPim) {
   // (these variables depend that all the other variables from decay particles are set and ready)
-  std::cout << "  !! AmoreV initiating..." << std::endl;
+  // std::cout << "  !! AmoreV initiating..." << std::endl;
   // crossed terms (9), assuming P_corr and E_corr as the final versions
   pippimP = mPx_corr[2]*mPx_corr[3] + mPy_corr[2]*mPy_corr[3] + mPz_corr[2]*mPz_corr[3];
   pippimE = mE_corr[2]*mE_corr[3];
@@ -1560,11 +1560,11 @@ void AssignMoreVariables(Int_t fnGamma, Int_t fnPip, Int_t fnPim) {
   nGamma = (Float_t) fnGamma;
   nPip   = (Float_t) fnPip;
   nPim   = (Float_t) fnPim;
-  std::cout << "  !! AmoreV ready!" << std::endl;
+  // std::cout << "  !! AmoreV ready!" << std::endl;
 }
 
 void AssignMoreGSIMVariables(Int_t mc_fnGamma, Int_t mc_fnPip, Int_t mc_fnPim) {
-  std::cout << "  !! AMoreGV initiating..." << std::endl;
+  // std::cout << "  !! AMoreGV initiating..." << std::endl;
   // crossed terms (9)
   mc_pippimP = mc_mPx[2]*mc_mPx[3] + mc_mPy[2]*mc_mPy[3] + mc_mPz[2]*mc_mPz[3];
   mc_pippimE = mc_mE[2]*mc_mE[3];
@@ -1579,7 +1579,7 @@ void AssignMoreGSIMVariables(Int_t mc_fnGamma, Int_t mc_fnPip, Int_t mc_fnPim) {
   mc_nGamma = (Float_t) mc_fnGamma;
   mc_nPip   = (Float_t) mc_fnPip;
   mc_nPim   = (Float_t) mc_fnPim;
-  std::cout << "  !! AMoreGV ready!" << std::endl;
+  // std::cout << "  !! AMoreGV ready!" << std::endl;
 }
 
 /*** Mathematical functions ***/

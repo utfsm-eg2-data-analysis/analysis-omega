@@ -63,22 +63,22 @@ Others programs are:
 * `OnLuminosities`
 * `SumPtVectors`
 
-## GetSimpleTuple
+## Stage 1: `GetSimpleTuple`
 
-Takes raw data, uses `Analyser` and `ClasTool` to filter the signals
+Takes **pass2-cooked** data by using `Analyser` and `ClasTool` to filter the signals
 and assign the respective particles identification.
 
 It employs `Analyser` (especifically, the `aborquez/analysis-omega` branch),
-all particle id cuts are described in `Analyser/CUTS.md`
+all particle id cuts are described in `Analyser/doc/CUTS.md`
 
-The corrections applied in this stage are: (they are documented in `Analyser/CORR.md`)
+The corrections applied in this stage are: (they are documented in `Analyser/doc/CORR.md`)
 
 * Vertex correction
 * Time correction
 * Sampling fraction cut
 * DC fiducial cut
 
-## FilterNCombine
+## Stage 2: `FilterNCombine`
 
 Takes the pruned data and keeps every omega candidate,
 
