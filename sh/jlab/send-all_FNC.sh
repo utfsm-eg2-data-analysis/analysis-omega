@@ -31,21 +31,21 @@ cd ${PRODIR}/sh/jlab
 ./send_FNC.sh data Pb
 
 # Simulations/old
-# ./send_FNC.sh old C
-# ./send_FNC.sh old Fe
-# 
-# # Simulations/usm
-# ./send_FNC.sh usm D
-# ./send_FNC.sh usm C
-# ./send_FNC.sh usm Fe
-# ./send_FNC.sh usm Pb
-# 
-# # Simulations/jlab
-# targets=("D" "C" "Fe" "Pb")
-# ndirs=(46 10 13 4)
-# for ((i=0; i < ${#targets[@]}; i++)); do
-#     for ((j=1; j <= ${ndirs[i]}; j++)); do
-# 	ndir=$(get_num "$j")
-#         ./send_FNC.sh jlab ${targets[i]} ${ndir}
-#     done
-# done
+./send_FNC.sh old C
+./send_FNC.sh old Fe
+ 
+# Simulations/usm
+./send_FNC.sh usm D
+./send_FNC.sh usm C
+./send_FNC.sh usm Fe
+./send_FNC.sh usm Pb
+
+# Simulations/jlab
+targets=("D" "C" "Fe" "Pb")
+ndirs=(46 10 13 4)
+for ((i=0; i < ${#targets[@]}; i++)); do
+    for ((j=1; j <= ${ndirs[i]}; j++)); do
+	ndir=$(get_num "$j")
+        ./send_FNC.sh jlab ${targets[i]} ${ndir}
+    done
+done
