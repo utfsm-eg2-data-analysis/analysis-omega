@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
       t->GetEntry(jj);
       // std::cout << "  Entry number: " << jj << std::endl;
       // std::cout << "  pid:          " << tpid << std::endl;
-      if (simFlag) // std::cout << "  mc_pid:       " << mc_tpid << std::endl;
+      // if (simFlag) std::cout << "  mc_pid:       " << mc_tpid << std::endl;
       // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
       // count the data/simrec particles
       if (tpid == (Float_t) 211) nPipThisEvent++;
@@ -496,16 +496,18 @@ int main(int argc, char **argv) {
     
     // PART 3: fill
 
+    /*
     if (!simFlag) {
-      // std::cout << "  candidates for data:" << std::endl;
-      for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+      std::cout << "  candidates for data:" << std::endl;
+      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
     } else {
-      // std::cout << "  candidates for simrec:" << std::endl;
-      for (Int_t c = 0; c < nCombThisEvent; c++) // std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-      // std::cout << "  candidates for gsim:" << std::endl;
-      for (Int_t c = 0; c < nMCCombThisEvent; c++) // std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
-      // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      std::cout << "  candidates for simrec:" << std::endl;
+      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+      std::cout << "  candidates for gsim:" << std::endl;
+      for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     }
+    */
     
     // extract
     for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations

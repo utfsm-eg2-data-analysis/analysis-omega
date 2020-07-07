@@ -739,7 +739,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oPey = tPey;
     oPez = tPez;
     oPe  = tPe;
-    oP2e = tPe*tPe;
+    oP2e = oPe*oPe; // recalc
     oBettaEl = tBettaEl;
     oEtote = tEtote;
     oEine  = tEine;
@@ -781,7 +781,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oBetta = tBetta;
     oMass2 = tMass2;
     oT4 = tT4;
-    oPid = tpid;
+    oPid = tpid; // important!
     oM = ParticleMass(tpid);
     // prev (6)
     oE_prev  = CorrectEnergy("prev");
@@ -789,7 +789,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oPy_prev = tPy;
     oPz_prev = tPz;
     oP_prev  = tP;
-    oP2_prev = tP*tP;
+    oP2_prev = oP_prev*oP_prev; // recalc
     // true (6)
     oE_true  = CorrectEnergy("true");
     oPx_true = CorrectMomentum("x", "true");
@@ -804,16 +804,16 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oPz_corr = CorrectMomentum("z", "corr");
     oP2_corr = oPx_corr*oPx_corr + oPy_corr*oPy_corr + + oPz_corr*oPz_corr;
     oP_corr  = TMath::Sqrt(oP2_corr);
-    // remaining (10)
-    oZ = oE_corr/oNu;
-    oPhiPQ = PhiPQ(oPx_corr, oPy_corr, oPz_corr);
-    oThetaPQ = ThetaPQ(oPx_corr, oPy_corr, oPz_corr);
+    // remaining (10) - using corr values
+    oZ          = oE_corr/oNu;
+    oPhiPQ      = PhiPQ(oPx_corr, oPy_corr, oPz_corr);
+    oThetaPQ    = ThetaPQ(oPx_corr, oPy_corr, oPz_corr);
     oCosThetaPQ = ((kEbeam - oPez)*oPz_corr - oPex*oPx_corr - oPey*oPy_corr)/(TMath::Sqrt(oP2_corr*(oQ2 + oNu*oNu)));
-    oPt2 = oP2_corr*(1 - oCosThetaPQ*oCosThetaPQ);
-    oPl2 = oP2_corr*oCosThetaPQ*oCosThetaPQ;
-    oMx2 = tW*tW + oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - 2*kMproton*oZ*oNu;
-    oT = oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - oQ2;
-    oBettaCalc = BettaCalc(oP_corr, oPid);
+    oPt2        = oP2_corr*(1 - oCosThetaPQ*oCosThetaPQ);
+    oPl2        = oP2_corr*oCosThetaPQ*oCosThetaPQ;
+    oMx2        = tW*tW + oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - 2*kMproton*oZ*oNu;
+    oT          = oM*oM - 2*oZ*oNu*oNu + 2*TMath::Sqrt(oPl2*(oNu*oNu + oQ2)) - oQ2;
+    oBettaCalc  = BettaCalc(oP_corr, oPid);
     odeltaTheta = DeltaTheta(oPx_corr, oPy_corr, oPz_corr);
     // status (16)
     oStatDC   = tStatDC;
@@ -832,6 +832,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oNphe     = tNphe;
     oChi2CC   = tChi2CC;
     oStatus   = tStatus;
+    // then, in case of null reconstructed
   } else {
     // electron (41)
     oQ2 = -9999;
@@ -943,13 +944,13 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     oStatus   = -9999;
   }
   // event-related (2)
-  oEvent = tevnt;
+  oEvent = tevnt; // important!
   oEntry = (Float_t) entry;
   // gsim vars
   if (simFlag) {
     // electron (16)
     mc_oQ2 = mc_tQ2;
-    mc_oW = mc_tW;
+    mc_oW  = mc_tW;
     mc_oNu = mc_tNu;
     mc_oXb = mc_tXb;
     mc_oYb = mc_tYb;
@@ -961,7 +962,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     mc_oPex = mc_tPex;
     mc_oPey = mc_tPey;
     mc_oPez = mc_tPez;
-    mc_oPe = mc_tPe;
+    mc_oPe  = mc_tPe;
     mc_oBettaEl = mc_tBettaEl;
     mc_oP2e = mc_oPe*mc_oPe; // recalc
     // particle (25)
@@ -971,7 +972,7 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
     mc_oSector = mc_tSector;
     mc_oBetta = mc_tBetta;
     mc_oMass2 = mc_tMass2;
-    mc_oPid = mc_tpid;
+    mc_oPid = mc_tpid; // important!
     mc_odeltaZ = mc_tdeltaZ;
     mc_oPx = mc_tPx;
     mc_oPy = mc_tPy;
@@ -1226,7 +1227,7 @@ void AssignMixVariables(Float_t entry, Int_t index) {
     mPex = tPex;
     mPey = tPey;
     mPez = tPez;
-    mPe = tPe;
+    mPe  = tPe;
     mP2e = mPe*mPe; // recalc
     mBettaEl = tBettaEl;
     mEtote = tEtote;
@@ -1269,7 +1270,7 @@ void AssignMixVariables(Float_t entry, Int_t index) {
     mT4[index] = tT4;
     mMass2[index] = tMass2;
     mBetta[index] = tBetta;
-    mPid[index] = tpid;
+    mPid[index] = tpid; // important!
     mM[index] = ParticleMass(tpid);
     // prev (6)
     mE_prev[index]  = CorrectEnergy("prev");
@@ -1277,7 +1278,7 @@ void AssignMixVariables(Float_t entry, Int_t index) {
     mPy_prev[index] = tPy;
     mPz_prev[index] = tPz;
     mP_prev[index]  = tP;
-    mP2_prev[index] = tP*tP;
+    mP2_prev[index] = mP_prev[index]*mP_prev[index]; // recalc
     // true (6)
     mE_true[index]  = CorrectEnergy("true");
     mPx_true[index] = CorrectMomentum("x", "true");
@@ -1292,17 +1293,17 @@ void AssignMixVariables(Float_t entry, Int_t index) {
     mPz_corr[index] = CorrectMomentum("z", "corr");
     mP2_corr[index] = mPx_corr[index]*mPx_corr[index] + mPy_corr[index]*mPy_corr[index] + mPz_corr[index]*mPz_corr[index];
     mP_corr[index]  = TMath::Sqrt(mP2_corr[index]);
-    // remaining (10)
-    mZ[index] = mE_corr[index]/mNu;
-    mPhiPQ[index]   = PhiPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
-    mThetaPQ[index] = ThetaPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
+    // remaining (10) - using corr values
+    mZ[index]          = mE_corr[index]/mNu;
+    mPhiPQ[index]      = PhiPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
+    mThetaPQ[index]    = ThetaPQ(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
     mCosThetaPQ[index] = ((kEbeam - mPez)*mPz_corr[index] - mPex*mPx_corr[index] - mPey*mPy_corr[index])/(TMath::Sqrt(mP2_corr[index]*(mQ2 + mNu*mNu)));
-    mPt2[index] = mP2_corr[index]*(1 - mCosThetaPQ[index]*mCosThetaPQ[index]);
-    mPl2[index] = mP2_corr[index]*mCosThetaPQ[index]*mCosThetaPQ[index];
+    mPt2[index]        = mP2_corr[index]*(1 - mCosThetaPQ[index]*mCosThetaPQ[index]);
+    mPl2[index]        = mP2_corr[index]*mCosThetaPQ[index]*mCosThetaPQ[index];
     mdeltaTheta[index] = DeltaTheta(mPx_corr[index], mPy_corr[index], mPz_corr[index]);
-    mMx2[index] = mW*mW + mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - 2*kMproton*mZ[index]*mNu;
-    mT[index] = mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - mQ2;
-    mBettaCalc[index] = BettaCalc(mP_corr[index], mPid[index]);
+    mMx2[index]        = mW*mW + mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - 2*kMproton*mZ[index]*mNu;
+    mT[index]          = mM[index]*mM[index] - 2*mZ[index]*mNu*mNu + 2*TMath::Sqrt(mPl2[index]*(mNu*mNu + mQ2)) - mQ2;
+    mBettaCalc[index]  = BettaCalc(mP_corr[index], mPid[index]);
     // status (16)
     mStatDC[index]   = tStatDC;
     mDCStatus[index] = tDCStatus;
@@ -1321,7 +1322,7 @@ void AssignMixVariables(Float_t entry, Int_t index) {
     mChi2CC[index]   = tChi2CC;
     mStatus[index]   = tStatus;
     // event related (2)
-    mEvent = tevnt;
+    mEvent = tevnt; // important!
     mEntry[index] = entry;
   } else {
     NullMixSIMRECVariables(index);
@@ -1330,12 +1331,12 @@ void AssignMixVariables(Float_t entry, Int_t index) {
 
 void AssignMixGSIMVariables(Float_t entry, Int_t index) {
   // std::cout << "  !! AMGV initiating..." << std::endl;
-  // event related (2) -> only non-null
-  mEvent = tevnt;
+  // event related (2) - only non-null
+  mEvent = tevnt; // important!
   mEntry[index] = entry;
   // electron (16)
   mc_mQ2 = mc_tQ2;
-  mc_mW = mc_tW;
+  mc_mW  = mc_tW;
   mc_mNu = mc_tNu;
   mc_mXb = mc_tXb;
   mc_mYb = mc_tYb;
@@ -1370,12 +1371,13 @@ void AssignMixGSIMVariables(Float_t entry, Int_t index) {
   mc_mPhiPQ[index] = mc_tPhiPQ;
   mc_mMx2[index] = mc_tMx2;
   mc_mT[index] = mc_tT;
-  mc_mP2[index] = mc_mP[index]*mc_mP[index]; // recalc
-  mc_mM[index] = ParticleMass(mc_mPid[index]); // recalc
-  mc_mE[index] = TMath::Sqrt(mc_mP2[index] + mc_mM[index]*mc_mM[index]); // recalc
-  mc_mCosThetaPQ[index] = ((kEbeam - mc_mPez)*mc_mPz[index] - mc_mPex*mc_mPx[index] - mc_mPey*mc_mPy[index])/(TMath::Sqrt(mc_mP2[index]*(mc_mQ2 + mc_mNu*mc_mNu))); // recalc
-  mc_mdeltaTheta[index] = DeltaTheta(mc_mPx[index], mc_mPy[index], mc_mPz[index]); // recalc
-  mc_mBettaCalc[index] = BettaCalc(mc_mP[index], mc_mPid[index]); // recalc
+  // recalc
+  mc_mP2[index] = mc_mP[index]*mc_mP[index];
+  mc_mM[index]  = ParticleMass(mc_mPid[index]);
+  mc_mE[index]  = TMath::Sqrt(mc_mP2[index] + mc_mM[index]*mc_mM[index]);
+  mc_mCosThetaPQ[index] = ((kEbeam - mc_mPez)*mc_mPz[index] - mc_mPex*mc_mPx[index] - mc_mPey*mc_mPy[index])/(TMath::Sqrt(mc_mP2[index]*(mc_mQ2 + mc_mNu*mc_mNu)));
+  mc_mdeltaTheta[index] = DeltaTheta(mc_mPx[index], mc_mPy[index], mc_mPz[index]);
+  mc_mBettaCalc[index]  = BettaCalc(mc_mP[index], mc_mPid[index]);
   // std::cout << "  !! AMGV ready!" << std::endl;
 }
 
@@ -1530,7 +1532,7 @@ void AssignOmegaGSIMVariables() {
   mc_wM  = mc_omega.M();
   mc_wD  = mc_wM - mc_Pi0.M() - mc_Pip.M() - mc_Pim.M();
   mc_wSD = mc_wD + 2*kMpi + kMpi0; // shifted
-  mc_wZ = mc_wE/mc_mNu;
+  mc_wZ  = mc_wE/mc_mNu;
   mc_wThetaPQ = ThetaPQ(mc_wPx, mc_wPy, mc_wPz);
   mc_wPhiPQ = PhiPQ(mc_wPx, mc_wPy, mc_wPz);
   mc_wPl2 = mc_wP2*mc_wCosThetaPQ*mc_wCosThetaPQ;
