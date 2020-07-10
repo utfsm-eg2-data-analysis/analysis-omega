@@ -68,11 +68,11 @@ extern Float_t pi0Px_true, pi0Py_true, pi0Pz_true, pi0P2_true, pi0P_true, pi0E_t
 extern Float_t pi0Px_corr, pi0Py_corr, pi0Pz_corr, pi0P2_corr, pi0P_corr, pi0E_corr, pi0M_corr, pi0Theta_corr;
 // omega (57) (3*19new)
 extern Float_t wPx_prev, wPy_prev, wPz_prev, wP_prev, wP2_prev, wE_prev;
-extern Float_t wZ_prev, wCosThetaPQ_prev, wThetaPQ_prev, wPt2_prev, wPl2_prev, wPhiPQ_prev, wMx2_prev, wT_prev, wBettaCalc_prev, wdeltaTheta_prev, wD_prev, wM_prev, wSD_prev;
+extern Float_t wZ_prev, wCosThetaPQ_prev, wThetaPQ_prev, wPt2_prev, wPl2_prev, wPhiPQ_prev, wMx2_prev, wT_prev, wBettaCalc_prev, wdeltaTheta_prev, wD_prev, wM_prev;
 extern Float_t wPx_true, wPy_true, wPz_true, wP_true, wP2_true, wE_true;
-extern Float_t wZ_true, wCosThetaPQ_true, wThetaPQ_true, wPt2_true, wPl2_true, wPhiPQ_true, wMx2_true, wT_true, wBettaCalc_true, wdeltaTheta_true, wD_true, wM_true, wSD_true;
+extern Float_t wZ_true, wCosThetaPQ_true, wThetaPQ_true, wPt2_true, wPl2_true, wPhiPQ_true, wMx2_true, wT_true, wBettaCalc_true, wdeltaTheta_true, wD_true, wM_true;
 extern Float_t wPx_corr, wPy_corr, wPz_corr, wP_corr, wP2_corr, wE_corr;
-extern Float_t wZ_corr, wCosThetaPQ_corr, wThetaPQ_corr, wPt2_corr, wPl2_corr, wPhiPQ_corr, wMx2_corr, wT_corr, wBettaCalc_corr, wdeltaTheta_corr, wD_corr, wM_corr, wSD_corr;
+extern Float_t wZ_corr, wCosThetaPQ_corr, wThetaPQ_corr, wPt2_corr, wPl2_corr, wPhiPQ_corr, wMx2_corr, wT_corr, wBettaCalc_corr, wdeltaTheta_corr, wD_corr, wM_corr;
 // crossed terms (9)
 extern Float_t pippimP, pippimE, pippimM;
 extern Float_t pippi0P, pippi0E, pippi0M;
@@ -94,7 +94,7 @@ extern Float_t mc_mZ[4], mc_mThetaPQ[4], mc_mPt2[4], mc_mPl2[4], mc_mPhiPQ[4], m
 extern Float_t mc_pi0Px, mc_pi0Py, mc_pi0Pz, mc_pi0P2, mc_pi0P, mc_pi0E, mc_pi0M, mc_pi0Theta;
 // omega (19)
 extern Float_t mc_wPx, mc_wPy, mc_wPz, mc_wP, mc_wP2, mc_wE;
-extern Float_t mc_wZ, mc_wCosThetaPQ, mc_wThetaPQ, mc_wPt2, mc_wPl2, mc_wPhiPQ, mc_wMx2, mc_wT, mc_wBettaCalc, mc_wdeltaTheta, mc_wD, mc_wM, mc_wSD;
+extern Float_t mc_wZ, mc_wCosThetaPQ, mc_wThetaPQ, mc_wPt2, mc_wPl2, mc_wPhiPQ, mc_wMx2, mc_wT, mc_wBettaCalc, mc_wdeltaTheta, mc_wD, mc_wM;
 // crossed terms (9)
 extern Float_t mc_pippimP, mc_pippimE, mc_pippimM;
 extern Float_t mc_pippi0P, mc_pippi0E, mc_pippi0M;
@@ -551,7 +551,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("pi0E_corr", &pi0E_corr);
     tree->Branch("pi0M_corr", &pi0M_corr);
     tree->Branch("pi0Theta_corr", &pi0Theta_corr);
-    // omega prev (19)
+    // omega prev (18)
     tree->Branch("wZ_prev", &wZ_prev);
     tree->Branch("wPhiPQ_prev", &wPhiPQ_prev);
     tree->Branch("wThetaPQ_prev", &wThetaPQ_prev);
@@ -570,8 +570,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("wdeltaTheta_prev", &wdeltaTheta_prev);
     tree->Branch("wD_prev", &wD_prev);
     tree->Branch("wM_prev", &wM_prev);
-    tree->Branch("wSD_prev", &wSD_prev);
-    // omega true (19)
+    // omega true (18)
     tree->Branch("wZ_true", &wZ_true);
     tree->Branch("wPhiPQ_true", &wPhiPQ_true);
     tree->Branch("wThetaPQ_true", &wThetaPQ_true);
@@ -590,8 +589,7 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("wdeltaTheta_true", &wdeltaTheta_true);
     tree->Branch("wD_true", &wD_true);
     tree->Branch("wM_true", &wM_true);
-    tree->Branch("wSD_true", &wSD_true);
-    // omega corr (19)
+    // omega corr (18)
     tree->Branch("wZ_corr", &wZ_corr);
     tree->Branch("wPhiPQ_corr", &wPhiPQ_corr);
     tree->Branch("wThetaPQ_corr", &wThetaPQ_corr);
@@ -610,7 +608,6 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("wdeltaTheta_corr", &wdeltaTheta_corr);
     tree->Branch("wD_corr", &wD_corr);
     tree->Branch("wM_corr", &wM_corr);
-    tree->Branch("wSD_corr", &wSD_corr);
     // crossed terms (9)
     tree->Branch("pippimP", &pippimP);
     tree->Branch("pippimE", &pippimE);
@@ -682,7 +679,7 @@ void SetOutputBranches(TTree *tree, TString option) {
       tree->Branch("mc_pi0E", &mc_pi0E);
       tree->Branch("mc_pi0M", &mc_pi0M);
       tree->Branch("mc_pi0Theta", &mc_pi0Theta);
-      // omega (19)
+      // omega (18)
       tree->Branch("mc_wPx", &mc_wPx);
       tree->Branch("mc_wPy", &mc_wPy);
       tree->Branch("mc_wPz", &mc_wPz);
@@ -701,7 +698,6 @@ void SetOutputBranches(TTree *tree, TString option) {
       tree->Branch("mc_wdeltaTheta", &mc_wdeltaTheta);
       tree->Branch("mc_wD", &mc_wD);
       tree->Branch("mc_wM", &mc_wM);
-      tree->Branch("mc_wSD", &mc_wSD);
       // crossed terms (9)
       tree->Branch("mc_pippimP", &mc_pippimP);
       tree->Branch("mc_pippimE", &mc_pippimE);
@@ -1132,7 +1128,7 @@ void NullMixSIMRECVariables(Int_t index) {
   pi0M_corr  = -9999;
   pi0E_corr  = -9999;
   pi0Theta_corr = -9999;
-  // omega prev (6+13)
+  // omega prev (6+12)
   wPx_prev = -9999;
   wPy_prev = -9999;
   wPz_prev = -9999;
@@ -1141,7 +1137,6 @@ void NullMixSIMRECVariables(Int_t index) {
   wE_prev  = -9999;
   wM_prev  = -9999;
   wD_prev  = -9999;
-  wSD_prev = -9999;
   wZ_prev  = -9999;
   wPhiPQ_prev = -9999;
   wThetaPQ_prev = -9999;
@@ -1152,7 +1147,7 @@ void NullMixSIMRECVariables(Int_t index) {
   wT_prev = -9999;
   wBettaCalc_prev = -9999;
   wdeltaTheta_prev = -9999;
-  // omega true (6+13)
+  // omega true (6+12)
   wPx_true = -9999;
   wPy_true = -9999;
   wPz_true = -9999;
@@ -1161,7 +1156,6 @@ void NullMixSIMRECVariables(Int_t index) {
   wE_true  = -9999;
   wM_true  = -9999;
   wD_true  = -9999;
-  wSD_true = -9999;
   wZ_true  = -9999;
   wPhiPQ_true = -9999;
   wThetaPQ_true = -9999;
@@ -1172,7 +1166,7 @@ void NullMixSIMRECVariables(Int_t index) {
   wT_true = -9999;
   wBettaCalc_true = -9999;
   wdeltaTheta_true = -9999;
-  // omega corr (6+13)
+  // omega corr (6+12)
   wPx_corr = -9999;
   wPy_corr = -9999;
   wPz_corr = -9999;
@@ -1181,7 +1175,6 @@ void NullMixSIMRECVariables(Int_t index) {
   wE_corr  = -9999;
   wM_corr  = -9999;
   wD_corr  = -9999;
-  wSD_corr = -9999;
   wZ_corr  = -9999;
   wPhiPQ_corr = -9999;
   wThetaPQ_corr = -9999;
@@ -1441,7 +1434,7 @@ void AssignPi0GSIMVariables() {
 
 void AssignOmegaVariables() {
   // std::cout << "  !! AomegaV initiating..." << std::endl;
-  // omega prev (6+13)
+  // omega prev (6+12)
   TLorentzVector Pi0_prev(pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0E_prev);
   TLorentzVector Pip_prev(mPx_prev[2], mPy_prev[2], mPz_prev[2], mE_prev[2]);
   TLorentzVector Pim_prev(mPx_prev[3], mPy_prev[3], mPz_prev[3], mE_prev[3]);
@@ -1453,8 +1446,7 @@ void AssignOmegaVariables() {
   wP_prev  = omega_prev.Vect().Mag();
   wE_prev  = omega_prev.E();
   wM_prev  = omega_prev.M();
-  wD_prev  = wM_prev - Pi0_prev.M() - Pip_prev.M() - Pim_prev.M();
-  wSD_prev = wD_prev + 2*kMpi + kMpi0; // shifted
+  wD_prev  = wM_prev - Pi0_prev.M() + kMpi0;
   wZ_prev  = wE_prev/mNu;
   wPhiPQ_prev = PhiPQ(wPx_prev, wPy_prev, wPz_prev);
   wThetaPQ_prev = ThetaPQ(wPx_prev, wPy_prev, wPz_prev);
@@ -1465,7 +1457,7 @@ void AssignOmegaVariables() {
   wT_prev = wM_prev*wM_prev - 2*wZ_prev*mNu*mNu + 2*TMath::Sqrt(wPl2_prev*(mNu*mNu + mQ2)) - mQ2;
   wBettaCalc_prev = BettaCalc(wP_prev, 223);
   wdeltaTheta_prev = DeltaTheta(wPx_prev, wPy_prev, wPz_prev);
-  // omega true (6+13)
+  // omega true (6+12)
   TLorentzVector Pi0_true(pi0Px_true, pi0Py_true, pi0Pz_true, pi0E_true);
   TLorentzVector Pip_true(mPx_true[2], mPy_true[2], mPz_true[2], mE_true[2]);
   TLorentzVector Pim_true(mPx_true[3], mPy_true[3], mPz_true[3], mE_true[3]);
@@ -1477,8 +1469,7 @@ void AssignOmegaVariables() {
   wP_true  = omega_true.Vect().Mag();
   wE_true  = omega_true.E();
   wM_true  = omega_true.M();
-  wD_true  = wM_true - Pi0_true.M() - Pip_true.M() - Pim_true.M();
-  wSD_true = wD_true + 2*kMpi + kMpi0; // shifted
+  wD_true  = wM_true - Pi0_true.M() + kMpi0;
   wZ_true  = wE_true/mNu;
   wPhiPQ_true = PhiPQ(wPx_true, wPy_true, wPz_true);
   wThetaPQ_true = ThetaPQ(wPx_true, wPy_true, wPz_true);
@@ -1489,7 +1480,7 @@ void AssignOmegaVariables() {
   wT_true = wM_true*wM_true - 2*wZ_true*mNu*mNu + 2*TMath::Sqrt(wPl2_true*(mNu*mNu + mQ2)) - mQ2;
   wBettaCalc_true = BettaCalc(wP_true, 223);
   wdeltaTheta_true = DeltaTheta(wPx_true, wPy_true, wPz_true);
-  // omega corr (6+13)
+  // omega corr (6+12)
   TLorentzVector Pi0_corr(pi0Px_corr, pi0Py_corr, pi0Pz_corr, pi0E_corr);
   TLorentzVector Pip_corr(mPx_corr[2], mPy_corr[2], mPz_corr[2], mE_corr[2]);
   TLorentzVector Pim_corr(mPx_corr[3], mPy_corr[3], mPz_corr[3], mE_corr[3]);
@@ -1501,8 +1492,7 @@ void AssignOmegaVariables() {
   wP_corr  = omega_corr.Vect().Mag();
   wE_corr  = omega_corr.E();
   wM_corr  = omega_corr.M();
-  wD_corr  = wM_corr - Pi0_corr.M() - Pip_corr.M() - Pim_corr.M();
-  wSD_corr = wD_corr + 2*kMpi + kMpi0; // shifted
+  wD_corr  = wM_corr - Pi0_corr.M() + kMpi0;
   wZ_corr  = wE_corr/mNu;
   wPhiPQ_corr = PhiPQ(wPx_corr, wPy_corr, wPz_corr);
   wThetaPQ_corr = ThetaPQ(wPx_corr, wPy_corr, wPz_corr);
@@ -1518,7 +1508,7 @@ void AssignOmegaVariables() {
 
 void AssignOmegaGSIMVariables() {
   // std::cout << "  !! AomegaGV initiating..." << std::endl;
-  // omega (19)
+  // omega (18)
   TLorentzVector mc_Pi0(mc_pi0Px,  mc_pi0Py,  mc_pi0Pz,  mc_pi0E);
   TLorentzVector mc_Pip(mc_mPx[2], mc_mPy[2], mc_mPz[2], mc_mE[2]);
   TLorentzVector mc_Pim(mc_mPx[3], mc_mPy[3], mc_mPz[3], mc_mE[3]);
@@ -1530,8 +1520,7 @@ void AssignOmegaGSIMVariables() {
   mc_wP2 = mc_omega.Vect().Mag2();
   mc_wE  = mc_omega.E();
   mc_wM  = mc_omega.M();
-  mc_wD  = mc_wM - mc_Pi0.M() - mc_Pip.M() - mc_Pim.M();
-  mc_wSD = mc_wD + 2*kMpi + kMpi0; // shifted
+  mc_wD  = mc_wM - mc_Pi0.M() + kMpi0;
   mc_wZ  = mc_wE/mc_mNu;
   mc_wThetaPQ = ThetaPQ(mc_wPx, mc_wPy, mc_wPz);
   mc_wPhiPQ = PhiPQ(mc_wPx, mc_wPy, mc_wPz);
