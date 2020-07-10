@@ -57,6 +57,24 @@ TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0 = "0.059 < pi0M_corr && pi0M_corr < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
+TCut cutBinLimits = "Q2 > 1 && Q2 < 4 && Nu > 2.2 && Nu < 4.2 && wZ_corr > 0.5 && wZ_corr < 1.0 && wPt2_corr > 0. && wPt2_corr < 1.5";
+TCut cutQuality   = "P_true[0] > 0.2 && P_true[1] > 0.2 && P_corr[2] > 0.2 && P_corr[3] > 0.2";
+
+TCut betaOmega = "wBettaCalc_corr < 0.95";
+
+// TCut statusElectron = "StatusEl > 0 && StatCCEl > 0 && StatSCEl > 0 && StatDCEl > 0 && StatECEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
+TCut statusElectron = "StatusEl != 0 && StatCCEl > 0 && StatSCEl > 0 && StatDCEl > 0 && StatECEl > 0 && (DCStatusEl == -1 || DCStatusEl > 0) && (SCStatusEl == 11 || SCStatusEl == 33)";
+
+TCut statusPip    = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
+// TCut statusPip    = "Status[2] != 0 && StatDC[2] > 0 && (DCStatus[2] == -1 || DCStatus[2] > 0)";
+TCut statusPip_LE = "P_corr[2] < 2.7 && StatSC[2] > 0"; // LE: low energy
+TCut statusPip_HE = "P_corr[2] >= 2.7 && Nphe[2] > 25 && StatCC[2] > 0 && Chi2CC[2] < 5./57.3"; // HE: high energy
+
+TCut statusPim    = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
+// TCut statusPim    = "Status[3] != 0 && StatDC[3] > 0 && (DCStatus[3] == -1 | DCStatus[3] > 0)";
+TCut statusPim_LE = "P_corr[3] <= 2.5 && !(StatCC[3] > 0 && Nphe[3] > 25)"; // LE: low energy
+TCut statusPim_HE = "P_corr[3] > 2.5"; // HE: high energy
+
 // cut for pi0 from MW
 TCut cutPi0_MW = "0.059 < pi0M_corr && pi0M_corr < 0.209"; // mean=0.134 & sigma=0.025
 
@@ -100,6 +118,8 @@ const Float_t kMpi = pdg.GetParticle(211)->Mass();
 const Float_t kMpi0 = pdg.GetParticle(111)->Mass();
 const Float_t kMe = pdg.GetParticle(11)->Mass();
 const Float_t kMomega = pdg.GetParticle(223)->Mass();
+const Float_t kMeta = pdg.GetParticle(221)->Mass();
+const Float_t kMf1 = pdg.GetParticle(20223)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
