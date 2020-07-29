@@ -22,6 +22,12 @@ TString inputFile3  = "";
 TCut    cutTargType;
 TString plotFile;
 
+TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
+TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
+TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
+TCut statusCuts_gamma     = "Status[0] > 0 && Status[1] > 0"; // not used, yet
+TCut statusCuts_default   = statusCuts_electrons && statusCuts_pim && statusCuts_pip;
+
 /*** Declaration of functions ***/
 
 inline int parseCommandLine(int argc, char* argv[]);
@@ -49,74 +55,56 @@ int main(int argc, char **argv) {
   // first hist, no cut at all
   TH1F *theHist;
   treeExtracted->Draw("wSD_corr>>theHist(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-                                                        statusElectron &&
-                                                        statusPip && // (statusPip_LE || statusPip_HE) &&
-                                                        statusPim, "goff"); // cutBinLimits && cutQuality // && (statusPim_LE || statusPim_HE)
+                                                        statusCuts_default, "goff");
   theHist = (TH1F *)gROOT->FindObject("theHist");
   
   theHist->SetTitle("#Delta m (#gamma #gamma #pi^{+} #pi^{-}) in " + targetOption + " data");
+  
   theHist->SetLineColor(kBlack);
-  theHist->SetFillStyle(0);
-  theHist->SetLineWidth(3);
+  theHist->SetFillStyle(1);
+  theHist->SetFillColor(kBlack);
+  
   theHist->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
   theHist->GetXaxis()->CenterTitle();
   theHist->GetYaxis()->SetMaxDigits(3);
 
-  // second hist, exact omegas: omega -> gamma gamma pi+ pi-
-  TCut exactOmega = "nGamma == 2 && nPip == 1 && nPim ==2";
+  // second hist, first f1 decay: f1 -> 4pi
+  TCut f1_decay1 = "nGamma >= 4 || nPip > 1 || nPim > 1";
   
   TH1F *theHist2;
   treeExtracted->Draw("wSD_corr>>theHist2(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusElectron &&
-		                                         statusPip &&
-		                                         statusPim &&
-		                                         exactOmega, "goff");
+		                                         statusCuts_default && f1_decay1, "goff");
   theHist2 = (TH1F *)gROOT->FindObject("theHist2");
   
-  theHist2->SetLineColor(kGreen+2);
-  theHist2->SetFillStyle(0);
+  theHist2->SetLineColor(kBlue);
+  theHist2->SetFillStyle(1);
+  theHist2->SetFillColor(kBlue);
+  
   theHist2->SetLineWidth(3);
 
-  // third hist, first f1 decay: f1 -> pi0 pi0 pi+ pi-
-  TCut f1_decay1 = "nGamma >= 4";
+  // third hist, second f1 decay: f1 -> pi0 pi0 pi+ pi-
+  TCut f1_decay2 = "nGamma >= 4";
   
   TH1F *theHist3;
   treeExtracted->Draw("wSD_corr>>theHist3(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusElectron &&
-		                                         statusPip &&
-		                                         statusPim &&
-		                                         f1_decay1, "goff");
+		                                         statusCuts_default && f1_decay2, "goff");
   theHist3 = (TH1F *)gROOT->FindObject("theHist3");
   
-  theHist3->SetLineColor(kBlue);
-  theHist3->SetFillStyle(0);
-  theHist3->SetLineWidth(3);
+  theHist3->SetLineColor(kGreen);
+  theHist3->SetFillStyle(1);
+  theHist3->SetFillColor(kGreen);
+  
+  // fourth hist, third f1 decay: f1 -> 2pi+ 2pi-
+  TCut f1_decay3 = "nPip > 1 && nPim > 1";
 
-  // fourth hist, checking omega beta
   TH1F *theHist4;
   treeExtracted->Draw("wSD_corr>>theHist4(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusElectron &&
-		                                         statusPip &&
-		                                         statusPim &&
-		                                         betaOmega, "goff");
+		                                         statusCuts_default && f1_decay3, "goff");
   theHist4 = (TH1F *)gROOT->FindObject("theHist4");
-  
-  theHist4->SetLineColor(kMagenta+7);
-  theHist4->SetFillStyle(0);
-  theHist4->SetLineWidth(3);
 
-  // fourth hist, checking absence of neutral kaon band and omega beta
-  TH1F *theHist5;
-  treeExtracted->Draw("wSD_corr>>theHist5(200, 0, 2.5)", cutTargType && cutDIS && cutPi0 &&
-		                                         statusElectron &&
-		                                         statusPip &&
-		                                         statusPim &&
-		                                         betaOmega, "goff");
-  theHist5 = (TH1F *)gROOT->FindObject("theHist5");
-  
-  theHist5->SetLineColor(kMagenta+3);
-  theHist5->SetFillStyle(0);
-  theHist5->SetLineWidth(3);
+  theHist4->SetLineColor(kOrange);
+  theHist4->SetFillStyle(1);
+  theHist4->SetFillColor(kOrange);
   
   /*** Drawing ***/
   
@@ -127,13 +115,22 @@ int main(int argc, char **argv) {
   
   theHist->Draw("HIST");
   theHist2->Draw("SAME HIST");
-  theHist3->Draw("SAME HIST");
   theHist4->Draw("SAME HIST");
-  theHist5->Draw("SAME HIST");
+  theHist3->Draw("SAME HIST");
     
-  drawVerticalLine(kMeta, kRed); // 547
-  drawVerticalLine(kMomega, kRed); // 782
-  drawVerticalLine(kMf1, kRed); // 1285
+  drawVerticalLine(kMeta,   kRed); // 547 MeV
+  drawVerticalLine(kMomega, kRed); // 782 MeV
+  drawVerticalLine(kMf1,    kRed); // 1285 MeV
+
+  /*** Legend ***/
+
+  TLegend *l = new TLegend(0.65, 0.8, 0.9, 0.9);
+  l->AddEntry(theHist, "all #omega", "f");
+  l->AddEntry(theHist2, "nGamma >= 4 || nPip > 1 || nPim > 1", "f");
+  l->AddEntry(theHist3, "nGamma >= 4", "f");
+  l->AddEntry(theHist4, "nPip > 1 && nPim > 1", "f");  
+  
+  l->Draw();
   
   c->Print(plotFile);
 }
