@@ -134,6 +134,11 @@ void printOptions();
 
 int main(int argc, char **argv) {
 
+  // measure time
+  clock_t begin, end, total;
+  Double_t time_elapsed;
+  begin = clock();
+  
   parseCommandLine(argc, argv);
   assignOptions();
   printOptions();
@@ -187,7 +192,7 @@ int main(int argc, char **argv) {
 
   // on the loop
   Int_t start = (Int_t) t->GetMinimum("evnt");
-  Int_t finish = (Int_t) t->GetMaximum("evnt");
+  Int_t finish = 5000; // (Int_t) t->GetMaximum("evnt");
 
   // std::cout << "!! start: " << start << " - finish: " << finish << std::endl;
   
@@ -211,10 +216,12 @@ int main(int argc, char **argv) {
     for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
       Int_t jj = t->GetEntryNumber(j);
       t->GetEntry(jj);
-      // std::cout << "  Entry number: " << jj << std::endl;
-      // std::cout << "  pid:          " << tpid << std::endl;
-      // if (simFlag) std::cout << "  mc_pid:       " << mc_tpid << std::endl;
-      // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      /*
+      std::cout << "  Entry number: " << jj << std::endl;
+      std::cout << "  pid:          " << tpid << std::endl;
+      if (simFlag) std::cout << "  mc_pid:       " << mc_tpid << std::endl;
+      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+      */      
       // count the data/simrec particles
       if (tpid == (Float_t) 211) nPipThisEvent++;
       if (tpid == (Float_t) -211) nPimThisEvent++;
@@ -226,16 +233,18 @@ int main(int argc, char **argv) {
     }
     
     // show counts
-    // std::cout << "  nPip     = " << nPipThisEvent << std::endl;
-    // std::cout << "  nPim     = " << nPimThisEvent << std::endl;
-    // std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
+    /*
+    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
     if (simFlag) {
-      // std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-      // std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-      // std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+      std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+      std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+      std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
     }
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    */
+    
     // (as you can see, these conditions are not exclusive)
     // candidate appeared for data/simrec
     if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
@@ -250,15 +259,16 @@ int main(int argc, char **argv) {
       nMCCombThisEvent = TMath::Binomial(nMCPipThisEvent, 1)*TMath::Binomial(nMCPimThisEvent, 1)*TMath::Binomial(nMCGammaThisEvent, 2);
       nMCOmega += nMCCombThisEvent;
     }
-
+    /*
     if (!simFlag) {
-      // std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
+      std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
     } else {
-      // std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
-      // std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
+      std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
+      std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
     }
-    // std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    */
+    
     /*** ORIGINAL ***/
 
     // saves all information from the original particles from an approved event, with no mixing
@@ -490,7 +500,7 @@ int main(int argc, char **argv) {
 	
       } // end of loop in pi+
 
-    } // end of at-least-one-omega condition
+    } // end of simflag and at-least-one-omega conditions
 
     // std::cout << "  !! Obtain & keep combinations from gsim ready!" << std::endl;
     
@@ -594,9 +604,11 @@ int main(int argc, char **argv) {
     // clean some memory
     gDirectory->Delete(listName + ";1");
     rootFile->Delete(listName);
-    
-    // std::cout << "  !! Finished event" << std::endl;
-    // std::cout << std::endl;
+
+    /*
+    std::cout << "  !! Finished event" << std::endl;
+    std::cout << std::endl;
+    */
   } // end of loop in events
 
   /*** Writing tree ***/
@@ -605,6 +617,12 @@ int main(int argc, char **argv) {
   rootFile->Close();
 
   std::cout << "This file has been created: " << outFile << std::endl;
+
+  // measure time
+  end = clock();
+  total = end - begin;
+  time_elapsed = 1000000000*((Double_t)total / CLOCKS_PER_SEC); // ns to s
+  std::cout << time_elapsed << std::endl;
   
   return 0;
 }
@@ -617,12 +635,11 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:dSr:")) != -1)
+  while ((c = getopt(argc, argv, "hd:s:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 't': targetOption = optarg; break;
-    case 'd': simFlag = 0; break;
-    case 'S': simFlag = 1; break;
+    case 'd': simFlag = 0; targetOption = optarg; break;
+    case 's': simFlag = 1; targetOption = optarg; break;
     case 'r': rnOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
@@ -651,14 +668,8 @@ void printUsage() {
   std::cout << "./FilterNCombine -h" << std::endl;
   std::cout << "    prints this message and exits program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -t[D, C, Fe, Pb]" << std::endl;
-  std::cout << "    filters the respective target" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -d" << std::endl;
-  std::cout << "    filters data" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./FilterNCombine -S" << std::endl;
-  std::cout << "    filters sim" << std::endl;
+  std::cout << "./FilterNCombine -[d, s][D, C, Fe, Pb]" << std::endl;
+  std::cout << "    filters the respective target for data (d) or simulations (s)" << std::endl;
   std::cout << std::endl;
   std::cout << "./FilterNCombine -r[run number]" << std::endl;
   std::cout << "    selects run number" << std::endl;
@@ -668,8 +679,8 @@ void printUsage() {
 
 void printOptions() {
   std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << std::endl;
 }

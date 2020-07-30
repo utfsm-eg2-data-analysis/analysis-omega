@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <vector>
+#include <time.h>
 
 #include "TROOT.h"
 #include "TString.h"

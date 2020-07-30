@@ -1377,76 +1377,72 @@ void AssignMixGSIMVariables(Float_t entry, Int_t index) {
 void AssignPi0Variables() {
   // std::cout << "  !! APi0V initiating..." << std::endl;
   // pi0 prev (8)
-  TLorentzVector Gamma1_prev(mPx_prev[0], mPy_prev[0], mPz_prev[0], mE_prev[0]);
-  TLorentzVector Gamma2_prev(mPx_prev[1], mPy_prev[1], mPz_prev[1], mE_prev[1]);
-  TLorentzVector Pi0_prev = Gamma1_prev + Gamma2_prev;
-  pi0Px_prev = Pi0_prev.Px();
-  pi0Py_prev = Pi0_prev.Py();
-  pi0Pz_prev = Pi0_prev.Pz();
-  pi0P2_prev = Pi0_prev.Vect().Mag2();
-  pi0P_prev  = Pi0_prev.Vect().Mag();
-  pi0M_prev  = Pi0_prev.M();
-  pi0E_prev  = Pi0_prev.E();
-  pi0Theta_prev = TMath::RadToDeg()*Gamma1_prev.Vect().Angle(Gamma2_prev.Vect());
+  pi0Px_prev = mPx_prev[0] + mPx_prev[1];
+  pi0Py_prev = mPy_prev[0] + mPy_prev[1];
+  pi0Pz_prev = mPz_prev[0] + mPz_prev[1];
+  pi0P2_prev = pi0Px_prev*pi0Px_prev + pi0Py_prev*pi0Py_prev + pi0Pz_prev*pi0Pz_prev;
+  pi0P_prev  = TMath::Sqrt(pi0P2_prev);
+  pi0E_prev  = mE_prev[0] + mE_prev[1];
+  pi0M_prev  = TMath::Sqrt(pi0E_prev*pi0E_prev - pi0P2_prev);
+  Double_t dot   = mPx_prev[0]*mPx_prev[1] + mPy_prev[0]*mPy_prev[1] + mPz_prev[0]*mPz_prev[1];
+  Double_t mag_0 = TMath::Sqrt(mPx_prev[0]*mPx_prev[0] + mPy_prev[0]*mPy_prev[0] + mPz_prev[0]*mPz_prev[0]);
+  Double_t mag_1 = TMath::Sqrt(mPx_prev[1]*mPx_prev[1] + mPy_prev[1]*mPy_prev[1] + mPz_prev[1]*mPz_prev[1]);
+  pi0Theta_prev = TMath::RadToDeg()*TMath::ACos(dot/(mag_0*mag_1));
   // pi0 true (8)
-  TLorentzVector Gamma1_true(mPx_true[0], mPy_true[0], mPz_true[0], mE_true[0]);
-  TLorentzVector Gamma2_true(mPx_true[1], mPy_true[1], mPz_true[1], mE_true[1]);
-  TLorentzVector Pi0_true = Gamma1_true + Gamma2_true;
-  pi0Px_true = Pi0_true.Px();
-  pi0Py_true = Pi0_true.Py();
-  pi0Pz_true = Pi0_true.Pz();
-  pi0P2_true = Pi0_true.Vect().Mag2();
-  pi0P_true  = Pi0_true.Vect().Mag();
-  pi0M_true  = Pi0_true.M();
-  pi0E_true  = Pi0_true.E();
-  pi0Theta_true = TMath::RadToDeg()*Gamma1_true.Vect().Angle(Gamma2_true.Vect());
+  pi0Px_true = mPx_true[0] + mPx_true[1];
+  pi0Py_true = mPy_true[0] + mPy_true[1];
+  pi0Pz_true = mPz_true[0] + mPz_true[1];
+  pi0P2_true = pi0Px_true*pi0Px_true + pi0Py_true*pi0Py_true + pi0Pz_true*pi0Pz_true;
+  pi0P_true  = TMath::Sqrt(pi0P2_true);
+  pi0E_true  = mE_true[0] + mE_true[1];
+  pi0M_true  = TMath::Sqrt(pi0E_true*pi0E_true - pi0P2_true);
+  dot   = mPx_true[0]*mPx_true[1] + mPy_true[0]*mPy_true[1] + mPz_true[0]*mPz_true[1];
+  mag_0 = TMath::Sqrt(mPx_true[0]*mPx_true[0] + mPy_true[0]*mPy_true[0] + mPz_true[0]*mPz_true[0]);
+  mag_1 = TMath::Sqrt(mPx_true[1]*mPx_true[1] + mPy_true[1]*mPy_true[1] + mPz_true[1]*mPz_true[1]);
+  pi0Theta_true = TMath::RadToDeg()*TMath::ACos(dot/(mag_0*mag_1));
   // pi0 corr (8)
-  TLorentzVector Gamma1_corr(mPx_corr[0], mPy_corr[0], mPz_corr[0], mE_corr[0]);
-  TLorentzVector Gamma2_corr(mPx_corr[1], mPy_corr[1], mPz_corr[1], mE_corr[1]);
-  TLorentzVector Pi0_corr = Gamma1_corr + Gamma2_corr;
-  pi0Px_corr = Pi0_corr.Px();
-  pi0Py_corr = Pi0_corr.Py();
-  pi0Pz_corr = Pi0_corr.Pz();
-  pi0P2_corr = Pi0_corr.Vect().Mag2();
-  pi0P_corr  = Pi0_corr.Vect().Mag();
-  pi0M_corr  = Pi0_corr.M();
-  pi0E_corr  = Pi0_corr.E();
-  pi0Theta_corr = TMath::RadToDeg()*Gamma1_corr.Vect().Angle(Gamma2_corr.Vect());
+  pi0Px_corr = mPx_corr[0] + mPx_corr[1];
+  pi0Py_corr = mPy_corr[0] + mPy_corr[1];
+  pi0Pz_corr = mPz_corr[0] + mPz_corr[1];
+  pi0P2_corr = pi0Px_corr*pi0Px_corr + pi0Py_corr*pi0Py_corr + pi0Pz_corr*pi0Pz_corr;
+  pi0P_corr  = TMath::Sqrt(pi0P2_corr);
+  pi0E_corr  = mE_corr[0] + mE_corr[1];
+  pi0M_corr  = TMath::Sqrt(pi0E_corr*pi0E_corr - pi0P2_corr);
+  dot   = mPx_corr[0]*mPx_corr[1] + mPy_corr[0]*mPy_corr[1] + mPz_corr[0]*mPz_corr[1];
+  mag_0 = TMath::Sqrt(mPx_corr[0]*mPx_corr[0] + mPy_corr[0]*mPy_corr[0] + mPz_corr[0]*mPz_corr[0]);
+  mag_1 = TMath::Sqrt(mPx_corr[1]*mPx_corr[1] + mPy_corr[1]*mPy_corr[1] + mPz_corr[1]*mPz_corr[1]);
+  pi0Theta_corr = TMath::RadToDeg()*TMath::ACos(dot/(mag_0*mag_1));
   // std::cout << "  !! APi0V ready!" << std::endl;
 }
 
 void AssignPi0GSIMVariables() {
   // std::cout << "  !! APi0GV initiating..." << std::endl;
   // pi0 (8)
-  TLorentzVector mc_Gamma1(mc_mPx[0], mc_mPy[0], mc_mPz[0], mc_mE[0]);
-  TLorentzVector mc_Gamma2(mc_mPx[1], mc_mPy[1], mc_mPz[1], mc_mE[1]);
-  TLorentzVector mc_Pi0 = mc_Gamma1 + mc_Gamma2;
-  mc_pi0Px = mc_Pi0.Px();
-  mc_pi0Py = mc_Pi0.Py();
-  mc_pi0Pz = mc_Pi0.Pz();
-  mc_pi0P2 = mc_Pi0.Vect().Mag2();
-  mc_pi0P  = mc_Pi0.Vect().Mag();
-  mc_pi0E  = mc_Pi0.E();
-  mc_pi0M  = mc_Pi0.M();
-  mc_pi0Theta = TMath::RadToDeg()*mc_Gamma1.Vect().Angle(mc_Gamma2.Vect());
+  mc_pi0Px = mc_mPx[0] + mc_mPx[1];
+  mc_pi0Py = mc_mPy[0] + mc_mPy[1];
+  mc_pi0Pz = mc_mPz[0] + mc_mPz[1];
+  mc_pi0P2 = mc_pi0Px*mc_pi0Px + mc_pi0Py*mc_pi0Py + mc_pi0Pz*mc_pi0Pz;
+  mc_pi0P  = TMath::Sqrt(mc_pi0P2);
+  mc_pi0E  = mc_mE[0] + mc_mE[1];
+  mc_pi0M  = TMath::Sqrt(mc_pi0E*mc_pi0E - mc_pi0P2);
+  Double_t dot   = mc_mPx[0]*mc_mPx[1] + mc_mPy[0]*mc_mPy[1] + mc_mPz[0]*mc_mPz[1];
+  Double_t mag_0 = TMath::Sqrt(mc_mPx[0]*mc_mPx[0] + mc_mPy[0]*mc_mPy[0] + mc_mPz[0]*mc_mPz[0]);
+  Double_t mag_1 = TMath::Sqrt(mc_mPx[1]*mc_mPx[1] + mc_mPy[1]*mc_mPy[1] + mc_mPz[1]*mc_mPz[1]);
+  mc_pi0Theta = TMath::RadToDeg()*TMath::ACos(dot/(mag_0*mag_1));
   // std::cout << "  !! APi0GV ready!" << std::endl;
 }
 
 void AssignOmegaVariables() {
   // std::cout << "  !! AomegaV initiating..." << std::endl;
   // omega prev (6+12)
-  TLorentzVector Pi0_prev(pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0E_prev);
-  TLorentzVector Pip_prev(mPx_prev[2], mPy_prev[2], mPz_prev[2], mE_prev[2]);
-  TLorentzVector Pim_prev(mPx_prev[3], mPy_prev[3], mPz_prev[3], mE_prev[3]);
-  TLorentzVector omega_prev = Pi0_prev + Pip_prev + Pim_prev;
-  wPx_prev = omega_prev.Px();
-  wPy_prev = omega_prev.Py();
-  wPz_prev = omega_prev.Pz();
-  wP2_prev = omega_prev.Vect().Mag2();
-  wP_prev  = omega_prev.Vect().Mag();
-  wE_prev  = omega_prev.E();
-  wM_prev  = omega_prev.M();
-  wD_prev  = wM_prev - Pi0_prev.M() + kMpi0;
+  wPx_prev = pi0Px_prev + mPx_prev[2] + mPx_prev[3];
+  wPy_prev = pi0Py_prev + mPy_prev[2] + mPy_prev[3];
+  wPz_prev = pi0Pz_prev + mPz_prev[2] + mPz_prev[3];
+  wP2_prev = wPx_prev*wPx_prev + wPy_prev*wPy_prev + wPz_prev*wPz_prev;
+  wP_prev  = TMath::Sqrt(wP2_prev);
+  wE_prev  = pi0E_prev + mE_prev[2] + mE_prev[3];
+  wM_prev  = TMath::Sqrt(wE_prev*wE_prev - wP2_prev);
+  wD_prev  = wM_prev - pi0M_prev + kMpi0;
   wZ_prev  = wE_prev/mNu;
   wPhiPQ_prev = PhiPQ(wPx_prev, wPy_prev, wPz_prev);
   wThetaPQ_prev = ThetaPQ(wPx_prev, wPy_prev, wPz_prev);
@@ -1458,18 +1454,14 @@ void AssignOmegaVariables() {
   wBettaCalc_prev = BettaCalc(wP_prev, 223);
   wdeltaTheta_prev = DeltaTheta(wPx_prev, wPy_prev, wPz_prev);
   // omega true (6+12)
-  TLorentzVector Pi0_true(pi0Px_true, pi0Py_true, pi0Pz_true, pi0E_true);
-  TLorentzVector Pip_true(mPx_true[2], mPy_true[2], mPz_true[2], mE_true[2]);
-  TLorentzVector Pim_true(mPx_true[3], mPy_true[3], mPz_true[3], mE_true[3]);
-  TLorentzVector omega_true = Pi0_true + Pip_true + Pim_true;
-  wPx_true = omega_true.Px();
-  wPy_true = omega_true.Py();
-  wPz_true = omega_true.Pz();
-  wP2_true = omega_true.Vect().Mag2();
-  wP_true  = omega_true.Vect().Mag();
-  wE_true  = omega_true.E();
-  wM_true  = omega_true.M();
-  wD_true  = wM_true - Pi0_true.M() + kMpi0;
+  wPx_true = pi0Px_true + mPx_true[2] + mPx_true[3];
+  wPy_true = pi0Py_true + mPy_true[2] + mPy_true[3];
+  wPz_true = pi0Pz_true + mPz_true[2] + mPz_true[3];
+  wP2_true = wPx_true*wPx_true + wPy_true*wPy_true + wPz_true*wPz_true;
+  wP_true  = TMath::Sqrt(wP2_true);
+  wE_true  = pi0E_true + mE_true[2] + mE_true[3];
+  wM_true  = TMath::Sqrt(wE_true*wE_true - wP2_true);
+  wD_true  = wM_true - pi0M_true + kMpi0;
   wZ_true  = wE_true/mNu;
   wPhiPQ_true = PhiPQ(wPx_true, wPy_true, wPz_true);
   wThetaPQ_true = ThetaPQ(wPx_true, wPy_true, wPz_true);
@@ -1481,18 +1473,14 @@ void AssignOmegaVariables() {
   wBettaCalc_true = BettaCalc(wP_true, 223);
   wdeltaTheta_true = DeltaTheta(wPx_true, wPy_true, wPz_true);
   // omega corr (6+12)
-  TLorentzVector Pi0_corr(pi0Px_corr, pi0Py_corr, pi0Pz_corr, pi0E_corr);
-  TLorentzVector Pip_corr(mPx_corr[2], mPy_corr[2], mPz_corr[2], mE_corr[2]);
-  TLorentzVector Pim_corr(mPx_corr[3], mPy_corr[3], mPz_corr[3], mE_corr[3]);
-  TLorentzVector omega_corr = Pi0_corr + Pip_corr + Pim_corr;
-  wPx_corr = omega_corr.Px();
-  wPy_corr = omega_corr.Py();
-  wPz_corr = omega_corr.Pz();
-  wP2_corr = omega_corr.Vect().Mag2();
-  wP_corr  = omega_corr.Vect().Mag();
-  wE_corr  = omega_corr.E();
-  wM_corr  = omega_corr.M();
-  wD_corr  = wM_corr - Pi0_corr.M() + kMpi0;
+  wPx_corr = pi0Px_corr + mPx_corr[2] + mPx_corr[3];
+  wPy_corr = pi0Py_corr + mPy_corr[2] + mPy_corr[3];
+  wPz_corr = pi0Pz_corr + mPz_corr[2] + mPz_corr[3];
+  wP2_corr = wPx_corr*wPx_corr + wPy_corr*wPy_corr + wPz_corr*wPz_corr;
+  wP_corr  = TMath::Sqrt(wP2_corr);
+  wE_corr  = pi0E_corr + mE_corr[2] + mE_corr[3];
+  wM_corr  = TMath::Sqrt(wE_corr*wE_corr - wP2_corr);
+  wD_corr  = wM_corr - pi0M_corr + kMpi0;
   wZ_corr  = wE_corr/mNu;
   wPhiPQ_corr = PhiPQ(wPx_corr, wPy_corr, wPz_corr);
   wThetaPQ_corr = ThetaPQ(wPx_corr, wPy_corr, wPz_corr);
@@ -1509,28 +1497,24 @@ void AssignOmegaVariables() {
 void AssignOmegaGSIMVariables() {
   // std::cout << "  !! AomegaGV initiating..." << std::endl;
   // omega (18)
-  TLorentzVector mc_Pi0(mc_pi0Px,  mc_pi0Py,  mc_pi0Pz,  mc_pi0E);
-  TLorentzVector mc_Pip(mc_mPx[2], mc_mPy[2], mc_mPz[2], mc_mE[2]);
-  TLorentzVector mc_Pim(mc_mPx[3], mc_mPy[3], mc_mPz[3], mc_mE[3]);
-  TLorentzVector mc_omega = mc_Pi0 + mc_Pip + mc_Pim;
-  mc_wPx = mc_omega.Px();
-  mc_wPy = mc_omega.Py();
-  mc_wPz = mc_omega.Pz();
-  mc_wP  = mc_omega.Vect().Mag();
-  mc_wP2 = mc_omega.Vect().Mag2();
-  mc_wE  = mc_omega.E();
-  mc_wM  = mc_omega.M();
-  mc_wD  = mc_wM - mc_Pi0.M() + kMpi0;
+  mc_wPx = mc_pi0Px + mc_mPx[2] + mc_mPx[3];
+  mc_wPy = mc_pi0Py + mc_mPy[2] + mc_mPy[3];
+  mc_wPz = mc_pi0Pz + mc_mPz[2] + mc_mPz[3];
+  mc_wP2 = mc_wPx*mc_wPx + mc_wPy*mc_wPy + mc_wPz*mc_wPz;
+  mc_wP  = TMath::Sqrt(mc_wP2);
+  mc_wE  = mc_pi0E + mc_mE[2] + mc_mE[3];
+  mc_wM  = TMath::Sqrt(mc_wE*mc_wE - mc_wP2);
+  mc_wD  = mc_wM - mc_pi0M + kMpi0;
   mc_wZ  = mc_wE/mc_mNu;
-  mc_wThetaPQ = ThetaPQ(mc_wPx, mc_wPy, mc_wPz);
   mc_wPhiPQ = PhiPQ(mc_wPx, mc_wPy, mc_wPz);
-  mc_wPl2 = mc_wP2*mc_wCosThetaPQ*mc_wCosThetaPQ;
+  mc_wThetaPQ = ThetaPQ(mc_wPx, mc_wPy, mc_wPz);
+  mc_wCosThetaPQ = ((kEbeam - mc_mPez)*mc_wPz - mc_mPex*mc_wPx - mc_mPey*mc_wPy)/(TMath::Sqrt(mc_wP2*(mc_mQ2 + mc_mNu*mc_mNu)));
   mc_wPt2 = mc_wP2*(1 - mc_wCosThetaPQ*mc_wCosThetaPQ);
+  mc_wPl2 = mc_wP2*mc_wCosThetaPQ*mc_wCosThetaPQ;
+  mc_wMx2 = mc_mW*mc_mW + mc_wM*mc_wM - 2*mc_wZ*mc_mNu*mc_mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - 2*kMproton*mc_wZ*mc_mNu;
+  mc_wT  = mc_wM*mc_wM - 2*mc_wZ*mNu*mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - mc_mQ2;
   mc_wBettaCalc = BettaCalc(mc_wP, 223);
   mc_wdeltaTheta = DeltaTheta(mc_wPx, mc_wPy, mc_wPz);
-  mc_wT = mc_wM*mc_wM - 2*mc_wZ*mc_mNu*mc_mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - mc_mQ2;
-  mc_wMx2 = mc_mW*mc_mW + mc_wM*mc_wM - 2*mc_wZ*mc_mNu*mc_mNu + 2*TMath::Sqrt(mc_wPl2*(mc_mNu*mc_mNu + mc_mQ2)) - 2*kMproton*mc_wZ*mc_mNu;
-  mc_wCosThetaPQ = ((kEbeam - mc_mPez)*mc_wPz - mc_mPex*mc_wPx - mc_mPey*mc_wPy)/(TMath::Sqrt(mc_wP2*(mc_mQ2 + mc_mNu*mc_mNu)));
   // std::cout << "  !! AomegaGV ready!" << std::endl;
 }
 
