@@ -7,4 +7,4 @@ inputOption=
 tarName=
 rn=
 
-./FilterNCombine -t${tarName} ${inputOption} -r${rn}
+./FilterNCombine${inputOption} -t${tarName} -r${rn}

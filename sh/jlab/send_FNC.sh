@@ -68,10 +68,10 @@ if [[ "${setOption}" == "data" ]]; then
     elif [[ ${tarName} = "Pb" ]]; then
 	rnlist=${PRODIR}/include/Pb-thinD2rn.txt
     fi
-    inputOption="-d"
+    inputOption="_data"
     nfiles=$(wc -l < ${rnlist})
 else
-    inputOption="-S"
+    inputOption="_sim"
     nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
 

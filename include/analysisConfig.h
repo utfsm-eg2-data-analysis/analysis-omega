@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <vector>
-#include <time.h>
+#include <chrono>
 
 #include "TROOT.h"
 #include "TString.h"
@@ -42,6 +42,8 @@
 #include "TParticlePDG.h"
 #include "TNtuple.h"
 #include "TLorentzVector.h"
+
+using Clock=std::chrono::high_resolution_clock;
 
 /*** Global variables ***/
 

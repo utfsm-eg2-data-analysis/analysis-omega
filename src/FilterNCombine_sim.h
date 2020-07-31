@@ -6,7 +6,7 @@ extern Float_t kEbeam;
 
 /*** Input variables ***/
 
-// (83 variables for data/simrec)
+// (83 variables for simrec)
 // electron (40)
 extern Float_t tQ2, tW, tNu, tXb, tYb, tvxe, tvye, tvze, tSectorEl, tTargType, tPex, tPey, tPez, tPe, tBettaEl, tEtote, tEine, tEoute, tvxec, tvyec, tvzec, tXECe, tYECe, tZECe;
 extern Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tNpheEl, tChi2CCEl, tStatusEl;
@@ -23,7 +23,7 @@ extern Float_t mc_tZh, mc_tThetaPQ, mc_tPt2, mc_tPl2, mc_tPhiPQ, mc_tMx2, mc_tT,
 
 /*** Output/original variables ***/
 
-// (101 variables for data/simrec)
+// (101 variables for simrec)
 // electron (41)
 extern Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 extern Float_t oP2e;
@@ -49,7 +49,7 @@ extern Float_t mc_oZ, mc_oThetaPQ, mc_oPt2, mc_oPl2, mc_oPhiPQ, mc_oMx2, mc_oT, 
 
 /*** Output/mix variables ***/
 
-// (194 variables for data/simrec)
+// (194 variables for simrec)
 // electron (41)
 extern Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 extern Float_t mP2e;
@@ -102,11 +102,6 @@ extern Float_t mc_pimpi0P, mc_pimpi0E, mc_pimpi0M;
 // number of particles (3)
 extern Float_t mc_nPip, mc_nPim, mc_nGamma;
 
-/*** Options ***/
-
-extern Int_t simFlag;
-extern TString analyserOption;
-
 /*** Declaration of functions ***/
 
 Float_t ParticleMass(Float_t fPid);
@@ -120,7 +115,6 @@ Float_t BettaCalc(Float_t fP, Float_t fPid);
 /*** Functions ***/
 
 void SetInputBranches(TChain *chain) {
-  // (uses simFlag as global var)
   // init all variables
   chain->SetBranchStatus("*", 1);
   // electron (40)
@@ -212,49 +206,46 @@ void SetInputBranches(TChain *chain) {
   // evnt related (1)
   chain->SetBranchAddress("evnt", &tevnt);
   // (34 variables for gsim)
-  if (simFlag) {
-    // electron (15)
-    chain->SetBranchAddress("mc_Q2", &mc_tQ2);
-    chain->SetBranchAddress("mc_W", &mc_tW);
-    chain->SetBranchAddress("mc_Nu", &mc_tNu);
-    chain->SetBranchAddress("mc_Xb", &mc_tXb);
-    chain->SetBranchAddress("mc_Yb", &mc_tYb);
-    chain->SetBranchAddress("mc_vxe", &mc_tvxe);
-    chain->SetBranchAddress("mc_vye", &mc_tvye);
-    chain->SetBranchAddress("mc_vze", &mc_tvze);
-    chain->SetBranchAddress("mc_SectorEl", &mc_tSectorEl);
-    chain->SetBranchAddress("mc_TargType", &mc_tTargType);
-    chain->SetBranchAddress("mc_Pex", &mc_tPex);
-    chain->SetBranchAddress("mc_Pey", &mc_tPey);
-    chain->SetBranchAddress("mc_Pez", &mc_tPez);
-    chain->SetBranchAddress("mc_Pe", &mc_tPe);
-    chain->SetBranchAddress("mc_BettaEl", &mc_tBettaEl);
-    // particle (19)
-    chain->SetBranchAddress("mc_Zh", &mc_tZh);
-    chain->SetBranchAddress("mc_ThetaPQ", &mc_tThetaPQ);
-    chain->SetBranchAddress("mc_Pt2", &mc_tPt2);
-    chain->SetBranchAddress("mc_Pl2", &mc_tPl2);
-    chain->SetBranchAddress("mc_PhiPQ", &mc_tPhiPQ);
-    chain->SetBranchAddress("mc_Mx2", &mc_tMx2);
-    chain->SetBranchAddress("mc_T", &mc_tT);
-    chain->SetBranchAddress("mc_vxh", &mc_tvxh);
-    chain->SetBranchAddress("mc_vyh", &mc_tvyh);
-    chain->SetBranchAddress("mc_vzh", &mc_tvzh);
-    chain->SetBranchAddress("mc_Sector", &mc_tSector);
-    chain->SetBranchAddress("mc_Px", &mc_tPx);
-    chain->SetBranchAddress("mc_Py", &mc_tPy);
-    chain->SetBranchAddress("mc_Pz", &mc_tPz);
-    chain->SetBranchAddress("mc_P", &mc_tP);
-    chain->SetBranchAddress("mc_Betta", &mc_tBetta);
-    chain->SetBranchAddress("mc_Mass2", &mc_tMass2);
-    chain->SetBranchAddress("mc_pid", &mc_tpid);
-    chain->SetBranchAddress("mc_deltaZ", &mc_tdeltaZ);
-    // std::cout << "  !! SIB simflag ready!" << std::endl;
-  }
+  // electron (15)
+  chain->SetBranchAddress("mc_Q2", &mc_tQ2);
+  chain->SetBranchAddress("mc_W", &mc_tW);
+  chain->SetBranchAddress("mc_Nu", &mc_tNu);
+  chain->SetBranchAddress("mc_Xb", &mc_tXb);
+  chain->SetBranchAddress("mc_Yb", &mc_tYb);
+  chain->SetBranchAddress("mc_vxe", &mc_tvxe);
+  chain->SetBranchAddress("mc_vye", &mc_tvye);
+  chain->SetBranchAddress("mc_vze", &mc_tvze);
+  chain->SetBranchAddress("mc_SectorEl", &mc_tSectorEl);
+  chain->SetBranchAddress("mc_TargType", &mc_tTargType);
+  chain->SetBranchAddress("mc_Pex", &mc_tPex);
+  chain->SetBranchAddress("mc_Pey", &mc_tPey);
+  chain->SetBranchAddress("mc_Pez", &mc_tPez);
+  chain->SetBranchAddress("mc_Pe", &mc_tPe);
+  chain->SetBranchAddress("mc_BettaEl", &mc_tBettaEl);
+  // particle (19)
+  chain->SetBranchAddress("mc_Zh", &mc_tZh);
+  chain->SetBranchAddress("mc_ThetaPQ", &mc_tThetaPQ);
+  chain->SetBranchAddress("mc_Pt2", &mc_tPt2);
+  chain->SetBranchAddress("mc_Pl2", &mc_tPl2);
+  chain->SetBranchAddress("mc_PhiPQ", &mc_tPhiPQ);
+  chain->SetBranchAddress("mc_Mx2", &mc_tMx2);
+  chain->SetBranchAddress("mc_T", &mc_tT);
+  chain->SetBranchAddress("mc_vxh", &mc_tvxh);
+  chain->SetBranchAddress("mc_vyh", &mc_tvyh);
+  chain->SetBranchAddress("mc_vzh", &mc_tvzh);
+  chain->SetBranchAddress("mc_Sector", &mc_tSector);
+  chain->SetBranchAddress("mc_Px", &mc_tPx);
+  chain->SetBranchAddress("mc_Py", &mc_tPy);
+  chain->SetBranchAddress("mc_Pz", &mc_tPz);
+  chain->SetBranchAddress("mc_P", &mc_tP);
+  chain->SetBranchAddress("mc_Betta", &mc_tBetta);
+  chain->SetBranchAddress("mc_Mass2", &mc_tMass2);
+  chain->SetBranchAddress("mc_pid", &mc_tpid);
+  chain->SetBranchAddress("mc_deltaZ", &mc_tdeltaZ);
+  // std::cout << "  !! SIB ready!" << std::endl;
 }
 
 void SetOutputBranches(TTree *tree, TString option) {
-  // (uses simFlag as global var)
   if (option == "original") {
     // electron (41)
     // all (25)
@@ -369,52 +360,50 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("Event", &oEvent);
     tree->Branch("Entry", &oEntry);
     // (41 variables for gsim)
-    if (simFlag) {
-      // electron (16)
-      tree->Branch("mc_Q2", &mc_oQ2);
-      tree->Branch("mc_W", &mc_oW);
-      tree->Branch("mc_Nu", &mc_oNu);
-      tree->Branch("mc_Xb", &mc_oXb);
-      tree->Branch("mc_Yb", &mc_oYb);
-      tree->Branch("mc_Xe", &mc_oXe);
-      tree->Branch("mc_Ye", &mc_oYe);
-      tree->Branch("mc_Ze", &mc_oZe);
-      tree->Branch("mc_SectorEl", &mc_oSectorEl);
-      tree->Branch("mc_TargType", &mc_oTargType);
-      tree->Branch("mc_Pex", &mc_oPex);
-      tree->Branch("mc_Pey", &mc_oPey);
-      tree->Branch("mc_Pez", &mc_oPez);
-      tree->Branch("mc_Pe", &mc_oPe);
-      tree->Branch("mc_BettaEl", &mc_oBettaEl);
-      tree->Branch("mc_P2e", &mc_oP2e);
-      // particle (25)
-      tree->Branch("mc_vxh", &mc_ovxh);
-      tree->Branch("mc_vyh", &mc_ovyh);
-      tree->Branch("mc_vzh", &mc_ovzh);
-      tree->Branch("mc_Sector", &mc_oSector);
-      tree->Branch("mc_Betta", &mc_oBetta);
-      tree->Branch("mc_Mass2", &mc_oMass2);
-      tree->Branch("mc_Pid", &mc_oPid);
-      tree->Branch("mc_deltaZ", &mc_odeltaZ);
-      tree->Branch("mc_M", &mc_oM);
-      tree->Branch("mc_E", &mc_oE);
-      tree->Branch("mc_Px", &mc_oPx);
-      tree->Branch("mc_Py", &mc_oPy);
-      tree->Branch("mc_Pz", &mc_oPz);
-      tree->Branch("mc_P2", &mc_oP2);
-      tree->Branch("mc_P", &mc_oP);
-      tree->Branch("mc_Z", &mc_oZ);
-      tree->Branch("mc_ThetaPQ", &mc_oThetaPQ);
-      tree->Branch("mc_Pt2", &mc_oPt2);
-      tree->Branch("mc_Pl2", &mc_oPl2);
-      tree->Branch("mc_PhiPQ", &mc_oPhiPQ);
-      tree->Branch("mc_Mx2", &mc_oMx2);
-      tree->Branch("mc_T", &mc_oT);
-      tree->Branch("mc_CosThetaPQ", &mc_oCosThetaPQ);
-      tree->Branch("mc_BettaCalc", &mc_oBettaCalc);
-      tree->Branch("mc_deltaTheta", &mc_odeltaTheta);
-      // std::cout << "  !! SOB orig simflag ready!" << std::endl;
-    }
+    // electron (16)
+    tree->Branch("mc_Q2", &mc_oQ2);
+    tree->Branch("mc_W", &mc_oW);
+    tree->Branch("mc_Nu", &mc_oNu);
+    tree->Branch("mc_Xb", &mc_oXb);
+    tree->Branch("mc_Yb", &mc_oYb);
+    tree->Branch("mc_Xe", &mc_oXe);
+    tree->Branch("mc_Ye", &mc_oYe);
+    tree->Branch("mc_Ze", &mc_oZe);
+    tree->Branch("mc_SectorEl", &mc_oSectorEl);
+    tree->Branch("mc_TargType", &mc_oTargType);
+    tree->Branch("mc_Pex", &mc_oPex);
+    tree->Branch("mc_Pey", &mc_oPey);
+    tree->Branch("mc_Pez", &mc_oPez);
+    tree->Branch("mc_Pe", &mc_oPe);
+    tree->Branch("mc_BettaEl", &mc_oBettaEl);
+    tree->Branch("mc_P2e", &mc_oP2e);
+    // particle (25)
+    tree->Branch("mc_vxh", &mc_ovxh);
+    tree->Branch("mc_vyh", &mc_ovyh);
+    tree->Branch("mc_vzh", &mc_ovzh);
+    tree->Branch("mc_Sector", &mc_oSector);
+    tree->Branch("mc_Betta", &mc_oBetta);
+    tree->Branch("mc_Mass2", &mc_oMass2);
+    tree->Branch("mc_Pid", &mc_oPid);
+    tree->Branch("mc_deltaZ", &mc_odeltaZ);
+    tree->Branch("mc_M", &mc_oM);
+    tree->Branch("mc_E", &mc_oE);
+    tree->Branch("mc_Px", &mc_oPx);
+    tree->Branch("mc_Py", &mc_oPy);
+    tree->Branch("mc_Pz", &mc_oPz);
+    tree->Branch("mc_P2", &mc_oP2);
+    tree->Branch("mc_P", &mc_oP);
+    tree->Branch("mc_Z", &mc_oZ);
+    tree->Branch("mc_ThetaPQ", &mc_oThetaPQ);
+    tree->Branch("mc_Pt2", &mc_oPt2);
+    tree->Branch("mc_Pl2", &mc_oPl2);
+    tree->Branch("mc_PhiPQ", &mc_oPhiPQ);
+    tree->Branch("mc_Mx2", &mc_oMx2);
+    tree->Branch("mc_T", &mc_oT);
+    tree->Branch("mc_CosThetaPQ", &mc_oCosThetaPQ);
+    tree->Branch("mc_BettaCalc", &mc_oBettaCalc);
+    tree->Branch("mc_deltaTheta", &mc_odeltaTheta);
+    // std::cout << "  !! SOB orig ready!" << std::endl;
   } else if (option == "mix") {
     // electron (41)
     tree->Branch("Q2", &mQ2);
@@ -626,98 +615,95 @@ void SetOutputBranches(TTree *tree, TString option) {
     tree->Branch("Entry", &mEntry, "Entry[4]/F");
     tree->Branch("Event", &mEvent);
     // (72 variables for gsim)
-    if (simFlag) {
-      // electron (16)
-      tree->Branch("mc_Q2", &mc_mQ2);
-      tree->Branch("mc_W", &mc_mW);
-      tree->Branch("mc_Nu", &mc_mNu);
-      tree->Branch("mc_Xb", &mc_mXb);
-      tree->Branch("mc_Yb", &mc_mYb);
-      tree->Branch("mc_Xe", &mc_mXe);
-      tree->Branch("mc_Ye", &mc_mYe);
-      tree->Branch("mc_Ze", &mc_mZe);
-      tree->Branch("mc_SectorEl", &mc_mSectorEl);
-      tree->Branch("mc_TargType", &mc_mTargType);
-      tree->Branch("mc_Pex", &mc_mPex);
-      tree->Branch("mc_Pey", &mc_mPey);
-      tree->Branch("mc_Pez", &mc_mPez);
-      tree->Branch("mc_Pe", &mc_mPe);
-      tree->Branch("mc_BettaEl", &mc_mBettaEl);
-      tree->Branch("mc_P2e", &mc_mP2e);
-      // particle (25)
-      tree->Branch("mc_vxh", &mc_mvxh, "mc_vxh[4]/F");
-      tree->Branch("mc_vyh", &mc_mvyh, "mc_vyh[4]/F");
-      tree->Branch("mc_vzh", &mc_mvzh, "mc_vzh[4]/F");
-      tree->Branch("mc_Sector", &mc_mSector, "mc_Sector[4]/F");
-      tree->Branch("mc_Betta", &mc_mBetta, "mc_Betta[4]/F");
-      tree->Branch("mc_Mass2", &mc_mMass2, "mc_Mass2[4]/F");
-      tree->Branch("mc_Pid", &mc_mPid, "mc_Pid[4]/F");
-      tree->Branch("mc_deltaZ", &mc_mdeltaZ, "mc_deltaZ[4]/F");
-      tree->Branch("mc_M", &mc_mM, "mc_M[4]/F");
-      tree->Branch("mc_E", &mc_mE, "mc_E[4]/F");
-      tree->Branch("mc_Px", &mc_mPx, "mc_Px[4]/F");
-      tree->Branch("mc_Py", &mc_mPy, "mc_Py[4]/F");
-      tree->Branch("mc_Pz", &mc_mPz, "mc_Pz[4]/F");
-      tree->Branch("mc_P2", &mc_mP2, "mc_P2[4]/F");
-      tree->Branch("mc_P", &mc_mP, "mc_P[4]/F");
-      tree->Branch("mc_Z", &mc_mZ, "mc_Z[4]/F");
-      tree->Branch("mc_ThetaPQ", &mc_mThetaPQ, "mc_ThetaPQ[4]/F");
-      tree->Branch("mc_Pt2", &mc_mPt2, "mc_Pt2[4]/F");
-      tree->Branch("mc_Pl2", &mc_mPl2, "mc_Pl2[4]/F");
-      tree->Branch("mc_PhiPQ", &mc_mPhiPQ, "mc_PhiPQ[4]/F");
-      tree->Branch("mc_Mx2", &mc_mMx2, "mc_Mx2[4]/F");
-      tree->Branch("mc_T", &mc_mT, "mc_T[4]/F");
-      tree->Branch("mc_CosThetaPQ", &mc_mCosThetaPQ, "mc_CosThetaPQ[4]/F");
-      tree->Branch("mc_BettaCalc", &mc_mBettaCalc, "mc_BettaCalc[4]/F");
-      tree->Branch("mc_deltaTheta", &mc_mdeltaTheta, "mc_deltaTheta[4]/F");
-      // pi0 (8)
-      tree->Branch("mc_pi0Px", &mc_pi0Px);
-      tree->Branch("mc_pi0Py", &mc_pi0Py);
-      tree->Branch("mc_pi0Pz", &mc_pi0Pz);
-      tree->Branch("mc_pi0P2", &mc_pi0P2);
-      tree->Branch("mc_pi0P", &mc_pi0P);
-      tree->Branch("mc_pi0E", &mc_pi0E);
-      tree->Branch("mc_pi0M", &mc_pi0M);
-      tree->Branch("mc_pi0Theta", &mc_pi0Theta);
-      // omega (18)
-      tree->Branch("mc_wPx", &mc_wPx);
-      tree->Branch("mc_wPy", &mc_wPy);
-      tree->Branch("mc_wPz", &mc_wPz);
-      tree->Branch("mc_wP", &mc_wP);
-      tree->Branch("mc_wP2", &mc_wP2);
-      tree->Branch("mc_wE", &mc_wE);
-      tree->Branch("mc_wZ", &mc_wZ);
-      tree->Branch("mc_wCosThetaPQ", &mc_wCosThetaPQ);
-      tree->Branch("mc_wThetaPQ", &mc_wThetaPQ);
-      tree->Branch("mc_wPt2", &mc_wPt2);
-      tree->Branch("mc_wPl2", &mc_wPl2);
-      tree->Branch("mc_wPhiPQ", &mc_wPhiPQ);
-      tree->Branch("mc_wMx2", &mc_wMx2);
-      tree->Branch("mc_wT", &mc_wT);
-      tree->Branch("mc_wBettaCalc", &mc_wBettaCalc);
-      tree->Branch("mc_wdeltaTheta", &mc_wdeltaTheta);
-      tree->Branch("mc_wD", &mc_wD);
-      tree->Branch("mc_wM", &mc_wM);
-      // crossed terms (9)
-      tree->Branch("mc_pippimP", &mc_pippimP);
-      tree->Branch("mc_pippimE", &mc_pippimE);
-      tree->Branch("mc_pippimM", &mc_pippimM);
-      tree->Branch("mc_pippi0P", &mc_pippi0P);
-      tree->Branch("mc_pippi0E", &mc_pippi0E);
-      tree->Branch("mc_pippi0M", &mc_pippi0M);
-      tree->Branch("mc_pimpi0P", &mc_pimpi0P);
-      tree->Branch("mc_pimpi0E", &mc_pimpi0E);
-      tree->Branch("mc_pimpi0M", &mc_pimpi0M);
-      // number of particles (3)
-      tree->Branch("mc_nPip", &mc_nPip);
-      tree->Branch("mc_nPim", &mc_nPim);
-      tree->Branch("mc_nGamma", &mc_nGamma);
-    }
+    // electron (16)
+    tree->Branch("mc_Q2", &mc_mQ2);
+    tree->Branch("mc_W", &mc_mW);
+    tree->Branch("mc_Nu", &mc_mNu);
+    tree->Branch("mc_Xb", &mc_mXb);
+    tree->Branch("mc_Yb", &mc_mYb);
+    tree->Branch("mc_Xe", &mc_mXe);
+    tree->Branch("mc_Ye", &mc_mYe);
+    tree->Branch("mc_Ze", &mc_mZe);
+    tree->Branch("mc_SectorEl", &mc_mSectorEl);
+    tree->Branch("mc_TargType", &mc_mTargType);
+    tree->Branch("mc_Pex", &mc_mPex);
+    tree->Branch("mc_Pey", &mc_mPey);
+    tree->Branch("mc_Pez", &mc_mPez);
+    tree->Branch("mc_Pe", &mc_mPe);
+    tree->Branch("mc_BettaEl", &mc_mBettaEl);
+    tree->Branch("mc_P2e", &mc_mP2e);
+    // particle (25)
+    tree->Branch("mc_vxh", &mc_mvxh, "mc_vxh[4]/F");
+    tree->Branch("mc_vyh", &mc_mvyh, "mc_vyh[4]/F");
+    tree->Branch("mc_vzh", &mc_mvzh, "mc_vzh[4]/F");
+    tree->Branch("mc_Sector", &mc_mSector, "mc_Sector[4]/F");
+    tree->Branch("mc_Betta", &mc_mBetta, "mc_Betta[4]/F");
+    tree->Branch("mc_Mass2", &mc_mMass2, "mc_Mass2[4]/F");
+    tree->Branch("mc_Pid", &mc_mPid, "mc_Pid[4]/F");
+    tree->Branch("mc_deltaZ", &mc_mdeltaZ, "mc_deltaZ[4]/F");
+    tree->Branch("mc_M", &mc_mM, "mc_M[4]/F");
+    tree->Branch("mc_E", &mc_mE, "mc_E[4]/F");
+    tree->Branch("mc_Px", &mc_mPx, "mc_Px[4]/F");
+    tree->Branch("mc_Py", &mc_mPy, "mc_Py[4]/F");
+    tree->Branch("mc_Pz", &mc_mPz, "mc_Pz[4]/F");
+    tree->Branch("mc_P2", &mc_mP2, "mc_P2[4]/F");
+    tree->Branch("mc_P", &mc_mP, "mc_P[4]/F");
+    tree->Branch("mc_Z", &mc_mZ, "mc_Z[4]/F");
+    tree->Branch("mc_ThetaPQ", &mc_mThetaPQ, "mc_ThetaPQ[4]/F");
+    tree->Branch("mc_Pt2", &mc_mPt2, "mc_Pt2[4]/F");
+    tree->Branch("mc_Pl2", &mc_mPl2, "mc_Pl2[4]/F");
+    tree->Branch("mc_PhiPQ", &mc_mPhiPQ, "mc_PhiPQ[4]/F");
+    tree->Branch("mc_Mx2", &mc_mMx2, "mc_Mx2[4]/F");
+    tree->Branch("mc_T", &mc_mT, "mc_T[4]/F");
+    tree->Branch("mc_CosThetaPQ", &mc_mCosThetaPQ, "mc_CosThetaPQ[4]/F");
+    tree->Branch("mc_BettaCalc", &mc_mBettaCalc, "mc_BettaCalc[4]/F");
+    tree->Branch("mc_deltaTheta", &mc_mdeltaTheta, "mc_deltaTheta[4]/F");
+    // pi0 (8)
+    tree->Branch("mc_pi0Px", &mc_pi0Px);
+    tree->Branch("mc_pi0Py", &mc_pi0Py);
+    tree->Branch("mc_pi0Pz", &mc_pi0Pz);
+    tree->Branch("mc_pi0P2", &mc_pi0P2);
+    tree->Branch("mc_pi0P", &mc_pi0P);
+    tree->Branch("mc_pi0E", &mc_pi0E);
+    tree->Branch("mc_pi0M", &mc_pi0M);
+    tree->Branch("mc_pi0Theta", &mc_pi0Theta);
+    // omega (18)
+    tree->Branch("mc_wPx", &mc_wPx);
+    tree->Branch("mc_wPy", &mc_wPy);
+    tree->Branch("mc_wPz", &mc_wPz);
+    tree->Branch("mc_wP", &mc_wP);
+    tree->Branch("mc_wP2", &mc_wP2);
+    tree->Branch("mc_wE", &mc_wE);
+    tree->Branch("mc_wZ", &mc_wZ);
+    tree->Branch("mc_wCosThetaPQ", &mc_wCosThetaPQ);
+    tree->Branch("mc_wThetaPQ", &mc_wThetaPQ);
+    tree->Branch("mc_wPt2", &mc_wPt2);
+    tree->Branch("mc_wPl2", &mc_wPl2);
+    tree->Branch("mc_wPhiPQ", &mc_wPhiPQ);
+    tree->Branch("mc_wMx2", &mc_wMx2);
+    tree->Branch("mc_wT", &mc_wT);
+    tree->Branch("mc_wBettaCalc", &mc_wBettaCalc);
+    tree->Branch("mc_wdeltaTheta", &mc_wdeltaTheta);
+    tree->Branch("mc_wD", &mc_wD);
+    tree->Branch("mc_wM", &mc_wM);
+    // crossed terms (9)
+    tree->Branch("mc_pippimP", &mc_pippimP);
+    tree->Branch("mc_pippimE", &mc_pippimE);
+    tree->Branch("mc_pippimM", &mc_pippimM);
+    tree->Branch("mc_pippi0P", &mc_pippi0P);
+    tree->Branch("mc_pippi0E", &mc_pippi0E);
+    tree->Branch("mc_pippi0M", &mc_pippi0M);
+    tree->Branch("mc_pimpi0P", &mc_pimpi0P);
+    tree->Branch("mc_pimpi0E", &mc_pimpi0E);
+    tree->Branch("mc_pimpi0M", &mc_pimpi0M);
+    // number of particles (3)
+    tree->Branch("mc_nPip", &mc_nPip);
+    tree->Branch("mc_nPim", &mc_nPim);
+    tree->Branch("mc_nGamma", &mc_nGamma);
   }
 }
 
 void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
-  // (uses simFlag as global var)
   // std::cout << "  !! AOV initiating..." << std::endl;
   if (nCombInSimrec) {
     // electron (41)
@@ -943,52 +929,50 @@ void AssignOriginalVariables(Int_t entry, Int_t nCombInSimrec) {
   oEvent = tevnt; // important!
   oEntry = (Float_t) entry;
   // gsim vars
-  if (simFlag) {
-    // electron (16)
-    mc_oQ2 = mc_tQ2;
-    mc_oW  = mc_tW;
-    mc_oNu = mc_tNu;
-    mc_oXb = mc_tXb;
-    mc_oYb = mc_tYb;
-    mc_oXe = mc_tvxe;
-    mc_oYe = mc_tvye;
-    mc_oZe = mc_tvze;
-    mc_oSectorEl = mc_tSectorEl;
-    mc_oTargType = mc_tTargType;
-    mc_oPex = mc_tPex;
-    mc_oPey = mc_tPey;
-    mc_oPez = mc_tPez;
-    mc_oPe  = mc_tPe;
-    mc_oBettaEl = mc_tBettaEl;
-    mc_oP2e = mc_oPe*mc_oPe; // recalc
-    // particle (25)
-    mc_ovxh = mc_tvxh;
-    mc_ovyh = mc_tvyh;
-    mc_ovzh = mc_tvzh;
-    mc_oSector = mc_tSector;
-    mc_oBetta = mc_tBetta;
-    mc_oMass2 = mc_tMass2;
-    mc_oPid = mc_tpid; // important!
-    mc_odeltaZ = mc_tdeltaZ;
-    mc_oPx = mc_tPx;
-    mc_oPy = mc_tPy;
-    mc_oPz = mc_tPz;
-    mc_oP = mc_tP;
-    mc_oZ = mc_tZh;
-    mc_oThetaPQ = mc_tThetaPQ;
-    mc_oPt2 = mc_tPt2;
-    mc_oPl2 = mc_tPl2;
-    mc_oPhiPQ = mc_tPhiPQ;
-    mc_oMx2 = mc_tMx2;
-    mc_oT = mc_tT;
-    mc_oP2 = mc_oP*mc_oP; // recalc
-    mc_oM  = ParticleMass(mc_oPid); // recalc
-    mc_oE  = TMath::Sqrt(mc_oP2 + mc_oM*mc_oM); // recalc
-    mc_oCosThetaPQ = ((kEbeam - mc_oPez)*mc_oPz - mc_oPex*mc_oPx - mc_oPey*mc_oPy)/(TMath::Sqrt(mc_oP2*(mc_oQ2 + mc_oNu*mc_oNu))); // recalc
-    mc_oBettaCalc  = BettaCalc(mc_oP, mc_oPid); // recalc
-    mc_odeltaTheta = DeltaTheta(mc_oPx, mc_oPy, mc_oPz); // recalc
-    // std::cout << "  !! AOV simflag ready" << std::endl;
-  }
+  // electron (16)
+  mc_oQ2 = mc_tQ2;
+  mc_oW  = mc_tW;
+  mc_oNu = mc_tNu;
+  mc_oXb = mc_tXb;
+  mc_oYb = mc_tYb;
+  mc_oXe = mc_tvxe;
+  mc_oYe = mc_tvye;
+  mc_oZe = mc_tvze;
+  mc_oSectorEl = mc_tSectorEl;
+  mc_oTargType = mc_tTargType;
+  mc_oPex = mc_tPex;
+  mc_oPey = mc_tPey;
+  mc_oPez = mc_tPez;
+  mc_oPe  = mc_tPe;
+  mc_oBettaEl = mc_tBettaEl;
+  mc_oP2e = mc_oPe*mc_oPe; // recalc
+  // particle (25)
+  mc_ovxh = mc_tvxh;
+  mc_ovyh = mc_tvyh;
+  mc_ovzh = mc_tvzh;
+  mc_oSector = mc_tSector;
+  mc_oBetta = mc_tBetta;
+  mc_oMass2 = mc_tMass2;
+  mc_oPid = mc_tpid; // important!
+  mc_odeltaZ = mc_tdeltaZ;
+  mc_oPx = mc_tPx;
+  mc_oPy = mc_tPy;
+  mc_oPz = mc_tPz;
+  mc_oP = mc_tP;
+  mc_oZ = mc_tZh;
+  mc_oThetaPQ = mc_tThetaPQ;
+  mc_oPt2 = mc_tPt2;
+  mc_oPl2 = mc_tPl2;
+  mc_oPhiPQ = mc_tPhiPQ;
+  mc_oMx2 = mc_tMx2;
+  mc_oT = mc_tT;
+  mc_oP2 = mc_oP*mc_oP; // recalc
+  mc_oM  = ParticleMass(mc_oPid); // recalc
+  mc_oE  = TMath::Sqrt(mc_oP2 + mc_oM*mc_oM); // recalc
+  mc_oCosThetaPQ = ((kEbeam - mc_oPez)*mc_oPz - mc_oPex*mc_oPx - mc_oPey*mc_oPy)/(TMath::Sqrt(mc_oP2*(mc_oQ2 + mc_oNu*mc_oNu))); // recalc
+  mc_oBettaCalc  = BettaCalc(mc_oP, mc_oPid); // recalc
+  mc_odeltaTheta = DeltaTheta(mc_oPx, mc_oPy, mc_oPz); // recalc
+  // std::cout << "  !! AOV ready" << std::endl;
 }
 
 void NullMixSIMRECVariables(Int_t index) {
@@ -1566,7 +1550,7 @@ Float_t ParticleMass(Float_t fPid) {
 }
 
 Float_t CorrectEnergy(TString option) {
-  // (global variables: tEtot, tEin, tEout, tpid, tP, analyserOption)
+  // (global variables: tEtot, tEin, tEout, tpid, tP)
   
   // for charged pions, assign energy from measured momentum and pdg mass
   // for gammas, there are 3 options
@@ -1581,22 +1565,10 @@ Float_t CorrectEnergy(TString option) {
     if (option == "prev") {
       fE = tP;
     } else if (option == "true") {
-      if (analyserOption == "C" || analyserOption == "Fe" || analyserOption == "Pb") {
-	fE = TMath::Max(tEtot, tEin+tEout)/0.272;
-      } else if (analyserOption == "Sim") {
-	fE = TMath::Max(tEtot, tEin+tEout)/0.2806; // primitive sampling fraction factor for sim
-      }
+      fE = TMath::Max(tEtot, tEin+tEout)/0.2806; // primitive sampling fraction factor for sim
     } else if (option == "corr") {
-      if (analyserOption == "C" || analyserOption == "Pb") {
-	fE = TMath::Max(tEtot, tEin+tEout)/0.272;
-	corrFactor = 1.129 - 0.05793/fE - 1.0773e-12/(fE*fE);
-      } else if (analyserOption == "Fe") {
-	fE = TMath::Max(tEtot, tEin+tEout)/0.272;
-	corrFactor = 1.116 - 0.09213/fE + 0.01007/(fE*fE);
-      } else if (analyserOption == "Sim") {
-	fE = TMath::Max(tEtot, tEin+tEout)/0.2806;
-	corrFactor = 1.000 + 0.005/fE - 0.0052/(fE*fE);
-      }
+      fE = TMath::Max(tEtot, tEin+tEout)/0.2806;
+      corrFactor = 1.000 + 0.005/fE - 0.0052/(fE*fE);
       // finally
       fE = fE/corrFactor;
     } // end of option condition

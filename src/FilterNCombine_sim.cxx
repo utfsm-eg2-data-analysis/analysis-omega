@@ -1,11 +1,13 @@
 /*****************************************/
-/*  FilterNCombine.cxx                   */
+/*  FilterNCombine_sim.cxx               */
 /*                                       */
 /*  Andrés Bórquez                       */
 /*                                       */
 /*****************************************/
 
-#include "FilterNCombine.h"
+// Exclusive for Simulations
+
+#include "FilterNCombine_sim.h"
 
 /*** Constants ***/
 
@@ -15,7 +17,7 @@ Float_t kEbeam = 5.014;
 
 /*** Input variables ***/
 
-// (83 variables for data/simrec)
+// (83 variables for simrec)
 // electron (40)
 Float_t tQ2, tW, tNu, tXb, tYb, tvxe, tvye, tvze, tSectorEl, tTargType, tPex, tPey, tPez, tPe, tBettaEl, tEtote, tEine, tEoute, tvxec, tvyec, tvzec, tXECe, tYECe, tZECe;
 Float_t tStatDCEl, tDCStatusEl, tStatECEl, tECStatusEl, tTimeECEl, tPathECEl, tChi2ECEl, tStatSCEl, tSCStatusEl, tTimeSCEl, tPathSCEl, tStatCCEl, tCCStatusEl, tNpheEl, tChi2CCEl, tStatusEl;
@@ -24,7 +26,7 @@ Float_t tZh, tThetaPQ, tPt2, tPl2, tPhiPQ, tMx2, tT, tvxh, tvyh, tvzh, tSector, 
 Float_t tStatDC, tDCStatus, tStatEC, tECStatus, tTimeEC, tPathEC, tChi2EC, tStatSC, tSCStatus, tTimeSC, tPathSC, tStatCC, tCCStatus, tNphe, tChi2CC, tStatus;
 // event (1)
 Float_t tevnt;
-// (34 variables for montecarlo)
+// (34 variables for gsim)
 // electron (15)
 Float_t mc_tQ2, mc_tW, mc_tNu, mc_tXb, mc_tYb, mc_tvxe, mc_tvye, mc_tvze, mc_tSectorEl, mc_tTargType, mc_tPex, mc_tPey, mc_tPez, mc_tPe, mc_tBettaEl;
 // particle (19)
@@ -32,7 +34,7 @@ Float_t mc_tZh, mc_tThetaPQ, mc_tPt2, mc_tPl2, mc_tPhiPQ, mc_tMx2, mc_tT, mc_tvx
 
 /*** Output/original variables ***/
 
-// (101 variables for data)
+// (101 variables for simrec)
 // electron (41)
 Float_t oQ2, oW, oNu, oXb, oYb, oXe, oYe, oZe, oSectorEl, oTargType, oPex, oPey, oPez, oPe, oBettaEl, oEtote, oEine, oEoute, oXec, oYec, oZec, oXECe, oYECe, oZECe;
 Float_t oP2e;
@@ -47,7 +49,6 @@ Float_t oStatDC, oDCStatus, oStatEC, oECStatus, oTimeEC, oPathEC, oChi2EC, oStat
 // event (2)
 Float_t oEvent;
 Float_t oEntry; // debug purposes
-// (41 variables for montecarlo)
 // electron (16)
 Float_t mc_oQ2, mc_oW, mc_oNu, mc_oXb, mc_oYb, mc_oXe, mc_oYe, mc_oZe, mc_oSectorEl, mc_oTargType, mc_oPex, mc_oPey, mc_oPez, mc_oPe, mc_oBettaEl;
 Float_t mc_oP2e;
@@ -58,7 +59,7 @@ Float_t mc_oZ, mc_oThetaPQ, mc_oPt2, mc_oPl2, mc_oPhiPQ, mc_oMx2, mc_oT, mc_oCos
 
 /*** Output/mix variables ***/
 
-// (194 variables for data)
+// (194 variables for simrec)
 // electron (41)
 Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey, mPez, mPe, mBettaEl, mEtote, mEine, mEoute, mXec, mYec, mZec, mXECe, mYECe, mZECe;
 Float_t mP2e;
@@ -91,7 +92,7 @@ Float_t nPip, nPim, nGamma;
 // event related (2)
 Float_t mEvent;
 Float_t mEntry[4];
-// (72 variables for montecarlo)
+// (72 variables for gsim)
 // electron (16)
 Float_t mc_mQ2, mc_mW, mc_mNu, mc_mXb, mc_mYb, mc_mXe, mc_mYe, mc_mZe, mc_mSectorEl, mc_mTargType, mc_mPex, mc_mPey, mc_mPez, mc_mPe, mc_mBettaEl;
 Float_t mc_mP2e;
@@ -115,10 +116,6 @@ Float_t mc_nPip, mc_nPim, mc_nGamma;
 
 TString targetOption;
 TString rnOption;
-Int_t   simFlag = 0;
-TString analyserOption; // for photon's energy correction
-
-TString treeName;
 
 TString outFile;
 
@@ -135,9 +132,7 @@ void printOptions();
 int main(int argc, char **argv) {
 
   // measure time
-  clock_t begin, end, total;
-  Double_t time_elapsed;
-  begin = clock();
+  // auto begin = Clock::now();
   
   parseCommandLine(argc, argv);
   assignOptions();
@@ -147,7 +142,7 @@ int main(int argc, char **argv) {
   
   // hadrons (t - tree)
   TChain *t = new TChain();
-  t->Add(inputFile + "/" + treeName); // input
+  t->Add(inputFile + "/ntuple_sim"); // input
 
   SetInputBranches(t);
   
@@ -163,109 +158,108 @@ int main(int argc, char **argv) {
   
   /*** START FILTERING ***/
 
-  // counting variables
+  // simrec counting variables
   Int_t nPipThisEvent = 0;
   Int_t nPimThisEvent = 0;
   Int_t nGammaThisEvent = 0;
+  Int_t nParticles = 0;
   Int_t nCombThisEvent = 0;
 
   Int_t nOmega = 0;
   Int_t nAtLeastOmega = 0;
-  
-  // mc counting variables
+
+  // gsim counting variables
   Int_t nMCPipThisEvent = 0;
   Int_t nMCPimThisEvent = 0;
   Int_t nMCGammaThisEvent = 0;
+  Int_t nMCParticles = 0;
   Int_t nMCCombThisEvent = 0;
 
   Int_t nMCOmega = 0;
   Int_t nAtLeastMCOmega = 0;
-
-  // combination vectors!
+  
+  // combination vectors
   std::vector<std::vector <int>> combVector;
   std::vector<std::vector <int>> mc_combVector;
   
   /*** START ***/
   
-  // define entrylist
-  TEntryList *l;
-
-  // on the loop
-  Int_t start = (Int_t) t->GetMinimum("evnt");
-  Int_t finish = 5000; // (Int_t) t->GetMaximum("evnt");
-
-  // std::cout << "!! start: " << start << " - finish: " << finish << std::endl;
+  Int_t Ne = (Int_t) t->GetEntries(); // 500 for testing
+  Int_t currentEvent, previousEvent;
   
-  // loop in events
-  // i = event number
-  for (Int_t i = start; i <= finish; i++) {
+  // loop in entries
+  for (Int_t i = 0; i <= Ne; i++) {
+    t->GetEntry(i);
+    currentEvent = (Int_t) tevnt;
     
-    // std::cout << "Current event number: " << i << std::endl;
-    // std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    
-    TString isFromSameEvent = Form("evnt == %d", i);;
-    TString listName = Form("elist_%d", i);
+    // prevents repetition of same event
+    if (i > 0) {
+      t->GetEntry(i-1);
+      previousEvent = (Int_t) tevnt;
+      if (previousEvent == currentEvent) continue;
+    }
 
-    // selects all entries from the same event
-    t->Draw(">>" + listName, isFromSameEvent, "entrylist");
-    l = (TEntryList*) gDirectory->Get(listName);
-    t->SetEntryList(l);
-      
-    // looks at the entries (particles) of the current event
-    // j = iterator, jj = real entry number
-    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-      Int_t jj = t->GetEntryNumber(j);
-      t->GetEntry(jj);
-      /*
-      std::cout << "  Entry number: " << jj << std::endl;
-      std::cout << "  pid:          " << tpid << std::endl;
-      if (simFlag) std::cout << "  mc_pid:       " << mc_tpid << std::endl;
-      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-      */      
-      // count the data/simrec particles
-      if (tpid == (Float_t) 211) nPipThisEvent++;
-      if (tpid == (Float_t) -211) nPimThisEvent++;
-      if (tpid == (Float_t) 22) nGammaThisEvent++;
-      // count the gsim particles
-      if (mc_tpid == (Float_t) 211) nMCPipThisEvent++;
-      if (mc_tpid == (Float_t) -211) nMCPimThisEvent++;
-      if (mc_tpid == (Float_t) 22) nMCGammaThisEvent++;
+    // commentary
+    /*
+    std::cout << "Current event number: " << currentEvent << std::endl;
+    std::cout << "Current entry number: " << i << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    */
+    // count particles in the current event
+    for (Int_t j = i; j <= Ne; j++) {
+      t->GetEntry(j);
+      if (currentEvent == (Int_t) tevnt) {
+	// commentary
+	/*
+	std::cout << "  Entry number: " << j << std::endl;
+	std::cout << "  mc_pid =      " << mc_tpid << std::endl;
+	std::cout << "  pid    =      " << tpid << std::endl;
+	std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;	
+	*/
+	// count the simrec particles
+	if (tpid == (Float_t) 211) nPipThisEvent++;
+	if (tpid == (Float_t) -211) nPimThisEvent++;
+	if (tpid == (Float_t) 22) nGammaThisEvent++;
+	// count the gsim particles
+	if (mc_tpid == (Float_t) 211) nMCPipThisEvent++;
+	if (mc_tpid == (Float_t) -211) nMCPimThisEvent++;
+	if (mc_tpid == (Float_t) 22) nMCGammaThisEvent++;
+      } else {
+	j = Ne; // break loop, optimize
+      }
     }
     
-    // show counts
+    // commentary
     /*
     std::cout << "  nPip     = " << nPipThisEvent << std::endl;
     std::cout << "  nPim     = " << nPimThisEvent << std::endl;
     std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    if (simFlag) {
-      std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-      std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-      std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
-    }
+    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
+    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     */
     
-    // (as you can see, these conditions are not exclusive)
-    // candidate appeared for data/simrec
-    if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
-      nAtLeastOmega++;
-      nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
-      nOmega += nCombThisEvent;
-    }
-
     // candidate appeared for gsim
     if (nMCPipThisEvent >= 1 && nMCPimThisEvent >= 1 && nMCGammaThisEvent >= 2) {
       nAtLeastMCOmega++;
       nMCCombThisEvent = TMath::Binomial(nMCPipThisEvent, 1)*TMath::Binomial(nMCPimThisEvent, 1)*TMath::Binomial(nMCGammaThisEvent, 2);
       nMCOmega += nMCCombThisEvent;
+      nMCParticles = nMCGammaThisEvent + nMCPipThisEvent + nMCPimThisEvent;
     }
+
+    // candidate appeared for simrec
+    if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
+      nAtLeastOmega++;
+      nCombThisEvent = TMath::Binomial(nPipThisEvent, 1)*TMath::Binomial(nPimThisEvent, 1)*TMath::Binomial(nGammaThisEvent, 2);
+      nOmega += nCombThisEvent;
+      nParticles = nGammaThisEvent + nPipThisEvent + nPimThisEvent;
+    }
+    
+    // commentary
     /*
-    if (!simFlag) {
-      std::cout << "  There are " << nCombThisEvent << " omegas!" << std::endl;
-    } else {
-      std::cout << "  There are " << nCombThisEvent << " reconstructed omegas!" << std::endl;
-      std::cout << "  There are " << nMCCombThisEvent << " generated omegas!" << std::endl;
-    }
+    std::cout << "  There are " << nMCCombThisEvent << " gsim omegas!" << std::endl;
+    std::cout << "  There are " << nCombThisEvent << " simrec omegas!" << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     */
     
@@ -274,71 +268,162 @@ int main(int argc, char **argv) {
     // saves all information from the original particles from an approved event, with no mixing
     // warning: all the hadronic variables correspond to the respective hadron, nothing more
     
-    if (nCombThisEvent > 0 || nMCCombThisEvent > 0) {
-
-      // looks at the entries (particles) of the current event
-      // j = iterator, jj = real entry number
-      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	Int_t jj = t->GetEntryNumber(j);
-	t->GetEntry(jj);
-
-	AssignOriginalVariables(jj, nCombThisEvent); // AOV(Int_t entry, Int_t nCombInSimrec)	
+    if (nCombThisEvent || nMCCombThisEvent) {
+      // loops around particles of the current event
+      for (Int_t j = i; j < (i+nMCParticles); j++) { // assumming that nMCParticles > nParticles, always
+	t->GetEntry(j);
+	AssignOriginalVariables(j, nCombThisEvent); // AOV(Int_t entry, Int_t nCombInSimrec)	
 	tOriginal->Fill();
-
       } // end of particles loop
     } // end of candidate condition
 
+    // commentary
     // std::cout << "  !! Fill original ready!" << std::endl;
     
     /*** THE MIXING ***/
 
-    // PART 1: obtain & keep combinations from data/simrec
+    // PART 1: obtain & keep combinations from gsim
     
     // tag
-    Int_t jPip = 0;
-    Int_t jPim = 0;
-    Int_t jGamma1 = 0;
-    Int_t jGamma2 = 0;
-    
+    Int_t jPip = -1;
+    Int_t jPim = -1;
+    Int_t jGamma1 = -1;
+    Int_t jGamma2 = -1;
+
     Int_t partialComb = 0;
-    Int_t partialLim = nGammaThisEvent - 1;
+    Int_t partialLim = nMCGammaThisEvent - 1;
     Int_t partialFlag = 1;
-    
-    if (nCombThisEvent > 0) {
-      for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
+
+    if (nMCCombThisEvent) {
+      for (Int_t iPip = 0; iPip < TMath::Binomial(nMCPipThisEvent, 1); iPip++) {
 	
 	// find and tag pip (loop in particles)
-	// j = iterator, jj = real entry number
-	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	  Int_t jj = t->GetEntryNumber(j);
-	  t->GetEntry(jj);
-	  if (tpid == (Float_t) 211 && jj > jPip) {
-	    jPip = jj;             // tag pip
-	    j = (Int_t) l->GetN(); // break search
+	for (Int_t j = i; j < (i+nMCParticles); j++) {
+	  t->GetEntry(j);
+	  if (mc_tpid == (Float_t) 211 && j > jPip) {
+	    jPip = j;             // tag pip
+	    j = (i+nMCParticles); // break search
 	  }
 	}
 	
 	// force a new beginning for the other particles
-	jPim = 0;
-	jGamma1 = 0;
-	jGamma2 = 0;
+	jPim = -1;
+	jGamma1 = -1;
+	jGamma2 = -1;
 	
-	for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
+	for (Int_t iPim = 0; iPim < TMath::Binomial(nMCPimThisEvent, 1); iPim++) {
 	  
 	  // find and tag pim
-	  // j = iterator, jj = real entry number
-	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	    Int_t jj = t->GetEntryNumber(j);
-	    t->GetEntry(jj);
-	    if (tpid == (Float_t) -211 && jj > jPim) {
-	      jPim = jj;             // tag pim
-	      j = (Int_t) l->GetN(); // break search
+	  for (Int_t j = i; j < (i+nMCParticles); j++) {
+	    t->GetEntry(j);
+	    if (mc_tpid == (Float_t) -211 && j > jPim) {
+	      jPim = j;             // tag pim
+	      j = (i+nMCParticles); // break search
 	    }
 	  }
 	  
 	  // force a new beginning for the other particles
-	  jGamma1 = 0;
-	  jGamma2 = 0;	  
+	  jGamma1 = -1;
+	  jGamma2 = -1;	  
+	  
+	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nMCGammaThisEvent, 2); iGamma++) {
+	    
+	    // debug
+	    if (iGamma == 0) {
+	      partialComb = 0;
+	      partialLim = nMCGammaThisEvent - 1;
+	      partialFlag = 1;
+	    }
+	    
+	    // the big condition
+	    if (partialFlag) {
+	      
+	      // find and tag gamma1
+	      for (Int_t j = i; j < (i+nMCParticles); j++) {
+		t->GetEntry(j);
+		if (mc_tpid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
+		  jGamma1 = j;          // tag gamma1
+		  j = (i+nMCParticles); // break search for j
+		}
+	      }
+	      jGamma2 = -1; // resets gamma2
+	      partialFlag = 0;
+	    }
+	  
+	    // find and tag gamma2
+	    for (Int_t j = i; j < (i+nMCParticles); j++) {
+	      t->GetEntry(j);
+	      if (mc_tpid == (Float_t) 22 && j > jGamma2 && j > jGamma1) { // excludes gamma1 and previous gamma2
+	      	jGamma2 = j;          // tag gamma2
+	      	j = (i+nMCParticles); // break search for j
+	      }
+	    }
+	    
+	    // fix partial comb
+	    partialComb++;
+	    if (partialComb == partialLim && partialLim > 1) {
+	      partialComb = 0;
+	      partialLim--;
+	      partialFlag = 1;
+	    }
+
+	    // fill vector
+	    mc_combVector.push_back({jGamma1, jGamma2, jPip, jPim});
+
+	  } // end of loop in gammas
+	  
+	} // end of loop in pi-
+	
+      } // end of loop in pi+
+
+    } // end of at-least-one-omega condition
+
+    // commentary
+    // std::cout << "  !! Obtain & keep combinations from gsim ready!" << std::endl;
+    
+    // PART 2: obtain & keep combinations from simrec
+    
+    // tag
+    jPip = -1;
+    jPim = -1;
+    jGamma1 = -1;
+    jGamma2 = -1;
+    
+    partialComb = 0;
+    partialLim = nGammaThisEvent - 1;
+    partialFlag = 1;
+    
+    if (nCombThisEvent) {
+      for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
+	
+	// find and tag pip (loop in particles)
+	for (Int_t j = i; j < (i+nMCParticles); j++) {
+	  t->GetEntry(j);
+	  if (tpid == (Float_t) 211 && j > jPip) {
+	    jPip = j;           // tag pip
+	    j = (i+nMCParticles); // break search
+	  }
+	}
+	
+	// force a new beginning for the other particles
+	jPim = -1;
+	jGamma1 = -1;
+	jGamma2 = -1;
+	
+	for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
+	  
+	  // find and tag pim
+	  for (Int_t j = i; j < (i+nMCParticles); j++) {
+	    t->GetEntry(j);
+	    if (tpid == (Float_t) -211 && j > jPim) {
+	      jPim = j;           // tag pim
+	      j = (i+nMCParticles); // break search
+	    }
+	  }
+	  
+	  // force a new beginning for the other particles
+	  jGamma1 = -1;
+	  jGamma2 = -1;	  
 	  
 	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nGammaThisEvent, 2); iGamma++) {
 	    
@@ -353,27 +438,23 @@ int main(int argc, char **argv) {
 	    if (partialFlag) {
 	      
 	      // find and tag gamma1
-	      // jj = real entry number, j = iterator
-	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-		Int_t jj = t->GetEntryNumber(j);
-		t->GetEntry(jj);
-		if (tpid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
-		  jGamma1 = jj;          // tag gamma1
-		  j = (Int_t) l->GetN(); // break search for j
+	      for (Int_t j = i; j < (i+nMCParticles); j++) {
+		t->GetEntry(j);
+		if (tpid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
+		  jGamma1 = j;          // tag gamma1
+		  j = (i+nMCParticles); // break search for j
 		}
 	      }
-	      jGamma2 = 0; // resets gamma2
+	      jGamma2 = -1; // resets gamma2
 	      partialFlag = 0;
 	    }
 	    
 	    // find and tag gamma2
-	    // jj = real entry number, j = iterator
-	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	      Int_t jj = t->GetEntryNumber(j);
-	      t->GetEntry(jj);
-	      if (tpid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
-		jGamma2 = jj;          // tag gamma2
-		j = (Int_t) l->GetN(); // break search for j
+	    for (Int_t j = i; j < (i+nMCParticles); j++) {
+	      t->GetEntry(j);
+	      if (tpid == (Float_t) 22 && j > jGamma2 && j > jGamma1) { // excludes gamma1 and previous gamma2
+		jGamma2 = j;          // tag gamma2
+		j = (i+nMCParticles); // break search for j
 	      }
 	    }
 	    
@@ -396,220 +477,81 @@ int main(int argc, char **argv) {
 
     } // end of at-least-one-omega condition
 
-    // std::cout << "  !! Obtain & keep combinations from data/simrec ready!" << std::endl;
-    
-    // PART 2: obtain & keep combinations from gsim
+    // commentary
+    // std::cout << "  !! Obtain & keep combinations from simrec ready!" << std::endl;
 
-    // tag
-    jPip = 0;
-    jPim = 0;
-    jGamma1 = 0;
-    jGamma2 = 0;
-    
-    partialComb = 0;
-    partialLim = nMCGammaThisEvent - 1;
-    partialFlag = 1;
-
-    if (simFlag && nMCCombThisEvent > 0) {
-      for (Int_t iPip = 0; iPip < TMath::Binomial(nMCPipThisEvent, 1); iPip++) {
-	
-	// find and tag pip (loop in particles)
-	// j = iterator, jj = real entry number
-	for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	  Int_t jj = t->GetEntryNumber(j);
-	  t->GetEntry(jj);
-	  if (mc_tpid == (Float_t) 211 && jj > jPip) {
-	    jPip = jj;             // tag pip
-	    j = (Int_t) l->GetN(); // break search
-	  }
-	}
-	
-	// force a new beginning for the other particles
-	jPim = 0;
-	jGamma1 = 0;
-	jGamma2 = 0;
-	
-	for (Int_t iPim = 0; iPim < TMath::Binomial(nMCPimThisEvent, 1); iPim++) {
-	  
-	  // find and tag pim
-	  // j = iterator, jj = real entry number
-	  for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	    Int_t jj = t->GetEntryNumber(j);
-	    t->GetEntry(jj);
-	    if (mc_tpid == (Float_t) -211 && jj > jPim) {
-	      jPim = jj;             // tag pim
-	      j = (Int_t) l->GetN(); // break search
-	    }
-	  }
-	  
-	  // force a new beginning for the other particles
-	  jGamma1 = 0;
-	  jGamma2 = 0;	  
-	  
-	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nMCGammaThisEvent, 2); iGamma++) {
-	    
-	    // debug
-	    if (iGamma == 0) {
-	      partialComb = 0;
-	      partialLim = nMCGammaThisEvent - 1;
-	      partialFlag = 1;
-	    }
-	    
-	    // the big condition
-	    if (partialFlag) {
-	      
-	      // find and tag gamma1
-	      // jj = real entry number, j = iterator
-	      for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-		Int_t jj = t->GetEntryNumber(j);
-		t->GetEntry(jj);
-		if (mc_tpid == (Float_t) 22 && jj > jGamma1) { // excludes previous gamma1
-		  jGamma1 = jj;          // tag gamma1
-		  j = (Int_t) l->GetN(); // break search for j
-		}
-	      }
-	      jGamma2 = 0; // resets gamma2
-	      partialFlag = 0;
-	    }
-	  
-	    // find and tag gamma2
-	    // jj = real entry number, j = iterator
-	    for (Int_t j = 0; j < (Int_t) l->GetN(); j++) {
-	      Int_t jj = t->GetEntryNumber(j);
-	      t->GetEntry(jj);
-	      if (mc_tpid == (Float_t) 22 && jj > jGamma2 && jj > jGamma1) { // excludes gamma1 and previous gamma2
-	      	jGamma2 = jj;          // tag gamma2
-	      	j = (Int_t) l->GetN(); // break search for j
-	      }
-	    }
-	    
-	    // fix partial comb
-	    partialComb++;
-	    if (partialComb == partialLim && partialLim > 1) {
-	      partialComb = 0;
-	      partialLim--;
-	      partialFlag = 1;
-	    }
-
-	    // fill vector
-	    mc_combVector.push_back({jGamma1, jGamma2, jPip, jPim});
-
-	  } // end of loop in gammas
-	  
-	} // end of loop in pi-
-	
-      } // end of loop in pi+
-
-    } // end of simflag and at-least-one-omega conditions
-
-    // std::cout << "  !! Obtain & keep combinations from gsim ready!" << std::endl;
-    
     // PART 3: fill
 
+    // commentary
     /*
-    if (!simFlag) {
-      std::cout << "  candidates for data:" << std::endl;
-      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-    } else {
-      std::cout << "  candidates for simrec:" << std::endl;
-      for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
-      std::cout << "  candidates for gsim:" << std::endl;
-      for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
-      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-    }
+    std::cout << "  candidates for gsim:" << std::endl;
+    for (Int_t c = 0; c < nMCCombThisEvent; c++) std::cout << "  {" << mc_combVector[c][0] << ", " << mc_combVector[c][1] << ", "  << mc_combVector[c][2] << ", " << mc_combVector[c][3] << "}" << std::endl;
+    std::cout << "  candidates for simrec:" << std::endl;
+    for (Int_t c = 0; c < nCombThisEvent; c++) std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << "}" << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     */
     
     // extract
-    for (Int_t cc = 0; cc < TMath::Max(nCombThisEvent, nMCCombThisEvent); cc++) { // loop on combinations
+    for (Int_t cc = 0; cc < nMCCombThisEvent; cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 4; pp++) { // loop on particles
 
-	// about AMV:
-	// case 1: (no simrec in the entry)
-	// we have to fill two vectors... this step will fill the MC vector of particles, and fill the REC vector of particles with null values
-	// eg: {gammaA, gammaB, pip, pim} - {null}
-	//     {gammaA, gammaC, pip, pim} - {null}
-	//     {gammaB, gammaC, pip, pim} - {null}
-	// OK!!
-	// 
-	// case 2: (there is simrec in the entry!)
-	// this step will fill the MC vector of particles and fill the REC vector of particles
-	// eg2: {gammaA, gammaB, pip, pim} - {rec gammaA, rec gammaB, rec pip, rec pim}
-	//      {gammaA, gammaC, pip, pim} - {null value}
-	//      {gammaB, gammaC, pip, pim} - {null value}
-	// OK!!
-
-	// obvious conditions for data, necessary conditions for simrec
+	// assign variables
+	// gsim
+	t->GetEntry(mc_combVector[cc][pp]);
+	AssignMixGSIMVariables(mc_combVector[cc][pp], pp); // AMGV(entry, index)
+	NullMixSIMRECVariables(pp); // NMSV()
+	// simrec
 	if (nCombThisEvent && cc < nCombThisEvent) {
 	  t->GetEntry(combVector[cc][pp]);
 	  AssignMixVariables(combVector[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
-	} else {
-	  NullMixSIMRECVariables(pp); // NMSV()
 	}
+      } // end of loop on particles
 
-	// gsim
-        if (simFlag && cc < nMCCombThisEvent) {
-	  t->GetEntry(mc_combVector[cc][pp]);
-	  AssignMixGSIMVariables(mc_combVector[cc][pp], pp); // AMGV(entry, index)
-	}
-	
-      } // end of loop in particles
-
-      // after assigning each decay particle, assign the composite variables
-      // data & simrec
-      if (nCombThisEvent) { 
+      // after assigning each decay particle, assign the rest of variables
+      // gsim
+      AssignPi0GSIMVariables();
+      AssignOmegaGSIMVariables();
+      AssignMoreGSIMVariables(nMCGammaThisEvent, nMCPipThisEvent, nMCPimThisEvent);
+      // simrec
+      if (nCombThisEvent) {
 	AssignPi0Variables();
 	AssignOmegaVariables();
 	AssignMoreVariables(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
       }
       
-      // gsim
-      if (simFlag){
-	AssignPi0GSIMVariables();
-	AssignOmegaGSIMVariables();
-	AssignMoreGSIMVariables(nMCGammaThisEvent, nMCPipThisEvent, nMCPimThisEvent);
-      }
-      
-      tMix->Fill();      
-    } // end of loop in combinations
+      // ...and fill
+      tMix->Fill();
+    } // end of loop on combinations
 
+    // commentary
     // std::cout << "  !! Fill combinations in mix ready!" << std::endl;
     
-    // reset count variables
-    nPipThisEvent = 0;
-    nPimThisEvent = 0;
-    nGammaThisEvent = 0;
-    nCombThisEvent = 0;
-    
+    // reset gsim counters
     nMCPipThisEvent = 0;
     nMCPimThisEvent = 0;
     nMCGammaThisEvent = 0;
     nMCCombThisEvent = 0;
 
-    // reset vectors!
+    nMCParticles = 0;
+
+    // reset simrec counters
+    nPipThisEvent = 0;
+    nPimThisEvent = 0;
+    nGammaThisEvent = 0;
+    nCombThisEvent = 0;
+    
+    nParticles = 0;
+	
+    // reset vectors
     combVector.clear();
     mc_combVector.clear();
-
-    // jump to next event number (exclusively for data)
-    if (!simFlag) {
-      // get last entry from current event list
-      Int_t ii = t->GetEntryNumber(l->GetN() - 1);
-      t->GetEntry(ii + 1);
-      // stand in first entry of the next event
-      i = (Int_t) tevnt - 1;
-    }
-
-    // set tree back to original tree
-    t->SetEntryList(0);
-
-    // clean some memory
-    gDirectory->Delete(listName + ";1");
-    rootFile->Delete(listName);
-
+    
+    // commentary
     /*
     std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
     */
-  } // end of loop in events
+  } // end of loop in entries
 
   /*** Writing tree ***/
   
@@ -619,10 +561,10 @@ int main(int argc, char **argv) {
   std::cout << "This file has been created: " << outFile << std::endl;
 
   // measure time
-  end = clock();
-  total = end - begin;
-  time_elapsed = 1000000000*((Double_t)total / CLOCKS_PER_SEC); // ns to s
-  std::cout << time_elapsed << std::endl;
+  /*
+  auto end = Clock::now();
+  std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << std::endl;
+  */
   
   return 0;
 }
@@ -632,55 +574,45 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./FilterNCombine -h to print help." << std::endl;
+    std::cerr << "Empty command line. Execute ./FilterNCombine_sim -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hd:s:r:")) != -1)
+  while ((c = getopt(argc, argv, "ht:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 'd': simFlag = 0; targetOption = optarg; break;
-    case 's': simFlag = 1; targetOption = optarg; break;
+    case 't': targetOption = optarg; break;
     case 'r': rnOption = optarg; break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./FilterNCombine -h to print help." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./FilterNCombine_sim -h to print help." << std::endl;
       exit(0);
       break;
     }
 }
 
 void assignOptions() {
-  // for data type
-  if (!simFlag) {
-    treeName = "ntuple_data";
-    analyserOption = targetOption;
-  } else if (simFlag) {
-    treeName = "ntuple_sim";
-    analyserOption = "Sim";
-  }
   // for everyone, at node dir
   inputFile = "pruned" + targetOption + "_" + rnOption + ".root";
   outFile = "comb" + targetOption + "_" + rnOption + ".root";
 }
 
 void printUsage() {
-  std::cout << "FilterNCombine program. Usage is:" << std::endl;
+  std::cout << "FilterNCombine_sim program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -h" << std::endl;
+  std::cout << "./FilterNCombine_sim -h" << std::endl;
   std::cout << "    prints this message and exits program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -[d, s][D, C, Fe, Pb]" << std::endl;
-  std::cout << "    filters the respective target for data (d) or simulations (s)" << std::endl;
+  std::cout << "./FilterNCombine_sim -t[D, C, Fe, Pb]" << std::endl;
+  std::cout << "    filters the respective target" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine -r[run number]" << std::endl;
+  std::cout << "./FilterNCombine_sim -r[run number]" << std::endl;
   std::cout << "    selects run number" << std::endl;
   std::cout << "    numbering scheme for input files = pruned<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
 }
 
 void printOptions() {
-  std::cout << "Executing FilterNCombine program. The chosen parameters are: " << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
-  std::cout << "  targetOption   = " << targetOption << std::endl;
-  std::cout << "  rnOption       = " << rnOption << std::endl;
+  std::cout << "Executing FilterNCombine_sim program. The chosen parameters are: " << std::endl;
+  std::cout << "  targetOption = " << targetOption << std::endl;
+  std::cout << "  rnOption     = " << rnOption << std::endl;
   std::cout << std::endl;
 }
