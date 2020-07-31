@@ -85,7 +85,7 @@ jobos="general"
 jobtime="72" # hours
 jobspace="1" # GB
 jobmemory="1" # GB
-thebinary="${PRODIR}/bin/FilterNCombine"
+thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
 #inrootfile=
 #outrootfile=
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
@@ -121,7 +121,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
-    echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine\"/>"                   >> ${jobfile}
+    echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
     echo "  <Input src=\"${execfile}\"   dest=\"run_FNC.sh\"/>"                       >> ${jobfile}
     inrootfile="${DATADIR}/pruned${tarName}_${rn}.root"
     echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\"/>"      >> ${jobfile}
