@@ -44,6 +44,7 @@ source ~/.bashrc
 topdir=/home/borquez/volatile/omegaSim/output/$tarName
 newtopdir=/home/borquez/volatile/omegaSim/output/$(echo "${tarName}2")
 
+cd $topdir
 mkdir -p $newtopdir
 
 # simulations@jlab
