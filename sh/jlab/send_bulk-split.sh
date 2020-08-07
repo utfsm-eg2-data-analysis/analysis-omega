@@ -81,16 +81,20 @@ echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                         
 echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # define input files
-thescript="/home/borquez/volatile/hsplit/hsplit.sh"
+runscript="${PRODIR}/sh/jlab/run_split.sh"
+realscript="/home/borquez/volatile/hsplit/hsplit.sh"
 thefile="${INDIR}/${nDir}/recsis${tarName}_${runNumber}.root"
 # move input files to node dir
-echo "  <Input src=\"${thescript}\" dest=\"hsplit.sh\"/>"                         >> ${jobfile}
-echo "  <Input src=\"${thefile}\"   dest=\"recsis.root\"/>"                       >> ${jobfile}
+echo "  <Input src=\"${runscript}\"  dest=\"run_split.sh\"/>"                     >> ${jobfile}
+echo "  <Input src=\"${realscript}\" dest=\"hsplit.sh\"/>"                        >> ${jobfile}
+echo "  <Input src=\"${thefile}\"    dest=\"recsis.root\"/>"                      >> ${jobfile}
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
-echo "    source /apps/root/6.18.04/setroot_CUE.bash"                             >> ${jobfile}
-echo "    chmod 755 ./hsplit.sh"                                                  >> ${jobfile}
-echo "    ./hsplit.sh --B 115500 recsis.root"                                     >> ${jobfile}
+echo "    sed -i \"s|^optionA=|optionA=--B|g\"         run_split.sh"              >> ${jobfile}
+echo "    sed -i \"s|^optionB=|optionB=115500|g\"      run_split.sh"              >> ${jobfile}
+echo "    sed -i \"s|^optionC=|optionC=recsis.root|g\" run_split.sh"              >> ${jobfile}
+echo "    chmod 755 ./run_split.sh"                                               >> ${jobfile}
+echo "    sh run_split.sh"                                                        >> ${jobfile}
 echo "  ]]></Command>"                                                            >> ${jobfile}
 # define and make output dirs
 counter1=$((3*(($nDir-1))+1))
