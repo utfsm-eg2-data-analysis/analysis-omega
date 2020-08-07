@@ -57,7 +57,7 @@ mkdir -p $XMLDIR # just in case
 #jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug"
+jobtrack="analysis" # "debug"
 jobos="general"
 #jobname=
 jobtime="1" # hour
