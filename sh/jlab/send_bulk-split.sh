@@ -50,7 +50,6 @@ INDIR=/home/borquez/volatile/omegaSim/output/$tarName
 OUDIR=/home/borquez/volatile/omegaSim/output/$(echo "${tarName}2")
 XMLDIR=${PRODIR}/xml/split/${tarName}/${nDir}
 
-cd $INDIR
 mkdir -p $OUDIR # just in case
 mkdir -p $XMLDIR # just in case
 
@@ -90,7 +89,7 @@ echo "  <Input src=\"${thefile}\"   dest=\"recsis.root\"/>"                     
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
 echo "    chmod 755 ./hsplit.sh"                                                  >> ${jobfile}
-echo "    sh hsplit.sh --B 115500 recsis.root"                                    >> ${jobfile}
+echo "    ./hsplit.sh --B 115500 recsis.root"                                     >> ${jobfile}
 echo "  ]]></Command>"                                                            >> ${jobfile}
 # define and make output dirs
 counter1=$((3*(($nDir-1))+1))
