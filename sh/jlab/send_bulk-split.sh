@@ -88,7 +88,7 @@ echo "  <Input src=\"${thescript}\" dest=\"hsplit.sh\"/>"                       
 echo "  <Input src=\"${thefile}\"   dest=\"recsis.root\"/>"                       >> ${jobfile}
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
-echo "    source /site/12gev_phys/softenv.sh 2.3"                                 >> ${jobfile}
+echo "    source /apps/root/6.18.04/setroot_CUE.bash"                             >> ${jobfile}
 echo "    chmod 755 ./hsplit.sh"                                                  >> ${jobfile}
 echo "    ./hsplit.sh --B 115500 recsis.root"                                     >> ${jobfile}
 echo "  ]]></Command>"                                                            >> ${jobfile}
