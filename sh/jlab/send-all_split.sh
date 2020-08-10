@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ##############################################################
-# ./send-all_bulk-split.sh <target>                          #
+# ./send-all_split.sh <target>                               #
 #     <target> = (D, C, Fe, Pb)                              #
 #                                                            #
-# EG: ./send-all_bulk-split.sh C                             #
+# EG: ./send-all_split.sh C                                  #
 ##############################################################
 
 #####
@@ -62,6 +62,6 @@ fi
 
 for ((i=1; i <= $totalDirs; i++)); do
     for ((j=0; j <= 99; j++)); do
-        ./send_bulk-split.sh "$tarName" "$(get_num_3dig $i)" "$(get_num_2dig $j)"
+        ./send_split.sh "$tarName" "$(get_num_3dig $i)" "$(get_num_2dig $j)"
     done
 done

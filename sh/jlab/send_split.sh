@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_bulk-split.sh <target> <ndir> <rn>                  #
+# ./send_split.sh <target> <ndir> <rn>                       #
 #     <target> = (D, C, Fe, Pb)                              #
 #     <ndir>   = (001, 002, ...)                             #
 #     <rn>     = (00 - 99)                                   #
 #                                                            #
-# EG: ./send_bulk-split.sh C 006 99                          #
+# EG: ./send_split.sh C 006 99                               #
 ##############################################################
 
 # Exclusive for JLAB cluster
@@ -90,25 +90,18 @@ echo "  <Input src=\"${realscript}\" dest=\"hsplit.sh\"/>"                      
 echo "  <Input src=\"${thefile}\"    dest=\"recsis.root\"/>"                      >> ${jobfile}
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
-echo "    sed -i \"s|^optionA=|optionA=--B|g\"         run_split.sh"              >> ${jobfile}
-echo "    sed -i \"s|^optionB=|optionB=115500|g\"      run_split.sh"              >> ${jobfile}
+echo "    sed -i \"s|^optionA=|optionA=--F|g\"         run_split.sh"              >> ${jobfile}
+echo "    sed -i \"s|^optionB=|optionB=3|g\"           run_split.sh"              >> ${jobfile}
 echo "    sed -i \"s|^optionC=|optionC=recsis.root|g\" run_split.sh"              >> ${jobfile}
 echo "    chmod 755 ./run_split.sh"                                               >> ${jobfile}
 echo "    sh run_split.sh"                                                        >> ${jobfile}
 echo "  ]]></Command>"                                                            >> ${jobfile}
 # define and make output dirs
-counter1=$((3*(($nDir-1))+1))
-counter2=$((3*(($nDir-1))+2))
-counter3=$((3*(($nDir-1))+3))
-dir1=$OUDIR/$(get_num $counter1)
-dir2=$OUDIR/$(get_num $counter2)
-dir3=$OUDIR/$(get_num $counter3)
-mkdir -p $dir1
-mkdir -p $dir2
-mkdir -p $dir3
-outfile1=$dir1/recsis${tarName}_${runNumber}_01.root
-outfile2=$dir2/recsis${tarName}_${runNumber}_02.root
-outfile3=$dir3/recsis${tarName}_${runNumber}_03.root
+REALOUDIR=$OUDIR/$nDir
+mkdir -p $REALOUDIR
+outfile1=$REALOUDIR/recsis${tarName}_${runNumber}_01.root
+outfile2=$REALOUDIR/recsis${tarName}_${runNumber}_02.root
+outfile3=$REALOUDIR/recsis${tarName}_${runNumber}_03.root
 # move output files from node dir
 echo "  <Output src=\"recsis_01.root\" dest=\"${outfile1}\"/>"                    >> ${jobfile}
 echo "  <Output src=\"recsis_02.root\" dest=\"${outfile2}\"/>"                    >> ${jobfile}
