@@ -22,11 +22,13 @@ TString inputFile3  = "";
 TCut    cutTargType;
 TString plotFile;
 
+/*
 TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
 TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
 TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
 TCut statusCuts_gamma     = "Status[0] > 0 && Status[1] > 0"; // not used, yet
 TCut statusCuts_default   = statusCuts_electrons && statusCuts_pim && statusCuts_pip;
+*/
 
 /*** Declaration of functions ***/
 
@@ -51,60 +53,36 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile1 + "/mix");
   treeExtracted->Add(inputFile2 + "/mix");
   treeExtracted->Add(inputFile3 + "/mix");
-
+  
   // first hist, no cut at all
   TH1F *theHist;
-  treeExtracted->Draw("wSD_corr>>theHist(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-                                                        statusCuts_default, "goff");
+  treeExtracted->Draw("wM_corr>>theHist(200, 0, 2.5)", cutTargType && cutDIS, "goff");
   theHist = (TH1F *)gROOT->FindObject("theHist");
   
-  theHist->SetTitle("#Delta m (#gamma #gamma #pi^{+} #pi^{-}) in " + targetOption + " data");
+  theHist->SetTitle("m (#gamma #gamma #pi^{+} #pi^{-}) in " + targetOption + " data");
   
-  theHist->SetLineColor(kBlack);
+  theHist->SetLineColor(kGray+2);
   theHist->SetFillStyle(1);
-  theHist->SetFillColor(kBlack);
+  theHist->SetFillColor(kGray+2);
   
   theHist->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
   theHist->GetXaxis()->CenterTitle();
   theHist->GetYaxis()->SetMaxDigits(3);
 
-  // second hist, first f1 decay: f1 -> 4pi
-  TCut f1_decay1 = "nGamma >= 4 || nPip > 1 || nPim > 1";
+  // second hist
+  // TCut f1_decay = "nGamma == 4 && nPip == 1 && nPim == 1"; // kOrange
+  //TCut f1_decay = "nGamma == 2 && nPip == 2 && nPim == 2"; // kGreen
+  TCut f1_decay = "nGamma == 6 && nPip == 1 && nPim == 1"; // kCyan
   
   TH1F *theHist2;
-  treeExtracted->Draw("wSD_corr>>theHist2(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusCuts_default && f1_decay1, "goff");
+  treeExtracted->Draw("wM_corr>>theHist2(200, 0, 2.5)", cutTargType && cutDIS && f1_decay, "goff");
   theHist2 = (TH1F *)gROOT->FindObject("theHist2");
   
-  theHist2->SetLineColor(kBlue);
+  theHist2->SetLineColor(kCyan);
   theHist2->SetFillStyle(1);
-  theHist2->SetFillColor(kBlue);
+  theHist2->SetFillColor(kCyan);
   
   theHist2->SetLineWidth(3);
-
-  // third hist, second f1 decay: f1 -> pi0 pi0 pi+ pi-
-  TCut f1_decay2 = "nGamma >= 4";
-  
-  TH1F *theHist3;
-  treeExtracted->Draw("wSD_corr>>theHist3(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusCuts_default && f1_decay2, "goff");
-  theHist3 = (TH1F *)gROOT->FindObject("theHist3");
-  
-  theHist3->SetLineColor(kGreen);
-  theHist3->SetFillStyle(1);
-  theHist3->SetFillColor(kGreen);
-  
-  // fourth hist, third f1 decay: f1 -> 2pi+ 2pi-
-  TCut f1_decay3 = "nPip > 1 && nPim > 1";
-
-  TH1F *theHist4;
-  treeExtracted->Draw("wSD_corr>>theHist4(200, 0, 2.5)", cutTargType && cutDIS && cutPipPim && cutPi0 &&
-		                                         statusCuts_default && f1_decay3, "goff");
-  theHist4 = (TH1F *)gROOT->FindObject("theHist4");
-
-  theHist4->SetLineColor(kOrange);
-  theHist4->SetFillStyle(1);
-  theHist4->SetFillColor(kOrange);
   
   /*** Drawing ***/
   
@@ -115,20 +93,16 @@ int main(int argc, char **argv) {
   
   theHist->Draw("HIST");
   theHist2->Draw("SAME HIST");
-  theHist4->Draw("SAME HIST");
-  theHist3->Draw("SAME HIST");
-    
-  drawVerticalLine(kMeta,   kRed); // 547 MeV
+  
   drawVerticalLine(kMomega, kRed); // 782 MeV
-  drawVerticalLine(kMf1,    kRed); // 1285 MeV
 
   /*** Legend ***/
 
-  TLegend *l = new TLegend(0.65, 0.8, 0.9, 0.9);
+  TLegend *l = new TLegend(0.55, 0.7, 0.9, 0.9); //x1,y1,x2,y2
   l->AddEntry(theHist, "all #omega", "f");
-  l->AddEntry(theHist2, "nGamma >= 4 || nPip > 1 || nPim > 1", "f");
-  l->AddEntry(theHist3, "nGamma >= 4", "f");
-  l->AddEntry(theHist4, "nPip > 1 && nPim > 1", "f");  
+  //l->AddEntry(theHist2, "nGamma == 4 && nPip == 1 && nPim == 1", "f");
+  //l->AddEntry(theHist2, "nGamma == 2 && nPip == 2 && nPim == 2", "f");
+  l->AddEntry(theHist2, "nGamma == 6 && nPip == 1 && nPim == 1", "f");
   
   l->Draw();
   

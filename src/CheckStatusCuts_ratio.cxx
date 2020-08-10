@@ -36,10 +36,7 @@ using namespace RooFit;
 /*** Hardcoded ***/
 
 // Winner parameters (meanConstraint, sigmaConstraint):
-//  Q2  = (34, 1.5)
-//  Nu  = (40, 1.5)
 //  Z   = (24, 2)
-//  Pt2 = (38, 1.5)
 Double_t meanConstraint = 24e-3;
 Double_t sigmaConstraint = 2e-3;
 Double_t sigmaRangeDown = meanConstraint - 4e-3;
@@ -83,6 +80,13 @@ TString histProperties;
 
 TString outPrefix;
 TString plotFile;
+TString textFile;
+TString prevFile;
+
+Double_t obtMean = 0.37;
+Double_t obtSigma = 1.75e-2;
+Double_t obtEdges[2] = {0.27, 0.47}; // default
+Int_t    obtNbins = 40; // default
 
 TString particleSufix;
 
@@ -106,23 +110,64 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile1 + "/mix");
   treeExtracted->Add(inputFile2 + "/mix");
   treeExtracted->Add(inputFile3 + "/mix");
-    
+
+  /*** Read previous results ***/
+
+  // if this is an iteration
+  std::cout << std::endl;
+  std::cout << "Reading previous file " << prevFile << std::endl;
+  std::ifstream inFile(prevFile);
+  
+  TString auxString1, auxString2;
+  Int_t l = 0; // line counter
+  while (inFile >> auxString1 >> auxString2) {
+    l++;
+    if (l == 1) { // first line
+      obtMean = auxString1.Atof();
+      std::cout << "  Omega Mean for " << targetOption << sufixZBin << ": " << obtMean << std::endl;
+    } else if (l == 2) { // second line
+      obtSigma = auxString1.Atof();
+      std::cout << "  Omega Sigma for " << targetOption << sufixZBin << ": " << obtSigma << std::endl;
+    }
+  }
+  inFile.close();
+  
+  // keep fit range
+  obtEdges[0] = obtMean - 5*obtSigma; // 5
+  obtEdges[1] = obtMean + 5*obtSigma; //5
+  std::cout << "fitRange-" << targetOption << sufixZBin << " = [" << obtEdges[0] << ", " << obtEdges[1] << "]" << std::endl;
+  // round to the 2nd digit
+  obtEdges[0] = round(100*(obtEdges[0]))/100;
+  obtEdges[1] = round(100*(obtEdges[1]))/100;
+  std::cout << "fitRange-" << targetOption << sufixZBin << " = [" << obtEdges[0] << ", " << obtEdges[1] << "]" << std::endl;
+  // number of bins
+  obtNbins = (Int_t) ((obtEdges[1] - obtEdges[0])/5e-3);
+  std::cout << "obtNbins-" << targetOption << sufixZBin << " = " << obtNbins << std::endl;
+  std::cout << std::endl;
+  
   /*** Fit ***/
   
+  // bin x-width = 5 MeV
+  Int_t Nbins = obtNbins;
+  Double_t fitRangeDown = obtEdges[0]; // preMean.getValV() - 5*preSigma.getValV() = 0.268
+  Double_t fitRangeUp = obtEdges[1]; // preMean.getValV() + 5*preSigma.getValV() = 0.468
+
+  /*
   Int_t Nbins = 40; // bin x-width = 5 MeV
   Double_t fitRangeDown = 0.68; // preMean.getValV() - 5*preSigma.getValV() = 0.268
   Double_t fitRangeUp   = 0.88; // preMean.getValV() + 5*preSigma.getValV() = 0.468
-
-  Double_t meanIGV = 0.78;
+  */
+  
+  Double_t meanIGV = obtMean; // 0.78;
   Double_t meanRangeDown = meanIGV - 0.02;
   Double_t meanRangeUp   = meanIGV + 0.02; // 0.38
 
-  Double_t sigmaIGV = 0.04;
+  Double_t sigmaIGV = obtSigma; // 0.04;
 
   histProperties = Form("(%d, %.2f, %.2f)", Nbins, fitRangeDown, fitRangeUp);
   
   TH1F *theHist;
-  treeExtracted->Draw("wSD_corr>>histo" + histProperties, cutDIS && cutPipPim && cutPi0 && cutTargType && statusCuts_default && statusCuts, "goff"); // && cutZ
+  treeExtracted->Draw("wSD_corr>>histo" + histProperties, cutDIS && cutPipPim && cutPi0 && cutTargType && statusCuts_default && statusCuts && cutZ, "goff");
   theHist = (TH1F *)gROOT->FindObject("histo");
   
   /*** RooFit stuff ***/
@@ -198,6 +243,26 @@ int main(int argc, char **argv) {
   drawVerticalLine(omegaMean.getValV() + 3*omegaSigma.getValV(), kGray+2, "dash");
   
   c->Print(plotFile); // output file
+
+  /*** Integral ***/
+
+  x.setRange("3sigmaRange", omegaMean.getValV() - 3*omegaSigma.getValV(), omegaMean.getValV() + 3*omegaSigma.getValV());
+  RooAbsReal *bkg3Sigma = bkg.createIntegral(x, NormSet(x), Range("3sigmaRange"));
+  
+  /*** Save data from fit ***/
+
+  std::cout << "Writing " << textFile << " ..." << std::endl;
+  std::ofstream outFinalFile(textFile, std::ios::out); // output file
+  // line 1: omegaMean
+  outFinalFile << omegaMean.getValV() << "\t" << omegaMean.getError() << std::endl;
+  // line 2: omegaSigma
+  outFinalFile << omegaSigma.getValV() << "\t" << omegaSigma.getError() << std::endl;
+  // line 3: number of omega
+  outFinalFile << nsig.getValV() << "\t\t" << nsig.getError() << std::endl;
+  // line 4: number of bkg
+  outFinalFile << bkg3Sigma->getValV() * nbkg.getValV() << "\t\t" << nbkg.getError() << std::endl;
+  std::cout << "File " << textFile << " has been created!" << std::endl;
+  std::cout << std::endl;
 }
 
 /*** Functions ***/
@@ -243,6 +308,8 @@ void printUsage() {
   std::cout << std::endl;
   std::cout << "./CheckStatusCuts_ratio -s[pid]" << std::endl;
   std::cout << "    turn on particular Status cuts for the respective pid (11, 22, 211, -211)" << std::endl;
+  std::cout << "    no status cuts  = 0" << std::endl;
+  std::cout << "    all status cuts = 999" << std::endl;
   std::cout << std::endl;
 }
 
@@ -266,7 +333,7 @@ void assignOptions() {
   // for Z binning
   if (binNumberZ) {
     cutZ = Form("%f < wZ_corr && wZ_corr < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
-    titleZ = Form(" in (%.02f < wZ_corr < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+    titleZ = Form(" in (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
     sufixZBin = Form("-z%d", binNumberZ);
   }
   // for kinvar
@@ -286,11 +353,13 @@ void assignOptions() {
   }
   if (pid == 999) {
     particleSufix = "allstat";
-  } else if (pid > 0 && pid < 999) {
+  } else if (pid != 0 && pid != 999) {
     particleSufix = particleName(pid);
   } else {
     particleSufix = "nostat";
   }
   // output name
   plotFile = outDir + "/fit-" + particleSufix + "-" + targetOption + sufixZBin + ".png";
+  prevFile = outDir + "/fit-" + particleSufix + "-" + targetOption + sufixZBin + ".dat";
+  textFile = outDir + "/fit-" + particleSufix + "-" + targetOption + sufixZBin + "_corr.dat";
 }
