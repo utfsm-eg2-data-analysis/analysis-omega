@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# This script sends everything!
+##############################################################
+# ./send-all_GST.sh <target>                                 #
+#     <target> = (D, C, Fe, Pb)                              #
+#                                                            #
+# EG: ./send-all_GST.sh C                                    #
+##############################################################
 
 #####
 # Functions
@@ -24,6 +29,8 @@ function get_num_3dig()
 # Main
 ##
 
+tarName="$@"
+
 source ~/.bashrc
 cd ${PRODIR}/sh/jlab
 
@@ -43,11 +50,18 @@ cd ${PRODIR}/sh/jlab
 # ./send_GST.sh usm Pb
 
 # Simulations/jlab
-targets=("D" "C" "Fe" "Pb")
-ndirs=(46 10 13 4)
-for ((i=0; i < ${#targets[@]}; i++)); do
-    for ((j=1; j <= ${ndirs[i]}; j++)); do
-	ndir=$(get_num_3dig "$j")
-        ./send_GST.sh jlab ${targets[i]} ${ndir}
-    done
+
+if [[ "$tarName" == "D" ]]; then
+    totalDirs=46
+elif [[ "$tarName" == "C" ]]; then
+    totalDirs=10
+elif [[ "$tarName" == "Fe" ]]; then
+    totalDirs=13
+elif [[ "$tarName" == "Pb" ]]; then
+    totalDirs=4
+fi
+
+for ((j=1; j <= ${totalDirs}; j++)); do
+    ndir=$(get_num_3dig "$j")
+    ./send_GST.sh jlab ${tarName} ${ndir}
 done
