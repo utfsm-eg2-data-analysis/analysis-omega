@@ -7,4 +7,4 @@ inputOption=
 tarName=
 rn=
 
-./GetSimpleTuple -t${tarName} ${inputOption} -r${rn}
+./GetSimpleTuple ${inputOption}${tarName} -r${rn}

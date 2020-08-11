@@ -9,18 +9,32 @@
 # EG: ./send_GST.sh data C                                   #
 #     ./send_GST.sh old Fe                                   #
 #     ./send_GST.sh usm D                                    #
-#     ./send_GST.sh jlab Pb 02                               #
+#     ./send_GST.sh jlab Pb 002                              #
 ##############################################################
 
 #####
 # Functions
 ###
 
-function get_num()
+function get_num_2dig()
 {
   sr=$1
   srn=""
   if [[ $sr -lt 10 ]]; then
+    srn="0$sr"
+  else
+    srn="$sr"
+  fi
+  echo $srn
+}
+
+function get_num_3dig()
+{
+  sr=$1
+  srn=""
+  if [[ $sr -lt 10 ]]; then
+    srn="00$sr"
+  elif [[ $sr -lt 100 ]]; then
     srn="0$sr"
   else
     srn="$sr"
@@ -75,9 +89,9 @@ else
     elif [[ "${setOption}" == "usm" ]]; then
 	DATADIR="/home/borquez/volatile/omegaSim/usm/${tarName}"
     elif [[ "${setOption}" == "jlab" ]]; then
-	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}/${nDir}"
+	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}2/${nDir}" # updated
     fi
-    inputOption="-S"
+    inputOption="-s"
     nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
 
@@ -88,7 +102,7 @@ jobproject="eg2a"
 jobtrack="analysis" # "debug"
 jobos="general"
 #jobname=
-jobtime="30" # minutes
+jobtime="2" # hours
 jobspace="10" # GB
 jobmemory="5" # GB
 thebinary="${PRODIR}/bin/GetSimpleTuple"
@@ -100,10 +114,10 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
-    elif [[ "${setOption}" == "usm" || "${setOption}" == "old" ]]; then
-	rn=$(get_num "$COUNTER") # old and usm start at 1
+    elif [[ "${setOption}" == "old"  || "${setOption}" == "usm" ]]; then
+	rn=$(get_num_2dig "$COUNTER") # starts at 01
     elif [[ "${setOption}" == "jlab" ]]; then
-	rn=$(get_num "$(($COUNTER - 1))") # jlab files start at 0
+	rn=$(get_num_3dig "$COUNTER") # starts at 001
     fi
 
     # setting jobname
@@ -122,7 +136,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
     echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}

@@ -309,14 +309,9 @@ void printUsage() {
   std::cout << "./GetSimpleTuple -h" << std::endl;
   std::cout << "    prints usage and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -t[target]" << std::endl;
-  std::cout << "    selects target: D, C, Fe, Pb" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -d" << std::endl;
-  std::cout << "    gets tuples from data" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./GetSimpleTuple -S" << std::endl;
-  std::cout << "    gets tuples from simulations" << std::endl;
+  std::cout << "./GetSimpleTuple -[d,s][target]" << std::endl;
+  std::cout << "    gets ntuples from data (d) or simulations (s)" << std::endl;
+  std::cout << "    and also selects target, which can be: D, C, Fe, Pb" << std::endl;
   std::cout << std::endl;
   std::cout << "./GetSimpleTuple -r[run number]" << std::endl;
   std::cout << "    selects run number" << std::endl;
@@ -331,12 +326,11 @@ int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
     exit(1);
   }
-  while ((c = getopt(argc, argv, "ht:dSr:")) != -1)
+  while ((c = getopt(argc, argv, "hd:s:r:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 't': targetOption = optarg; break;
-    case 'S': simFlag = 1; break;
-    case 'd': simFlag = 0; break;
+    case 's': simFlag = 1; targetOption = optarg; break;
+    case 'd': simFlag = 0; targetOption = optarg; break;
     case 'r': rnOption = optarg; break;
     default:
       std::cerr << "Unrecognized argument. Execute ./bin/GetSimpleTuple -h to print usage." << std::endl;
@@ -362,9 +356,9 @@ void assignOptions() {
 
 void printOptions() {
   std::cout << "Executing GetSimpleTuple program. The chosen parameters are: " << std::endl;
+  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  targetOption   = " << targetOption << std::endl;
   std::cout << "  rnOption       = " << rnOption << std::endl;
-  std::cout << "  simFlag        = " << simFlag << std::endl;
   std::cout << "  analyserOption = " << analyserOption << std::endl;
   std::cout << std::endl;
 }
