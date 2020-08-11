@@ -52,16 +52,26 @@ cd ${PRODIR}/sh/jlab
 
 if [[ "$tarName" == "D" ]]; then
     totalDirs=46
+    lastFileInLastDir=81
 elif [[ "$tarName" == "C" ]]; then
     totalDirs=10
+    lastFileInLastDir=27
 elif [[ "$tarName" == "Fe" ]]; then
     totalDirs=13
+    lastFileInLastDir=30
 elif [[ "$tarName" == "Pb" ]]; then
     totalDirs=4
+    lastFileInLastDir=97
 fi
+lastFile=99
 
 for ((i=1; i <= $totalDirs; i++)); do
-    for ((j=0; j <= 99; j++)); do
+    # condition
+    if [[ $i -eq $totalDirs ]]; then
+	lastFile=$lastFileInLastDir
+    fi
+    # loop
+    for ((j=0; j <= $lastFile; j++)); do
         ./send_split.sh "$tarName" "$(get_num_3dig $i)" "$(get_num_2dig $j)"
     done
 done
