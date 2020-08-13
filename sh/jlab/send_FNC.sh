@@ -16,11 +16,25 @@
 # Functions
 ###
 
-function get_num()
+function get_num_2dig()
 {
   sr=$1
   srn=""
   if [[ $sr -lt 10 ]]; then
+    srn="0$sr"
+  else
+    srn="$sr"
+  fi
+  echo $srn
+}
+
+function get_num_3dig()
+{
+  sr=$1
+  srn=""
+  if [[ $sr -lt 10 ]]; then
+    srn="00$sr"
+  elif [[ $sr -lt 100 ]]; then
     srn="0$sr"
   else
     srn="$sr"
@@ -95,9 +109,9 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
     elif [[ "${setOption}" == "usm" || "${setOption}" == "old" ]]; then
-	rn=$(get_num "$COUNTER") # old and usm start at 1
+	rn=$(get_num_2dig "$COUNTER") # old and usm start at 01
     elif [[ "${setOption}" == "jlab" ]]; then
-	rn=$(get_num "$(($COUNTER - 1))") # jlab files start at 0
+	rn=$(get_num_3dig "$COUNTER") # jlab files start at 001
     fi
 
     # setting jobname
