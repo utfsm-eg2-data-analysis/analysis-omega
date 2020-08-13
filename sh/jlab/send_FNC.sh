@@ -9,7 +9,7 @@
 # EG: ./send_FNC.sh data C                                   #
 #     ./send_FNC.sh old Fe                                   #
 #     ./send_FNC.sh usm D                                    #
-#     ./send_FNC.sh jlab Pb 02                               #
+#     ./send_FNC.sh jlab Pb 002                              #
 ##############################################################
 
 #####
