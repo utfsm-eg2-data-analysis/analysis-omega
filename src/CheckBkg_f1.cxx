@@ -22,13 +22,16 @@ TString inputFile3  = "";
 TCut    cutTargType;
 TString plotFile;
 
-/*
-TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
-TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
-TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
-TCut statusCuts_gamma     = "Status[0] > 0 && Status[1] > 0"; // not used, yet
-TCut statusCuts_default   = statusCuts_electrons && statusCuts_pim && statusCuts_pip;
-*/
+Int_t   caseOption;
+TString caseTitle;
+TString caseSufix;
+Color_t caseColor;
+TCut    f1_decay;
+
+TCut    kinvarCut;
+Int_t   binNumberZ;
+TString kinvarSufix;
+TString kinvarTitle;
 
 /*** Declaration of functions ***/
 
@@ -54,33 +57,20 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile2 + "/mix");
   treeExtracted->Add(inputFile3 + "/mix");
   
-  // first hist, no cut at all
-  TH1F *theHist;
-  treeExtracted->Draw("wM_corr>>theHist(200, 0, 2.5)", cutTargType && cutDIS, "goff");
-  theHist = (TH1F *)gROOT->FindObject("theHist");
-  
-  theHist->SetTitle("m (#gamma #gamma #pi^{+} #pi^{-}) in " + targetOption + " data");
-  
-  theHist->SetLineColor(kGray+2);
-  theHist->SetFillStyle(1);
-  theHist->SetFillColor(kGray+2);
-  
-  theHist->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
-  theHist->GetXaxis()->CenterTitle();
-  theHist->GetYaxis()->SetMaxDigits(3);
-
   // second hist
-  // TCut f1_decay = "nGamma == 4 && nPip == 1 && nPim == 1"; // kOrange
-  //TCut f1_decay = "nGamma == 2 && nPip == 2 && nPim == 2"; // kGreen
-  TCut f1_decay = "nGamma == 6 && nPip == 1 && nPim == 1"; // kCyan
-  
   TH1F *theHist2;
-  treeExtracted->Draw("wM_corr>>theHist2(200, 0, 2.5)", cutTargType && cutDIS && f1_decay, "goff");
+  treeExtracted->Draw("wM_corr>>theHist2(200, 0, 2.5)", cutTargType && cutDIS && f1_decay && kinvarCut, "goff");
   theHist2 = (TH1F *)gROOT->FindObject("theHist2");
   
-  theHist2->SetLineColor(kCyan);
+  theHist2->SetTitle("m (#gamma #gamma #pi^{+} #pi^{-}) in " + targetOption + " data" + kinvarTitle);
+
+  theHist2->SetLineColor(caseColor);
   theHist2->SetFillStyle(1);
-  theHist2->SetFillColor(kCyan);
+  theHist2->SetFillColor(caseColor);
+
+  theHist2->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
+  theHist2->GetXaxis()->CenterTitle();
+  theHist2->GetYaxis()->SetMaxDigits(3);
   
   theHist2->SetLineWidth(3);
   
@@ -91,18 +81,16 @@ int main(int argc, char **argv) {
   c->SetTickx(1);
   c->SetTicky(1);
   
-  theHist->Draw("HIST");
-  theHist2->Draw("SAME HIST");
+  theHist2->Draw("HIST");
   
+  drawVerticalLine(kMeta, kRed);
   drawVerticalLine(kMomega, kRed); // 782 MeV
+  drawVerticalLine(kMf1, kRed); // f1 pdg mass
 
   /*** Legend ***/
 
   TLegend *l = new TLegend(0.55, 0.7, 0.9, 0.9); //x1,y1,x2,y2
-  l->AddEntry(theHist, "all #omega", "f");
-  //l->AddEntry(theHist2, "nGamma == 4 && nPip == 1 && nPim == 1", "f");
-  //l->AddEntry(theHist2, "nGamma == 2 && nPip == 2 && nPim == 2", "f");
-  l->AddEntry(theHist2, "nGamma == 6 && nPip == 1 && nPim == 1", "f");
+  l->AddEntry(theHist2, caseTitle, "f");
   
   l->Draw();
   
@@ -117,10 +105,12 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./CheckBkg_f1 -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:")) != -1)
+  while ((c = getopt(argc, argv, "ht:c:z:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
+    case 'c': caseOption = atoi(optarg); break;
+    case 'z': binNumberZ = atoi(optarg); break;
     default:
       std::cerr << "Unrecognized argument. Execute ./CheckBkg_f1 -h to print usage." << std::endl;
       exit(0);
@@ -143,6 +133,9 @@ void printUsage() {
   std::cout << "./CheckBkg_f1 -t[target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
+  std::cout << "./CheckBkg_f1 -c[case]" << std::endl;
+  std::cout << "    selects case: 1 | 4 | 5" << std::endl;
+  std::cout << std::endl;
 }
 
 void assignOptions() {
@@ -162,6 +155,25 @@ void assignOptions() {
     cutTargType = "TargType == 2";
     inputFile1 = dataDir + "/Pb/comb_dataPb.root";
   }
+  // for cases
+  if (caseOption == 1) {
+    f1_decay = "nGamma == 4 && nPip == 1 && nPim == 1";
+    caseColor = kOrange;
+    caseTitle = "nGamma == 4 && nPip == 1 && nPim == 1";
+  } else if (caseOption == 4) {
+    f1_decay = "nGamma == 2 && nPip == 2 && nPim == 2";
+    caseColor = kGreen;
+    caseTitle = "nGamma == 2 && nPip == 2 && nPim == 2";
+  } else if (caseOption == 5) {
+    f1_decay = "nGamma == 6 && nPip == 1 && nPim == 1";
+    caseColor = kCyan;
+    caseTitle = "nGamma == 6 && nPip == 1 && nPim == 1";    
+  }
+  caseSufix = Form("-case%d", caseOption);
+  // for Z
+  kinvarSufix = Form("-z%d", binNumberZ);
+  kinvarCut = Form("%f < wZ_corr && wZ_corr < %f", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
+  kinvarTitle = Form(" (%.02f < Z < %.02f)", edgesZ[binNumberZ-3], edgesZ[binNumberZ+1-3]);
   // output name
-  plotFile = outDir + "/f1-" + targetOption + ".png";
+  plotFile = outDir + "/f1-" + targetOption + caseSufix + kinvarSufix + ".png";
 }
