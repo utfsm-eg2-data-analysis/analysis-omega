@@ -1,10 +1,8 @@
 #!/bin/bash
 
 ##############################################################
-# ./send-all_split.sh <target>                               #
-#     <target> = (D, C, Fe, Pb)                              #
+# ./send-10_split.sh                                         #
 #                                                            #
-# EG: ./send-all_split.sh C                                  #
 ##############################################################
 
 #####
@@ -36,12 +34,6 @@ function get_num_3dig()
   fi
   echo $srn
 }
-
-#####
-# Input
-##
-
-tarName="$@"
 
 #####
 # Main
