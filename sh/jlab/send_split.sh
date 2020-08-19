@@ -91,7 +91,7 @@ echo "  <Input src=\"${thefile}\"    dest=\"recsis.root\"/>"                    
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
 echo "    sed -i \"s|^optionA=|optionA=--F|g\"         run_split.sh"              >> ${jobfile}
-echo "    sed -i \"s|^optionB=|optionB=3|g\"           run_split.sh"              >> ${jobfile}
+echo "    sed -i \"s|^optionB=|optionB=10|g\"          run_split.sh"              >> ${jobfile} # updated!
 echo "    sed -i \"s|^optionC=|optionC=recsis.root|g\" run_split.sh"              >> ${jobfile}
 echo "    chmod 755 ./run_split.sh"                                               >> ${jobfile}
 echo "    sh run_split.sh"                                                        >> ${jobfile}
