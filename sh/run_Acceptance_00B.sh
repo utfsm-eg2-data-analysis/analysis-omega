@@ -36,4 +36,4 @@ for file in $SIMDIR/*; do
     ./Acceptance_00B -s${tarName} -r${rn}
 done
 
-hadd acc-0BR-${setOption}-${tarName}.root *.root
+hadd acc-0BR-${setOption}-${tarName}.root acc-0BR-*.root
