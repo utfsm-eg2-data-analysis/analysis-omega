@@ -89,6 +89,11 @@ TCut cutDIS_old = "Q2 > 1 && W > 2";
 TCut cutPi0_old = "0.059 < mpi0 && mpi0 < 0.209"; // mikewood cut
 TCut cutPipPim_old = "0.48 > mpippim || 0.51 < mpippim"; // mikewood cut
 
+// new Status cuts!
+TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
+TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
+TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
+
 // edges obtained with GetQuantiles.cxx
 const Double_t edgesQ2[6] = {1, 1.187, 1.376, 1.616, 2.008, 4};
 const Double_t edgesNu[6] = {2.2, 3.233, 3.550, 3.786, 3.994, 4.2};
