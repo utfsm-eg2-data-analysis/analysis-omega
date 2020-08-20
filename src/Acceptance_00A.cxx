@@ -1,13 +1,14 @@
 /**************************************/
-/* Acceptance_00.cxx                  */
+/* Acceptance_00A.cxx                 */
 /*                                    */
 /* Andrés Bórquez                     */
 /*                                    */
 /**************************************/
 
-//*** ACCEPTANCE: STAGE 0 ***//
-// plot reconstructed/generated distributions
-// and save histogram in a root file
+//*** ACCEPTANCE: STAGE 0-A ***//
+
+// plot reconstructed/generated distributions for pi0 invariant mass
+// histograms are written in an output root file
 
 #include "analysisConfig.h"
 
@@ -22,9 +23,12 @@ TString runNumber;
 TString inputFile, outputFile;
 
 // cuts
-TCut cutTargType;
-TCut cutGSIM = "";
-TCut cutStatus = "";
+TCut cutTargType, cutTargType_gen; // depend on chosen target
+TCut cutDIS_gen = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
+TCut cutPi0_gen = "mc_pi0M > 0.12 && mc_pi0M < 0.15";
+TCut cutSIMREC;
+TCut cutGSIM;
+
 // hist properties
 TString lorentzInv;
 
@@ -41,13 +45,18 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  // set cuts
+  cutGSIM   = cutTargType_gen && cutDIS_gen && cutPi0_gen;
+  cutSIMREC = cutTargType && cutDIS && cutStatus;
+  if (gsimFlag) cutSIMREC = "";
+  
   // extract histogram
   TChain *treeExtracted = new TChain();
   treeExtracted->Add(inputFile + "/mix");
 
   // create histogram
   TH1F *theHist;
-  treeExtracted->Draw(lorentzInv + ">>hist(250, 0, 2.5)", cutDIS && cutTargType && cutGSIM && cutStatus, "goff");
+  treeExtracted->Draw(lorentzInv + ">>hist(250, 0, 2.5)", cutSIMREC && cutGSIM, "goff");
   theHist = (TH1F *)gROOT->FindObject("hist");
 
   // create file, write hist and close file
@@ -63,7 +72,7 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./Acceptance_00 -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./Acceptance_00A -h to print usage." << std::endl;
     exit(0);
   }
   while ((c = getopt(argc, argv, "hs:g:r:")) != -1)
@@ -73,29 +82,29 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'g': simrecFlag = 0; gsimFlag = 1; targetOption = optarg; break;
     case 'r': runNumber = optarg; break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./Acceptance_00 -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./Acceptance_00A -h to print usage." << std::endl;
       exit(0);
       break;
     }
 }
 
 void printUsage() {
-  std::cout << "Acceptance (Stage 0) program. Usage is:" << std::endl;
+  std::cout << "Acceptance (Stage 0-A) program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Acceptance_00 -h" << std::endl;
+  std::cout << "./Acceptance_00A -h" << std::endl;
   std::cout << "  prints help and exits program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Acceptance_00 -[s,g][target]" << std::endl;
+  std::cout << "./Acceptance_00A -[s,g][target]" << std::endl;
   std::cout << "  selects simulation: s (simrec) or g (generated)" << std::endl;
   std::cout << "  selects target: D, C, Fe, Pb" << std::endl;
   std::cout << std::endl;  
-  std::cout << "./Acceptance_00 -r[rn]" << std::endl;
+  std::cout << "./Acceptance_00A -r[rn]" << std::endl;
   std::cout << "  choose run number" << std::endl;
   std::cout << std::endl;
 }
 
 void printOptions() {
-  std::cout << "Executing Acceptance (Stage 0) program. The chosen parameters are:" << std::endl;
+  std::cout << "Executing Acceptance (Stage 0-A) program. The chosen parameters are:" << std::endl;
   std::cout << "  simrecFlag   = " << simrecFlag << std::endl;
   std::cout << "  gsimFlag     = " << gsimFlag << std::endl;
   std::cout << "  targetOption = " << targetOption << std::endl;
@@ -107,22 +116,16 @@ void assignOptions() {
   // for targets
   if (targetOption == "D") {
     cutTargType = "TargType == 1";
-    if (gsimFlag) cutTargType = "mc_TargType == 1";
+    cutTargType_gen = "mc_TargType == 1";
   } else {
     cutTargType = "TargType == 2";
-    if (gsimFlag) cutTargType = "mc_TargType == 2";
+    cutTargType_gen = "mc_TargType == 2";
   }
   // for variable
   lorentzInv = "pi0M_corr";
   if (gsimFlag) lorentzInv = "mc_pi0M";
-  // cuts
-  if (gsimFlag) {
-    cutDIS = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
-    cutGSIM = "mc_pi0M > 0.12 && mc_pi0M < 0.15";
-  }
-  if (simrecFlag) cutStatus = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
   // filenames
   inputFile  = "comb" + targetOption + "_" + runNumber + ".root";
-  outputFile = "acc-0R-" + targetOption + "_" + runNumber + ".root";
-  if (gsimFlag) outputFile = "acc-0G-" + targetOption + "_" + runNumber + ".root";
+  outputFile = "acc-0AR-" + targetOption + "_" + runNumber + ".root";
+  if (gsimFlag) outputFile = "acc-0AG-" + targetOption + "_" + runNumber + ".root";
 }
