@@ -93,6 +93,7 @@ TCut cutPipPim_old = "0.48 > mpippim || 0.51 < mpippim"; // mikewood cut
 TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
 TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
 TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
+TCut cutStatus            = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
 
 // edges obtained with GetQuantiles.cxx
 const Double_t edgesQ2[6] = {1, 1.187, 1.376, 1.616, 2.008, 4};
@@ -128,6 +129,7 @@ const Float_t kMe = pdg.GetParticle(11)->Mass();
 const Float_t kMomega = pdg.GetParticle(223)->Mass();
 const Float_t kMeta = pdg.GetParticle(221)->Mass();
 const Float_t kMf1 = pdg.GetParticle(20223)->Mass();
+const Float_t kMK0 = pdg.GetParticle(311)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip

@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
   // make dir, just in case
   system("mkdir -p " + outDir);
   
-  TCut cutAll = cutDIS; // no cut on pippim nor pi0! we want to see it!
+  TCut cutAll = cutDIS && cutStatus; // no cut on pippim nor pi0! we want to see it! // updated!
 
   // define histograms
   TH2F *dataHist;
@@ -58,25 +58,10 @@ int main(int argc, char **argv) {
   
   /*** Setting alias - 0 ***/
   
-  // (1) -> pip, (2) -> pim, (3) -> pi0
-
-  // energy squared
-  treeExtracted->SetAlias("pipE2", "pipP2 + pipM*pipM");
-  treeExtracted->SetAlias("pipE", "TMath::Sqrt(pipE2)");
-  treeExtracted->SetAlias("pimE2", "pimP2 + pimM*pimM");
-  treeExtracted->SetAlias("pimE", "TMath::Sqrt(pimE2)");
-  // crossed terms
-  treeExtracted->SetAlias("pimpi0P", "Px[3]*pi0Px + Py[3]*pi0Py + Pz[3]*pi0Pz");
-  treeExtracted->SetAlias("pimpi0E", "pimE*pi0E");
-  treeExtracted->SetAlias("pippi0P", "Px[2]*pi0Px + Py[2]*pi0Py + Pz[2]*pi0Pz");
-  treeExtracted->SetAlias("pippi0E", "pipE*pi0E");
-  // dalitz plots!
-  treeExtracted->SetAlias("pippimM2", "pippimM*pippimM"); // better prevent
-  treeExtracted->SetAlias("pimpi0M2", "pimM*pimM + pi0M*pi0M + 2*(pimpi0E - pimpi0P)");
-  treeExtracted->SetAlias("pippi0M2", "pipM*pipM + pi0M*pi0M + 2*(pippi0E - pippi0P)");
-  // for the cuts
-  treeExtracted->SetAlias("pimpi0M", "TMath::Sqrt(pimpi0M2)");
-  treeExtracted->SetAlias("pippi0M", "TMath::Sqrt(pippi0M2)");
+  // define some aliases
+  treeExtracted->SetAlias("pippimM2", "pippimM*pippimM");
+  treeExtracted->SetAlias("pippi0M2", "pippi0M*pippi0M");
+  treeExtracted->SetAlias("pimpi0M2", "pimpi0M*pimpi0M");
   
   /*** The cuts: pip pim vs pim pi0 ***/
   
@@ -282,18 +267,18 @@ void assignOptions() {
     // for targets
     if (targetOption == "D") {
       cutTargType = "TargType == 1";
-      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
-      inputFile2 = dataDir + "/Fe/comb_Fe-thickD2.root";
-      inputFile3 = dataDir + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/C/comb_dataC.root";
+      inputFile2 = dataDir + "/Fe/comb_dataFe.root";
+      inputFile3 = dataDir + "/Pb/comb_dataPb.root";
     } else if (targetOption == "C") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/C/comb_C-thickD2.root";
+      inputFile1 = dataDir + "/C/comb_dataC.root";
     } else if (targetOption == "Fe") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/Fe/comb_Fe-thickD2.root";
+      inputFile1 = dataDir + "/Fe/comb_dataFe.root";
     } else if (targetOption == "Pb") {
       cutTargType = "TargType == 2";
-      inputFile1 = dataDir + "/Pb/comb_Pb-thinD2.root";
+      inputFile1 = dataDir + "/Pb/comb_dataPb.root";
     }
     // out
     outFile1 = outDir + "/dalitz1-" + targetOption + ".png";
