@@ -30,7 +30,7 @@ SIMDIR=$PRODIR/out/FilterNCombine/${setOption}/${tarName}/
 cp -v $PRODIR/bin/Acceptance_00B $SIMDIR
 
 cd $SIMDIR
-for file in $SIMDIR/*; do
+for file in $SIMDIR/comb*.root; do
     rn="${file#*_}"
     rn="${rn/.root/}"
     ./Acceptance_00B -s${tarName} -r${rn}
