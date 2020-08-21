@@ -25,7 +25,7 @@ TString inputFile, outputFile;
 // cuts
 TCut cutTargType, cutTargType_gen; // depend on chosen target
 TCut cutDIS_gen = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
-TCut cutPi0_gen = "mc_pi0M > 0.12 && mc_pi0M < 0.15";
+// TCut cutPi0_gen = "mc_pi0M > 0.12 && mc_pi0M < 0.15";
 TCut cutSIMREC;
 TCut cutGSIM;
 
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   printOptions();
 
   // set cuts
-  cutGSIM   = cutTargType_gen && cutDIS_gen && cutPi0_gen;
+  cutGSIM   = cutTargType_gen && cutDIS_gen;
   cutSIMREC = cutTargType && cutDIS && cutStatus;
   if (gsimFlag) cutSIMREC = "";
   
