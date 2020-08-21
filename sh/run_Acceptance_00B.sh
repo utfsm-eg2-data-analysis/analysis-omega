@@ -44,4 +44,9 @@ for file in $SIMDIR/comb*.root; do
     ./Acceptance_00B ${inputOption} -r${rn}
 done
 
-hadd acc-0B${letter}-${setOption}-${tarName}.root acc-0B${letter}-*.root
+rm acc-0B${letter}-${setOption}-${tarName}.root # just in case
+hadd acc.root acc-0B${letter}-*.root
+rm acc-0B${letter}-*.root # to clean a little
+mv acc.root acc-0B${letter}-${setOption}-${tarName}.root
+
+rm Acceptance_00B

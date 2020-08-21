@@ -38,20 +38,20 @@ int main() {
   gStyle->SetOptStat(0);
       
   // x-bin width = 5 MeV
-  Int_t    Nbins = 500;
+  Int_t    Nbins = 100;
   Double_t plotRangeDown = 0.0;
-  Double_t plotRangeUp = 2.5;
+  Double_t plotRangeUp = 0.5;
 
-  Double_t sigmaIGV = 2.e-2;
-  Double_t sigmaRangeDown = 1.8e-2;
+  Double_t sigmaIGV = 1.7e-2;
+  Double_t sigmaRangeDown = 1.5e-2;
   Double_t sigmaRangeUp = 2.2e-2;
 
-  Double_t meanIGV = 0.131;
-  Double_t meanRangeDown = 0.127;
-  Double_t meanRangeUp = 0.137;
+  Double_t meanIGV = 0.135;
+  Double_t meanRangeDown = 0.132;
+  Double_t meanRangeUp = 0.138;
 
-  Double_t fitRangeDown = 0.11;
-  Double_t fitRangeUp = 0.16;
+  Double_t fitRangeDown = 0.12;
+  Double_t fitRangeUp = 0.15;
 
   // opening file
   TFile *file = new TFile(inputFile);
