@@ -37,9 +37,13 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
 
-PROG := GetSimpleTuple FilterNCombine_data FilterNCombine_sim MakePlots CheckStatusCuts_flow CheckStatusCuts_indiv SystPi0Mass\
-	CheckBkg_f1 CheckStatusCuts_ratio CheckPi0Corr_ratio CheckStatusCuts_MR CheckStatusCuts_pip Acceptance_00A Acceptance_00B\
-	DalitzPlots CheckKaonsBand # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
+PROG := GetSimpleTuple FilterNCombine_data FilterNCombine_sim\
+	MakePlots\
+	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\
+	SystPi0Mass\
+	CheckBkg_f1 CheckPi0Corr_ratio\
+	DalitzPlots CheckKaonsBand\
+	Acceptance_00A Acceptance_00B Acceptance_01 # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
 	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents MakeMR-compare SumPtVectors CutFlow\

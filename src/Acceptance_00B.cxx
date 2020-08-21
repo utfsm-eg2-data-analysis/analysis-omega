@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 
   // create histogram
   TH1F *theHist;
-  treeExtracted->Draw(lorentzInv + ">>hist(150, 0, 1.5)", cutSIMREC && cutGSIM, "goff");
+  treeExtracted->Draw(lorentzInv + ">>hist(150, 0, 1.5)", cutSIMREC && cutGSIM, "goff"); // 10 MeV per bin
   theHist = (TH1F *)gROOT->FindObject("hist");
 
   // create file, write hist and close file
