@@ -28,6 +28,7 @@ source ~/.bashrc
 cd ${PRODIR}
 
 XMLDIR=${PRODIR}/xml/gett/
+mkdir -p $XMLDIR
 
 # declaration of variables
 #jobfile=
