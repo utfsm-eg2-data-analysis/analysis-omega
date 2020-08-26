@@ -46,7 +46,7 @@ tarName="${tarName%_*}"
 runNumber="${basename%.root}"
 runNumber="${runNumber##*_}"
 dirname="${INFILE%/*}"
-nDir="${INFILE##*/}"
+nDir="${dirname##*/}"
 
 jobname="gett_${tarName}-${nDir}_${runNumber}"
 jobfile="${XMLDIR}/${jobname}.xml"
