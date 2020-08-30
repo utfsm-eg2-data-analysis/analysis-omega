@@ -50,14 +50,15 @@ INDIR=/home/borquez/volatile/omegaSim/output/$tarName
 OUDIR=/home/borquez/volatile/omegaSim/output/$(echo "${tarName}2")
 XMLDIR=${PRODIR}/xml/split/${tarName}/${nDir}
 
-mkdir -p $OUDIR # just in case
-mkdir -p $XMLDIR # just in case
+# just in case
+mkdir -p $OUDIR
+mkdir -p $XMLDIR
 
 # declaration of variables
 #jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="analysis" # "debug"
+jobtrack="debug" # "debug" or "analysis"
 jobos="general"
 #jobname=
 jobtime="1" # hour
@@ -82,7 +83,7 @@ echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                           
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # define input files
 runscript="${PRODIR}/sh/jlab/run_split.sh"
-realscript="/home/borquez/volatile/hsplit/hsplit.sh"
+realscript="/home/borquez/volatile/hsplit/hsplit.sh" # good
 thefile="${INDIR}/${nDir}/recsis${tarName}_${runNumber}.root"
 # move input files to node dir
 echo "  <Input src=\"${runscript}\"  dest=\"run_split.sh\"/>"                     >> ${jobfile}
@@ -91,7 +92,7 @@ echo "  <Input src=\"${thefile}\"    dest=\"recsis.root\"/>"                    
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
 echo "    sed -i \"s|^optionA=|optionA=--F|g\"         run_split.sh"              >> ${jobfile}
-echo "    sed -i \"s|^optionB=|optionB=10|g\"          run_split.sh"              >> ${jobfile} # updated!
+echo "    sed -i \"s|^optionB=|optionB=35|g\"          run_split.sh"              >> ${jobfile} # updated!
 echo "    sed -i \"s|^optionC=|optionC=recsis.root|g\" run_split.sh"              >> ${jobfile}
 echo "    chmod 755 ./run_split.sh"                                               >> ${jobfile}
 echo "    sh run_split.sh"                                                        >> ${jobfile}
