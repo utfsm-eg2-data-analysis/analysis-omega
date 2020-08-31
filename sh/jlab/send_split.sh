@@ -15,13 +15,11 @@
 # Functions
 ###
 
-function get_num()
+function get_num_2dig()
 {
   sr=$1
   srn=""
   if [[ $sr -lt 10 ]]; then
-    srn="00$sr"
-  elif [[ $sr -lt 100 ]]; then
     srn="0$sr"
   else
     srn="$sr"
@@ -61,9 +59,9 @@ jobproject="eg2a"
 jobtrack="debug" # "debug" or "analysis"
 jobos="general"
 #jobname=
-jobtime="1" # hour
+jobtime="30" # minutes
 jobspace="1" # GB
-jobmemory="1" # GB
+jobmemory="2" # GB
 #inrootfile=
 #outrootfile=
 jobname="SPLIT_${tarName}-${nDir}-${runNumber}"
@@ -77,7 +75,7 @@ echo "  <Project name=\"${jobproject}\"/>"                                      
 echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
 echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
 echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
 echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
@@ -89,10 +87,12 @@ thefile="${INDIR}/${nDir}/recsis${tarName}_${runNumber}.root"
 echo "  <Input src=\"${runscript}\"  dest=\"run_split.sh\"/>"                     >> ${jobfile}
 echo "  <Input src=\"${realscript}\" dest=\"hsplit.sh\"/>"                        >> ${jobfile}
 echo "  <Input src=\"${thefile}\"    dest=\"recsis.root\"/>"                      >> ${jobfile}
+# how many files do you desire? hardcoded
+howmany=35
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
 echo "    sed -i \"s|^optionA=|optionA=--F|g\"         run_split.sh"              >> ${jobfile}
-echo "    sed -i \"s|^optionB=|optionB=35|g\"          run_split.sh"              >> ${jobfile} # updated!
+echo "    sed -i \"s|^optionB=|optionB=${howmany}|g\"  run_split.sh"              >> ${jobfile}
 echo "    sed -i \"s|^optionC=|optionC=recsis.root|g\" run_split.sh"              >> ${jobfile}
 echo "    chmod 755 ./run_split.sh"                                               >> ${jobfile}
 echo "    sh run_split.sh"                                                        >> ${jobfile}
@@ -100,13 +100,13 @@ echo "  ]]></Command>"                                                          
 # define and make output dirs
 REALOUDIR=$OUDIR/$nDir
 mkdir -p $REALOUDIR
-outfile1=$REALOUDIR/recsis${tarName}_${runNumber}_01.root
-outfile2=$REALOUDIR/recsis${tarName}_${runNumber}_02.root
-outfile3=$REALOUDIR/recsis${tarName}_${runNumber}_03.root
-# move output files from node dir
-echo "  <Output src=\"recsis_01.root\" dest=\"${outfile1}\"/>"                    >> ${jobfile}
-echo "  <Output src=\"recsis_02.root\" dest=\"${outfile2}\"/>"                    >> ${jobfile}
-echo "  <Output src=\"recsis_03.root\" dest=\"${outfile3}\"/>"                    >> ${jobfile}
+# loop for future split files
+for ((counter=1; counter <= $howmany; counter++)); do
+    scounter=$(get_num_2dig $counter)
+    outfile=$REALOUDIR/recsis${tarName}_${runNumber}_${scounter}.root
+    # move output files from node dir
+    echo "  <Output src=\"recsis_${scounter}.root\" dest=\"${outfile}\"/>"        >> ${jobfile}
+done
 echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
 echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
 echo "  <Job>"                                                                    >> ${jobfile}
