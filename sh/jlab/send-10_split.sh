@@ -1,43 +1,6 @@
 #!/bin/bash
 
-##############################################################
-# ./send-10_split.sh                                         #
-#                                                            #
-##############################################################
-
-#####
-# Functions
-###
-
-function get_num_2dig()
-{
-  sr=$1
-  srn=""
-  if [[ $sr -lt 10 ]]; then
-    srn="0$sr"
-  else
-    srn="$sr"
-  fi
-  echo $srn
-}
-
-function get_num_3dig()
-{
-  sr=$1
-  srn=""
-  if [[ $sr -lt 10 ]]; then
-    srn="00$sr"
-  elif [[ $sr -lt 100 ]]; then
-    srn="0$sr"
-  else
-    srn="$sr"
-  fi
-  echo $srn
-}
-
-#####
-# Main
-##
+# ./send-10_split.sh
 
 source ~/.bashrc
 cd ${PRODIR}/sh/jlab

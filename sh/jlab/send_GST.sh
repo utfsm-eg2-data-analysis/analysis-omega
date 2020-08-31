@@ -89,35 +89,31 @@ else
     elif [[ "${setOption}" == "usm" ]]; then
 	DATADIR="/home/borquez/volatile/omegaSim/usm/${tarName}"
     elif [[ "${setOption}" == "jlab" ]]; then
-	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}2/${nDir}" # updated
+	DATADIR="/home/borquez/volatile/omegaSim/output/${tarName}2/${nDir}"
     fi
     inputOption="-s"
     nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
 
 # declaration of variables
-#jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="analysis" # "debug"
+jobtrack="debug" # "debug" or "analysis"
 jobos="general"
-#jobname=
-jobtime="2" # hours
-jobspace="10" # GB
-jobmemory="5" # GB
+jobtime="4" # hours
+jobspace="1" # GB
+jobmemory="3" # GB
 thebinary="${PRODIR}/bin/GetSimpleTuple"
-#inrootfile=
-#outrootfile=
 execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
-for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
+for ((COUNTER=1; COUNTER <= 10; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${nfiles}" or "COUNTER <= 100"
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
     elif [[ "${setOption}" == "old"  || "${setOption}" == "usm" ]]; then
 	rn=$(get_num_2dig "$COUNTER") # starts at 01
     elif [[ "${setOption}" == "jlab" ]]; then
-	rn=$(get_num_3dig "$COUNTER") # starts at 001
+	rn=$(get_num_2dig $(($COUNTER-1)) ) # rn starts at 00
     fi
 
     # setting jobname
@@ -148,6 +144,12 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
 	    inrootfile=$(readlink -f $file)
 	    echo "  <Input src=\"mss:${inrootfile##/w}\" dest=\"${file##*/}\"/>"      >> ${jobfile}
 	done
+    elif [[ "$setOption" == "jlab" ]]; then
+	for ((su=1; su <= 35; su++)); do
+	    ssu=$(get_num_2dig $su)
+	    inrootfile="${DATADIR}/recsis${tarName}_${rn}_${ssu}.root"
+	    echo "  <Input src=\"${inrootfile}\" dest=\"recsis${tarName}_${rn}_${ssu}.root\"/>"  >> ${jobfile}
+	done
     else
 	inrootfile="${DATADIR}/recsis${tarName}_${rn}.root"
 	echo "  <Input src=\"${inrootfile}\" dest=\"recsis${tarName}_${rn}.root\"/>"  >> ${jobfile}
@@ -160,9 +162,12 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do
     echo "    chmod 755 ./run_GST.sh"                                                 >> ${jobfile}
     echo "    sh run_GST.sh"                                                          >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
-    # set outputs
-    outrootfile="${OUDIR}/pruned${tarName}_${rn}.root"
-    echo "  <Output src=\"pruned${tarName}_${rn}.root\" dest=\"${outrootfile}\"/>"    >> ${jobfile}
+    # set outputs, updated to 35 files per each rn
+    for ((sub=1; sub <= 35; sub++)); do
+	ssub=$(get_num_2dig $sub)
+	outrootfile="${OUDIR}/pruned${tarName}_${rn}_${ssub}.root"
+	echo "  <Output src=\"pruned${tarName}_${rn}_${ssub}.root\" dest=\"${outrootfile}\"/>"    >> ${jobfile}
+    done
     echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
     echo "  <Job>"                                                                    >> ${jobfile}
