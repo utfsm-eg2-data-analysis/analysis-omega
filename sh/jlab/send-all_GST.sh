@@ -50,7 +50,6 @@ cd ${PRODIR}/sh/jlab
 # ./send_GST.sh usm Pb
 
 # Simulations/jlab
-
 if [[ "$tarName" == "D" ]]; then
     totalDirs=46
 elif [[ "$tarName" == "C" ]]; then
@@ -62,6 +61,6 @@ elif [[ "$tarName" == "Pb" ]]; then
 fi
 
 for ((j=1; j <= ${totalDirs}; j++)); do
-    ndir=$(get_num_3dig "$j")
+    ndir=$(get_num_3dig $j)
     ./send_GST.sh jlab ${tarName} ${ndir}
 done

@@ -98,15 +98,28 @@ fi
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug" or "analysis"
+jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="4" # hours
-jobspace="1" # GB
-jobmemory="3" # GB
+jobtime="30" # minutes
+jobspace="1.5" # GB
+jobmemory="512" # MB
 thebinary="${PRODIR}/bin/GetSimpleTuple"
 execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
-for ((COUNTER=1; COUNTER <= 10; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${nfiles}" or "COUNTER <= 100"
+# set limit files
+if [[ "$tarName" == "D" && "$nDir" == "046" ]]; then
+    lastFile=89
+elif [[ "$tarName" == "C" && "$nDir" == "010" ]]; then
+    lastFile=28
+elif [[ "$tarName" == "Fe" && "$nDir" == "013" ]]; then
+    lastFile=31
+elif [[ "$tarName" == "Pb" && "$nDir" == "004" ]]; then
+    lastFile=98
+else
+    lastFile=100  
+fi
+
+for ((COUNTER=1; COUNTER <= $lastFile; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${lastFile}"
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
@@ -132,9 +145,9 @@ for ((COUNTER=1; COUNTER <= 10; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <=
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-    echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+    echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"GetSimpleTuple\"/>"                   >> ${jobfile}
