@@ -52,7 +52,7 @@ cd ${PRODIR}/sh/jlab
 
 if [[ "$tarName" == "D" ]]; then
     totalDirs=46
-    lastFileInLastDir=81
+    lastFileInLastDir=88
 elif [[ "$tarName" == "C" ]]; then
     totalDirs=10
     lastFileInLastDir=27

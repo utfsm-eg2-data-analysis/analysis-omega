@@ -56,12 +56,12 @@ mkdir -p $XMLDIR
 #jobfile=
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug" or "analysis"
+jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
 #jobname=
-jobtime="30" # minutes
+jobtime="15" # minutes
 jobspace="1" # GB
-jobmemory="2" # GB
+jobmemory="512" # MB
 #inrootfile=
 #outrootfile=
 jobname="SPLIT_${tarName}-${nDir}-${runNumber}"
@@ -77,7 +77,7 @@ echo "  <OS name=\"${jobos}\"/>"                                                
 echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
 echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
 echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # define input files
 runscript="${PRODIR}/sh/jlab/run_split.sh"
