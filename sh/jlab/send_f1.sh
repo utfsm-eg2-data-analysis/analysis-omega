@@ -72,15 +72,15 @@ nfiles=$(wc -l < ${rnlist})
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug" or "analysis"
+jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="2" # hours
+jobtime="15" # minutes
 jobspace="1" # GB
-jobmemory="2" # GB
+jobmemory="512" # MB
 thebinary="${PRODIR}/bin/FilterNCombine_f1"
 execfile="${PRODIR}/sh/jlab/run_f1.sh"
 
-for ((COUNTER=1; COUNTER <= 10; COUNTER++)); do # "10" or "${nfiles}"
+for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "10" or "${nfiles}"
     # update rn value
     rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
 
@@ -96,9 +96,9 @@ for ((COUNTER=1; COUNTER <= 10; COUNTER++)); do # "10" or "${nfiles}"
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-    echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+    echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine_f1\"/>"                >> ${jobfile}
