@@ -54,33 +54,33 @@ Float_t mQ2, mW, mNu, mXb, mYb, mXe, mYe, mZe, mSectorEl, mTargType, mPex, mPey,
 Float_t mP2e;
 Float_t mStatDCEl, mDCStatusEl, mStatECEl, mECStatusEl, mTimeECEl, mPathECEl, mChi2ECEl, mStatSCEl, mSCStatusEl, mTimeSCEl, mPathSCEl, mStatCCEl, mCCStatusEl, mNpheEl, mChi2CCEl, mStatusEl;
 // particles (60) (16 + 3*6 + 10 + 16)
-Float_t mvxh[4], mvyh[4], mvzh[4], mSector[4], mBetta[4], mMass2[4], mEtot[4], mEin[4], mEout[4], mXEC[4], mYEC[4], mZEC[4], mPid[4], mT4[4], mdeltaZ[4], mM[4];
-Float_t mE_prev[4], mPx_prev[4], mPy_prev[4], mPz_prev[4], mP2_prev[4], mP_prev[4];
-Float_t mE_true[4], mPx_true[4], mPy_true[4], mPz_true[4], mP2_true[4], mP_true[4];
-Float_t mE_corr[4], mPx_corr[4], mPy_corr[4], mPz_corr[4], mP2_corr[4], mP_corr[4];
-Float_t mZ[4], mThetaPQ[4], mPt2[4], mPl2[4], mPhiPQ[4], mMx2[4], mT[4], mCosThetaPQ[4], mBettaCalc[4], mdeltaTheta[4];
-Float_t mStatDC[4], mDCStatus[4], mStatEC[4], mECStatus[4], mTimeEC[4], mPathEC[4], mChi2EC[4], mStatSC[4];
-Float_t mSCStatus[4], mTimeSC[4], mPathSC[4], mStatCC[4], mCCStatus[4], mNphe[4], mChi2CC[4], mStatus[4];
-// pi0 (24) (3*8new)
-Float_t pi0Px_prev, pi0Py_prev, pi0Pz_prev, pi0P2_prev, pi0P_prev, pi0E_prev, pi0M_prev, pi0Theta_prev;
-Float_t pi0Px_true, pi0Py_true, pi0Pz_true, pi0P2_true, pi0P_true, pi0E_true, pi0M_true, pi0Theta_true;
-Float_t pi0Px_corr, pi0Py_corr, pi0Pz_corr, pi0P2_corr, pi0P_corr, pi0E_corr, pi0M_corr, pi0Theta_corr;
-// f1 (57) (3*19new)
+Float_t mvxh[6], mvyh[6], mvzh[6], mSector[6], mBetta[6], mMass2[6], mEtot[6], mEin[6], mEout[6], mXEC[6], mYEC[6], mZEC[6], mPid[6], mT4[6], mdeltaZ[6], mM[6];
+Float_t mE_prev[6], mPx_prev[6], mPy_prev[6], mPz_prev[6], mP2_prev[6], mP_prev[6];
+Float_t mE_true[6], mPx_true[6], mPy_true[6], mPz_true[6], mP2_true[6], mP_true[6];
+Float_t mE_corr[6], mPx_corr[6], mPy_corr[6], mPz_corr[6], mP2_corr[6], mP_corr[6];
+Float_t mZ[6], mThetaPQ[6], mPt2[6], mPl2[6], mPhiPQ[6], mMx2[6], mT[6], mCosThetaPQ[6], mBettaCalc[6], mdeltaTheta[6];
+Float_t mStatDC[6], mDCStatus[6], mStatEC[6], mECStatus[6], mTimeEC[6], mPathEC[6], mChi2EC[6], mStatSC[6];
+Float_t mSCStatus[6], mTimeSC[6], mPathSC[6], mStatCC[6], mCCStatus[6], mNphe[6], mChi2CC[6], mStatus[6];
+// pi0A (24) (3*8new)
+Float_t pi0A_Px_prev, pi0A_Py_prev, pi0A_Pz_prev, pi0A_P2_prev, pi0A_P_prev, pi0A_E_prev, pi0A_M_prev, pi0A_Theta_prev;
+Float_t pi0A_Px_true, pi0A_Py_true, pi0A_Pz_true, pi0A_P2_true, pi0A_P_true, pi0A_E_true, pi0A_M_true, pi0A_Theta_true;
+Float_t pi0A_Px_corr, pi0A_Py_corr, pi0A_Pz_corr, pi0A_P2_corr, pi0A_P_corr, pi0A_E_corr, pi0A_M_corr, pi0A_Theta_corr;
+// pi0B (24) (3*8new)
+Float_t pi0B_Px_prev, pi0B_Py_prev, pi0B_Pz_prev, pi0B_P2_prev, pi0B_P_prev, pi0B_E_prev, pi0B_M_prev, pi0B_Theta_prev;
+Float_t pi0B_Px_true, pi0B_Py_true, pi0B_Pz_true, pi0B_P2_true, pi0B_P_true, pi0B_E_true, pi0B_M_true, pi0B_Theta_true;
+Float_t pi0B_Px_corr, pi0B_Py_corr, pi0B_Pz_corr, pi0B_P2_corr, pi0B_P_corr, pi0B_E_corr, pi0B_M_corr, pi0B_Theta_corr;
+// f1 (54) (3*18new)
 Float_t wPx_prev, wPy_prev, wPz_prev, wP_prev, wP2_prev, wE_prev;
-Float_t wZ_prev, wCosThetaPQ_prev, wThetaPQ_prev, wPt2_prev, wPl2_prev, wPhiPQ_prev, wMx2_prev, wT_prev, wBettaCalc_prev, wdeltaTheta_prev, wD_prev, wM_prev;
+Float_t wZ_prev, wCosThetaPQ_prev, wThetaPQ_prev, wPt2_prev, wPl2_prev, wPhiPQ_prev, wMx2_prev, wT_prev, wBettaCalc_prev, wdeltaTheta_prev, wM_prev;
 Float_t wPx_true, wPy_true, wPz_true, wP_true, wP2_true, wE_true;
-Float_t wZ_true, wCosThetaPQ_true, wThetaPQ_true, wPt2_true, wPl2_true, wPhiPQ_true, wMx2_true, wT_true, wBettaCalc_true, wdeltaTheta_true, wD_true, wM_true;
+Float_t wZ_true, wCosThetaPQ_true, wThetaPQ_true, wPt2_true, wPl2_true, wPhiPQ_true, wMx2_true, wT_true, wBettaCalc_true, wdeltaTheta_true, wM_true;
 Float_t wPx_corr, wPy_corr, wPz_corr, wP_corr, wP2_corr, wE_corr;
-Float_t wZ_corr, wCosThetaPQ_corr, wThetaPQ_corr, wPt2_corr, wPl2_corr, wPhiPQ_corr, wMx2_corr, wT_corr, wBettaCalc_corr, wdeltaTheta_corr, wD_corr, wM_corr;
-// crossed terms (9)
-Float_t pippimP, pippimE, pippimM;
-Float_t pippi0P, pippi0E, pippi0M;
-Float_t pimpi0P, pimpi0E, pimpi0M;
+Float_t wZ_corr, wCosThetaPQ_corr, wThetaPQ_corr, wPt2_corr, wPl2_corr, wPhiPQ_corr, wMx2_corr, wT_corr, wBettaCalc_corr, wdeltaTheta_corr, wM_corr;
 // number of particles (3)
 Float_t nPip, nPim, nGamma;
 // event related (2)
 Float_t mEvent;
-Float_t mEntry[4];
+Float_t mEntry[6];
 
 /*** Options ***/
 
@@ -163,18 +163,22 @@ int main(int argc, char **argv) {
     }
 
     // commentary
-    std::cout << "Current event number: " << currentEvent << std::endl;
-    std::cout << "Current entry number: " << i << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-
+    /*
+      std::cout << "Current event number: " << currentEvent << std::endl;
+      std::cout << "Current entry number: " << i << std::endl;
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    */
+    
     // count particles in the current event
     for (Int_t j = i; j <= Ne; j++) {
       t->GetEntry(j);
       if (currentEvent == (Int_t) tevnt) {
 	// commentary
-	std::cout << "  Entry number: " << j << std::endl;
-	std::cout << "  pid:          " << tpid << std::endl;
-	std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;	
+	/*
+	  std::cout << "  Entry number: " << j << std::endl;
+	  std::cout << "  pid:          " << tpid << std::endl;
+	  std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+	*/
 	// count the data particles
 	if (tpid == (Float_t) 211) nPipThisEvent++;
 	if (tpid == (Float_t) -211) nPimThisEvent++;
@@ -185,11 +189,13 @@ int main(int argc, char **argv) {
     }
     
     // commentary
+    /*
     std::cout << "  nPip     = " << nPipThisEvent << std::endl;
     std::cout << "  nPim     = " << nPimThisEvent << std::endl;
     std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
     std::cout << "  " << nPipThisEvent << " - " << nPimThisEvent << " - " << nGammaThisEvent << " - " << i << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    */
     
     // f1 candidate appeared for data!
     if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 4) {
@@ -200,26 +206,27 @@ int main(int argc, char **argv) {
     }
 
     // commentary
+    /*
     std::cout << "  There are " << nCombThisEvent << " f1!" << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    */
     
     /*** ORIGINAL ***/
 
     // saves all information from the original particles from an approved event, with no mixing
     // warning: all the hadronic variables correspond to the respective hadron, nothing more
-    /*
     if (nCombThisEvent > 0) {
       // looks at the entries (particles) of the current event
       for (Int_t j = i; j < (i+nParticles); j++) {
 	t->GetEntry(j);
-	AssignOriginalVariables(j); // AOV(Int_t entry)	
+	AssignOriginal(j); // AOV(Int_t entry)	
 	tOriginal->Fill();
       } // end of particles loop
     } // end of candidate condition
 
     // commentary
-    std::cout << "  !! Fill original ready!" << std::endl;
-    */
+    // std::cout << "  !! Fill original ready!" << std::endl;
+
     /*** THE MIXING ***/
 
     // PART 1: obtain & keep combinations from data
@@ -391,39 +398,86 @@ int main(int argc, char **argv) {
     } // end of at-least-one-f1 condition
 
     // commentary
-    std::cout << "  !! Obtain & keep combinations from data ready!" << std::endl;
+    // std::cout << "  !! Obtain & keep combinations from data ready!" << std::endl;
 
     // PART 2: fill
 
     // commentary
+    /*
     std::cout << "  f1 candidates for data:" << std::endl;
     for (Int_t c = 0; c < (nCombThisEvent/3); c++) {
-      std::cout << "  {" << combVectorX[c][0] << ", " << combVectorX[c][1] << ", "  << combVectorX[c][2] << ", " << combVectorX[c][3] << ", "  <<  combVectorX[c][4] << ", " << combVectorX[c][5] << "}" << std::endl;
-      std::cout << "  {" << combVectorY[c][0] << ", " << combVectorY[c][1] << ", "  << combVectorY[c][2] << ", " << combVectorY[c][3] << ", "  <<  combVectorY[c][4] << ", " << combVectorY[c][5] << "}" << std::endl;
-      std::cout << "  {" << combVectorZ[c][0] << ", " << combVectorZ[c][1] << ", "  << combVectorZ[c][2] << ", " << combVectorZ[c][3] << ", "  <<  combVectorZ[c][4] << ", " << combVectorZ[c][5] << "}" << std::endl;
+      std::cout << "  {" << combVectorX[c][0] << ", " << combVectorX[c][1]
+		<< ", "  << combVectorX[c][2] << ", " << combVectorX[c][3]
+		<< ", "  <<  combVectorX[c][4] << ", " << combVectorX[c][5] << "}" << std::endl;
+      std::cout << "  {" << combVectorY[c][0] << ", " << combVectorY[c][1]
+		<< ", "  << combVectorY[c][2] << ", " << combVectorY[c][3]
+		<< ", "  <<  combVectorY[c][4] << ", " << combVectorY[c][5] << "}" << std::endl;
+      std::cout << "  {" << combVectorZ[c][0] << ", " << combVectorZ[c][1]
+		<< ", "  << combVectorZ[c][2] << ", " << combVectorZ[c][3]
+		<< ", "  <<  combVectorZ[c][4] << ", " << combVectorZ[c][5] << "}" << std::endl;
     }
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    */
     
-    // extract
-    /*
-    for (Int_t cc = 0; cc < nCombThisEvent; cc++) { // loop on combinations
+    // extract for (X)
+    for (Int_t cc = 0; cc < (nCombThisEvent/3); cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 6; pp++) { // loop on particles
-	t->GetEntry(combVector[cc][pp]);
-	AssignMixVariables(combVector[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
+	// (0 -> gammaA1, 1 -> gammaA2, 2 -> gammaB1, 3 -> gammaB2, 4 -> pip, 5 -> pim)
+	t->GetEntry(combVectorX[cc][pp]);
+	AssignMix(combVectorX[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
       } // end of loop in particles
 
       // after assigning each decay particle, assign the rest of variables
-      AssignPi0Variables();
-      Assignf1Variables();
-      AssignMoreVariables(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+      AssignPi0A();
+      AssignPi0B();
+      Assignf1();
+      AssignMore(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
 
       // ...and fill
       tMix->Fill();      
     } // end of loop in combinations
+    // std::cout << "Fill f1 - X ready!" << std::endl;
+    
+    // extract for (Y)
+    for (Int_t cc = 0; cc < (nCombThisEvent/3); cc++) { // loop on combinations
+      for (Int_t pp = 0; pp < 6; pp++) { // loop on particles
+	// (0 -> gammaA1, 1 -> gammaA2, 2 -> gammaB1, 3 -> gammaB2, 4 -> pip, 5 -> pim)
+	t->GetEntry(combVectorY[cc][pp]);
+	AssignMix(combVectorY[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
+      } // end of loop in particles
 
+      // after assigning each decay particle, assign the rest of variables
+      AssignPi0A();
+      AssignPi0B();
+      Assignf1();
+      AssignMore(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+
+      // ...and fill
+      tMix->Fill();      
+    } // end of loop in combinations
+    // std::cout << "Fill f1 - Y ready!" << std::endl;
+    
+    // extract for (Z)
+    for (Int_t cc = 0; cc < (nCombThisEvent/3); cc++) { // loop on combinations
+      for (Int_t pp = 0; pp < 6; pp++) { // loop on particles
+	// (0 -> gammaA1, 1 -> gammaA2, 2 -> gammaB1, 3 -> gammaB2, 4 -> pip, 5 -> pim)
+	t->GetEntry(combVectorZ[cc][pp]);
+	AssignMix(combVectorZ[cc][pp], pp); // AMV(entry, index) - inside is the condition of a valid pid
+      } // end of loop in particles
+
+      // after assigning each decay particle, assign the rest of variables
+      AssignPi0A();
+      AssignPi0B();
+      Assignf1();
+      AssignMore(nGammaThisEvent, nPipThisEvent, nPimThisEvent);
+
+      // ...and fill
+      tMix->Fill();      
+    } // end of loop in combinations
+    // std::cout << "Fill f1 - Z ready!" << std::endl;
+    
     // commentary
-    std::cout << "  !! Fill combinations in mix ready!" << std::endl;
-    */
+    // std::cout << "  !! Fill combinations in mix ready!" << std::endl;
     
     // reset counters
     nPipThisEvent = 0;
@@ -439,8 +493,10 @@ int main(int argc, char **argv) {
     combVectorZ.clear();
     
     // commentary
+    /*
     std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
+    */
   } // end of loop in entries
 
   /*** Writing tree ***/
