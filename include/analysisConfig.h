@@ -130,6 +130,7 @@ const Float_t kMomega = pdg.GetParticle(223)->Mass();
 const Float_t kMeta = pdg.GetParticle(221)->Mass();
 const Float_t kMf1 = pdg.GetParticle(20223)->Mass();
 const Float_t kMK0 = pdg.GetParticle(311)->Mass();
+const Float_t kMrho = pdg.GetParticle(113)->Mass();
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
