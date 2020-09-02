@@ -135,14 +135,15 @@ int main(int argc, char **argv) {
   Int_t nGammaThisEvent = 0;
   Int_t nParticles = 0;
 
-  Int_t nPi0ThisEvent = 0;
   Int_t nCombThisEvent = 0;
 
   Int_t nf1 = 0;
   Int_t nAtLeastf1 = 0;
   
-  // combination vectors
-  std::vector<std::vector <int>> combVector;
+  // combination vectors for the 3 possible f1
+  std::vector<std::vector <int>> combVectorX;
+  std::vector<std::vector <int>> combVectorY;
+  std::vector<std::vector <int>> combVectorZ;
   
   /*** START ***/
   
@@ -150,7 +151,7 @@ int main(int argc, char **argv) {
   Int_t currentEvent, previousEvent;
   
   // loop in entries
-  for (Int_t i = 0; i <= Ne; i++) {
+  for (Int_t i = 0; i <= Ne; i++) { // "Ne"
     t->GetEntry(i);
     currentEvent = (Int_t) tevnt;
     
@@ -182,15 +183,12 @@ int main(int argc, char **argv) {
 	j = Ne; // break loop, optimize
       }
     }
-
-    // combine pi0
-    nPi0ThisEvent = TMath::Binomial(nGammaThisEvent, 2);
     
     // commentary
     std::cout << "  nPip     = " << nPipThisEvent << std::endl;
     std::cout << "  nPim     = " << nPimThisEvent << std::endl;
     std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    std::cout << "  nPi0     = " << nPi0ThisEvent << std::endl; // nf1 = npi0/2
+    std::cout << "  " << nPipThisEvent << " - " << nPimThisEvent << " - " << nGammaThisEvent << " - " << i << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     
     // f1 candidate appeared for data!
@@ -209,7 +207,7 @@ int main(int argc, char **argv) {
 
     // saves all information from the original particles from an approved event, with no mixing
     // warning: all the hadronic variables correspond to the respective hadron, nothing more
-    
+    /*
     if (nCombThisEvent > 0) {
       // looks at the entries (particles) of the current event
       for (Int_t j = i; j < (i+nParticles); j++) {
@@ -221,7 +219,7 @@ int main(int argc, char **argv) {
 
     // commentary
     std::cout << "  !! Fill original ready!" << std::endl;
-    
+    */
     /*** THE MIXING ***/
 
     // PART 1: obtain & keep combinations from data
@@ -229,19 +227,24 @@ int main(int argc, char **argv) {
     // tag
     Int_t jPip = 0;
     Int_t jPim = 0;
-    
-    Int_t jPi0A = 0;
-    Int_t jPi0B = 0;
-    
+        
     Int_t jGammaA1 = 0;
     Int_t jGammaA2 = 0;
     Int_t jGammaB1 = 0;
     Int_t jGammaB2 = 0;
     
-    Int_t partialComb = 0;
-    Int_t partialLim = nGammaThisEvent - 1;
-    Int_t partialFlag = 1;
-    
+    Int_t partialComb_1 = 0;
+    Int_t partialLim_1  = nGammaThisEvent - 1;
+    Int_t partialFlag_1 = 1;
+
+    Int_t partialComb_2 = 0;
+    Int_t partialLim_2  = nGammaThisEvent - 2;
+    Int_t partialFlag_2 = 1;
+
+    Int_t partialComb_3 = 0;
+    Int_t partialLim_3  = nGammaThisEvent - 3;
+    Int_t partialFlag_3 = 1;
+
     if (nCombThisEvent > 0) {
       for (Int_t iPip = 0; iPip < TMath::Binomial(nPipThisEvent, 1); iPip++) {
 	
@@ -254,10 +257,12 @@ int main(int argc, char **argv) {
 	  }
 	}
 	
-	// force a new beginning for the other particles
+	// reset tag for other particles
 	jPim = 0;
-	jGamma1 = 0;
-	jGamma2 = 0;
+	jGammaA1 = 0;
+	jGammaA2 = 0;
+	jGammaB1 = 0;
+	jGammaB2 = 0;
 	
 	for (Int_t iPim = 0; iPim < TMath::Binomial(nPimThisEvent, 1); iPim++) {
 	  
@@ -270,55 +275,112 @@ int main(int argc, char **argv) {
 	    }
 	  }
 	  
-	  // force a new beginning for the other particles
-	  jGamma1 = 0;
-	  jGamma2 = 0;	  
-	  jGamma3 = 0;
-	  jGamma4 = 0;	  
-	  
-	  for (Int_t iGamma = 0; iGamma < 3*TMath::Binomial(nGammaThisEvent, 4); iGamma++) {
+	  // reset tag for other particles
+	  jGammaA1 = 0;
+	  jGammaA2 = 0;	  
+	  jGammaB1 = 0;
+	  jGammaB2 = 0;	  
+
+	  // iGamma stands for each possible combination of 4 gammas
+	  for (Int_t iGamma = 0; iGamma < TMath::Binomial(nGammaThisEvent, 4); iGamma++) {
 	    
 	    // debug
 	    if (iGamma == 0) {
-	      partialComb = 0;
-	      partialLim = nGammaThisEvent - 1;
-	      partialFlag = 1;
+	      partialComb_1 = 0;
+	      partialLim_1  = nGammaThisEvent - 1;
+	      partialFlag_1 = 1;
+	      
+	      partialComb_2 = 0;
+	      partialLim_2  = nGammaThisEvent - 2;
+	      partialFlag_2 = 1;
+	      
+	      partialComb_3 = 0;
+	      partialLim_3  = nGammaThisEvent - 3;
+	      partialFlag_3 = 1;
 	    }
 	    
-	    // the big condition
-	    if (partialFlag) {
-	      
-	      // find and tag gamma1
+	    if (partialFlag_1) {
+	      // find and tag gammaA1
 	      for (Int_t j = i; j < (i+nParticles); j++) {
 		t->GetEntry(j);
-		if (tpid == (Float_t) 22 && j > jGamma1) { // excludes previous gamma1
-		  jGamma1 = j;        // tag gamma1
+		if (tpid == (Float_t) 22 && j > jGammaA1) { // excludes previous gammaA1
+		  jGammaA1 = j;        // tag gammaA1
 		  j = (i+nParticles); // break search for j
 		}
 	      }
-	      jGamma2 = 0; // resets gamma2
-	      partialFlag = 0;
+	      jGammaA2 = 0; // resets gammaA2
+	      jGammaB1 = 0; // resets gammaB1
+	      jGammaB2 = 0; // resets gammaB2
+	      partialFlag_1 = 0;
 	    }
 	    
-	    // find and tag gamma2
+	    if (partialFlag_2) {
+	      // find and tag gammaA2
+	      for (Int_t j = i; j < (i+nParticles); j++) {
+		t->GetEntry(j);
+		if (tpid == (Float_t) 22 && j > jGammaA1 && j > jGammaA2) { // excludes gammaA1 and previous gammaA2
+		  jGammaA2 = j;       // tag gammaA2
+		  j = (i+nParticles); // break search for j
+		}
+	      }
+	      jGammaB1 = 0; // resets gammaB1
+	      jGammaB2 = 0; // resets gammaB2
+	      partialFlag_2 = 0;	      
+	    }
+
+	    if (partialFlag_3) {
+	      // find and tag gammaB1
+	      for (Int_t j = i; j < (i+nParticles); j++) {
+		t->GetEntry(j);
+		if (tpid == (Float_t) 22 && j > jGammaA1 && j > jGammaA2 && j > jGammaB1) { // excludes gammaA1, gammaA2 and prev gammaB1
+		  jGammaB1 = j;       // tag gammaB1
+		  j = (i+nParticles); // break search for j
+		}
+	      }
+	      jGammaB2 = 0; // resets gammaB2
+	      partialFlag_3 = 0;	      
+	    }
+	    
+	    // find and tag gammaB2
 	    for (Int_t j = i; j < (i+nParticles); j++) {
 	      t->GetEntry(j);
-	      if (tpid == (Float_t) 22 && j > jGamma2 && j > jGamma1) { // excludes gamma1 and previous gamma2
-		jGamma2 = j;        // tag gamma2
+	      if (tpid == (Float_t) 22 && j > jGammaA1 && j > jGammaA2 && j > jGammaB1 && j > jGammaB2) { // excludes gammaA1, gammaA2, gammaB1 and prev gammaB2
+		jGammaB2 = j;       // tag gammaB2
 		j = (i+nParticles); // break search for j
 	      }
 	    }
 	    
-	    // fix partial comb
-	    partialComb++;
-	    if (partialComb == partialLim && partialLim > 1) {
-	      partialComb = 0;
-	      partialLim--;
-	      partialFlag = 1;
+	    // fix partial comb (1)
+	    partialComb_1++;
+	    if (partialComb_1 == partialLim_1) {
+	      partialComb_1 = 0;
+	      partialLim_1--;
+	      partialFlag_1 = 1;
+	      partialFlag_2 = 1;
+	      partialFlag_3 = 1;
 	    }
 
-	    // fill vector
-	    combVector.push_back({jGamma1, jGamma2, jGamma3, jGamma4, jPip, jPim});
+	    // fix partial comb (2)
+	    partialComb_2++;
+	    if (partialComb_2 == partialLim_2) {
+	      partialComb_2 = 0;
+	      partialLim_2--;
+	      partialFlag_2 = 1;
+	      partialFlag_3 = 1;
+	    }
+
+	    // fix partial comb (3)
+	    partialComb_3++;
+	    if (partialComb_3 == partialLim_3) {
+	      partialComb_3 = 0;
+	      partialLim_3--;
+	      partialFlag_3 = 1;
+	    }
+	    
+	    // fill the three f1 vectors!
+	    combVectorX.push_back({jGammaA1, jGammaA2, jGammaB1, jGammaB2, jPip, jPim});
+	    combVectorY.push_back({jGammaA1, jGammaB1, jGammaA2, jGammaB2, jPip, jPim});
+	    combVectorZ.push_back({jGammaA1, jGammaB2, jGammaA2, jGammaB1, jPip, jPim});
 
 	  } // end of loop in gammas
 	  
@@ -335,12 +397,15 @@ int main(int argc, char **argv) {
 
     // commentary
     std::cout << "  f1 candidates for data:" << std::endl;
-    for (Int_t c = 0; c < nCombThisEvent; c++) {
-      std::cout << "  {" << combVector[c][0] << ", " << combVector[c][1] << ", "  << combVector[c][2] << ", " << combVector[c][3] << ", "  <<  combVector[c][4] << ", " << combVector[c][5] << "}" << std::endl;
+    for (Int_t c = 0; c < (nCombThisEvent/3); c++) {
+      std::cout << "  {" << combVectorX[c][0] << ", " << combVectorX[c][1] << ", "  << combVectorX[c][2] << ", " << combVectorX[c][3] << ", "  <<  combVectorX[c][4] << ", " << combVectorX[c][5] << "}" << std::endl;
+      std::cout << "  {" << combVectorY[c][0] << ", " << combVectorY[c][1] << ", "  << combVectorY[c][2] << ", " << combVectorY[c][3] << ", "  <<  combVectorY[c][4] << ", " << combVectorY[c][5] << "}" << std::endl;
+      std::cout << "  {" << combVectorZ[c][0] << ", " << combVectorZ[c][1] << ", "  << combVectorZ[c][2] << ", " << combVectorZ[c][3] << ", "  <<  combVectorZ[c][4] << ", " << combVectorZ[c][5] << "}" << std::endl;
     }
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     
     // extract
+    /*
     for (Int_t cc = 0; cc < nCombThisEvent; cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 6; pp++) { // loop on particles
 	t->GetEntry(combVector[cc][pp]);
@@ -358,6 +423,7 @@ int main(int argc, char **argv) {
 
     // commentary
     std::cout << "  !! Fill combinations in mix ready!" << std::endl;
+    */
     
     // reset counters
     nPipThisEvent = 0;
@@ -367,8 +433,10 @@ int main(int argc, char **argv) {
     
     nParticles = 0;
 
-    // reset vector
-    combVector.clear();
+    // reset vectors
+    combVectorX.clear();
+    combVectorY.clear();
+    combVectorZ.clear();
     
     // commentary
     std::cout << "  !! Finished event" << std::endl;
