@@ -107,16 +107,16 @@ fi
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug" or "analysis"
+jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="10" # hours
-jobspace="1" # GB
-jobmemory="1" # GB
+jobtime="6" # hours
+jobspace="512" # MB
+jobmemory="512" # MB
 thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
 # counter stands for rn
-for ((COUNTER=1; COUNTER <= 1; COUNTER++)); do # "1" or "${nfiles}"
+for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
@@ -126,7 +126,7 @@ for ((COUNTER=1; COUNTER <= 1; COUNTER++)); do # "1" or "${nfiles}"
 	rn=$(get_num_2dig $(($COUNTER-1)) ) # rn start at 00
     fi
     
-    for ((sub=1; sub <= 10; sub++)); do # "10" or "35"
+    for ((sub=1; sub <= 35; sub++)); do # "10" or "35"
 	# update sub number
 	ssub=$(get_num_2dig $sub)
 	sufix="${rn}_${ssub}"
@@ -148,8 +148,8 @@ for ((COUNTER=1; COUNTER <= 1; COUNTER++)); do # "1" or "${nfiles}"
 	echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 	echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
 	echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
-	echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-	echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+	echo "  <DiskSpace space=\"${jobspace}\" unit=\"MB\"/>"                           >> ${jobfile}
+	echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 	echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 	# set inputs
 	echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
