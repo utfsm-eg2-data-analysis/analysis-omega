@@ -6,6 +6,9 @@
 /**************************************/
 
 // plots electron's vertex for simulations
+// for data, there are two different cuts
+// - HH cuts, which are sector dependent and are applied on uncorr vertex
+// - TM cuts, which depend on target and are applied on corr vertex
 
 #include "analysisConfig.h"
 
@@ -31,11 +34,12 @@ TString titleSector = "";
 
 // cuts
 TCut cutAll;
-TCut cutTargType;
+TCut cutTargType = "";
 TCut cutSector = "";
 
 // variables
 TString varVertex;
+TString varAxisTitle;
 
 TString plotFile;
 TString rootFile;
@@ -125,7 +129,7 @@ int main(int argc, char **argv) {
   theHist->SetTitle("Electron Vertex for " + targetOption + titleDraw + titleSector);
   theHist->GetYaxis()->SetTitle("Counts");
   theHist->GetYaxis()->SetMaxDigits(3);
-  theHist->GetXaxis()->SetTitle("Z (cm)");
+  theHist->GetXaxis()->SetTitle(varAxisTitle);
   theHist->GetXaxis()->CenterTitle();
   theHist->SetContour(99);
 
@@ -136,7 +140,8 @@ int main(int argc, char **argv) {
   theHist->Draw("HIST");
 
   // show vertex cuts
-  if ((dataFlag && nSector > -1 && targetOption == "All") || (!dataFlag && nSector > -1)) {
+  // if ((dataFlag && nSector > -1 && targetOption == "All") || (!dataFlag && nSector > -1)) {
+  if ((dataFlag && nSector > -1) || (!dataFlag && nSector > -1)) {
     drawVerticalLine(ele_liq_lim_HH[nSector][0], kRed);
     drawVerticalLine(ele_liq_lim_HH[nSector][1], kRed);
     drawVerticalLine(ele_sol_low_HH[nSector], kRed);
@@ -245,8 +250,18 @@ void assignOptions() {
     inputFile1 = "comb" + targetOption + "_" + runNumber + ".root";
   }
   // for variables
-  if (dataFlag || simrecFlag) varVertex = "Zec";
-  else if (gsimFlag) varVertex = "mc_Ze";
+  if (dataFlag || simrecFlag) {
+    if (nSector > -1) {
+      varVertex = "Ze";
+      varAxisTitle = "Z (cm)";      
+    } else {
+      varVertex = "Zec";
+      varAxisTitle = "Z_corr (cm)";
+    }
+  } else if (gsimFlag) {
+    varVertex = "mc_Ze";
+    varAxisTitle = "Z (cm)";
+  }
   // sector
   if (nSector > -1) {
     sufixSector = Form("_sector%d", nSector);
