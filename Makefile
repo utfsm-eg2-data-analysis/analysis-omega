@@ -44,7 +44,8 @@ PROG := GetSimpleTuple FilterNCombine_data FilterNCombine_sim\
 	SystPi0Mass\
 	CheckBkg_f1 CheckPi0Corr_ratio\
 	DalitzPlots CheckKaonsBand\
-	Acceptance_00A Acceptance_00B Acceptance_01 Acceptance_02 # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
+	Acceptance_00A Acceptance_00B Acceptance_01 Acceptance_02\
+	PlotSim_SampFrac PlotSim_Vertex # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
 	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents MakeMR-compare SumPtVectors CutFlow\
