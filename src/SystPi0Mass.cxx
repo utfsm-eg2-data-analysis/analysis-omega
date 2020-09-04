@@ -66,7 +66,6 @@ int main(int argc, char **argv) {
 
   // define canvas
   TCanvas *c = new TCanvas("c", "c", canvasWidth, canvasHeight);
-  // c->SetGrid();
 
   gStyle->SetOptStat(0);
   
@@ -76,50 +75,32 @@ int main(int argc, char **argv) {
     treeExtracted->Add(inputFile1 + "/mix");
     treeExtracted->Add(inputFile2 + "/mix");
     treeExtracted->Add(inputFile3 + "/mix");
-
-    /*** prev ***/
-    
-    TH1F *plotHist_prev;
-    // treeExtracted->Draw("pi0M_prev>>" + targetOption + "-data_prev(200, 0., 0.5)", cutDIS && cutTargType && qualityCut, "goff");
-    treeExtracted->Draw("wM_prev>>" + targetOption + "-data_prev(250, 0., 2.5)", cutDIS && cutTargType && qualityCut, "goff");
-    plotHist_prev = (TH1F *)gROOT->FindObject(targetOption + "-data_prev");
-    
-    // plotHist_prev->SetTitleFont(22);
-    // plotHist_prev->SetTitle("m(#pi^{0}) for " + targetOption + " Data");
-    plotHist_prev->SetTitle("m(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " Data");
-    plotHist_prev->SetLineColor(kBlack);
-    plotHist_prev->SetLineWidth(3);
-    plotHist_prev->SetFillStyle(0);
-    
-    plotHist_prev->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
-    plotHist_prev->GetXaxis()->CenterTitle();
-    // plotHist_prev->GetYaxis()->SetTitle("Counts");
-    // plotHist_prev->GetYaxis()->CenterTitle();
-    plotHist_prev->GetYaxis()->SetMaxDigits(3);
     
     /*** true ***/
     
     TH1F *plotHist_true;
-    // treeExtracted->Draw("pi0M_true>>" + targetOption + "-data_true(200, 0., 0.5)", cutDIS && cutTargType && qualityCut, "goff");
-    treeExtracted->Draw("wM_true>>" + targetOption + "-data_true(250, 0., 2.5)", cutDIS && cutTargType && qualityCut, "goff");
+    treeExtracted->Draw("pi0M_true>>" + targetOption + "-data_true(200, 0., 0.5)", cutDIS && cutTargType && cutStatus, "goff");
     plotHist_true = (TH1F *)gROOT->FindObject(targetOption + "-data_true");
     
     plotHist_true->SetLineColor(kBlue);
     plotHist_true->SetLineWidth(3);
     plotHist_true->SetFillStyle(0);
+
+    plotHist_true->GetXaxis()->SetTitle("Reconstructed Mass (GeV)");
+    plotHist_true->GetXaxis()->CenterTitle();
+    plotHist_true->GetYaxis()->SetTitle("Counts");
+    plotHist_true->GetYaxis()->SetMaxDigits(3);
     
     /*** corr ***/
            
     TH1F *plotHist_corr;
-    // treeExtracted->Draw("pi0M_corr>>" + targetOption + "-data_corr(200, 0., 0.5)", cutDIS && cutTargType && qualityCut, "goff");
-    treeExtracted->Draw("wM_corr>>" + targetOption + "-data_corr(250, 0., 2.5)", cutDIS && cutTargType && qualityCut, "goff");
+    treeExtracted->Draw("pi0M_corr>>" + targetOption + "-data_corr(200, 0., 0.5)", cutDIS && cutTargType && cutStatus, "goff");
     plotHist_corr = (TH1F *)gROOT->FindObject(targetOption + "-data_corr");
 
-    plotHist_corr->SetTitle("m(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " Data");
-    plotHist_corr->GetXaxis()->SetTitle("Reconstructed Mass [GeV]");
+    plotHist_corr->SetTitle("m(#gamma #gamma) for " + targetOption + " Data");
+    plotHist_corr->GetXaxis()->SetTitle("Reconstructed Mass (GeV)");
     plotHist_corr->GetXaxis()->CenterTitle();
-    // plotHist_corr->GetYaxis()->SetTitle("Counts");
-    // plotHist_corr->GetYaxis()->CenterTitle();
+    plotHist_corr->GetYaxis()->SetTitle("Counts");
     plotHist_corr->GetYaxis()->SetMaxDigits(3);    
     
     plotHist_corr->SetLineColor(kGreen+3);
@@ -128,15 +109,12 @@ int main(int argc, char **argv) {
 
     // draw everything
     plotHist_corr->Draw("HIST");
-    plotHist_prev->Draw("SAME HIST");
     plotHist_true->Draw("SAME HIST");
 
     // drawVerticalLine(kMpi0, kRed, "dash");
-    drawVerticalLine(kMomega, kMagenta+4, "dash");
     
     TLegend *l = new TLegend(0.7, 0.7, 0.85, 0.85); // x1,y1,x2,y2
     l->SetBorderSize(0);
-    l->AddEntry(plotHist_prev, " prev", "l");
     l->AddEntry(plotHist_true, " true", "l");
     l->AddEntry(plotHist_corr, " corr", "l");
     l->Draw();
@@ -157,19 +135,19 @@ int main(int argc, char **argv) {
     Double_t plotRangeDown = 0.0;
     Double_t plotRangeUp = 0.5;
 
-    Double_t sigmaIGV = 2.5e-2; // from MW fit
-    Double_t sigmaRangeDown = 2.35e-2;
+    Double_t sigmaIGV = 2.3e-2; // from MW fit
+    Double_t sigmaRangeDown = 2.25e-2;
     Double_t sigmaRangeUp = 2.65e-2;
 
-    Double_t meanIGV = 0.134; // from MW fit
+    Double_t meanIGV = 0.137; // from MW fit
     Double_t meanRangeDown = 0.130;
-    Double_t meanRangeUp = 0.140;
+    Double_t meanRangeUp = 0.150;
 
-    Double_t fitRangeDown = 0.110;
-    Double_t fitRangeUp = 0.154;
+    Double_t fitRangeDown = 0.120;
+    Double_t fitRangeUp = 0.155;
   
     TH1F *fitHist; 
-    treeExtracted->Draw(Form("pi0M_" + versionOption + ">>" + targetOption + "-data(%d, %f, %f)", Nbins, plotRangeDown, plotRangeUp), cutDIS && cutTargType, "goff");
+    treeExtracted->Draw(Form("pi0M_" + versionOption + ">>" + targetOption + "-data(%d, %f, %f)", Nbins, plotRangeDown, plotRangeUp), cutDIS && cutTargType && cutStatus, "goff");
     fitHist = (TH1F *)gROOT->FindObject(targetOption + "-data");
 
     RooRealVar x("x", "Reconstructed Mass [GeV]", plotRangeDown, plotRangeUp);
@@ -184,10 +162,9 @@ int main(int argc, char **argv) {
     RooPlot *theFrame = x.frame(Title("m(#pi^{0}) for " + targetOption + " Data"), Bins(Nbins));
     data.plotOn(theFrame, Name("data"));
     pi0.plotOn(theFrame, Name("model"), LineColor(kRed));
-    pi0.paramOn(theFrame, Layout(0.6, 0.9, 0.2)); // x1, x2, delta-y
+    pi0.paramOn(theFrame, Layout(0.6, 0.9, 0.85)); // x1, x2, delta-y
 
     theFrame->GetXaxis()->CenterTitle();
-    theFrame->GetYaxis()->CenterTitle();
     theFrame->GetYaxis()->SetMaxDigits(3);
     
     theFrame->Draw();
@@ -205,8 +182,8 @@ int main(int argc, char **argv) {
     drawVerticalLine(mean.getValV(), kRed, "dash");
     drawVerticalLine(mean.getValV() - 3*sigma.getValV(), kRed, "dash");
     drawVerticalLine(mean.getValV() + 3*sigma.getValV(), kRed, "dash");
-    // drawVerticalLineRed(0.059); // MW
-    // drawVerticalLineRed(0.209); // MW
+    drawVerticalLine(0.059, kGreen+3); // MW
+    drawVerticalLine(0.209, kGreen+3); // MW
     
     std::cout << std::endl;
     std::cout << "FIT COMPLETED." << std::endl;
@@ -214,7 +191,6 @@ int main(int argc, char **argv) {
     std::cout << "sigma = " << sigma.getValV() << std::endl;
     std::cout << "chi2  = " << chi2 << std::endl;    
     std::cout << std::endl;
-    
   }
 
   // save plot
@@ -264,11 +240,10 @@ void printUsage() {
   std::cout << "  p[target] : just plot all three versions of mpi0 for target" << std::endl;
   std::cout << std::endl;
   std::cout << "  f[target] : plot and fit mpi0 peak for target" << std::endl;
-  std::cout << "    target option can be: D | C | Fe | Pb | All" << std::endl;
+  std::cout << "              target option can be: D | C | Fe | Pb | All" << std::endl;
   std::cout << std::endl;
-  std::cout << "  v[version] : choose version"<< std::endl;
-  std::cout << "    (exclusive for pi0 option)"<< std::endl;
-  std::cout << "    it can be: prev, true, corr"<< std::endl;
+  std::cout << "  v[version] : choose correction version for pi0"<< std::endl;
+  std::cout << "               version can be: true, corr"<< std::endl;
   std::cout << std::endl;
 }
 
@@ -299,11 +274,6 @@ void assignOptions() {
     outPrefix = "plot-";
   } else if (fitFlag) {
     outPrefix = "fit-";
-  }
-  // for version
-  if (versionOption == "prev") {
-  } else if (versionOption == "true") {
-  } else if (versionOption == "corr") {
   }
   // output name
   plotFile = outDir + "/" + outPrefix + "mpi0_" + versionOption + "-" + targetOption + ".png";
