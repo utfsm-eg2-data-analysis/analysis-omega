@@ -205,6 +205,7 @@ void printOptions() {
   std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  dataOption   = " << dataOption << std::endl;
   std::cout << "  nSector      = " << nSector << std::endl;
+  std::cout << "  runNumber    = " << runNumber << std::endl;
   std::cout << std::endl;
 }
 

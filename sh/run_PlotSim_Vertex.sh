@@ -1,10 +1,10 @@
 #!/bin/bash
 
-###############################################################
-# ./run_PlotSim_Vertex.sh <set> <target> <gsim/simrec>        #
-#                                                             #
-# EG: ./run_PlotSim_Vertex.sh old C simrec                    #
-###############################################################
+#################################################################
+# ./run_PlotSim_Vertex.sh <set> <target> <gsim/simrec> <sector> #
+#                                                               #
+# EG: ./run_PlotSim_Vertex.sh old C simrec                      #
+#################################################################
 
 #####
 # Input
@@ -15,6 +15,7 @@ inputArray=("$@")
 setOption="${inputArray[0]}"
 tarName="${inputArray[1]}"
 simulType="${inputArray[2]}"
+sector="${inputArray[3]}"
 
 #####
 # Main
@@ -39,12 +40,19 @@ cd $SIMDIR
 for file in $SIMDIR/comb*.root; do
     rn="${file#*_}"
     rn="${rn/.root/}"
-    ./PlotSim_Vertex ${inputOption} -r${rn}
+    if [[ "${sector}" != ""]]; then
+	./PlotSim_Vertex ${inputOption} -r${rn} -S${sector}
+    else
+	./PlotSim_Vertex ${inputOption} -r${rn}	
+    fi
 done
 
+# sector
+sufixSector="_${sector}"
+
 rm vertex-${tarName}_${simulType}.root # just in case
-hadd vertex.root vertex-${tarName}_${simulType}_*.root
+hadd vertex.root vertex-${tarName}_${simulType}_${sufixSector}_*.root
 rm vertex-${tarName}_${simulType}_*.root # to clean a little
-mv vertex.root vertex-${tarName}_${simulType}.root
+mv -v vertex.root vertex-${tarName}_${simulType}_${sufixSector}.root
 
 rm PlotSim_Vertex
