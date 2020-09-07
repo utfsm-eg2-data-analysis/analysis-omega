@@ -109,14 +109,14 @@ jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="6" # hours
-jobspace="512" # MB
-jobmemory="512" # MB
+jobtime="72" # hours
+jobspace="1" # GB
+jobmemory="1" # GB
 thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
 # counter stands for rn
-for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
+for ((COUNTER=89; COUNTER <= 89; COUNTER++)); do # "1" or "${nfiles}"
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
@@ -126,54 +126,58 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
 	rn=$(get_num_2dig $(($COUNTER-1)) ) # rn start at 00
     fi
     
-    for ((sub=1; sub <= 35; sub++)); do # "10" or "35"
+    # setting jobname
+    if [[ "${setOption}" == "jlab" ]]; then
+	jobname="FNC_${setOption}-${tarName}-${nDir}_${rn}"
+    else
+	jobname="FNC_${setOption}-${tarName}_${rn}"
+    fi
+    jobfile="${XMLDIR}/${jobname}.xml"
+
+    echo ${jobname}
+
+    echo "<Request>"                                                                   > ${jobfile}
+    echo "  <Email email=\"${jobemail}\" request=\"true\" job=\"true\"/>"             >> ${jobfile}
+    echo "  <Project name=\"${jobproject}\"/>"                                        >> ${jobfile}
+    echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
+    echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
+    echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+    echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
+    echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+    echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
+    # set inputs
+    echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
+    echo "  <Input src=\"${execfile}\"   dest=\"run_FNC.sh\"/>"                       >> ${jobfile}
+    for ((sub=1; sub <= 35; sub++)); do
 	# update sub number
 	ssub=$(get_num_2dig $sub)
 	sufix="${rn}_${ssub}"
-	
-	# setting jobname
-	if [[ "${setOption}" == "jlab" ]]; then
-	    jobname="FNC_${setOption}-${tarName}-${nDir}_${sufix}"
-	else
-	    jobname="FNC_${setOption}-${tarName}_${rn}"
-	fi
-	jobfile="${XMLDIR}/${jobname}.xml"
-
-	echo ${jobname}
-
-	echo "<Request>"                                                                   > ${jobfile}
-	echo "  <Email email=\"${jobemail}\" request=\"true\" job=\"true\"/>"             >> ${jobfile}
-	echo "  <Project name=\"${jobproject}\"/>"                                        >> ${jobfile}
-	echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
-	echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
-	echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-	echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
-	echo "  <DiskSpace space=\"${jobspace}\" unit=\"MB\"/>"                           >> ${jobfile}
-	echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
-	echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
-	# set inputs
-	echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
-	echo "  <Input src=\"${execfile}\"   dest=\"run_FNC.sh\"/>"                       >> ${jobfile}
 	inrootfile="${DATADIR}/pruned${tarName}_${sufix}.root"
-	echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${sufix}.root\"/>"   >> ${jobfile}
-	# set command
-	echo "  <Command><![CDATA["                                                       >> ${jobfile}
-	echo "    sed -i \"s|^inputOption=|inputOption=${inputOption}|g\" run_FNC.sh"     >> ${jobfile}
-	echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_FNC.sh"                 >> ${jobfile}
-	echo "    sed -i \"s|^rn=|rn=${sufix}|g\" run_FNC.sh"                             >> ${jobfile}
-	echo "    chmod 755 ./run_FNC.sh"                                                 >> ${jobfile}
-	echo "    sh run_FNC.sh"                                                          >> ${jobfile}
-	echo "  ]]></Command>"                                                            >> ${jobfile}
-	# set outputs
-	outrootfile="${OUDIR}/comb${tarName}_${sufix}.root"
-	echo "  <Output src=\"comb${tarName}_${sufix}.root\" dest=\"${outrootfile}\"/>"   >> ${jobfile}
-	echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
-	echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
-	echo "  <Job>"                                                                    >> ${jobfile}
-	echo "  </Job>"                                                                   >> ${jobfile}
-	echo "</Request>"                                                                 >> ${jobfile}
-
-	echo "Submitting job: ${jobfile}"
-	jsub --xml ${jobfile}
+	echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${sufix}.root\"/>" >> ${jobfile}
     done
+    # set command
+    echo "  <Command><![CDATA["                                                       >> ${jobfile}
+    echo "    sed -i \"s|^inputOption=|inputOption=${inputOption}|g\" run_FNC.sh"     >> ${jobfile}
+    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_FNC.sh"                 >> ${jobfile}
+    echo "    sed -i \"s|^rn=|rn=${rn}|g\" run_FNC.sh"                                >> ${jobfile}
+    echo "    chmod 755 ./run_FNC.sh"                                                 >> ${jobfile}
+    echo "    sh run_FNC.sh"                                                          >> ${jobfile}
+    echo "  ]]></Command>"                                                            >> ${jobfile}
+    # set outputs
+    for ((sub2=1; sub2 <= 35; sub2++)); do
+	# update sub2 number
+	ssub2=$(get_num_2dig $sub2)
+	sufix2="${rn}_${ssub2}"
+        outrootfile="${DATADIR}/comb${tarName}_${sufix2}.root"
+	echo "  <Output src=\"comb${tarName}_${sufix2}.root\" dest=\"${outrootfile}\" />" >> ${jobfile}
+    done
+    echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
+    echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
+    echo "  <Job>"                                                                    >> ${jobfile}
+    echo "  </Job>"                                                                   >> ${jobfile}
+    echo "</Request>"                                                                 >> ${jobfile}
+
+    echo "Submitting job: ${jobfile}"
+    jsub --xml ${jobfile}
 done
