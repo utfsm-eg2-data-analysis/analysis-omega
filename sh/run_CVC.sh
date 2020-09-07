@@ -27,6 +27,8 @@ source ~/.bashrc
 
 # set dir
 SIMDIR=$PRODIR/out/FilterNCombine/${setOption}/${tarName}/
+OUDIR=$PRODIR/out/CheckVertexCuts
+mkdir -p $OUDIR
 
 if [[ "$simulType" == "gsim" ]]; then
     inputOption="-g${tarName}"
@@ -59,6 +61,6 @@ rm -v vertex-${tarName}_${simulType}${sufixSector}.png
 
 hadd vertex.root vertex-${tarName}_${simulType}${sufixSector}_*.root
 rm vertex-${tarName}_${simulType}${sufixSector}_*.root # to clean a little
-mv -v vertex.root vertex-${tarName}_${simulType}${sufixSector}.root
+mv -v vertex.root vertex-${setOption}-${tarName}_${simulType}${sufixSector}.root
 
 rm -v CheckVertexCuts

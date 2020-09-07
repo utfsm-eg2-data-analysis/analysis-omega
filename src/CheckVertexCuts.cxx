@@ -14,7 +14,7 @@
 
 /*** Global variables ***/
 
-TString outDir = proDir + "/out/PlotSim";
+TString outDir = proDir + "/out/CheckVertexCuts";
 TString inputFile1 = "";
 TString inputFile2 = "";
 TString inputFile3 = "";
