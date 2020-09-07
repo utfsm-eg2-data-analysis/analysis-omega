@@ -89,11 +89,17 @@ TCut cutDIS_old = "Q2 > 1 && W > 2";
 TCut cutPi0_old = "0.059 < mpi0 && mpi0 < 0.209"; // mikewood cut
 TCut cutPipPim_old = "0.48 > mpippim || 0.51 < mpippim"; // mikewood cut
 
-// new Status cuts!
-TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
+// latest Status cuts
+TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
 TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
 TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
 TCut cutStatus            = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
+
+// TM vertex cuts
+TCut cutTargType_D  = "-31.8 < Zec && Zec < -28.4";
+TCut cutTargType_C  = "-25.33 < Zec && Zec < -24.10";
+TCut cutTargType_Fe = "-25.65 < Zec && Zec < -24.26";
+TCut cutTargType_Pb = "-25.54 < Zec && Zec < -24.36";
 
 // edges obtained with GetQuantiles.cxx
 const Double_t edgesQ2[6] = {1, 1.187, 1.376, 1.616, 2.008, 4};
@@ -104,7 +110,7 @@ const Double_t edgesZ[6] = {0.5, 0.548, 0.601, 0.665, 0.761, 1.}; // q5
 const Double_t edgesPt2[6] = {0, 0.049, 0.113, 0.204, 0.361, 1.5};
 
 // run numbers
-Int_t runNumbersC = 118; // from 119; because I removed 42040
+Int_t runNumbersC  = 118; // from 119; because I removed 42040
 Int_t runNumbersFe = 263; // from 265; because I removed 41315 and 41394 (why the last one?)
 Int_t runNumbersPb = 169; // from 171; because I removed 41834 and 41979
 Int_t runNumbersTotal = runNumbersC + runNumbersFe + runNumbersPb;
