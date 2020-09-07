@@ -64,6 +64,8 @@ int main(int argc, char **argv) {
   dataHist->Draw("HIST");
 
   drawVerticalLine(kMK0, kRed);
+  drawVerticalLine(kMomega, kRed);
+  drawVerticalLine(kMrho, kRed);
   
   c->Print(outFile);
 }

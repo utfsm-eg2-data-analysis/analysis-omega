@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #################################################################
-# ./run_PlotSim_Vertex.sh <set> <target> <gsim/simrec> <sector> #
+# ./run_CVC.sh <set> <target> <gsim/simrec> <sector>            #
 #                                                               #
-# EG: ./run_PlotSim_Vertex.sh old C simrec                      #
-#     ./run_PlotSim_Vertex.sh old C gsim 5                      #
+# EG: ./run_CVC.sh old C simrec                                 #
+#     ./run_CVC.sh old C gsim 5                                 #
 #################################################################
 
 #####
@@ -35,16 +35,16 @@ elif [[ "$simulType" == "simrec" ]]; then
 fi
 
 # copy binary to sim dir
-cp -v $PRODIR/bin/PlotSim_Vertex $SIMDIR
+cp -v $PRODIR/bin/CheckVertexCuts $SIMDIR
 
 cd $SIMDIR
 for file in $SIMDIR/comb*.root; do
     rn="${file#*_}"
     rn="${rn/.root/}"
     if [[ "${sector}" != "" ]]; then
-	./PlotSim_Vertex ${inputOption} -r${rn} -S${sector}
+	./CheckVertexCuts ${inputOption} -r${rn} -S${sector}
     else
-	./PlotSim_Vertex ${inputOption} -r${rn}	
+	./CheckVertexCuts ${inputOption} -r${rn}
     fi
 done
 
@@ -58,7 +58,7 @@ rm -v vertex-${tarName}_${simulType}${sufixSector}.root
 rm -v vertex-${tarName}_${simulType}${sufixSector}.png
 
 hadd vertex.root vertex-${tarName}_${simulType}${sufixSector}_*.root
-rm vertex-${tarName}_${simulType}_*.root # to clean a little
+rm vertex-${tarName}_${simulType}${sufixSector}_*.root # to clean a little
 mv -v vertex.root vertex-${tarName}_${simulType}${sufixSector}.root
 
-rm -v PlotSim_Vertex
+rm -v CheckVertexCuts

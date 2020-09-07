@@ -1,5 +1,5 @@
 /**************************************/
-/* PlotSim_Vertex.cxx                 */
+/* CheckVertexCuts.cxx                */
 /*                                    */
 /* Andrés Bórquez                     */
 /*                                    */
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
 inline int parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./PlotSim_Vertex -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./CheckVertexCuts -h to print usage." << std::endl;
     exit(0);
   }
   while ((c = getopt(argc, argv, "hg:s:d:S:r:")) != -1)
@@ -182,7 +182,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     case 'S': nSector = atoi(optarg); break;
     case 'r': runNumber = optarg; break;
     default:
-      std::cerr << "Unrecognized argument. Execute ./PlotSim_Vertex -h to print usage." << std::endl;
+      std::cerr << "Unrecognized argument. Execute ./CheckVertexCuts -h to print usage." << std::endl;
       exit(0);
       break;
     }
@@ -202,7 +202,7 @@ void printUsage() {
   std::cout << std::endl;  
   std::cout << "./PlotSim_Vertex -r[rn]" << std::endl;
   std::cout << "  selects run number" << std::endl;
-  std::cout << std::endl;  
+  std::cout << std::endl;
 }
 
 void printOptions() {
