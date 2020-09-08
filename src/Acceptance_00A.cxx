@@ -7,7 +7,7 @@
 
 //*** ACCEPTANCE: STAGE 0-A ***//
 
-// plot reconstructed/generated distributions for pi0 invariant mass
+// plots pi0 invariant mass of simulations/reconstructed or sim/generated
 // histograms are written in an output root file
 
 #include "analysisConfig.h"
@@ -15,7 +15,8 @@
 /*** Global variables ***/
 
 // options
-Int_t simrecFlag, gsimFlag;
+Int_t simrecFlag = 0;
+Int_t gsimFlag   = 0;
 TString targetOption;
 TString runNumber;
 
@@ -23,9 +24,7 @@ TString runNumber;
 TString inputFile, outputFile;
 
 // cuts
-TCut cutTargType, cutTargType_gen; // depend on chosen target
 TCut cutDIS_gen = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
-// TCut cutPi0_gen = "mc_pi0M > 0.12 && mc_pi0M < 0.15";
 TCut cutSIMREC;
 TCut cutGSIM;
 
@@ -46,8 +45,8 @@ int main(int argc, char **argv) {
   printOptions();
 
   // set cuts
-  cutGSIM   = cutTargType_gen && cutDIS_gen;
-  cutSIMREC = cutTargType && cutDIS && cutStatus;
+  cutGSIM   = cutDIS_gen;
+  cutSIMREC = cutDIS && cutStatus;
   if (gsimFlag) cutSIMREC = "";
   
   // extract histogram
@@ -113,19 +112,11 @@ void printOptions() {
 }
 
 void assignOptions() {
-  // for targets
-  if (targetOption == "D") {
-    cutTargType = "TargType == 1";
-    cutTargType_gen = "mc_TargType == 1";
-  } else {
-    cutTargType = "TargType == 2";
-    cutTargType_gen = "mc_TargType == 2";
-  }
   // for variable
-  lorentzInv = "pi0M_corr";
-  if (gsimFlag) lorentzInv = "mc_pi0M";
+  if (simrecFlag) lorentzInv = "pi0M_corr";
+  else if (gsimFlag) lorentzInv = "mc_pi0M";
   // filenames
   inputFile  = "comb" + targetOption + "_" + runNumber + ".root";
-  outputFile = "acc-0AR-" + targetOption + "_" + runNumber + ".root";
-  if (gsimFlag) outputFile = "acc-0AG-" + targetOption + "_" + runNumber + ".root";
+  if (simrecFlag) outputFile = "acc-0A-" + targetOption + "_simrec_" + runNumber + ".root";
+  else if (gsimFlag) outputFile = "acc-0A-" + targetOption + "_gsim_" + runNumber + ".root";
 }
