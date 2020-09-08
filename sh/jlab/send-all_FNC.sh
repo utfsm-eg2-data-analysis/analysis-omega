@@ -60,7 +60,7 @@ elif [[ "$tarName" == "Pb" ]]; then
     totalDirs=4
 fi
 
-for ((j=1; j <= ${totalDirs}; j++)); do
+for ((j=2; j <= ${totalDirs}; j++)); do # starting from 2...
     ndir=$(get_num_3dig $j)
     ./send_FNC.sh jlab ${tarName} ${ndir}
 done
