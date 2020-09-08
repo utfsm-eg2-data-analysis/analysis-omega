@@ -24,8 +24,8 @@ simulType="${inputArray[2]}"
 source ~/.bashrc
 
 # set dir
-SIMDIR=$PRODIR/out/FilterNCombine/${setOption}/${tarName}/
-OUDIR=$PRODIR/out/Acceptance/
+SIMDIR=$PRODIR/out/FilterNCombine/${setOption}/${tarName}
+OUDIR=$PRODIR/out/Acceptance
 mkdir -p $OUDIR # just in case
 
 if [[ "$simulType" == "gsim" ]]; then
@@ -46,6 +46,6 @@ done
 
 hadd acc.root acc-0A-${tarName}_${simulType}_*.root
 rm -v acc-0A-${tarName}_${simulType}_*.root # to clean a little
-mv -v acc.root $OUDIR/acc-0A-${tarName}_${simulType}.root
+mv -v acc.root $OUDIR/acc-0A-${setOption}-${tarName}_${simulType}.root
 
 rm -v Acceptance_00A

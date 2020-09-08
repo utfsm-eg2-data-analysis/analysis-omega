@@ -24,6 +24,9 @@ TString runNumber;
 TString inputFile, outputFile;
 
 // cuts
+// TCut cutQuality_gamma = ""; // ver.0
+TCut cutQuality_gamma = "mc_P[0] > 0.1 && mc_P[1] > 0.1"; // ver.1
+// TCut cutQuality_gamma = "mc_P[0] > 0.2 && mc_P[1] > 0.2"; // ver.2
 TCut cutDIS_gen = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
 TCut cutSIMREC;
 TCut cutGSIM;
@@ -45,7 +48,7 @@ int main(int argc, char **argv) {
   printOptions();
 
   // set cuts
-  cutGSIM   = cutDIS_gen;
+  cutGSIM   = cutDIS_gen && cutQuality_gamma;
   cutSIMREC = cutDIS && cutStatus;
   if (gsimFlag) cutSIMREC = "";
   
