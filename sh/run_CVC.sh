@@ -61,6 +61,6 @@ rm -v vertex-${tarName}_${simulType}${sufixSector}.png
 
 hadd vertex.root vertex-${tarName}_${simulType}${sufixSector}_*.root
 rm vertex-${tarName}_${simulType}${sufixSector}_*.root # to clean a little
-mv -v vertex.root vertex-${setOption}-${tarName}_${simulType}${sufixSector}.root
+mv -v vertex.root $OUDIR/vertex-${setOption}-${tarName}_${simulType}${sufixSector}.root
 
 rm -v CheckVertexCuts

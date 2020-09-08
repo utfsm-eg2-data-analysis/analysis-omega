@@ -189,24 +189,24 @@ inline int parseCommandLine(int argc, char* argv[]) {
 }
 
 void printUsage() {
-  std::cout << "PlotSim_Vertex program. Usage is:" << std::endl;
+  std::cout << "CheckVertexCuts program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./PlotSim_Vertex -h" << std::endl;
+  std::cout << "./CheckVertexCuts -h" << std::endl;
   std::cout << "  prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./PlotSim_Vertex -[d,g,s][target]" << std::endl;
+  std::cout << "./CheckVertexCuts -[d,g,s][target]" << std::endl;
   std::cout << "  selects target: D | C | Fe | Pb | All" << std::endl;
   std::cout << std::endl;  
-  std::cout << "./PlotSim_Vertex -S[sector]" << std::endl;
+  std::cout << "./CheckVertexCuts -S[sector]" << std::endl;
   std::cout << "  selects sector: (0 - 5)" << std::endl;
   std::cout << std::endl;  
-  std::cout << "./PlotSim_Vertex -r[rn]" << std::endl;
+  std::cout << "./CheckVertexCuts -r[rn]" << std::endl;
   std::cout << "  selects run number" << std::endl;
   std::cout << std::endl;
 }
 
 void printOptions() {
-  std::cout << "Executing PlotSim_Vertex program. The chosen parameters are:" << std::endl;
+  std::cout << "Executing CheckVertexCuts program. The chosen parameters are:" << std::endl;
   std::cout << "  targetOption = " << targetOption << std::endl;
   std::cout << "  dataOption   = " << dataOption << std::endl;
   std::cout << "  nSector      = " << nSector << std::endl;
