@@ -48,7 +48,7 @@ PROG := GetSimpleTuple FilterNCombine_data FilterNCombine_sim\
 	CheckSampFrac\
 	CheckVertexCuts CheckVertexCorr CheckVertexCorr_imd\
 	CheckGammasOpAngle CheckGammasOpAngle_plot\
-	SampFrac_plot # CheckGammasOpAngle_fit # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
+	SampFrac_tree SampFrac_plot SampFrac_fit SampFrac_points # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
 	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents MakeMR-compare SumPtVectors CutFlow\
