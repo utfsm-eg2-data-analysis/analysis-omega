@@ -62,8 +62,9 @@ int main(int argc, char **argv) {
 
   // dir structure, just in case
   system("mkdir -p " + outDir);
-  
-  TCut cutAll = cutDIS && cutPipPim && cutPi0;
+
+  // set cuts
+  TCut cutAll = cutDIS && cutPipPim;
 
   TChain *treeExtracted = new TChain();
   treeExtracted->Add(inputFile1 + "/mix");
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
   treeExtracted->Add(inputFile3 + "/mix");
   
   TH1F *theHist;
-  treeExtracted->Draw(kinvarOption + ">>" + outPrefix + histProperties, cutAll && cutTargType && cutZ, "goff");
+  treeExtracted->Draw(kinvarOption + ">>" + outPrefix + histProperties, cutStatus && cutAll && cutTargType && cutZ, "goff");
   theHist = (TH1F *)gROOT->FindObject(outPrefix);
   
   theHist->SetTitleFont(22);
@@ -90,7 +91,7 @@ int main(int argc, char **argv) {
   theHist->Draw("HIST"); // comment if allstat
 
   /*** Beginning of status parenthesis ***/
-
+  /*
   TCut statusCuts_electrons = "StatusEl > 0 && StatusEl < 100 && StatCCEl > 0 && StatSCEl > 0 && StatDCEl > 0 && StatECEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
 
   TCut statusCuts_pip = "Status[2] > 0 && Status[2] < 100 && StatDC[2] > 0 && DCStatus[2] > 0";
@@ -100,15 +101,12 @@ int main(int argc, char **argv) {
   TCut statusCuts_pim = "Status[3] > 0 && Status[3] < 100 && StatDC[3] > 0 && DCStatus[3] > 0";
   TCut statusCuts_pim_le = "P_corr[3] <= 2.5 && !(StatCC[3] > 0 && Nphe[3] > 25)";
   TCut statusCuts_pim_he = "P_corr[3] > 2.5";
-
+  */
   TH1F *testHist;
   // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_electrons, "goff"); // elstat
   // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he), "goff"); // ppstat
   // treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ && statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he), "goff"); // pmstat
-  treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutAll && cutTargType && cutZ &&
-   		                                                 statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he) &&
-   		                                                 statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he) &&
-  		                                                 statusCuts_electrons, "goff"); // allstat
+  treeExtracted->Draw(kinvarOption + ">>test" +  histProperties, cutStatus && cutAll && cutTargType && cutZ && cutPi0, "goff"); // allstat
   testHist = (TH1F *)gROOT->FindObject("test");
 
   // testHist->SetLineColor(kOrange+7); // elstat
@@ -135,13 +133,12 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./MakePlots -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "hdsgt:k:z:")) != -1)
+  while ((c = getopt(argc, argv, "hd:s:g:k:z:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
-    case 'd': dataFlag = 1; break;
-    case 's': simrecFlag = 1; break;
-    case 'g': gsimFlag = 1; break;
-    case 't': targetOption = optarg; break;
+    case 'd': targetOption = optarg; dataFlag = 1; break;
+    case 's': targetOption = optarg; simrecFlag = 1; break;
+    case 'g': targetOption = optarg; gsimFlag = 1; break;
     case 'k': kinvarOption = optarg; break;
     case 'z': binNumberZ = atoi(optarg); break;
     default:
@@ -168,16 +165,7 @@ void printUsage() {
   std::cout << "./MakePlots -h" << std::endl;
   std::cout << "    prints help and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./MakePlots -d" << std::endl;
-  std::cout << "    draws data" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./MakePlots -s" << std::endl;
-  std::cout << "    draws simrec" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./MakePlots -g" << std::endl;
-  std::cout << "    draws gsim" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./MakePlots -t[target]" << std::endl;
+  std::cout << "./MakePlots -[d,s,g][target]" << std::endl;
   std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
   std::cout << std::endl;
   std::cout << "./MakePlots -k[kinvar]" << std::endl;
@@ -202,18 +190,18 @@ void assignOptions() {
     titleDraw = " Data ";
     // for targets
     if (targetOption == "D") {
-      cutTargType = "TargType == 1";
+      cutTargType = cutTargType_D;
       inputFile1 = dataDir + "/C/comb_dataC.root";
       inputFile2 = dataDir + "/Fe/comb_dataFe.root";
       inputFile3 = dataDir + "/Pb/comb_dataPb.root";
     } else if (targetOption == "C") {
-      cutTargType = "TargType == 2";
+      cutTargType = cutTargType_C;
       inputFile1 = dataDir + "/C/comb_dataC.root";
     } else if (targetOption == "Fe") {
-      cutTargType = "TargType == 2";
+      cutTargType = cutTargType_Fe;
       inputFile1 = dataDir + "/Fe/comb_dataFe.root";
     } else if (targetOption == "Pb") {
-      cutTargType = "TargType == 2";
+      cutTargType = cutTargType_Pb;
       inputFile1 = dataDir + "/Pb/comb_dataPb.root";
     }
   }
@@ -277,10 +265,10 @@ void assignOptions() {
     titleKinvar = "IM(#pi^{+} #pi^{-} #pi^{0}) for ";
     titleAxis = "IM (GeV)";
     histProperties = "(250, 0., 2.5.)";
-  } else if (kinvarOption == "wD_corr") {
-    titleKinvar = "IMD(#pi^{+} #pi^{-} #pi^{0}) for ";
-    titleAxis = "IMD (GeV)";
-    histProperties = "(200, 0., 1.6)";
+  } else if (kinvarOption == "wSD_corr") {
+    titleKinvar = "#Delta m(#gamma#gamma#pi^{+}#pi^{-}) for ";
+    titleAxis = "Reconstructed Mass (GeV)";
+    histProperties = "(250, 0., 2.5)";
   } else if (kinvarOption == "Q2") {
     titleKinvar = "Q^{2} for ";
     titleAxis = "Q^{2} (GeV^{2})";
@@ -307,5 +295,5 @@ void assignOptions() {
     histProperties = "(100, 0, 1.6)";
   } 
   // output name
-  plotFile = outDir + "/" + outPrefix + "-" + targetOption + "-" + kinvarOption + sufixZBin + ".png";
+  plotFile = outDir + "/" + outPrefix + "-" + targetOption + "-" + kinvarOption + sufixZBin + "_test.png";
 }

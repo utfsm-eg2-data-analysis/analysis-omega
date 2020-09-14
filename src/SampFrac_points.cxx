@@ -154,9 +154,9 @@ int main() {
   RooDataHist data2("data2", "data2", x2, sigmaHist);
 
   // define function
-  RooRealVar d("d", "d", 8e-3, 1e-3, 1e-1);
-  RooRealVar f("f", "f", 1.5e-2, 1e-3, 1e-1);
-  RooGenericPdf model2("model2", "Generic PDF", "sqrt(d*d + f*f/sqrt(x2))", RooArgSet(x2, d, f));
+  RooRealVar d("d", "d", 4e-4, 1e-6, 1e-3);
+  // RooRealVar f("f", "f", 5e-2, 1e-2, 1);
+  RooGenericPdf model2("model2", "Generic PDF", "sqrt(d*d + 1/sqrt(x2))", RooArgSet(x2, d));
 
   // define frame
   RooPlot *frame2 = x2.frame(Title("Sampling Fraction"), Bins(Nbins));
@@ -165,14 +165,14 @@ int main() {
   frame2->GetXaxis()->CenterTitle();
 
   // fit
-  model2.fitTo(data2, Minos(kTRUE), Save(), Range(0.8, 2.6)); // 4.4
+  model2.fitTo(data2, Minos(kTRUE), Save(), Range(0.8, 4.4)); // (0.8, 4.4)
 
   // draw function & overlay data points
   data2.plotOn(frame2, Name("Data"), DataError(RooAbsData::SumW2));
   model2.plotOn(frame2, Name("Model"), LineColor(kRed));
   
   // add params
-  model2.paramOn(frame2, Layout(0.13, 0.34, 0.25), Format("NEAU", AutoPrecision(2))); // x1, x2, avg-y
+  model2.paramOn(frame2, Layout(0.13, 0.34, 0.25), Format("NEAU", AutoPrecision(5))); // x1, x2, avg-y
   frame2->getAttText()->SetTextSize(0.025);
   frame2->getAttLine()->SetLineWidth(0);
 

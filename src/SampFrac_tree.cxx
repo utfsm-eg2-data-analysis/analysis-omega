@@ -15,7 +15,8 @@
 /*** Global variables ***/
 
 TString outDir = proDir + "/out/SampFrac";
-TString inputFile = proDir + "/bin/clas_42011_*.pass2.root";
+// TString inputFile = proDir + "/bin/clas_42011_*.pass2.root";
+TString inputFile = "/home/borquez/volatile/omegaSim/old/Fe/recsisFe_*.root";
 
 int main(int argc, char **argv) {
 
