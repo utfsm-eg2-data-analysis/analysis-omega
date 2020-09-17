@@ -176,11 +176,16 @@ for ((COUNTER=1; COUNTER <= $lastFile; COUNTER++)); do # "COUNTER <= 10" or "COU
     echo "    sh run_GST.sh"                                                          >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs, updated to 35 files per each rn
-    for ((sub=1; sub <= 35; sub++)); do
-	ssub=$(get_num_2dig $sub)
-	outrootfile="${OUDIR}/pruned${tarName}_${rn}_${ssub}.root"
-	echo "  <Output src=\"pruned${tarName}_${rn}_${ssub}.root\" dest=\"${outrootfile}\"/>"    >> ${jobfile}
-    done
+    if [[ "$setOption" == "jlab" ]]; then
+	for ((sub=1; sub <= 35; sub++)); do
+	    ssub=$(get_num_2dig $sub)
+	    outrootfile="${OUDIR}/pruned${tarName}_${rn}_${ssub}.root"
+	    echo "  <Output src=\"pruned${tarName}_${rn}_${ssub}.root\" dest=\"${outrootfile}\"/>"    >> ${jobfile}
+	done
+    else
+	outrootfile="${OUDIR}/pruned${tarName}_${rn}.root"
+	echo "  <Output src=\"pruned${tarName}_${rn}.root\" dest=\"${outrootfile}\"/>"    >> ${jobfile}
+    fi
     echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
     echo "  <Job>"                                                                    >> ${jobfile}
