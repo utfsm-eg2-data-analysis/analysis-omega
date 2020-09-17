@@ -1,0 +1,432 @@
+\chapter{Appendix}
+\label{ch:appendix}
+\section{Target Fits}
+\label{sec:TargetFits}
+Consider the reconstruction of the position of the vertex of an interaction.
+\begin{itemize}
+\item If the target were just a point, of infinitesimal volume, this position will be reconstructed as a Gaussian function, due to the big number of random variables that are being summed (central limit theorem).
+\item In reality the target doesn't has differential volume, then it doesn't has differential dimensions.
+\end{itemize}
+The reconstructed position will be then a Gaussian convoluted with the spatial function describing the target.
+
+Let's focus on z position. Let be $f_t(z)$ the function that describes the target spatial function, $f_m(z)$ the function that describes the procedure of measurement and $v(z)$ the reconstructed vertex function $v(z) = f_t \star f_m$.
+
+first point:
+\begin{align}
+f_t(z) &= \delta (z-m) \label{tf_1}\\
+f_m(z) &= \frac{1}{\sqrt{2\sigma^2}}e^{\frac{-z^2}{2\sigma^2}}\label{mf_1}
+\end{align}
+\begin{align}
+v(z) &= \int_{-\infty}^{\infty} f_t(z-t)f_m(t)dt\label{rvf_1}\\
+v(z) &= \int_{-\infty}^{\infty} \delta(z-t-m)f_m(t)dt\\
+v(z) &= f_m(z-m) = \frac{1}{\sqrt{2\sigma^2}}e^{\frac{-(z-m)^2}{2\sigma^2}}\\
+\end{align}
+
+Considering the real target as a step function:
+\begin{equation}
+f_t(z) = \left\lbrace\begin{matrix}
+1,~~~|z-m|<\frac{w}{2}\\
+0,~~~ o.w.
+\end{matrix}\right. \label{tf_2}
+\end{equation}
+using \eqref{rvf_1} and \eqref{tf_2}.
+\begin{align}
+v(z) &= \int_{-\infty}^{\infty} f_t(z-t)f_m(t)dt\label{rvf_2}\\
+v(z) &= \int_{m-z-w/2}^{m-z+w/2} f_m(t)dt\\
+v(z) &= \int_{m-z-w/2}^{m-z+w/2} \frac{1}{\sqrt{2\sigma^2}}e^{\frac{-t^2}{2\sigma^2}}dt\label{vz_2b}
+\end{align}
+
+considering the function $erf$
+
+\begin{equation}
+erf(t) = \frac{2}{\sqrt{\pi}}\int_0^t e^{-x^2}dx \label{erf}
+\end{equation}
+using \eqref{erf} and \eqref{vz_2b}:
+%
+\begin{equation}
+v(z) = \frac{1}{2}\left(erf(\frac{m-z+w/2}{\sqrt{2}\sigma} ) - erf(\frac{m-z-w/2}{\sqrt{2}\sigma} )\right)
+\end{equation}
+A fit of this function plus a second order polynomial on Carbon and Deuterium events is shown in figures \ref{fig:D} and \ref{fig:C}.
+%
+\begin{figure}[!ht]
+\includegraphics[width=0.9\textwidth]{CD_D_fit_pol2.gif}
+\caption{Fitting on Deuterium target using C and D2 data.}
+\label{fig:D}
+\end{figure}
+%
+\begin{figure}[!hb]
+\includegraphics[width=0.9\textwidth]{CD_C_fit_pol2.gif}
+\caption{Fitting on Carbon target using C and D2 data.}
+\label{fig:C}
+\end{figure}
+%
+As expected, the dispersion due to vertex measurement ($\sigma$ on $f_m(z)$) are very close considering the estimations using each of the targets.\\
+D2: $\sigma = 0.2093$\\
+C: $\sigma= 0.2065$\\
+%
+The limits are based on $|z-m|<w/2 + 3\sigma$\\
+Deuterium:
+\begin{align}
+-31.8<z<-28.4
+\end{align}
+Carbon:
+\begin{align}
+-25.33<z<-24.10
+\end{align}
+\section{Statistical Errors}
+The errors are estimated in the following way.
+
+Consider a quantity $Q_p$ estimated using a product of $N$ other quantities $q_k$:
+\begin{equation}
+Q_p = \prod_{k=1}^N q_k
+\end{equation}
+
+Making a Taylor expansion around the measurement of the $q_k$ and assuming all $q_k$ are not correlated random variables. keeping only linear terms.
+
+\begin{equation}
+\Delta Q_p = \sum_{k=1}^N \prod_{i\neq k}q_i \Delta q_k \label{eq:taylor_expansion}
+\end{equation}
+hence the variance is:
+
+\begin{align}
+\sigma_{Q_p}^2 &= \sum_{k=1}^N (\prod_{i\neq k}q_i)^2 \sigma_{q_k}^2 \\
+\frac{\sigma_{Q_p}^2}{Q_p^2} &= \sum_{k=1}^N \frac{\sigma_{q_k}^2}{q_k^2} \label{eq:var_prod}
+\end{align}
+%
+On the other side if we consider $Q_d$ as a division of quantities:
+%
+\begin{equation}
+Q_d = \frac{q_a}{q_b}
+\end{equation}
+The expansion and variance are:
+\begin{align}
+\Delta Q_d &= \frac{1}{q_b}\Delta q_a - \frac{q_a}{q_b^2}\Delta q_b\\
+\sigma_{Q_d}^2 &= (\frac{1}{q_b})^2\sigma_{q_a}^2 + (\frac{q_a}{q_b^2})^2\sigma_{q_b}^2\\
+\frac{\sigma_{Q_d}^2}{Q_d^2} &= \frac{\sigma_{q_a}^2}{q_a^2} + \frac{\sigma_{q_b}^2}{q_b^2} \label{eq:var_div}
+\end{align}
+%
+Using \eqref{eq:var_prod} and \eqref{eq:var_div} we can estimate the error of the multiplicity ratio:
+
+\begin{equation}
+R(b) = \frac{\overbrace{\left(N_h(b)/\epsilon(b)/N_e(Q^2,\nu)\right)_A}^u} {\underbrace{\left(N_h(b)/\epsilon(b)/N_e(Q^2,\nu)\right)_D}_d}
+ \label{eq:error_MR}
+\end{equation}
+
+\begin{align}
+\frac{\sigma_R^2}{R^2} &= \frac{\sigma_u^2}{u^2} + \frac{\sigma_d^2}{d^2}\\
+\frac{\sigma_R^2}{R^2} &= \left(\frac{\sigma_{N_h}^2}{N_h^2} + \frac{\sigma_{\epsilon}^2}{\epsilon^2} +\frac{\sigma_{N_e}^2}{N_e^2}\right)_A + \left(\frac{\sigma_{N_h}^2}{N_h^2} + \frac{\sigma_{\epsilon}^2}{\epsilon^2} +\frac{\sigma_{N_e}^2}{N_e^2}\right)_D
+\end{align}
+
+Considering Poisson distributions \footnote{acceptance could be considered as a Binomial process, in this case the error will be $\sqrt{\frac{\epsilon(b)(1-\epsilon(b))}{N_{th}(b)}}$ } the error is:
+\begin{align}
+\frac{\sigma_R^2}{R^2} &= \left(\frac{N_h}{N_h^2} + \frac{N_{acc}}{N_{acc}^2} +\frac{N_{th}}{N_{th}^2} + \frac{N_e}{N_e^2}\right)_A + \left(\frac{N_h}{N_h^2} + \frac{N_{acc}}{N_{acc}^2} +\frac{N_{th}}{N_{th}^2} + \frac{N_e}{N_e^2}\right)_D \\
+\sigma_R &= R\sqrt{ \left(\frac{1}{N_h} + \frac{1}{N_{acc}} +\frac{1}{N_{th}} + \frac{1}{N_e}\right)_A + \left(\frac{1}{N_h} + \frac{1}{N_{acc}} +\frac{1}{N_{th}} + \frac{1}{N_e}\right)_D}
+\end{align}
+
+To include fitting procedures and/or radiative corrections through multiplication or division by a weight, this expression is modify accordingly.
+
+%
+%\section*{Appendix}
+%Let be $x$ the measurement from a Binomial process, where $N$ Bernoulli experiment were performed.
+%According to Maximum Likelihood criteria the best estimator $\hat{p}$ of the parameter $p$  of the distribution is the parameter that maximize the likelihood function $\mathcal{L}$:
+%\begin{equation}
+%\mathcal{L}(p|x) = \mathcal{P}(x,p,N)
+%\end{equation}
+%where
+%\begin{equation}
+%\mathcal{P}(x,p,N) = \binom{N}{x}p^x(1-p)^{N-x}
+%\end{equation}
+%%
+%$\max \mathcal{L}(p|x)$:
+%\begin{align}
+%\frac{d\mathcal{L}}{dp} &= \frac{d\mathcal{P}}{dp} = \binom{N}{x}\left[ xp^{x-1}(1-p)^{N-x} - (N-x)p^x(1-p)^{N-x-1} \right] =0 \nonumber \\
+%&x(1-p) - (N-x)p = 0\nonumber\\
+%\hat{p} &= x/N
+%\end{align}
+%The variance of this estimation is:
+%\begin{align}
+%\mathcal{E}((\hat{p} - p)^2) &= \mathcal{E}(\hat{p}^2) + \mathcal{E}(p^2) - 2\mathcal{E}(\hat{p}p)\\
+%&=\frac{1}{N^2}\mathcal{E}(x^2) + p^2 -2p\frac{\mathcal{E}(x)}{N}\\
+%&=\frac{1}{N^2}(Np(1-p) + (Np)^2) + p^2 -2p^2\\
+%&=\frac{1}{N}(p(1-p))
+%\end{align}
+%Hence an estimation of the uncertainty on taking this estimator is:
+%\begin{equation}
+%\hat{\sigma} _{\hat{p}}^2 = \frac{x/N(1-x/N)}{N}
+%\end{equation}
+\section{Result with background subtraction}
+\label{sec:res_bkg_sub}
+The number of Eta extracted in the different z bins as well as the values corrected with the acceptance are shown in Fig. \ref{fig:Nh_eta_aa_z_C}, \ref{fig:Nh_eta_aa_z_Fe} and \ref{fig:Nh_eta_aa_z_Pb}. The Acceptance dependency on z bins are shown in Fig. \ref{fig:AC_eta_aa_z}.
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Zeta_aa_Nh_C.png}
+\caption{Number of $\eta$ reconstructed as a function of $z$ in C-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig:Nh_eta_aa_z_C}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Zeta_aa_Nh_Fe.png}
+\caption{Number of $\eta$ reconstructed as a function of $z$ in Fe-D setup. Left and right panels correspond to before and after acceptance correction, respectively.  Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_z_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Zeta_aa_Nh_Pb.png}
+\caption{Number of $\eta$ reconstructed as a function of $z$ in Pb-D setup. Left and right panels correspond to before and after acceptance correction, respectively.  Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_z_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Zeta_aa_AC.png}
+\caption{Acceptance as a function of $z$}
+\label{fig:AC_eta_aa_z}
+\end{figure}
+%
+\clearpage
+The number of Eta extracted in the different $\nu$ bins as well as the values corrected with the acceptance are shown in Fig. \ref{fig:Nh_eta_aa_nu_C}, \ref{fig:Nh_eta_aa_nu_Fe} and \ref{fig:Nh_eta_aa_nu_Pb}. The Acceptance dependency on $\nu$ bins are shown in Fig. \ref{fig:AC_eta_aa_nu}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Nueta_aa_Nh_C.png}
+\caption{Number of $\eta$ reconstructed as a function of $\nu$ in C-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig:Nh_eta_aa_nu_C}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Nueta_aa_Nh_Fe.png}
+\caption{Number of $\eta$ reconstructed as a function of $\nu$ in Fe-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_nu_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Nueta_aa_Nh_Pb.png}
+\caption{Number of $\eta$ reconstructed as a function of $\nu$ in Pb-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_nu_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Nueta_aa_AC.png}
+\caption{Acceptance as a function of $\nu$}
+\label{fig:AC_eta_aa_nu}
+\end{figure}
+%
+\clearpage
+The number of Eta extracted in the different $Q^2$ bins as well as the values corrected with the acceptance are shown in Fig. \ref{fig:Nh_eta_aa_q2_C}, \ref{fig:Nh_eta_aa_q2_Fe} and \ref{fig:Nh_eta_aa_q2_Pb}. The Acceptance dependency on $Q^2$ bins are show in Fig. \ref{fig:AC_eta_aa_q2}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Q2eta_aa_Nh_C.png}
+\caption{Number of $\eta$ reconstructed as a function of $Q^2$ in C-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig:Nh_eta_aa_q2_C}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Q2eta_aa_Nh_Fe.png}
+\caption{Number of $\eta$ reconstructed as a function of $Q^2$ in Fe-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_q2_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Q2eta_aa_Nh_Pb.png}
+\caption{Number of $\eta$ reconstructed as a function of $Q^2$ in Pb-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_q2_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Q2eta_aa_AC.png}
+\caption{Acceptance as a function of $Q^2$}
+\label{fig:AC_eta_aa_q2}
+\end{figure}
+%
+\clearpage
+The number of Eta extracted in the different $p_T^2$ bins as well as the values corrected with the acceptance are shown in Fig. \ref{fig:Nh_eta_aa_pt2_C}, \ref{fig:Nh_eta_aa_pt2_Fe} and \ref{fig:Nh_eta_aa_pt2_Pb}. The Acceptance dependency on $p_T^2$ bins are show in Fig. \ref{fig:AC_eta_aa_pt2}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Pt2eta_aa_Nh_C.png}
+\caption{Number of $\eta$ reconstructed as a function of $p_T^2$ in C-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig:Nh_eta_aa_pt2_C}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Pt2eta_aa_Nh_Fe.png}
+\caption{Number of $\eta$ reconstructed as a function of $p_T^2$ in Fe-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_pt2_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Pt2eta_aa_Nh_Pb.png}
+\caption{Number of $\eta$ reconstructed as a function of $p_T^2$ in Pb-D setup. Left and right panels correspond to before and after acceptance correction, respectively. Upper and lower panels correspond to solid and liquid, respectively.}
+\label{fig::Nh_eta_aa_pt2_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Pt2eta_aa_AC.png}
+\caption{Acceptance as a function of $P_t^{2}$}
+\label{fig:AC_eta_aa_pt2}
+\end{figure}
+%
+The projection of the multiplicity ratio over the different kinematical variables are shown in Fig. \ref{fig:MR_eta_aa_z}, \ref{fig:MR_eta_aa_pt2}, \ref{fig:MR_eta_aa_nu} and \ref{fig:MR_eta_aa_q2}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Zeta_aa_pics/MR_Z_cmp.gif}
+\caption{Multiplicity Ratio as a function of $z$}
+\label{fig:MR_eta_aa_z}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Pt2eta_aa_pics/MR_Pt2_cmp.gif}
+\caption{Multiplicity Ratio as a function of $p_T^2$}
+\label{fig:MR_eta_aa_pt2}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Nueta_aa_pics/MR_Nu_cmp.gif}
+\caption{Multiplicity Ratio as a function of $\nu$}
+\label{fig:MR_eta_aa_nu}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{Q2eta_aa_pics/MR_Q2_cmp.gif}
+\caption{Multiplicity Ratio as a function of $Q^2$}
+\label{fig:MR_eta_aa_q2}
+\end{figure}
+
+\section{Fitting pictures}
+\label{sec:fitting_pics}
+The pictures below are the result of the fitting procedure. A proper initialization of the model parameters (\eqref{eq:eta_aa_model}) was done for every bin.
+ 
+\begin{landscape}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{eta_aa_q2_fit_C.png}
+\caption{Fitting procedure on $Q^2$ bins. C data.}
+\label{fig:eta_aa_q2_fit_C}
+\end{figure}
+
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{eta_aa_q2_fit_Fe.png}
+\caption{Fitting procedure on $Q^2$ bins. Fe data.}
+\label{fig:eta_aa_q2_fit_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.25]{eta_aa_q2_fit_Pb.png}
+\caption{Fitting procedure on $Q^2$ bins. Pb data.}
+\label{fig:eta_aa_q2_fit_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_q2_fit_C_sim.png}
+\caption{Fitting procedure on $Q^2$ bins. Simulation reconstructed.}
+\label{fig:eta_aa_q2_fit_sim}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_nu_fit_C.png}
+\caption{Fitting procedure on $\nu$ bins. C data.}
+\label{fig:eta_aa_nu_fit_C}
+\end{figure}
+
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_nu_fit_Fe.png}
+\caption{Fitting procedure on $\nu$ bins. Fe data.}
+\label{fig:eta_aa_nu_fit_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_nu_fit_Pb.png}
+\caption{Fitting procedure on $\nu$ bins. Pb data.}
+\label{fig:eta_aa_nu_fit_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_nu_fit_C_sim.png}
+\caption{Fitting procedure on $\nu$ bins. Simulation reconstructed.}
+\label{fig:eta_aa_nu_fit_sim}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_z_fit_C.png}
+\caption{Fitting procedure on $z$ bins. C data.}
+\label{fig:eta_aa_z_fit_C}
+\end{figure}
+
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_z_fit_Fe.png}
+\caption{Fitting procedure on $z$ bins. Fe data.}
+\label{fig:eta_aa_z_fit_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_z_fit_Pb.png}
+\caption{Fitting procedure on $z$ bins. Pb data.}
+\label{fig:eta_aa_z_fit_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_z_fit_C_sim.png}
+\caption{Fitting procedure on $z$ bins. Simulation reconstructed.}
+\label{fig:eta_aa_z_fit_sim}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_pt2_fit_C.png}
+\caption{Fitting procedure on $P_t^2$ bins. C data.}
+\label{fig:eta_aa_pt2_fit_C}
+\end{figure}
+
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_pt2_fit_Fe.png}
+\caption{Fitting procedure on $P_t^2$ bins. Fe data.}
+\label{fig:eta_aa_pt2_fit_Fe}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_pt2_fit_Pb.png}
+\caption{Fitting procedure on $P_t^2$ bins. Pb data.}
+\label{fig:eta_aa_pt2_fit_Pb}
+\end{figure}
+%
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.23]{eta_aa_pt2_fit_C_sim.png}
+\caption{Fitting procedure on $P_t^2$ bins. Simulation reconstructed.}
+\label{fig:eta_aa_pt2_fit_sim}
+\end{figure}
+
+
+\end{landscape}
