@@ -42,6 +42,7 @@
 #include "TParticlePDG.h"
 #include "TNtuple.h"
 #include "TLorentzVector.h"
+#include "TPaveStats.h"
 
 using Clock=std::chrono::high_resolution_clock;
 

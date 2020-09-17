@@ -9,26 +9,6 @@
 
 #include "analysisConfig.h"
 
-#include "RooFitResult.h"
-#include "RooRealVar.h"
-#include "RooConstVar.h"
-#include "RooGaussian.h"
-#include "RooBreitWigner.h"
-#include "RooChebychev.h"
-#include "RooPolynomial.h"
-#include "RooDataHist.h"
-#include "RooPlot.h"
-#include "RooHist.h"
-#include "RooAbsPdf.h"
-#include "RooAddPdf.h"
-#include "RooProdPdf.h"
-#include "RooExtendPdf.h"
-#include "RooAbsReal.h"
-#include "RooArgSet.h"
-#include "RooGenericPdf.h" // new!
-
-using namespace RooFit;
-
 /*** Global variables ***/
 
 TString outDir = proDir + "/out/SampFrac";
@@ -37,15 +17,41 @@ TString outDir = proDir + "/out/SampFrac";
 TString setOption;
 TString targetOption;
 
-const Int_t Nbins = 36; // (44-9), for now
-Double_t mean[Nbins], mean_error[Nbins];
-Double_t sigma[Nbins], sigma_error[Nbins];
+Double_t mean[50], mean_error[50];
+Double_t sigma[50], sigma_error[50];
+Int_t Nbins, minBin, maxBin;
 
+// input tree
 TString treeFile;
+
+// input parameters from fits
+TString fitDir;
+TString textFile;
+
+// output
 TString plotFile;
 TString plotFile_mean;
 TString plotFile_sigma;
-TString textFile;
+TString plotFile_afterfit;
+
+/*** Mathematical Functions ***/
+
+Double_t secondPol(Double_t *x, Double_t *par) {
+  return par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
+}
+
+// Sqrt of the Inverse = SI
+Double_t siFunction(Double_t *x, Double_t *par) {
+  return TMath::Sqrt(par[0]*par[0] + par[1]*par[1]/x[0]);
+}
+
+Double_t topFunction(Double_t *x, Double_t *par) {
+  return secondPol(x, par) + 2.5*siFunction(x, &par[3]);
+}
+
+Double_t botFunction(Double_t *x, Double_t *par) {
+  return secondPol(x, par) - 2.5*siFunction(x, &par[3]);
+}
 
 int main(int argc, char **argv) {
 
@@ -57,22 +63,44 @@ int main(int argc, char **argv) {
   } else {
     setOption    = argv[1];
     targetOption = argv[2];
-    // filenames
+    // tree
     treeFile = outDir + "/samp-frac_" + setOption + "-" + targetOption + ".root";
-    plotFile = outDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".png";
-    textFile = outDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".dat";
-    plotFile_mean  = outDir + "/samp-frac-mean" + setOption + "-" + targetOption + ".png";
-    plotFile_sigma = outDir + "/samp-frac-sigma" + setOption + "-" + targetOption + ".png";
+    // fits
+    fitDir = outDir + "/" + setOption + "-" + targetOption;
+    // outputs
+    textFile = fitDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".dat";
+    plotFile = fitDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".png";
+    plotFile_mean  = fitDir + "/samp-frac-mean_" + setOption + "-" + targetOption + ".png";
+    plotFile_sigma = fitDir + "/samp-frac-sigma_" + setOption + "-" + targetOption + ".png";
+    plotFile_afterfit = fitDir + "/samp-frac-afterfit_" + setOption + "-" + targetOption + ".png";
   }
+
+  /*** Options ***/
+  
+  if (setOption == "old" && targetOption == "C") {
+    minBin = 7;
+    maxBin = 30;
+  }
+  /*else if (targetOption == "Fe") minBin = ; maxBin = ;
+  } else if (setOption == "usm") {
+    if (targetOption == "D") minBin = ; maxBin = ;
+    else if (targetOption == "C") minBin = ; maxBin = ;
+    else if (targetOption == "Fe") minBin = ; maxBin = ;
+    else if (targetOption == "Pb") minBin = ; maxBin = ; 
+  } else if (setOption == "jlab") {
+    if (targetOption == "D") minBin = ; maxBin = ;
+    else if (targetOption == "C") minBin = ; maxBin = ;
+    else if (targetOption == "Fe") minBin = ; maxBin = ;
+    else if (targetOption == "Pb") minBin = ; maxBin = ;
+    }*/
+  Nbins = maxBin - minBin;
   
   /*** Read data ***/
 
   TString fitFile;
   
-  for (Int_t i = 9; i <= 44; i++) { // 9 to 44, hardcoded for now
-    Int_t index = i - 9;
-    
-    fitFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", i) + ".dat";
+  for (Int_t i = minBin; i <= maxBin; i++) {    
+    fitFile = fitDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", i) + ".dat";
     std::cout << "Reading " << fitFile << " ..." << std::endl;
     std::ifstream inFile(fitFile);
 
@@ -81,13 +109,13 @@ int main(int argc, char **argv) {
     while (inFile >> auxString1 >> auxString2) {
       l++;
       if (l == 1) { // first line
-        mean[index]       = auxString1.Atof();
-        mean_error[index] = auxString2.Atof();
-	std::cout << "  mean  = " << mean[index] << " +- " << mean_error[index] << std::endl;
+        mean[i]       = auxString1.Atof();
+        mean_error[i] = auxString2.Atof();
+	std::cout << "  mean  = " << mean[i] << " +- " << mean_error[i] << std::endl;
       } else if (l == 2) {
-        sigma[index]       = auxString1.Atof();
-	sigma_error[index] = auxString2.Atof();
-	std::cout << "  sigma = " << sigma[index] << " +- " << sigma_error[index] << std::endl;
+        sigma[i]       = auxString1.Atof();
+	sigma_error[i] = auxString2.Atof();
+	std::cout << "  sigma = " << sigma[i] << " +- " << sigma_error[i] << std::endl;
       }
     }
     inFile.close();
@@ -96,22 +124,24 @@ int main(int argc, char **argv) {
   /*** Histograms ***/
 
   // set hists
-  TH1F *meanHist = new TH1F("meanHist", "", Nbins, 0.8, 4.4); // for now
-  TH1F *sigmaHist = new TH1F("sigmaHist", "", Nbins, 0.8, 4.4);
+  Double_t minRange = (minBin-1)*0.1;
+  Double_t maxRange = maxBin*0.1;
+  TH1F *meanHist = new TH1F("meanHist", "", Nbins, minRange, maxRange);
+  TH1F *sigmaHist = new TH1F("sigmaHist", "", Nbins, minRange, maxRange);
 
   // fill hists
-  for (Int_t cc = 0; cc < Nbins; cc++) {
-    meanHist->SetBinContent(cc + 1, mean[cc]);
-    meanHist->SetBinError(cc + 1, mean_error[cc]);
+  for (Int_t cc = minBin; cc <= maxBin; cc++) {
+    meanHist->SetBinContent(cc + 1 - minBin, mean[cc]);
+    meanHist->SetBinError(cc + 1 - minBin, mean_error[cc]);
     
-    sigmaHist->SetBinContent(cc + 1, sigma[cc]);
-    sigmaHist->SetBinError(cc + 1, sigma_error[cc]);
+    sigmaHist->SetBinContent(cc + 1 - minBin, sigma[cc]);
+    sigmaHist->SetBinError(cc + 1 - minBin, sigma_error[cc]);
   }
 
-  TH1F *topHist = new TH1F("topHist", "", Nbins, 0.8, 4.4); // for now
+  TH1F *topHist = new TH1F("topHist", "", Nbins, minRange, maxRange);
   topHist->Add(meanHist, sigmaHist, 1, 2.5);
   
-  TH1F *botHist = new TH1F("botHist", "", Nbins, 0.8, 4.4);
+  TH1F *botHist = new TH1F("botHist", "", Nbins, minRange, maxRange);
   botHist->Add(meanHist, sigmaHist, 1, -2.5);
 
   // styles
@@ -127,81 +157,75 @@ int main(int argc, char **argv) {
   botHist->SetFillStyle(0);
   botHist->SetLineColor(kBlack);
   botHist->SetLineWidth(3);
-  
-  /*** RooFit stuff -- MEAN ***/
 
-  RooRealVar x("x", "x", 0.8, 4.4);
-
-  // define data
-  RooDataHist data("data", "data", x, meanHist);
+  /*** First fit: mean ***/
 
   // define function
-  RooRealVar a("a", "a", 1e-2, 1e-2, 1e-1);
-  RooRealVar b("b", "b", -3.5e-3, -8e-3, -1e-3);
-  // RooGenericPdf model("model", "Generic PDF", "a*x+b*x*x", RooArgSet(x, a, b));
-  RooPolynomial model("model", "pol", x, RooArgList(a, b));
+  TF1 *meanFcn = new TF1("meanFcn", secondPol, minRange, maxRange, 3);
 
-  // define frame
-  RooPlot *frame = x.frame(Title("Sampling Fraction"), Bins(Nbins));
-  frame->GetYaxis()->SetTitle("Counts");
-  frame->GetXaxis()->SetTitle("Etot/P");
-  frame->GetXaxis()->CenterTitle();
+  // setting initial guess values
+  meanFcn->SetParameter(0, 2.6e-1);
+  meanFcn->SetParameter(1, 8.9e-3);
+  meanFcn->SetParameter(2, -1.9e-3);
 
-  // fit
-  model.fitTo(data, Minos(kTRUE), Save(), Range(0.8, 4.4));
+  meanHist->Fit("meanFcn", "F", "goff"); // REN0
 
-  // draw function & overlay data points
-  data.plotOn(frame, Name("Data"), DataError(RooAbsData::SumW2));
-  model.plotOn(frame, Name("Model"), LineColor(kRed));
-  
-  // add params
-  model.paramOn(frame, Layout(0.13, 0.34, 0.25), Format("NEAU", AutoPrecision(2))); // x1, x2, avg-y
-  frame->getAttText()->SetTextSize(0.025);
-  frame->getAttLine()->SetLineWidth(0);
+  Double_t meanFcn_params[3];
+  meanFcn->GetParameters(meanFcn_params);
 
+  // draw
   TCanvas *c0 = new TCanvas("c0", "c0", 1000, 1000);
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(111);
+    
+  meanHist->Draw("E");
 
-  frame->Draw();
-
+  gPad->Update();
+  TPaveStats *paramsBox = (TPaveStats*) meanHist->FindObject("stats");
+  paramsBox->SetX1NDC(0.6);
+  paramsBox->SetX2NDC(0.9);
+  paramsBox->SetY1NDC(0.1);
+  paramsBox->SetY2NDC(0.25);
+  
+  meanFcn->SetLineWidth(3);
+  meanFcn->SetLineColor(kRed);
+  meanFcn->Draw("SAME");
+  
   c0->Print(plotFile_mean); // output file
 
-  /*** RooFit stuff -- SIGMA ***/
-  
-  RooRealVar x2("x2", "x2", 0.8, 4.4);
-
-  // define data
-  RooDataHist data2("data2", "data2", x2, sigmaHist);
+  /*** Second fit: sigma ***/
 
   // define function
-  RooRealVar d("d", "d", 4e-4, 1e-6, 1e-3);
-  // RooRealVar f("f", "f", 5e-2, 1e-2, 1);
-  RooGenericPdf model2("model2", "Generic PDF", "sqrt(d*d + 1/sqrt(x2))", RooArgSet(x2, d));
+  TF1 *sigmaFcn = new TF1("sigmaFcn", siFunction, minRange, maxRange, 2);
 
-  // define frame
-  RooPlot *frame2 = x2.frame(Title("Sampling Fraction"), Bins(Nbins));
-  frame2->GetYaxis()->SetTitle("Counts");
-  frame2->GetXaxis()->SetTitle("Etot/P");
-  frame2->GetXaxis()->CenterTitle();
+  // setting initial guess values
+  sigmaFcn->SetParameter(0, 5.7e-3);
+  sigmaFcn->SetParameter(1, 3.05e-2);
 
-  // fit
-  model2.fitTo(data2, Minos(kTRUE), Save(), Range(0.8, 4.4)); // (0.8, 4.4)
+  sigmaHist->Fit("sigmaFcn", "F", "goff"); // REN0
 
-  // draw function & overlay data points
-  data2.plotOn(frame2, Name("Data"), DataError(RooAbsData::SumW2));
-  model2.plotOn(frame2, Name("Model"), LineColor(kRed));
-  
-  // add params
-  model2.paramOn(frame2, Layout(0.13, 0.34, 0.25), Format("NEAU", AutoPrecision(5))); // x1, x2, avg-y
-  frame2->getAttText()->SetTextSize(0.025);
-  frame2->getAttLine()->SetLineWidth(0);
+  Double_t sigmaFcn_params[2];
+  sigmaFcn->GetParameters(sigmaFcn_params);
 
-  TCanvas *c2 = new TCanvas("c2", "c2", 1000, 1000);
+  // draw
+  TCanvas *c1 = new TCanvas("c1", "c1", 1000, 1000);
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(111);
+    
+  sigmaHist->Draw("E");
 
-  frame2->Draw();
-
-  c2->Print(plotFile_sigma); // output file
+  gPad->Update();
+  TPaveStats *paramsBox2 = (TPaveStats*) sigmaHist->FindObject("stats");
+  paramsBox2->SetX1NDC(0.6);
+  paramsBox2->SetX2NDC(0.9);
+  paramsBox2->SetY1NDC(0.75);
+  paramsBox2->SetY2NDC(0.9);
+  
+  sigmaFcn->SetLineWidth(3);
+  sigmaFcn->SetLineColor(kBlue);
+  sigmaFcn->Draw("SAME");
+  
+  c1->Print(plotFile_sigma); // output file
   
   /*** 2D Hist ***/
 
@@ -227,28 +251,95 @@ int main(int argc, char **argv) {
   theHist->SetContour(99);
   
   /*** Drawing ***/
-      
-  TCanvas *c1 = new TCanvas("c1", "c1", 1000, 1000);
+  
+  TCanvas *c2 = new TCanvas("c2", "c2", 1000, 1000);
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
   gStyle->SetNumberContours(NCont); // colors, smoran
 
-  // frame->Draw();
   theHist->Draw("COLZ");
   topHist->Draw("SAME");
-  meanHist->Draw("SAME");
   botHist->Draw("SAME");
 
-  c1->Print(plotFile); // output file
-
-  /*** Save data ***/
-  /*
-  std::ofstream outFinalFile(textFile, std::ios::out); // output file
-  // line 1: omegaMean
-  outFinalFile << mean.getValV() << "    " << mean.getError() << std::endl;
-  // line 2: omegaSigma
-  outFinalFile << sigma.getValV() << "    " << sigma.getError() << std::endl;
-  std::cout << "Created file: " << textFile << std::endl;
-  */
+  // fit again to prevent function and params box apparition
+  meanHist->SetStats(0);
+  meanHist->Fit("meanFcn", "F0", "goff"); // REN0
+  meanHist->Draw("SAME");
   
+  c2->Print(plotFile); // output file
+  
+  /*** Drawing - After fit ***/
+  
+  TCanvas *c3 = new TCanvas("c3", "c3", 1000, 1000);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gStyle->SetNumberContours(NCont); // colors, smoran
+
+  theHist->Draw("COLZ");
+  topHist->Draw("SAME");
+  botHist->Draw("SAME");
+
+  // fit again to prevent function and params box apparition
+  meanHist->SetStats(0);
+  meanHist->Fit("meanFcn", "F0", "goff"); // REN0
+  meanHist->Draw("SAME");
+
+  TF1 *topFcn = new TF1("topFcn", topFunction, minRange, maxRange, 5);
+  topFcn->SetParameter(0, meanFcn_params[0]);
+  topFcn->SetParameter(1, meanFcn_params[1]);
+  topFcn->SetParameter(2, meanFcn_params[2]);
+  topFcn->SetParameter(3, sigmaFcn_params[0]);
+  topFcn->SetParameter(4, sigmaFcn_params[1]);
+  topFcn->SetLineColor(kWhite);
+  topFcn->SetLineWidth(3);
+  topFcn->Draw("SAME");
+
+  TF1 *botFcn = new TF1("botFcn", botFunction, minRange, maxRange, 5);
+  botFcn->SetParameter(0, meanFcn_params[0]);
+  botFcn->SetParameter(1, meanFcn_params[1]);
+  botFcn->SetParameter(2, meanFcn_params[2]);
+  botFcn->SetParameter(3, sigmaFcn_params[0]);
+  botFcn->SetParameter(4, sigmaFcn_params[1]);
+  botFcn->SetLineColor(kWhite);
+  botFcn->SetLineWidth(3);
+  botFcn->Draw("SAME");
+  
+  meanFcn->SetLineColor(kWhite);
+  meanFcn->SetLineWidth(3);
+  meanFcn->Draw("SAME");
+
+  // to compare
+  /*
+  TF1 *topFcn = new TF1("topFcn", topFunction, minRange, maxRange, 5);
+  topFcn->SetParameter(0, 2.6e-1);
+  topFcn->SetParameter(1, 8.9e-3);
+  topFcn->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
+  topFcn->SetParameter(3, 5.7e-3);
+  topFcn->SetParameter(4, 3.05e-2);
+  topFcn->SetLineColor(kWhite);
+  topFcn->SetLineWidth(3);
+  topFcn->Draw("SAME");
+
+  TF1 *botFcn = new TF1("botFcn", botFunction, minRange, maxRange, 5);
+  botFcn->SetParameter(0, 2.6e-1);
+  botFcn->SetParameter(1, 8.9e-3);
+  botFcn->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
+  botFcn->SetParameter(3, 5.7e-3);
+  botFcn->SetParameter(4, 3.05e-2);
+  botFcn->SetLineColor(kWhite);
+  botFcn->SetLineWidth(3);
+  botFcn->Draw("SAME");
+
+  TF1 *meanFcn_v1 = new TF1("meanFcn_v1", secondPol, minRange, maxRange, 3);
+  meanFcn_v1->SetParameter(0, 2.6e-1);
+  meanFcn_v1->SetParameter(1, 8.9e-3);
+  meanFcn_v1->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
+  
+  meanFcn_v1->SetLineColor(kWhite);
+  meanFcn_v1->SetLineWidth(3);
+  meanFcn_v1->Draw("SAME");
+  */
+  c3->Print(plotFile_afterfit); // output file  
+    
   return 0;
 }

@@ -38,10 +38,15 @@ TString setOption;
 TString targetOption;
 Int_t   binMomentum;
 
+// momentum related
 TCut cutMomentum;
-
 TString titleMomentum;
+
+// input
 TString treeFile;
+
+// output
+TString fitDir;
 TString plotFile;
 TString textFile;
 
@@ -57,9 +62,10 @@ int main(int argc, char **argv) {
     targetOption = argv[2];
     binMomentum  = atoi(argv[3]);
     // set filenames
+    fitDir = outDir + "/" + setOption + "-" + targetOption;
     treeFile = outDir + "/samp-frac_" + setOption + "-" + targetOption + ".root";
-    plotFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".png";
-    textFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".dat";
+    plotFile = fitDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".png";
+    textFile = fitDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".dat";
   }
   
   // assign cut
@@ -74,6 +80,7 @@ int main(int argc, char **argv) {
   
   // just in case
   system("mkdir -p " + outDir);
+  system("mkdir -p " + fitDir);
     
   /*** Histograms ***/
 
