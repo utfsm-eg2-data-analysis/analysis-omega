@@ -16,6 +16,7 @@ TString outDir = proDir + "/out/SampFrac";
 // options
 TString setOption;
 TString targetOption;
+TString tayaOption;
 
 Double_t mean[50], mean_error[50];
 Double_t sigma[50], sigma_error[50];
@@ -57,7 +58,7 @@ int main(int argc, char **argv) {
 
   /*** Parse Command Line ***/
   
-  if (argc != 3) {
+  if (argc < 3) {
     std::cout << "Two arguments <set> <option> are required." << std::endl;
     exit(0);
   } else {
@@ -73,6 +74,9 @@ int main(int argc, char **argv) {
     plotFile_mean  = fitDir + "/samp-frac-mean_" + setOption + "-" + targetOption + ".png";
     plotFile_sigma = fitDir + "/samp-frac-sigma_" + setOption + "-" + targetOption + ".png";
     plotFile_afterfit = fitDir + "/samp-frac-afterfit_" + setOption + "-" + targetOption + ".png";
+    // to compare
+    tayaOption = argv[3];
+    if (tayaOption != "") plotFile_afterfit = fitDir + "/samp-frac-afterfit_" + setOption + "-" + targetOption + "_taya.png";
   }
 
   /*** Options ***/
@@ -80,19 +84,22 @@ int main(int argc, char **argv) {
   if (setOption == "old" && targetOption == "C") {
     minBin = 7;
     maxBin = 30;
-  }
-  /*else if (targetOption == "Fe") minBin = ; maxBin = ;
+  } else if (setOption == "old" && targetOption == "Fe") {
+    minBin = 8;
+    maxBin = 28;
   } else if (setOption == "usm") {
-    if (targetOption == "D") minBin = ; maxBin = ;
-    else if (targetOption == "C") minBin = ; maxBin = ;
-    else if (targetOption == "Fe") minBin = ; maxBin = ;
-    else if (targetOption == "Pb") minBin = ; maxBin = ; 
-  } else if (setOption == "jlab") {
-    if (targetOption == "D") minBin = ; maxBin = ;
-    else if (targetOption == "C") minBin = ; maxBin = ;
-    else if (targetOption == "Fe") minBin = ; maxBin = ;
-    else if (targetOption == "Pb") minBin = ; maxBin = ;
-    }*/
+    minBin = 7;
+    maxBin = 30;
+  } else if (setOption == "jlab" && targetOption == "D") {
+    minBin = 7;
+    maxBin = 27;
+  } else if (setOption == "jlab" && targetOption != "D") {
+    minBin = 7;
+    maxBin = 28;
+  } else if (setOption == "all") {
+    minBin = 7;
+    maxBin = 30;
+  }
   Nbins = maxBin - minBin;
   
   /*** Read data ***/
@@ -279,66 +286,67 @@ int main(int argc, char **argv) {
   topHist->Draw("SAME");
   botHist->Draw("SAME");
 
-  // fit again to prevent function and params box apparition
-  meanHist->SetStats(0);
-  meanHist->Fit("meanFcn", "F0", "goff"); // REN0
-  meanHist->Draw("SAME");
-
+  // define functions beforehand
   TF1 *topFcn = new TF1("topFcn", topFunction, minRange, maxRange, 5);
-  topFcn->SetParameter(0, meanFcn_params[0]);
-  topFcn->SetParameter(1, meanFcn_params[1]);
-  topFcn->SetParameter(2, meanFcn_params[2]);
-  topFcn->SetParameter(3, sigmaFcn_params[0]);
-  topFcn->SetParameter(4, sigmaFcn_params[1]);
-  topFcn->SetLineColor(kWhite);
-  topFcn->SetLineWidth(3);
-  topFcn->Draw("SAME");
-
   TF1 *botFcn = new TF1("botFcn", botFunction, minRange, maxRange, 5);
-  botFcn->SetParameter(0, meanFcn_params[0]);
-  botFcn->SetParameter(1, meanFcn_params[1]);
-  botFcn->SetParameter(2, meanFcn_params[2]);
-  botFcn->SetParameter(3, sigmaFcn_params[0]);
-  botFcn->SetParameter(4, sigmaFcn_params[1]);
-  botFcn->SetLineColor(kWhite);
-  botFcn->SetLineWidth(3);
-  botFcn->Draw("SAME");
-  
-  meanFcn->SetLineColor(kWhite);
-  meanFcn->SetLineWidth(3);
-  meanFcn->Draw("SAME");
-
-  // to compare
-  /*
-  TF1 *topFcn = new TF1("topFcn", topFunction, minRange, maxRange, 5);
-  topFcn->SetParameter(0, 2.6e-1);
-  topFcn->SetParameter(1, 8.9e-3);
-  topFcn->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
-  topFcn->SetParameter(3, 5.7e-3);
-  topFcn->SetParameter(4, 3.05e-2);
-  topFcn->SetLineColor(kWhite);
-  topFcn->SetLineWidth(3);
-  topFcn->Draw("SAME");
-
-  TF1 *botFcn = new TF1("botFcn", botFunction, minRange, maxRange, 5);
-  botFcn->SetParameter(0, 2.6e-1);
-  botFcn->SetParameter(1, 8.9e-3);
-  botFcn->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
-  botFcn->SetParameter(3, 5.7e-3);
-  botFcn->SetParameter(4, 3.05e-2);
-  botFcn->SetLineColor(kWhite);
-  botFcn->SetLineWidth(3);
-  botFcn->Draw("SAME");
-
   TF1 *meanFcn_v1 = new TF1("meanFcn_v1", secondPol, minRange, maxRange, 3);
-  meanFcn_v1->SetParameter(0, 2.6e-1);
-  meanFcn_v1->SetParameter(1, 8.9e-3);
-  meanFcn_v1->SetParameter(2, -1.9e-3); // add "-" for taya's cuts
+
+  if (tayaOption == "") {
+    // fit again to prevent function and params box apparition
+    meanHist->SetStats(0);
+    meanHist->Fit("meanFcn", "F0", "goff"); // REN0
+    meanHist->Draw("SAME");
+
+    topFcn->SetParameter(0, meanFcn_params[0]);
+    topFcn->SetParameter(1, meanFcn_params[1]);
+    topFcn->SetParameter(2, meanFcn_params[2]);
+    topFcn->SetParameter(3, sigmaFcn_params[0]);
+    topFcn->SetParameter(4, sigmaFcn_params[1]);
+    topFcn->SetLineColor(kWhite);
+    topFcn->SetLineWidth(3);
+    topFcn->Draw("SAME");
+
+    botFcn->SetParameter(0, meanFcn_params[0]);
+    botFcn->SetParameter(1, meanFcn_params[1]);
+    botFcn->SetParameter(2, meanFcn_params[2]);
+    botFcn->SetParameter(3, sigmaFcn_params[0]);
+    botFcn->SetParameter(4, sigmaFcn_params[1]);
+    botFcn->SetLineColor(kWhite);
+    botFcn->SetLineWidth(3);
+    botFcn->Draw("SAME");
   
-  meanFcn_v1->SetLineColor(kWhite);
-  meanFcn_v1->SetLineWidth(3);
-  meanFcn_v1->Draw("SAME");
-  */
+    meanFcn->SetLineColor(kWhite);
+    meanFcn->SetLineWidth(3);
+    meanFcn->Draw("SAME");
+  } else if (tayaOption == "taya") {
+    // to compare, set taya parameters
+    topFcn->SetParameter(0, 2.6e-1);
+    topFcn->SetParameter(1, 8.9e-3);
+    topFcn->SetParameter(2, -1.9e-3);
+    topFcn->SetParameter(3, 5.7e-3);
+    topFcn->SetParameter(4, 3.05e-2);
+    topFcn->SetLineColor(kWhite);
+    topFcn->SetLineWidth(3);
+    topFcn->Draw("SAME");
+
+    botFcn->SetParameter(0, 2.6e-1);
+    botFcn->SetParameter(1, 8.9e-3);
+    botFcn->SetParameter(2, -1.9e-3);
+    botFcn->SetParameter(3, 5.7e-3);
+    botFcn->SetParameter(4, 3.05e-2);
+    botFcn->SetLineColor(kWhite);
+    botFcn->SetLineWidth(3);
+    botFcn->Draw("SAME");
+
+    meanFcn_v1->SetParameter(0, 2.6e-1);
+    meanFcn_v1->SetParameter(1, 8.9e-3);
+    meanFcn_v1->SetParameter(2, -1.9e-3);
+  
+    meanFcn_v1->SetLineColor(kWhite);
+    meanFcn_v1->SetLineWidth(3);
+    meanFcn_v1->Draw("SAME");
+  }
+  
   c3->Print(plotFile_afterfit); // output file  
     
   return 0;
