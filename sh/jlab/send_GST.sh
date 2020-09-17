@@ -108,18 +108,18 @@ execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
 # set limit files
 if [[ "$tarName" == "D" && "$nDir" == "046" ]]; then
-    lastFile=89
+    nfiles=89
 elif [[ "$tarName" == "C" && "$nDir" == "010" ]]; then
-    lastFile=28
+    nfiles=28
 elif [[ "$tarName" == "Fe" && "$nDir" == "013" ]]; then
-    lastFile=31
+    nfiles=31
 elif [[ "$tarName" == "Pb" && "$nDir" == "004" ]]; then
-    lastFile=98
+    nfiles=98
 else
-    lastFile=100  
+    nfiles=100  
 fi
 
-for ((COUNTER=1; COUNTER <= $lastFile; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${lastFile}"
+for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${nfiles}"
     # update rn value
     if [[ "${setOption}" == "data" ]]; then
 	rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
