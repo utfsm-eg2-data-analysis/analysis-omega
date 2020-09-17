@@ -33,18 +33,38 @@ using namespace RooFit;
 
 TString outDir = proDir + "/out/SampFrac";
 
+// options
+TString setOption;
+TString targetOption;
+
 const Int_t Nbins = 36; // (44-9), for now
 Double_t mean[Nbins], mean_error[Nbins];
 Double_t sigma[Nbins], sigma_error[Nbins];
 
-TString treeFile = outDir + "/hola.root";
-TString plotFile = outDir + "/final.png";
-TString plotFile_mean  = outDir + "/final_mean.png";
-TString plotFile_sigma = outDir + "/final_sigma.png";
-TString textFile = outDir + "/final.dat";
+TString treeFile;
+TString plotFile;
+TString plotFile_mean;
+TString plotFile_sigma;
+TString textFile;
 
-int main() {
+int main(int argc, char **argv) {
 
+  /*** Parse Command Line ***/
+  
+  if (argc != 3) {
+    std::cout << "Two arguments <set> <option> are required." << std::endl;
+    exit(0);
+  } else {
+    setOption    = argv[1];
+    targetOption = argv[2];
+    // filenames
+    treeFile = outDir + "/samp-frac_" + setOption + "-" + targetOption + ".root";
+    plotFile = outDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".png";
+    textFile = outDir + "/samp-frac-points_" + setOption + "-" + targetOption + ".dat";
+    plotFile_mean  = outDir + "/samp-frac-mean" + setOption + "-" + targetOption + ".png";
+    plotFile_sigma = outDir + "/samp-frac-sigma" + setOption + "-" + targetOption + ".png";
+  }
+  
   /*** Read data ***/
 
   TString fitFile;
@@ -52,7 +72,7 @@ int main() {
   for (Int_t i = 9; i <= 44; i++) { // 9 to 44, hardcoded for now
     Int_t index = i - 9;
     
-    fitFile = outDir + "/hola_" + Form("%d", i) + ".dat";
+    fitFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", i) + ".dat";
     std::cout << "Reading " << fitFile << " ..." << std::endl;
     std::ifstream inFile(fitFile);
 

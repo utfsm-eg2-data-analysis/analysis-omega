@@ -12,11 +12,29 @@
 /*** Global variables ***/
 
 TString outDir = proDir + "/out/SampFrac";
-TString treeFile = outDir + "/hola.root";
-TString plotFile = outDir + "/hola.png";
+
+// options
+TString setOption;
+TString targetOption;
+
+TString treeFile;
+TString plotFile;
 
 int main(int argc, char **argv) {
 
+  /*** Parse Command Line ***/
+  
+  if (argc != 3) {
+    std::cout << "Two arguments <set> <option> are required." << std::endl;
+    exit(0);
+  } else {
+    setOption    = argv[1];
+    targetOption = argv[2];
+    // filenames
+    treeFile = outDir + "/samp-frac_" + setOption + "-" + targetOption + ".root";
+    plotFile = outDir + "/samp-frac-plot_" + setOption + "-" + targetOption + ".png";
+  }
+  
   // just in case
   system("mkdir -p " + outDir);
     

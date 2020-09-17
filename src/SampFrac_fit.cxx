@@ -32,28 +32,45 @@ using namespace RooFit;
 /*** Global variables ***/
 
 TString outDir = proDir + "/out/SampFrac";
-TString treeFile = outDir + "/hola.root";
 
 // options
-Int_t binMomentum;
+TString setOption;
+TString targetOption;
+Int_t   binMomentum;
 
 TCut cutMomentum;
 
 TString titleMomentum;
+TString treeFile;
 TString plotFile;
 TString textFile;
 
-inline int parseCommandLine(int argc, char* argv[]);
-void printOptions();
-void assignOptions();
-void printUsage();
-
 int main(int argc, char **argv) {
 
-  parseCommandLine(argc, argv);
-  printOptions();
+  /*** Parse Command Line ***/
 
-  assignOptions();
+  if (argc != 4) {
+    std::cout << "Three arguments <set> <option> <bin in momentum> are required." << std::endl;
+    exit(0);
+  } else {
+    setOption    = argv[1];
+    targetOption = argv[2];
+    binMomentum  = atoi(argv[3]);
+    // set filenames
+    treeFile = outDir + "/samp-frac_" + setOption + "-" + targetOption + ".root";
+    plotFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".png";
+    textFile = outDir + "/samp-frac-fit_" + setOption + "-" + targetOption + "_" + Form("%d", binMomentum) + ".dat";
+  }
+  
+  // assign cut
+  Int_t Nbins = 50; // 100 MeV momentum resolution
+  Double_t upperLimit = 5.0;
+  Double_t lowerLimit = 0.0;
+  Double_t delta = (upperLimit - lowerLimit)/((Double_t) Nbins);
+  Double_t lowerEdge = lowerLimit + (binMomentum-1)*delta;
+  Double_t upperEdge = lowerLimit + (binMomentum-1+1)*delta;
+  cutMomentum = Form("%f < P && P < %f", lowerEdge, upperEdge);
+  titleMomentum = Form(" (%.2f < P < %.2f)", lowerEdge, upperEdge);
   
   // just in case
   system("mkdir -p " + outDir);
@@ -120,54 +137,4 @@ int main(int argc, char **argv) {
   std::cout << "Created file: " << textFile << std::endl;
 
   return 0;
-}
-
-/*** Functions ***/
-
-inline int parseCommandLine(int argc, char* argv[]) {
-  Int_t c;
-  if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./SampFrac_fit -h to print usage." << std::endl;
-    exit(0);
-  }
-  while ((c = getopt(argc, argv, "p:")) != -1)
-    switch (c) {
-    case 'p': binMomentum = atoi(optarg); break;
-    default:
-      std::cerr << "Unrecognized argument. Execute ./SampFrac_fit -h to print usage." << std::endl;
-      exit(0);
-      break;
-    }
-}
-
-void printOptions() {
-  std::cout << "Executing SampFrac_fit program. The chosen parameters are:" << std::endl;
-  std::cout << "  binMomentum = " << binMomentum << std::endl;
-  std::cout << std::endl;
-}
-
-void printUsage() {
-  std::cout << "MakePlots program. Usage is:" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./MakePlots -h" << std::endl;
-  std::cout << "    prints help and exit program" << std::endl;
-  std::cout << std::endl;
-  std::cout << "./MakePlots -p[1-50]" << std::endl;
-  std::cout << "    selects momentum bin " << std::endl;
-  std::cout << std::endl;
-}
-
-void assignOptions() {
-  // assign cut
-  Int_t Nbins = 50; // 100 MeV momentum resolution
-  Double_t upperLimit = 5.0;
-  Double_t lowerLimit = 0.0;
-  Double_t delta = (upperLimit - lowerLimit)/((Double_t) Nbins);
-  Double_t lowerEdge = lowerLimit + (binMomentum-1)*delta;
-  Double_t upperEdge = lowerLimit + (binMomentum-1+1)*delta;
-  cutMomentum = Form("%f < P && P < %f", lowerEdge, upperEdge);
-  titleMomentum = Form(" (%.2f < P < %.2f)", lowerEdge, upperEdge);
-  // name
-  plotFile = outDir + "/hola_" + Form("%d", binMomentum) + ".png";
-  textFile = outDir + "/hola_" + Form("%d", binMomentum) + ".dat";
 }
