@@ -63,9 +63,6 @@ TCut cutTargType;
 // "SCStatusEl > 0"   : sc1
 // "SCStatusEl == 33" : sc2
 
-TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0";
-TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0";
-TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0";
 TCut statusCuts_gamma     = "Status[0] > 0 && Status[1] > 0"; // not used, yet
 TCut statusCuts_default   = statusCuts_electrons && statusCuts_pim && statusCuts_pip;
 

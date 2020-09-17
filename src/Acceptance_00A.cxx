@@ -25,8 +25,8 @@ TString inputFile, outputFile;
 
 // cuts
 // TCut cutQuality_gamma = ""; // ver.0
-TCut cutQuality_gamma = "mc_P[0] > 0.1 && mc_P[1] > 0.1"; // ver.1
-// TCut cutQuality_gamma = "mc_P[0] > 0.2 && mc_P[1] > 0.2"; // ver.2
+// TCut cutQuality_gamma = "mc_P[0] > 0.1 && mc_P[1] > 0.1"; // ver.1
+TCut cutQuality_gamma = "mc_P[0] > 0.2 && mc_P[1] > 0.2"; // ver.2
 TCut cutDIS_gen = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
 TCut cutSIMREC;
 TCut cutGSIM;
