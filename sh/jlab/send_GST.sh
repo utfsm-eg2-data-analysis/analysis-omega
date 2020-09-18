@@ -107,16 +107,18 @@ thebinary="${PRODIR}/bin/GetSimpleTuple"
 execfile="${PRODIR}/sh/jlab/run_GST.sh"
 
 # set limit files
-if [[ "$tarName" == "D" && "$nDir" == "046" ]]; then
-    nfiles=89
-elif [[ "$tarName" == "C" && "$nDir" == "010" ]]; then
-    nfiles=28
-elif [[ "$tarName" == "Fe" && "$nDir" == "013" ]]; then
-    nfiles=31
-elif [[ "$tarName" == "Pb" && "$nDir" == "004" ]]; then
-    nfiles=98
-else
-    nfiles=100  
+if [[ "$setOption" == "jlab" ]]; then
+    if [[ "$tarName" == "D" && "$nDir" == "046" ]]; then
+	nfiles=89
+    elif [[ "$tarName" == "C" && "$nDir" == "010" ]]; then
+	nfiles=28
+    elif [[ "$tarName" == "Fe" && "$nDir" == "013" ]]; then
+	nfiles=31
+    elif [[ "$tarName" == "Pb" && "$nDir" == "004" ]]; then
+	nfiles=98
+    else
+	nfiles=100  
+    fi
 fi
 
 for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do # "COUNTER <= 10" or "COUNTER <= ${nfiles}"
