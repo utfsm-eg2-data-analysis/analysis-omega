@@ -23,11 +23,16 @@ function get_num_2dig()
 # set env
 source /home/borquez/.bashrc
 
+setOption=
 inputOption=
 tarName=
 rn=
 
-for ((sub=1; sub <= 35; sub++)); do
-    ssub=$(get_num_2dig $sub)
-    ./GetSimpleTuple ${inputOption}${tarName} -r"${rn}_${ssub}"
-done
+if [[ "$setOption" == "jlab" ]]; then
+    for ((sub=1; sub <= 35; sub++)); do
+	ssub=$(get_num_2dig $sub)
+	./GetSimpleTuple ${inputOption}${tarName} -r"${rn}_${ssub}"
+    done
+else
+    ./GetSimpleTuple ${inputOption}${tarName} -r"${rn}"
+fi

@@ -169,6 +169,7 @@ for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do # "COUNTER <= 10" or "COUNT
     fi
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
+    echo "    sed -i \"s|^setOption=|setOption=${setOption}|g\" run_GST.sh"           >> ${jobfile}
     echo "    sed -i \"s|^inputOption=|inputOption=${inputOption}|g\" run_GST.sh"     >> ${jobfile}
     echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GST.sh"                 >> ${jobfile}
     echo "    sed -i \"s|^rn=|rn=${rn}|g\" run_GST.sh"                                >> ${jobfile}
