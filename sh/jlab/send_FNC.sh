@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_FNC.sh <set> <target> <ndir>                        #
+# ./send_FNC.sh <set> <target> <ndir> <stage>                #
 #     <set>    = (data, old, usm, jlab)                      #
 #     <target> = (D, C, Fe, Pb)                              #
 #     <ndir>   = (01, 02, ...)                               #
@@ -9,7 +9,7 @@
 # EG: ./send_FNC.sh data C                                   #
 #     ./send_FNC.sh old Fe                                   #
 #     ./send_FNC.sh usm D                                    #
-#     ./send_FNC.sh jlab Pb 002                              #
+#     ./send_FNC.sh jlab Pb 002 A                            #
 ##############################################################
 
 #####
@@ -51,6 +51,7 @@ inputArray=("$@")
 setOption="${inputArray[0]}"
 tarName="${inputArray[1]}"
 nDir="${inputArray[2]}"
+stageOption="${inputArray[3]}"
 
 #####
 # Main
@@ -62,18 +63,16 @@ cd ${PRODIR}
 
 # define important dirs
 if [[ "$setOption" == "jlab" ]]; then
-    DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}/${nDir}
     XMLDIR=${PRODIR}/xml/${setOption}/${tarName}/${nDir}
     OUDIR=${PRODIR}/out/FilterNCombine/${setOption}/${tarName}/${nDir}    
 else
-    DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}
     XMLDIR=${PRODIR}/xml/${setOption}/${tarName}
     OUDIR=${PRODIR}/out/FilterNCombine/${setOption}/${tarName}
 fi
 mkdir -p ${XMLDIR}
 mkdir -p ${OUDIR}
 
-# set input option
+# set input dirs and obtain run numbers
 if [[ "${setOption}" == "data" ]]; then
     if [[ ${tarName} = "C" ]]; then
 	rnlist=${PRODIR}/include/C-thickD2rn.txt
@@ -85,6 +84,11 @@ if [[ "${setOption}" == "data" ]]; then
     inputOption="_data"
     nfiles=$(wc -l < ${rnlist})
 else
+    if [[ "$setOption" == "jlab" ]]; then
+	DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}/${nDir}
+    else
+	DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}
+    fi
     inputOption="_sim"
     nfiles=$(ls -1 ${DATADIR} | wc -l)
 fi
@@ -104,12 +108,27 @@ if [[ "$setOption" == "jlab" ]]; then
     fi
 fi
 
+# for jlab
+if [[ "$stageOption" == "A" ]]; then
+    init=1
+    end=10
+if [[ "$stageOption" == "B" ]]; then
+    init=11
+    end=20
+if [[ "$stageOption" == "C" ]]; then
+    init=21
+    end=30
+if [[ "$stageOption" == "D" ]]; then
+    init=31
+    end=35
+fi
+
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="48" # hours
+jobtime="72" # hours
 jobspace="1" # GB
 jobmemory="512" # MB
 thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
@@ -149,29 +168,41 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
     # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
     echo "  <Input src=\"${execfile}\"   dest=\"run_FNC.sh\"/>"                       >> ${jobfile}
-    for ((sub=1; sub <= 35; sub++)); do
-	# update sub number
-	ssub=$(get_num_2dig $sub)
-	sufix="${rn}_${ssub}"
-	inrootfile="${DATADIR}/pruned${tarName}_${sufix}.root"
-	echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${sufix}.root\"/>" >> ${jobfile}
-    done
+    if [[ "$setOption" == "jlab" ]]; then
+	for ((sub=$init; sub <= $end; sub++)); do
+	    # update sub number
+	    ssub=$(get_num_2dig $sub)
+	    sufix="${rn}_${ssub}"
+	    inrootfile="${DATADIR}/pruned${tarName}_${sufix}.root"
+	    echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${sufix}.root\"/>" >> ${jobfile}
+	done
+    else
+	inrootfile="${DATADIR}/pruned${tarName}_${rn}.root"
+	echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\"/>"  >> ${jobfile}
+    fi
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
+    echo "    sed -i \"s|^setOption=|setOption=${setOption}|g\" run_FNC.sh"           >> ${jobfile}
     echo "    sed -i \"s|^inputOption=|inputOption=${inputOption}|g\" run_FNC.sh"     >> ${jobfile}
     echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_FNC.sh"                 >> ${jobfile}
     echo "    sed -i \"s|^rn=|rn=${rn}|g\" run_FNC.sh"                                >> ${jobfile}
+    echo "    sed -i \"s|^stageOption=|stageOption=${stageOption}|g\" run_FNC.sh"     >> ${jobfile}
     echo "    chmod 755 ./run_FNC.sh"                                                 >> ${jobfile}
     echo "    sh run_FNC.sh"                                                          >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
-    for ((sub2=1; sub2 <= 35; sub2++)); do
-	# update sub2 number
-	ssub2=$(get_num_2dig $sub2)
-	sufix2="${rn}_${ssub2}"
-        outrootfile="${DATADIR}/comb${tarName}_${sufix2}.root"
-	echo "  <Output src=\"comb${tarName}_${sufix2}.root\" dest=\"${outrootfile}\" />" >> ${jobfile}
-    done
+    if [[ "$setOption" == "jlab" ]]; then    
+	for ((sub2=$init; sub2 <= $end; sub2++)); do
+	    # update sub2 number
+	    ssub2=$(get_num_2dig $sub2)
+	    sufix2="${rn}_${ssub2}"
+            outrootfile="${OUDIR}/comb${tarName}_${sufix2}.root"
+	    echo "  <Output src=\"comb${tarName}_${sufix2}.root\" dest=\"${outrootfile}\" />" >> ${jobfile}
+	done
+    else
+	outrootfile="${OUDIR}/comb${tarName}_${rn}.root"
+	echo "  <Output src=\"comb${tarName}_${rn}.root\" dest=\"${outrootfile}\" />" >> ${jobfile}
+    fi
     echo "  <Stdout dest=\"${XMLDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${XMLDIR}/${jobname}.err\"/>"                              >> ${jobfile}
     echo "  <Job>"                                                                    >> ${jobfile}

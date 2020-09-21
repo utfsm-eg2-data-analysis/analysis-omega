@@ -1,44 +1,53 @@
 #!/bin/bash
 
+#####
+# Functions
+###
+
+function get_num_2dig()
+{
+  sr=$1
+  srn=""
+  if [[ $sr -lt 10 ]]; then
+    srn="0$sr"
+  else
+    srn="$sr"
+  fi
+  echo $srn
+}
+
+#####
+# Main
+###
+
 # set env
 source /home/borquez/.bashrc
 
+setOption=
 inputOption=
 tarName=
 rn=
+stageOption=
 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_01 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_02 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_03 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_04 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_05 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_06 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_07 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_08 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_09 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_10 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_11 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_12 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_13 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_14 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_15 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_16 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_17 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_18 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_19 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_20 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_21 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_22 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_23 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_24 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_25 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_26 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_27 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_28 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_29 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_30 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_31 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_32 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_33 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_34 
-./FilterNCombine${inputOption} -t${tarName} -r${rn}_35
+if [[ "$stageOption" == "A" ]]; then
+    init=1
+    end=10
+if [[ "$stageOption" == "B" ]]; then
+    init=11
+    end=20
+if [[ "$stageOption" == "C" ]]; then
+    init=21
+    end=30
+if [[ "$stageOption" == "D" ]]; then
+    init=31
+    end=35
+fi
+
+if [[ "$setOption" == "jlab" ]]; then
+    for ((sub=$init; sub <= $end; sub++)); do
+	ssub=$(get_num_2dig $sub)
+	./FilterNCombine${inputOption} -t${tarName} -r"${rn}_${ssub}"
+    done
+else
+    ./FilterNCombine${inputOption} -t${tarName} -r"${rn}"
+fi
