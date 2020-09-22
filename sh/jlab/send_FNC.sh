@@ -112,13 +112,13 @@ fi
 if [[ "$stageOption" == "A" ]]; then
     init=1
     end=10
-if [[ "$stageOption" == "B" ]]; then
+elif [[ "$stageOption" == "B" ]]; then
     init=11
     end=20
-if [[ "$stageOption" == "C" ]]; then
+elif [[ "$stageOption" == "C" ]]; then
     init=21
     end=30
-if [[ "$stageOption" == "D" ]]; then
+elif [[ "$stageOption" == "D" ]]; then
     init=31
     end=35
 fi
