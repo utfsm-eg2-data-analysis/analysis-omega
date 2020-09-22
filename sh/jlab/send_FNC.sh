@@ -130,7 +130,7 @@ jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
 jobtime="72" # hours
 jobspace="1" # GB
-jobmemory="512" # MB
+jobmemory="1" # GB
 thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
@@ -147,7 +147,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
     
     # setting jobname
     if [[ "${setOption}" == "jlab" ]]; then
-	jobname="FNC_${setOption}-${tarName}-${nDir}_${rn}"
+	jobname="FNC_${setOption}-${tarName}-${nDir}_${rn}_${stageOption}"
     else
 	jobname="FNC_${setOption}-${tarName}_${rn}"
     fi
@@ -163,7 +163,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
     echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-    echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
+    echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
