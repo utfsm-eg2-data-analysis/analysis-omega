@@ -9,36 +9,6 @@
 ##############################################################
 
 #####
-# Functions
-###
-
-function get_num_2dig()
-{
-  sr=$1
-  srn=""
-  if [[ $sr -lt 10 ]]; then
-    srn="0$sr"
-  else
-    srn="$sr"
-  fi
-  echo $srn
-}
-
-function get_num_3dig()
-{
-  sr=$1
-  srn=""
-  if [[ $sr -lt 10 ]]; then
-    srn="00$sr"
-  elif [[ $sr -lt 100 ]]; then
-    srn="0$sr"
-  else
-    srn="$sr"
-  fi
-  echo $srn
-}
-
-#####
 # Input
 ###
 
@@ -57,14 +27,14 @@ cd ${PRODIR}
 
 # define and make important dirs
 LOGDIR=${PRODIR}/log/${tarName}/${nDir}
-XMLDIR=${PRODIR}/xml/${setOption}/${tarName}/${nDir}
-OUDIR=${PRODIR}/out/FilterNCombine/${setOption}/${tarName}/${nDir}
+XMLDIR=${PRODIR}/xml/jlab/${tarName}/${nDir}
+OUDIR=${PRODIR}/out/FilterNCombine/jlab/${tarName}/${nDir}
 mkdir -p ${LOGDIR}
 mkdir -p ${XMLDIR}
 mkdir -p ${OUDIR}
 
 # set input dirs and obtain run numbers
-DATADIR=${PRODIR}/out/GetSimpleTuple/${setOption}/${tarName}/${nDir}
+DATADIR=${PRODIR}/out/GetSimpleTuple/jlab/${tarName}/${nDir}
 
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
