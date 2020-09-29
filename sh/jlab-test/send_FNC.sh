@@ -51,8 +51,6 @@ execfile="${PRODIR}/sh/jlab-test/run_FNC.sh" # test
 # counter stands for rn
 COUNTER=0
 for file in $DATADIR/*.root; do
-    ((COUNTER++)) # test
-
     # test
     if [[ $COUNTER -eq 100 ]]; then
 	break
@@ -68,6 +66,8 @@ for file in $DATADIR/*.root; do
     
     if [[ -f ${outrootfile} ]]; then
 	continue
+    else
+	((COUNTER++)) # test
     fi
     
     # setting jobname
