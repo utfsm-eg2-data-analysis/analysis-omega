@@ -128,9 +128,9 @@ jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="72" # hours
+jobtime="24" # hours
 jobspace="1" # GB
-jobmemory="1" # GB
+jobmemory="500" # MB
 thebinary="${PRODIR}/bin/FilterNCombine${inputOption}"
 execfile="${PRODIR}/sh/jlab/run_FNC.sh"
 
@@ -163,7 +163,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # "1" or "${nfiles}"
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
     echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
     echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-    echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+    echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     echo "  <Input src=\"${thebinary}\"  dest=\"FilterNCombine${inputOption}\"/>"     >> ${jobfile}
