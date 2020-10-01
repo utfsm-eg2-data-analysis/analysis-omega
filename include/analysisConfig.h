@@ -127,6 +127,8 @@ const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 95809
 					 {9572387., 5684183., 4664129., 4149167., 3856291.},
 					 {3793213., 2175171., 1761324., 1584883., 1584883.}};
 
+Float_t kEbeam = 5.014;
+
 // constants
 TDatabasePDG pdg;
 const Float_t kMproton = pdg.GetParticle(2212)->Mass();
@@ -138,6 +140,12 @@ const Float_t kMeta = pdg.GetParticle(221)->Mass();
 const Float_t kMf1 = pdg.GetParticle(20223)->Mass();
 const Float_t kMK0 = pdg.GetParticle(311)->Mass();
 const Float_t kMrho = pdg.GetParticle(113)->Mass();
+
+Float_t particleMass(Float_t fPid) {
+  // TDatabasePDG fPDG;
+  if (fPid == -9999) return -9999; // closure
+  return pdg.GetParticle((Int_t) fPid)->Mass();
+}
 
 void setAlias_old(TTree *treeExtracted) {
   // pip
