@@ -8,7 +8,7 @@
 #                                                            #
 # EG: ./send_GF.sh old Fe                                    #
 #     ./send_GF.sh usm D                                     #
-#     ./send_GF.sh jlab Pb 002                               #
+#     ./send_GF.sh jlab Pb 00                                #
 ##############################################################
 
 #####
@@ -72,9 +72,9 @@ jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="4" # hours
+jobtime="2" # hours
 jobspace="2" # GB
-jobmemory="1" # GB
+jobmemory="2" # GB
 
 for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
     # update rn value
