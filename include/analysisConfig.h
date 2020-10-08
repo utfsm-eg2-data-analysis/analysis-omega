@@ -99,7 +99,7 @@ TCut cutDIS_gsim = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
 
 // reconstructions
 TCut cutPi0_gsim    = "0.1333 < mc_pi0M && mc_pi0M < 0.1367"; // mean=0.135 & sigma=5.7e-4
-TCut cutPipPim_gsim = cutPipPim; // same as data
+TCut cutPipPim_gsim = "0.48 > mc_pippimM || 0.51 < mc_pippimM";
 
 /*** BINNING ***/
 
