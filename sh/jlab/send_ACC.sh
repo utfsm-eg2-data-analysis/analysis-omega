@@ -64,11 +64,11 @@ mkdir -p ${ACCDIR}
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
-jobtrack="debug" # "debug" or "analysis"
+jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="4" # hours
+jobtime="6" # hours
 jobspace="2" # GB
-jobmemory="2" # GB
+jobmemory="500" # MB
 
 # setting jobname
 if [[ "${setOption}" == "jlab" ]]; then
@@ -88,7 +88,7 @@ echo "  <OS name=\"${jobos}\"/>"                                                
 echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
 echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
 echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
-echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
+echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # set inputs
 thebinary="${PRODIR}/bin/Acceptance_omega"
