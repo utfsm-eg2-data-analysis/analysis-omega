@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_ACC.sh <set> <target> <ndir>                        #
+# ./send_AEN.sh <set> <target> <ndir>                        #
 #     <set>    = (old, usm, jlab)                            #
 #     <target> = (D, C, Fe, Pb)                              #
 #     <ndir>   = (01, 02, ...)                               #
 #                                                            #
-# EG: ./send_ACC.sh old Fe                                   #
-#     ./send_ACC.sh usm D                                    #
-#     ./send_ACC.sh jlab Pb 00                               #
+# EG: ./send_AEN.sh old Fe                                   #
+#     ./send_AEN.sh usm D                                    #
+#     ./send_AEN.sh jlab Pb 00                               #
 ##############################################################
 
 #####
@@ -49,17 +49,17 @@ TMPDIR=${WORKDIR}/tmp
 if [[ "$setOption" == "jlab" ]]; then
     XMLDIR=${TMPDIR}/xml/acc
     LOGDIR=${TMPDIR}/log/acc
-    INDIR=${WORKDIR}/FilterNCombine/${setOption}/${tarName}/${nDir}
-    ACCDIR=${WORKDIR}/Acceptance/omega
+    INDIR=${WORKDIR}/GetSimpleTuple/${setOption}/${tarName}/${nDir}
+    AENDIR=${WORKDIR}/Acceptance/electrons
 else
     XMLDIR=${TMPDIR}/xml/acc
     LOGDIR=${TMPDIR}/log/acc
-    INDIR=${WORKDIR}/FilterNCombine/${setOption}/${tarName}
-    ACCDIR=${WORKDIR}/Acceptance/omega
+    INDIR=${WORKDIR}/GetSimpleTuple/${setOption}/${tarName}
+    AENDIR=${WORKDIR}/Acceptance/electrons
 fi
 mkdir -p ${TMPDIR}
 mkdir -p ${XMLDIR} ${LOGDIR}
-mkdir -p ${ACCDIR}
+mkdir -p ${AENDIR}
 
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
@@ -72,9 +72,9 @@ jobmemory="500" # MB
 
 # setting jobname
 if [[ "${setOption}" == "jlab" ]]; then
-    jobname="ACC_${setOption}-${tarName}-${nDir}"
+    jobname="AEN_${setOption}-${tarName}-${nDir}"
 else
-    jobname="ACC_${setOption}-${tarName}"
+    jobname="AEN_${setOption}-${tarName}"
 fi
 jobfile="${XMLDIR}/${jobname}.xml"
 
@@ -91,10 +91,10 @@ echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                         
 echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # set inputs
-thebinary="${PRODIR}/bin/Acceptance_omega"
-execfile="${PRODIR}/sh/jlab/run_ACC.sh"
-echo "  <Input src=\"${thebinary}\"  dest=\"Acceptance_omega\"/>"                 >> ${jobfile}
-echo "  <Input src=\"${execfile}\"   dest=\"run_ACC.sh\"/>"                       >> ${jobfile}
+thebinary="${PRODIR}/bin/Acceptance_EN"
+execfile="${PRODIR}/sh/jlab/run_AEN.sh"
+echo "  <Input src=\"${thebinary}\"  dest=\"Acceptance_EN\"/>"                    >> ${jobfile}
+echo "  <Input src=\"${execfile}\"   dest=\"run_AEN.sh\"/>"                       >> ${jobfile}
 # obtain run numbers
 nfiles=$(ls -1 ${INDIR} | wc -l)
 # input root files
@@ -105,22 +105,22 @@ for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
     else
 	rn=$(get_num_2dig $COUNTER) # rn starts at 01
     fi
-    inrootfile="${INDIR}/comb${tarName}_${rn}.root"
-    echo "  <Input src=\"${inrootfile}\" dest=\"comb${tarName}_${rn}.root\" copyOption=\"link\"/>" >> ${jobfile}
+    inrootfile="${INDIR}/pruned${tarName}_${rn}.root"
+    echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\" copyOption=\"link\"/>" >> ${jobfile}
 done
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
-echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_ACC.sh"                 >> ${jobfile}
-echo "    chmod 755 ./run_ACC.sh"                                                 >> ${jobfile}
-echo "    sh run_ACC.sh"                                                          >> ${jobfile}
+echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_AEN.sh"                 >> ${jobfile}
+echo "    chmod 755 ./run_AEN.sh"                                                 >> ${jobfile}
+echo "    sh run_AEN.sh"                                                          >> ${jobfile}
 echo "  ]]></Command>"                                                            >> ${jobfile}
 # set outputs
 if [[ "${setOption}" == "jlab" ]]; then
-    outrootfile="${ACCDIR}/acceptance_${setOption}-${tarName}-${nDir}.root"
+    outrootfile="${AENDIR}/electron-numbers_${setOption}-${tarName}-${nDir}.root"
 else
-    outrootfile="${ACCDIR}/acceptance_${setOption}-${tarName}.root"
+    outrootfile="${AENDIR}/electron-numbers_${setOption}-${tarName}.root"
 fi
-echo "  <Output src=\"acceptance${tarName}.root\"   dest=\"${outrootfile}\"/>"   >> ${jobfile}
+echo "  <Output src=\"electron-numbers${tarName}.root\"   dest=\"${outrootfile}\"/>"   >> ${jobfile}
 # set logs
 echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
 echo "  <Stderr dest=\"${LOGDIR}/${jobname}.err\"/>"                              >> ${jobfile}

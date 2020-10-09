@@ -63,7 +63,7 @@ TCut cutPi0    = "0.059 < pi0M_corr && pi0M_corr < 0.203"; // mean=0.131 & sigma
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
 // latest Status cuts
-TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0 && SCStatusEl == 33"; // MUST UPDATE
+TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
 TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0"; // MUST UPDATE
 TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0"; // MUST UPDATE
 TCut cutStatus            = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
@@ -100,6 +100,11 @@ TCut cutDIS_gsim = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
 // reconstructions
 TCut cutPi0_gsim    = "0.1333 < mc_pi0M && mc_pi0M < 0.1367"; // mean=0.135 & sigma=5.7e-4
 TCut cutPipPim_gsim = "0.48 > mc_pippimM || 0.51 < mc_pippimM";
+
+/*** OTHER CUTS ***/
+
+// exclusive for ntuple_e
+TCut cutStatus_ntuple_e = "Status > 0 && DCStatus > 0 && SCStatus == 33";
 
 /*** BINNING ***/
 
