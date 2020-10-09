@@ -29,14 +29,14 @@ source ~/.bashrc
 cd ${PRODIR}/sh/jlab
 
 # Simulations/old
-# ./send_ACC.sh old C
-# ./send_ACC.sh old Fe
+./send_ACC.sh old C
+./send_ACC.sh old Fe
 
 # Simulations/usm
-# ./send_ACC.sh usm D
-# ./send_ACC.sh usm C
-# ./send_ACC.sh usm Fe
-# ./send_ACC.sh usm Pb
+./send_ACC.sh usm D
+./send_ACC.sh usm C
+./send_ACC.sh usm Fe
+./send_ACC.sh usm Pb
 
 # Simulations/jlab
 tarArray=("D" "C" "Fe" "Pb")
