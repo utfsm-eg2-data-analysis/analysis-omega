@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 
   // create histogram
   TH1F *bigHist_GSIM;
-  treeExtracted->Draw("mc_Q2>>GSIM_" + targetOption, cutGSIM, "goff");
+  treeExtracted->Draw("mc_Q2>>GSIM_" + targetOption + "(900, 1., 4.)", cutGSIM, "goff");
   bigHist_GSIM = (TH1F *)gROOT->FindObject("GSIM_" + targetOption);
   bigHist_GSIM->SetTitle("GSIM Q2 for " + targetOption);
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_Q%d", i);
     binCutGSIM  = Form("mc_Q2 > %.3f && mc_Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
     // extract
-    treeExtracted->Draw("mc_Q2>>" + binHistName, cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_Q2>>" + binHistName + Form("(150, %.2f, %.2f)", edgesQ2[i], edgesQ2[i+1]), cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
     binHist->SetTitle("GSIM Q2 for " + targetOption + " in " + Form("(%.2f < mc_Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1]));
     // save
@@ -72,13 +72,13 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_N%d", i);
     binCutGSIM  = Form("mc_Nu > %.3f && mc_Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
     // extract
-    treeExtracted->Draw("mc_Q2>>" + binHistName, cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_Nu>>" + binHistName + Form("(150, %.2f, %.2f)" , edgesNu[i], edgesNu[i+1]), cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
-    binHist->SetTitle("GSIM Q2 for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f)" , edgesNu[i], edgesNu[i+1]));
+    binHist->SetTitle("GSIM Nu for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f)" , edgesNu[i], edgesNu[i+1]));
     // save
     binHist->Write();      
   }
-  
+
   /*** BIG PICTURE - SIMREC ***/
   
   // set SIMREC cuts
@@ -86,13 +86,13 @@ int main(int argc, char **argv) {
   
   // create histogram
   TH1F *bigHist_SIMREC;
-  treeExtracted->Draw("Q2>>SIMREC_" + targetOption, cutGSIM && cutSIMREC, "goff");
+  treeExtracted->Draw("Q2>>SIMREC_" + targetOption + "(600, 1., 4.)", cutGSIM && cutSIMREC, "goff");
   bigHist_SIMREC = (TH1F *)gROOT->FindObject("SIMREC_" + targetOption);
   bigHist_SIMREC->SetTitle("SIMREC Q2 for " + targetOption);
 
   // save hist
   bigHist_SIMREC->Write();
-  
+
   /*** BINNING - SIMREC ***/
   
   TCut binCutSIMREC;
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
       binCutGSIM   = Form("mc_Q2 > %.3f && mc_Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
       binCutSIMREC = Form("Q2 > %.3f && Q2 < %.3f" , edgesQ2[j], edgesQ2[j+1]);
       // extract
-      treeExtracted->Draw("Q2>>" + binHistName, cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
+      treeExtracted->Draw("Q2>>" + binHistName + Form("(75, %.2f, %.2f)" , edgesQ2[i], edgesQ2[i+1]), cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
       binHist = (TH1F *)gROOT->FindObject(binHistName);
       binHist->SetTitle("SIMREC Q2 for " + targetOption + " in " + Form("(%.2f < mc_Q2 < %.2f, %.2f < Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1], edgesQ2[j], edgesQ2[j+1]));
       // save
@@ -121,9 +121,9 @@ int main(int argc, char **argv) {
       binCutGSIM   = Form("mc_Nu > %.3f && mc_Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
       binCutSIMREC = Form("Nu > %.3f && Nu < %.3f" , edgesNu[j], edgesNu[j+1]);
       // extract
-      treeExtracted->Draw("Q2>>" + binHistName, cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
+      treeExtracted->Draw("Nu>>" + binHistName + Form("(75, %.2f, %.2f)" , edgesNu[i], edgesNu[i+1]), cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
       binHist = (TH1F *)gROOT->FindObject(binHistName);
-      binHist->SetTitle("SIMREC Q2 for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f, %.2f < Nu < %.2f)" , edgesNu[i], edgesNu[i+1], edgesNu[j], edgesNu[j+1]));
+      binHist->SetTitle("SIMREC Nu for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f, %.2f < Nu < %.2f)" , edgesNu[i], edgesNu[i+1], edgesNu[j], edgesNu[j+1]));
       // save
       binHist->Write();
     }
@@ -143,7 +143,7 @@ inline int parseCommandLine(int argc, char* argv[]) {
     std::cerr << "Empty command line. Execute ./Acceptance_EN -h to print usage." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:q:n:")) != -1)
+  while ((c = getopt(argc, argv, "ht:")) != -1)
     switch (c) {
     case 'h': printUsage(); exit(0); break;
     case 't': targetOption = optarg; break;
