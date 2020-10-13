@@ -67,12 +67,17 @@ TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0 && SCStatusEl == 33"
 TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0"; // MUST UPDATE
 TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0"; // MUST UPDATE
 TCut cutStatus            = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
+// TCut statusCuts_pip_le    = "P_corr[2] < 2.7 && StatSC[2] > 0";
+// TCut statusCuts_pip_he    = "P_corr[2] >= 2.7 && Nphe[2] > 25 && StatCC[2] > 0 && Chi2CC[2] < 5./57.3";
+// TCut statusCuts_pim_le    = "P_corr[3] <= 2.5 && !(StatCC[3] > 0 && Nphe[3] > 25)";
+// TCut statusCuts_pim_he    = "P_corr[3] > 2.5";
+// TCut cutStatus            = statusCuts_electrons && statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he) && statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he);
 
 // TM vertex cuts
-TCut cutTargType_D  = "-31.8 < Zec && Zec < -28.4 && Yec > -1.4 && Yec < 1.4";
-TCut cutTargType_C  = "-25.33 < Zec && Zec < -24.10 && Yec > -1.4 && Yec < 1.4";
-TCut cutTargType_Fe = "-25.65 < Zec && Zec < -24.26 && Yec > -1.4 && Yec < 1.4";
-TCut cutTargType_Pb = "-25.54 < Zec && Zec < -24.36 && Yec > -1.4 && Yec < 1.4";
+TCut cutTargType_D  = "-31.8 < Zec && Zec < -28.4";
+TCut cutTargType_C  = "-25.33 < Zec && Zec < -24.10";
+TCut cutTargType_Fe = "-25.65 < Zec && Zec < -24.26";
+TCut cutTargType_Pb = "-25.54 < Zec && Zec < -24.36";
 
 // enhance results
 TCut cutBinLimits = "Q2 > 1 && Q2 < 4 && Nu > 2.2 && Nu < 4.2 && wZ_corr > 0.5 && wZ_corr < 1.0 && wPt2_corr > 0. && wPt2_corr < 1.5";
@@ -105,6 +110,7 @@ TCut cutPipPim_gsim = "0.48 > mc_pippimM || 0.51 < mc_pippimM";
 
 // exclusive for ntuple_e
 TCut cutStatus_ntuple_e = "Status > 0 && DCStatus > 0 && SCStatus == 33";
+TCut cutVertex_Y = "Yec > -1.4 && Yec < 1.4"; // lose ~1m candidates
 
 /*** BINNING ***/
 
