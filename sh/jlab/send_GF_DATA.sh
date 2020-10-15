@@ -36,11 +36,11 @@ mkdir -p ${XMLDIR} ${LOGDIR}
 mkdir -p ${GSTDIR} ${FNCDIR}
 
 # obtain run numbers
-if [[ ${tarName} = "C" ]]; then
+if [[ "${tarName}" == "C" ]]; then
     rnlist=${PRODIR}/include/C-thickD2rn.txt
-elif [[ ${tarName} = "Fe" ]]; then
+elif [[ "${tarName}" == "Fe" ]]; then
     rnlist=${PRODIR}/include/Fe-thickD2rn.txt
-elif [[ ${tarName} = "Pb" ]]; then
+elif [[ "${tarName}" == "Pb" ]]; then
     rnlist=${PRODIR}/include/Pb-thinD2rn.txt
 fi
 nfiles=$(wc -l < ${rnlist})
