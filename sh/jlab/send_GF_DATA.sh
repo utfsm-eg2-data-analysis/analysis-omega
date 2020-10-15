@@ -13,7 +13,7 @@
 # Input
 ###
 
-tarName="@"
+tarName="$@"
 
 #####
 # Main
@@ -56,7 +56,7 @@ jobmemory="2" # GB
 
 for ((COUNTER=1; COUNTER <= 1; COUNTER++)); do # ${nfiles} or 1
     # update rn value
-    rn=$(sed -n "$COUNTER{p;q}" $rnlist) # data from rnlist
+    rn=$(sed -n "$COUNTER{p;q}" ${rnlist}) # data from rnlist
 
     # setting jobname
     jobname="GF_data-${tarName}_${rn}"
