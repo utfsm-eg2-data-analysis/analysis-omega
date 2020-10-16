@@ -92,7 +92,12 @@ echo "  <Track name=\"${jobtrack}\"/>"                                          
 echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
 echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
-echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
+# debug
+if (( $jobspace > 50 )); then
+    echo "  <DiskSpace space=\"1\" unit=\"GB\"/>"                                 >> ${jobfile}
+else
+    echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                       >> ${jobfile}
+fi
 echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # set inputs
