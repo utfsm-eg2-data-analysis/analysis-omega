@@ -70,7 +70,8 @@ jobtime="8" # hours
 jobmemory="500" # MB
 # measure dir space
 diskusage=$(du -hs $INDIR | awk '{print $1}')
-jobspace="${diskusage%.*}" # GB
+jobspace="${diskusage%.*}"
+jobspace="${diskusage%G}"
 ((jobspace++))
 
 # setting jobname
