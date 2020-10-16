@@ -61,18 +61,46 @@ mkdir -p ${TMPDIR}
 mkdir -p ${XMLDIR} ${LOGDIR}
 mkdir -p ${AENDIR}
 
-# obtain run numbers
-nfiles=$(ls -1 ${INDIR} | wc -l)
-
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="30" # minutes
-jobspace="500" # MB
+jobtime="8" # hours
 jobmemory="500" # MB
+# measure dir space
+diskusage=$(du -hs $INDIR | awk '{print $1}')
+jobspace="${diskusage%.*}" # GB
+((jobspace++))
 
+# setting jobname
+if [[ "${setOption}" == "jlab" ]]; then
+    jobname="AEN_${setOption}-${tarName}-${nDir}"
+else
+    jobname="AEN_${setOption}-${tarName}"
+fi
+jobfile="${XMLDIR}/${jobname}.xml"
+
+echo ${jobname}
+
+echo "<Request>"                                                                   > ${jobfile}
+echo "  <Email email=\"${jobemail}\" request=\"true\" job=\"true\"/>"             >> ${jobfile}
+echo "  <Project name=\"${jobproject}\"/>"                                        >> ${jobfile}
+echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
+echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
+echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
+echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
+echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
+echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
+echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
+# set inputs
+thebinary="${PRODIR}/bin/Acceptance_EN"
+execfile="${PRODIR}/sh/jlab/run_AEN.sh"
+echo "  <Input src=\"${thebinary}\" dest=\"Acceptance_EN\"/>"                     >> ${jobfile}
+echo "  <Input src=\"${execfile}\"  dest=\"run_AEN.sh\"/>"                        >> ${jobfile}
+# obtain run numbers
+nfiles=$(ls -1 ${INDIR} | wc -l)
+# input root files
 for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
     # update rn value
     if [[ "${setOption}" == "jlab" ]]; then
@@ -80,51 +108,28 @@ for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
     else
 	rn=$(get_num_2dig $COUNTER) # rn starts at 01
     fi
-    
-    # setting jobname
-    if [[ "${setOption}" == "jlab" ]]; then
-	jobname="AEN_${setOption}-${tarName}-${nDir}_${rn}"
-    else
-	jobname="AEN_${setOption}-${tarName}_${rn}"
-    fi
-    jobfile="${XMLDIR}/${jobname}.xml"
-
-    echo ${jobname}
-
-    echo "<Request>"                                                                   > ${jobfile}
-    echo "  <Email email=\"${jobemail}\" request=\"true\" job=\"true\"/>"             >> ${jobfile}
-    echo "  <Project name=\"${jobproject}\"/>"                                        >> ${jobfile}
-    echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
-    echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
-    echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
-    echo "  <DiskSpace space=\"${jobspace}\" unit=\"MB\"/>"                           >> ${jobfile}
-    echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
-    echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
-    # set inputs
-    thebinary="${PRODIR}/bin/Acceptance_EN"
-    execfile="${PRODIR}/sh/jlab/run_AEN.sh"
-    echo "  <Input src=\"${thebinary}\" dest=\"Acceptance_EN\"/>"                     >> ${jobfile}
-    echo "  <Input src=\"${execfile}\"  dest=\"run_AEN.sh\"/>"                        >> ${jobfile}
-    # input root files
     inrootfile="${INDIR}/pruned${tarName}_${rn}.root"
     echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\"/>" >> ${jobfile}
-    # set command
-    echo "  <Command><![CDATA["                                                       >> ${jobfile}
-    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_AEN.sh"                 >> ${jobfile}
-    echo "    chmod 755 ./run_AEN.sh"                                                 >> ${jobfile}
-    echo "    sh run_AEN.sh"                                                          >> ${jobfile}
-    echo "  ]]></Command>"                                                            >> ${jobfile}
-    # set outputs
-    outrootfile="${AENDIR}/acc-en${tarName}_${rn}.root"
-    echo "  <Output src=\"electron-numbers${tarName}.root\" dest=\"${outrootfile}\"/>" >> ${jobfile}
-    # set logs
-    echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
-    echo "  <Stderr dest=\"${LOGDIR}/${jobname}.err\"/>"                              >> ${jobfile}
-    echo "  <Job>"                                                                    >> ${jobfile}
-    echo "  </Job>"                                                                   >> ${jobfile}
-    echo "</Request>"                                                                 >> ${jobfile}
-
-    echo "Submitting job: ${jobfile}"
-    jsub --xml ${jobfile}
 done
+# set command
+echo "  <Command><![CDATA["                                                       >> ${jobfile}
+echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_AEN.sh"                 >> ${jobfile}
+echo "    chmod 755 ./run_AEN.sh"                                                 >> ${jobfile}
+echo "    sh run_AEN.sh"                                                          >> ${jobfile}
+echo "  ]]></Command>"                                                            >> ${jobfile}
+# set outputs
+if [[ "${setOption}" == "jlab" ]]; then
+    outrootfile="${AENDIR}/acc-en_${setOption}-${tarName}-${nDir}.root"
+else
+    outrootfile="${AENDIR}/acc-en_${setOption}-${tarName}.root"	
+fi
+echo "  <Output src=\"electron-numbers${tarName}.root\" dest=\"${outrootfile}\"/>" >> ${jobfile}
+# set logs
+echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
+echo "  <Stderr dest=\"${LOGDIR}/${jobname}.err\"/>"                              >> ${jobfile}
+echo "  <Job>"                                                                    >> ${jobfile}
+echo "  </Job>"                                                                   >> ${jobfile}
+echo "</Request>"                                                                 >> ${jobfile}
+
+echo "Submitting job: ${jobfile}"
+jsub --xml ${jobfile}

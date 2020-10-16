@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_Q%d", i);
     binCutGSIM  = Form("mc_Q2 > %.3f && mc_Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
     // extract
-    treeExtracted->Draw("mc_wD>>" + binHistName + "(200, 0.68, 0.88)", cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_wD>>" + binHistName + "(1600, 0., 1.6)", cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
     binHist->SetTitle("GSIM #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1]));
     // save
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_N%d", i);
     binCutGSIM  = Form("mc_Nu > %.3f && mc_Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
     // extract
-    treeExtracted->Draw("mc_wD>>" + binHistName + "(200, 0.68, 0.88)", cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_wD>>" + binHistName + "(1600, 0., 1.6)", cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
     binHist->SetTitle("GSIM #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f)" , edgesNu[i], edgesNu[i+1]));
     // save
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_P%d", i);
     binCutGSIM  = Form("mc_wPt2 > %.3f && mc_wPt2 < %.3f" , edgesPt2[i], edgesPt2[i+1]);
     // extract
-    treeExtracted->Draw("mc_wD>>" + binHistName + "(200, 0.68, 0.88)", cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_wD>>" + binHistName + "(1600, 0., 1.6)", cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
     binHist->SetTitle("GSIM #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Pt2 < %.2f)" , edgesPt2[i], edgesPt2[i+1]));
     // save
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     binHistName = "GSIM_" + targetOption + Form("_Z%d", i);
     binCutGSIM  = Form("mc_wZ > %.3f && mc_wZ < %.3f" , edgesZ[i], edgesZ[i+1]);
     // extract
-    treeExtracted->Draw("mc_wD>>" + binHistName + "(200, 0.68, 0.88)", cutGSIM && binCutGSIM, "goff");
+    treeExtracted->Draw("mc_wD>>" + binHistName + "(1600, 0., 1.6)", cutGSIM && binCutGSIM, "goff");
     binHist = (TH1F *)gROOT->FindObject(binHistName);
     binHist->SetTitle("GSIM #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Z < %.2f)" , edgesZ[i], edgesZ[i+1]));
     // save
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   
   // create histogram
   TH1F *bigHist_SIMREC;
-  treeExtracted->Draw("wD_corr>>SIMREC_" + targetOption + "(800, 0., 1.6)", cutGSIM && cutSIMREC, "goff");
+  treeExtracted->Draw("wD_corr>>SIMREC_" + targetOption + "(800, 0., 1.6)", cutSIMREC, "goff");
   bigHist_SIMREC = (TH1F *)gROOT->FindObject("SIMREC_" + targetOption);
   bigHist_SIMREC->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption);
 
@@ -126,66 +126,54 @@ int main(int argc, char **argv) {
   
   // Q2
   for (Int_t i = 0; i < 5; i++) {
-    for (Int_t j = 0; j < 5; j++) {
-      // update
-      binHistName = "SIMREC_" + targetOption + Form("_Q%dQ%d", i, j);
-      binCutGSIM   = Form("mc_Q2 > %.3f && mc_Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
-      binCutSIMREC = Form("Q2 > %.3f && Q2 < %.3f" , edgesQ2[j], edgesQ2[j+1]);
-      // extract
-      treeExtracted->Draw("wD_corr>>" + binHistName + "(100, 0.68, 0.88)", cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
-      binHist = (TH1F *)gROOT->FindObject(binHistName);
-      binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Q2 < %.2f, %.2f < Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1], edgesQ2[j], edgesQ2[j+1]));
-      // save
-      binHist->Write();
-    }
+    // update
+    binHistName = "SIMREC_" + targetOption + Form("_Q%d", i);
+    binCutSIMREC = Form("Q2 > %.3f && Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
+    // extract
+    treeExtracted->Draw("wD_corr>>" + binHistName + "(800, 0., 1.6)", cutSIMREC && binCutSIMREC, "goff");
+    binHist = (TH1F *)gROOT->FindObject(binHistName);
+    binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1]));
+    // save
+    binHist->Write();
   }
 
   // Nu
   for (Int_t i = 0; i < 5; i++) {
-    for (Int_t j = 0; j < 5; j++) {
-      // update
-      binHistName = "SIMREC_" + targetOption + Form("_N%dN%d", i, j);
-      binCutGSIM   = Form("mc_Nu > %.3f && mc_Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
-      binCutSIMREC = Form("Nu > %.3f && Nu < %.3f" , edgesNu[j], edgesNu[j+1]);
-      // extract
-      treeExtracted->Draw("wD_corr>>" + binHistName + "(100, 0.68, 0.88)", cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
-      binHist = (TH1F *)gROOT->FindObject(binHistName);
-      binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Nu < %.2f, %.2f < Nu < %.2f)" , edgesNu[i], edgesNu[i+1], edgesNu[j], edgesNu[j+1]));
-      // save
-      binHist->Write();
-    }
+    // update
+    binHistName = "SIMREC_" + targetOption + Form("_N%d", i);
+    binCutSIMREC = Form("Nu > %.3f && Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
+    // extract
+    treeExtracted->Draw("wD_corr>>" + binHistName + "(800, 0., 1.6)", cutSIMREC && binCutSIMREC, "goff");
+    binHist = (TH1F *)gROOT->FindObject(binHistName);
+    binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Nu < %.2f)" , edgesNu[i], edgesNu[i+1]));
+    // save
+    binHist->Write();
   }
 
   // Pt2
   for (Int_t i = 0; i < 5; i++) {
-    for (Int_t j = 0; j < 5; j++) {
-      // update
-      binHistName = "SIMREC_" + targetOption + Form("_P%dP%d", i, j);
-      binCutGSIM   = Form("mc_wPt2 > %.3f && mc_wPt2 < %.3f" , edgesPt2[i], edgesPt2[i+1]);
-      binCutSIMREC = Form("wPt2_corr > %.3f && wPt2_corr < %.3f" , edgesPt2[j], edgesPt2[j+1]);
-      // extract
-      treeExtracted->Draw("wD_corr>>" + binHistName + "(100, 0.68, 0.88)", cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
-      binHist = (TH1F *)gROOT->FindObject(binHistName);
-      binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Pt2 < %.2f, %.2f < Pt2 < %.2f)" , edgesPt2[i], edgesPt2[i+1], edgesPt2[j], edgesPt2[j+1]));
-      // save
-      binHist->Write();
-    }
+    // update
+    binHistName = "SIMREC_" + targetOption + Form("_P%d", i);
+    binCutSIMREC = Form("wPt2_corr > %.3f && wPt2_corr < %.3f" , edgesPt2[i], edgesPt2[i+1]);
+    // extract
+    treeExtracted->Draw("wD_corr>>" + binHistName + "(800, 0., 1.6)", cutSIMREC && binCutSIMREC, "goff");
+    binHist = (TH1F *)gROOT->FindObject(binHistName);
+    binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Pt2 < %.2f)", edgesPt2[i], edgesPt2[i+1]));
+    // save
+    binHist->Write();
   }
 
   // Z
   for (Int_t i = 0; i < 5; i++) {
-    for (Int_t j = 0; j < 5; j++) {
-      // update
-      binHistName = "SIMREC_" + targetOption + Form("_Z%dZ%d", i, j);
-      binCutGSIM   = Form("mc_wZ > %.3f && mc_wZ < %.3f" , edgesZ[i], edgesZ[i+1]);
-      binCutSIMREC = Form("wZ_corr > %.3f && wZ_corr < %.3f" , edgesZ[j], edgesZ[j+1]);
-      // extract
-      treeExtracted->Draw("wD_corr>>" + binHistName + "(100, 0.68, 0.88)", cutGSIM && cutSIMREC && binCutGSIM && binCutSIMREC, "goff");
-      binHist = (TH1F *)gROOT->FindObject(binHistName);
-      binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < mc_Z < %.2f, %.2f < Z < %.2f)" , edgesZ[i], edgesZ[i+1], edgesZ[j], edgesZ[j+1]));
-      // save
-      binHist->Write();
-    }
+    // update
+    binHistName = "SIMREC_" + targetOption + Form("_Z%d", i);
+    binCutSIMREC = Form("wZ_corr > %.3f && wZ_corr < %.3f" , edgesZ[i], edgesZ[i+1]);
+    // extract
+    treeExtracted->Draw("wD_corr>>" + binHistName + "(800, 0., 1.6)", cutSIMREC && binCutSIMREC, "goff");
+    binHist = (TH1F *)gROOT->FindObject(binHistName);
+    binHist->SetTitle("SIMREC #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Z < %.2f)", edgesZ[i], edgesZ[i+1]));
+    // save
+    binHist->Write();
   }
   
   // close file
