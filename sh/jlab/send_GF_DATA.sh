@@ -54,7 +54,7 @@ jobtime="2" # hours
 jobspace="2" # GB
 jobmemory="2" # GB
 
-for ((COUNTER=1; COUNTER <= 1; COUNTER++)); do # ${nfiles} or 1
+for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     # update rn value
     rn=$(sed -n "$COUNTER{p;q}" ${rnlist}) # data from rnlist
 

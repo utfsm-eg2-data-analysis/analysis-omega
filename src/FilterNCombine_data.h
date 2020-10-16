@@ -664,8 +664,9 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.Nphe[index]     = t.Nphe;
   m.Chi2CC[index]   = t.Chi2CC;
   m.Status[index]   = t.Status;
-  // event-related (1)
-  m.Entry[index] = (Float_t) entry;  
+  // event-related (2)
+  m.Entry[index] = (Float_t) entry;
+  m.Event        = t.evnt;
 }
 
 void AssignPi0Var(data_m& m, data_pi0& pi0) {
