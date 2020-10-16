@@ -72,6 +72,7 @@ jobmemory="500" # MB
 diskusage=$(du -hs $INDIR | awk '{print $1}')
 jobspace="${diskusage%.*}"
 jobspace="${jobspace%G}"
+jobspace="${jobspace%M}"
 ((jobspace++))
 
 # setting jobname
