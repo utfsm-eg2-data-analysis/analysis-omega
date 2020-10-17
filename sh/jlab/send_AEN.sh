@@ -69,11 +69,12 @@ jobos="general"
 jobtime="8" # hours
 jobmemory="500" # MB
 # measure dir space
-diskusage=$(du -hs $INDIR | awk '{print $1}')
-jobspace="${diskusage%.*}"
-jobspace="${jobspace%G}"
-jobspace="${jobspace%M}"
-((jobspace++))
+#diskusage=$(du -hs $INDIR | awk '{print $1}')
+#jobspace="${diskusage%.*}"
+#jobspace="${jobspace%G}"
+#jobspace="${jobspace%M}"
+#((jobspace++))
+jobspace="500" # MB
 
 # setting jobname
 if [[ "${setOption}" == "jlab" ]]; then
@@ -92,12 +93,7 @@ echo "  <Track name=\"${jobtrack}\"/>"                                          
 echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
 echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
-# debug
-if (( $jobspace > 50 )); then
-    echo "  <DiskSpace space=\"1\" unit=\"GB\"/>"                                 >> ${jobfile}
-else
-    echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                       >> ${jobfile}
-fi
+echo "  <DiskSpace space=\"${jobspace}\" unit=\"MB\"/>"                           >> ${jobfile}
 echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
 echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 # set inputs
@@ -116,7 +112,7 @@ for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
 	rn=$(get_num_2dig $COUNTER) # rn starts at 01
     fi
     inrootfile="${INDIR}/pruned${tarName}_${rn}.root"
-    echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\"/>" >> ${jobfile}
+    echo "  <Input src=\"${inrootfile}\" dest=\"pruned${tarName}_${rn}.root\" copyOption=\"link\"/>" >> ${jobfile}
 done
 # set command
 echo "  <Command><![CDATA["                                                       >> ${jobfile}
