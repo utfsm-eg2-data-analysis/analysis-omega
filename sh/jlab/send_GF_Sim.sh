@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_GF.sh <set> <target> <ndir>                         #
+# ./send_GF_Sim.sh <set> <target> <ndir>                     #
 #     <set>    = (old, usm, jlab)                            #
 #     <target> = (D, C, Fe, Pb)                              #
 #     <ndir>   = (01, 02, ...)                               #
 #                                                            #
-# EG: ./send_GF.sh old Fe                                    #
-#     ./send_GF.sh usm D                                     #
-#     ./send_GF.sh jlab Pb 00                                #
+# EG: ./send_GF_Sim.sh old Fe                                #
+#     ./send_GF_Sim.sh usm D                                 #
+#     ./send_GF_Sim.sh jlab Pb 00                            #
 ##############################################################
 
 #####
@@ -107,18 +107,18 @@ for ((COUNTER=1; COUNTER <= $nfiles; COUNTER++)); do
     # set inputs
     thebinary1="${PRODIR}/bin/GetSimpleTuple"
     thebinary2="${PRODIR}/bin/FilterNCombine_sim"
-    execfile="${PRODIR}/sh/jlab/run_GF.sh"
+    execfile="${PRODIR}/sh/jlab/run_GF_Sim.sh"
     echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple\"/>"                  >> ${jobfile}
     echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_sim\"/>"              >> ${jobfile}
-    echo "  <Input src=\"${execfile}\"   dest=\"run_GF.sh\"/>"                        >> ${jobfile}
+    echo "  <Input src=\"${execfile}\"    dest=\"run_GF_Sim.sh\"/>"                   >> ${jobfile}
     inrootfile="${INDIR}/recsis${tarName}_${rn}.root"
     echo "  <Input src=\"${inrootfile}\" dest=\"recsis${tarName}_${rn}.root\"/>"      >> ${jobfile}
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
-    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\"             run_GF.sh"      >> ${jobfile}
-    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                            run_GF.sh"      >> ${jobfile}
-    echo "    chmod 755 ./run_GF.sh"                                                  >> ${jobfile}
-    echo "    sh run_GF.sh"                                                           >> ${jobfile}
+    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_Sim.sh"              >> ${jobfile}
+    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_Sim.sh"              >> ${jobfile}
+    echo "    chmod 755 ./run_GF_Sim.sh"                                              >> ${jobfile}
+    echo "    sh run_GF_Sim.sh"                                                       >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
     outrootfile1="${GSTDIR}/pruned${tarName}_${rn}.root"

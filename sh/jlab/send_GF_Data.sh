@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_GF_DATA.sh <target>                                 #
+# ./send_GF_Data.sh <target>                                 #
 #     <target> = (C, Fe, Pb)                                 #
 #                                                            #
-# EG: ./send_GF_DATA.sh C                                    #
-#     ./send_GF_DATA.sh Fe                                   #
-#     ./send_GF_DATA.sh Pb                                   #
+# EG: ./send_GF_Data.sh C                                    #
+#     ./send_GF_Data.sh Fe                                   #
+#     ./send_GF_Data.sh Pb                                   #
 ##############################################################
 
 #####
@@ -77,20 +77,20 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     # set inputs
     thebinary1="${PRODIR}/bin/GetSimpleTuple"
     thebinary2="${PRODIR}/bin/FilterNCombine_data"
-    execfile="${PRODIR}/sh/jlab/run_GF_DATA.sh"
+    execfile="${PRODIR}/sh/jlab/run_GF_Data.sh"
     echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple\"/>"                  >> ${jobfile}
     echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_data\"/>"             >> ${jobfile}
-    echo "  <Input src=\"${execfile}\"    dest=\"run_GF_DATA.sh\"/>"                  >> ${jobfile}
+    echo "  <Input src=\"${execfile}\"    dest=\"run_GF_Data.sh\"/>"                  >> ${jobfile}
     for file in ${INDIR}/clas_${rn}*; do
 	inrootfile=$(readlink -f ${file})
 	echo "  <Input src=\"mss:${inrootfile}\" dest=\"${file##*/}\"/>"              >> ${jobfile}
     done
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
-    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_DATA.sh"             >> ${jobfile}
-    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_DATA.sh"             >> ${jobfile}
-    echo "    chmod 755 ./run_GF_DATA.sh"                                             >> ${jobfile}
-    echo "    sh run_GF_DATA.sh"                                                      >> ${jobfile}
+    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_Data.sh"             >> ${jobfile}
+    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_Data.sh"             >> ${jobfile}
+    echo "    chmod 755 ./run_GF_Data.sh"                                             >> ${jobfile}
+    echo "    sh run_GF_Data.sh"                                                      >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
     outrootfile1="${GSTDIR}/pruned${tarName}_${rn}.root"
