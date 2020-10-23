@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #################################################
-# ./send_GF_BkgSim.sh <ndir>                    #
-#     <ndir>   = (00, 01, 02, ...)              #
+# ./send_GF_BkgSim.sh <version> <ndir>          #
+#     <version> = (v1, v2)                      #
+#     <ndir>    = (00, 01, 02, ...)             #
 #                                               #
-# EG: ./send_GF_BkgSim.sh 00                    #
+# EG: ./send_GF_BkgSim.sh v2 00                 #
 #################################################
 
 #####
@@ -27,7 +28,10 @@ function get_num_2dig()
 # Input
 ###
 
-nDir="$@"
+inputArray=("$@")
+
+nVer="${inputArray[0]}"
+nDir="${inputArray[1]}"
 
 #####
 # Main
@@ -39,11 +43,11 @@ source ~/.bashrc
 # define important dirs
 WORKDIR=/home/borquez/work
 TMPDIR=${WORKDIR}/tmp
-XMLDIR=${TMPDIR}/xml/bkg/D/${nDir}
-LOGDIR=${TMPDIR}/log/bkg/D/${nDir}
-GSTDIR=${WORKDIR}/GetSimpleTuple/bkg/D/${nDir}
-FNCDIR=${WORKDIR}/FilterNCombine/bkg/D/${nDir}
-INDIR=${WORKDIR}/simulations-bkg/D/${nDir}
+XMLDIR=${TMPDIR}/xml/bkg/${nVer}/D/${nDir}
+LOGDIR=${TMPDIR}/log/bkg/${nVer}/D/${nDir}
+GSTDIR=${WORKDIR}/GetSimpleTuple/bkg/${nVer}/D/${nDir}
+FNCDIR=${WORKDIR}/FilterNCombine/bkg/${nVer}/D/${nDir}
+INDIR=${WORKDIR}/simulations-bkg/${nVer}/D/${nDir}
 
 mkdir -p ${TMPDIR}
 mkdir -p ${XMLDIR} ${LOGDIR}
