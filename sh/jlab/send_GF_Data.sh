@@ -100,7 +100,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     echo "  <Output src=\"comb${tarName}_${rn}.root\"   dest=\"${outrootfile2}\"/>"   >> ${jobfile}
     # extract from tape
     for file in ${INDIR}/clas_${rn}*; do
-	echo "  <Input src=\"${file##*/}\" dest=\"${INDIR2}/${file##*/}\"/>"              >> ${jobfile}
+	echo "  <Output src=\"${file##*/}\" dest=\"${INDIR2}/${file##*/}\"/>"              >> ${jobfile}
     done
     # set logs
     echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
