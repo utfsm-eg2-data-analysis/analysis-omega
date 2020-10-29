@@ -28,8 +28,8 @@ XMLDIR=${TMPDIR}/xml/data/${tarName}
 LOGDIR=${TMPDIR}/log/data/${tarName}
 GSTDIR=${WORKDIR}/GetSimpleTuple/data/${tarName}
 FNCDIR=${WORKDIR}/FilterNCombine/data/${tarName}
-INDIR=/mss/clas/eg2a/production/Pass2/Clas # data stored on tape
-INDIR2=${WORKDIR}/data-EG2 # new!
+INDIR="/mss/clas/eg2a/production/Pass2/Clas" # data stored on tape
+NEWDIR=${WORKDIR}/data-EG2 # new!
 
 # make dirs, just in case
 mkdir -p ${TMPDIR}
@@ -99,8 +99,8 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     echo "  <Output src=\"pruned${tarName}_${rn}.root\" dest=\"${outrootfile1}\"/>"   >> ${jobfile}
     echo "  <Output src=\"comb${tarName}_${rn}.root\"   dest=\"${outrootfile2}\"/>"   >> ${jobfile}
     # extract from tape
-    for file in ${INDIR}/clas_${rn}*; do
-	echo "  <Output src=\"${file##*/}\" dest=\"${INDIR2}/${file##*/}\"/>"              >> ${jobfile}
+    for fileagain in ${INDIR}/clas_${rn}*; do
+	echo "  <Output src=\"${fileagain##*/}\" dest=\"${NEWDIR}/${fileagain##*/}\"/>" >> ${jobfile}
     done
     # set logs
     echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
