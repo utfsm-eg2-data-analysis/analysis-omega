@@ -95,18 +95,22 @@ int main(int argc, char **argv) {
     }
 
     // commentary
+    /*
     std::cout << "Current event number: " << currentEvent << std::endl;
     std::cout << "Current entry number: " << i << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-
+    */
+    
     // count particles in the current event
     for (Int_t j = i; j <= Ne; j++) {
       tree->GetEntry(j);
       if (currentEvent == (Int_t) t.evnt) {
 	// commentary
+	/*
 	std::cout << "  Entry number: " << j << std::endl;
 	std::cout << "  pid    =      " << t.pid << std::endl;
 	std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;	
+	*/
 	// count the particles
 	if (t.pid == (Float_t) 22)        gammaVector.push_back(j);
 	else if (t.pid == (Float_t) 211)  pipVector.push_back(j);
@@ -121,11 +125,12 @@ int main(int argc, char **argv) {
     nGammaThisEvent = gammaVector.size();
     
     // commentary
+    /*
     std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
     std::cout << "  nPim     = " << nPimThisEvent     << std::endl;
     std::cout << "  nGamma   = " << nGammaThisEvent   << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-    
+    */
     // now, init ALL branches
     SetInputBranches(tree, t);
     
@@ -160,7 +165,7 @@ int main(int argc, char **argv) {
 	    for (Int_t jGamma = iGamma+1; jGamma < nGammaThisEvent; jGamma++) {
 	      currentComb.push_back(gammaVector[jGamma]);
 	      // commentary
-	      std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
+	      // std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
 	      // fill vector
 	      combVector.push_back(currentComb);
 	      currentComb.pop_back();
@@ -207,8 +212,10 @@ int main(int argc, char **argv) {
     combVector.clear();
     
     // commentary
+    /*
     std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
+    */
   } // end of loop in entries
 
   /*** WRITE ***/

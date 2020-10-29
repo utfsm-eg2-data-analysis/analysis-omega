@@ -29,6 +29,7 @@ LOGDIR=${TMPDIR}/log/data/${tarName}
 GSTDIR=${WORKDIR}/GetSimpleTuple/data/${tarName}
 FNCDIR=${WORKDIR}/FilterNCombine/data/${tarName}
 INDIR=/mss/clas/eg2a/production/Pass2/Clas # data stored on tape
+INDIR2=${WORKDIR}/data-EG2 # new!
 
 # make dirs, just in case
 mkdir -p ${TMPDIR}
@@ -97,6 +98,10 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     outrootfile2="${FNCDIR}/comb${tarName}_${rn}.root"
     echo "  <Output src=\"pruned${tarName}_${rn}.root\" dest=\"${outrootfile1}\"/>"   >> ${jobfile}
     echo "  <Output src=\"comb${tarName}_${rn}.root\"   dest=\"${outrootfile2}\"/>"   >> ${jobfile}
+    # extract from tape
+    for file in ${INDIR}/clas_${rn}*; do
+	echo "  <Input src=\"${file##*/}\" dest=\"${INDIR2}/${file##*/}\"/>"              >> ${jobfile}
+    done
     # set logs
     echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${LOGDIR}/${jobname}.err\"/>"                              >> ${jobfile}

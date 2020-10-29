@@ -114,9 +114,9 @@ int main(int argc, char **argv) {
 
     // commentary
     /*
-      std::cout << "Current event number: " << currentEvent << std::endl;
-      std::cout << "Current entry number: " << i << std::endl;
-      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << "Current event number: " << currentEvent << std::endl;
+    std::cout << "Current entry number: " << i << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     */
     // count particles in the current event
     for (Int_t j = i; j <= Ne; j++) {
@@ -124,10 +124,10 @@ int main(int argc, char **argv) {
       if (currentEvent == (Int_t) mc_t.evnt) {
 	// commentary
 	/*
-	  std::cout << "  Entry number: " << j << std::endl;
-	  std::cout << "  mc_pid =      " << mc_t.pid << std::endl;
-	  std::cout << "  pid    =      " << t.pid << std::endl;
-	  std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;	
+	std::cout << "  Entry number: " << j << std::endl;
+	std::cout << "  mc_pid =      " << mc_t.pid << std::endl;
+	std::cout << "  pid    =      " << t.pid << std::endl;
+	std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;	
 	*/
 	// count the simrec particles
 	if (t.pid == (Float_t) 22)        gammaVector.push_back(j);
@@ -156,13 +156,13 @@ int main(int argc, char **argv) {
     
     // commentary
     /*
-      std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
-      std::cout << "  nPim     = " << nPimThisEvent     << std::endl;
-      std::cout << "  nGamma   = " << nGammaThisEvent   << std::endl;
-      std::cout << "  nMCPip   = " << nMCPipThisEvent   << std::endl;
-      std::cout << "  nMCPim   = " << nMCPimThisEvent   << std::endl;
-      std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
-      std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+    std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent     << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent   << std::endl;
+    std::cout << "  nMCPip   = " << nMCPipThisEvent   << std::endl;
+    std::cout << "  nMCPim   = " << nMCPimThisEvent   << std::endl;
+    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
+    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
     */
     
     // now, init ALL branches
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 	      mc_currentComb.push_back(mc_gammaVector[jGamma]);
 	      // commentary
 	      /*
-		std::cout << "mc_currentComb = {" << mc_currentComb[0] << ", " << mc_currentComb[1] << ", "  << mc_currentComb[2] << ", " << mc_currentComb[3] << "}" << std::endl;
+	      std::cout << "mc_currentComb = {" << mc_currentComb[0] << ", " << mc_currentComb[1] << ", "  << mc_currentComb[2] << ", " << mc_currentComb[3] << "}" << std::endl;
 	      */
 	      // fill vector
 	      mc_combVector.push_back(mc_currentComb);
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
 	      currentComb.push_back(gammaVector[jGamma]);
 	      // commentary
 	      /*
-		std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
+	      std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
 	      */
 	      // fill vector
 	      combVector.push_back(currentComb);
@@ -358,8 +358,8 @@ int main(int argc, char **argv) {
     
     // commentary
     /*
-      std::cout << "  !! Finished event" << std::endl;
-      std::cout << std::endl;
+    std::cout << "  !! Finished event" << std::endl;
+    std::cout << std::endl;
     */
   } // end of loop in entries
 
