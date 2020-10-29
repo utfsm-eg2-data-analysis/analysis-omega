@@ -256,7 +256,20 @@ part=getPartId(i,input,t,SampFrackCheck_C,SampFrackCheck_Fe,SampFrackCheck_Pb,Sa
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TString getPartId(Int_t k, TClasTool* input, TIdentificator *t, Int_t (*ptrToSampFrackC)(TIdentificator *t, Int_t j), Int_t (*ptrToSampFrackFe)(TIdentificator *t, Int_t j), Int_t (*ptrToSampFrackPb)(TIdentificator *t, Int_t j),   Int_t (*ptrToSampFrackD2)(TIdentificator *t, Int_t j),  Int_t (*ptrToSampFrackC_sim)(TIdentificator *t, Int_t j), Int_t (*ptrToSampFrackFe_sim)(TIdentificator *t, Int_t j), Int_t (*ptrToSampFrackPb_sim)(TIdentificator *t, Int_t j),   Int_t (*ptrToSampFrackD2_sim)(TIdentificator *t, Int_t j),  TVector3* (*ptrTouvwCoor)(TIdentificator *t),TString Metal,TString dataSimOpt) {
+TString getPartId(Int_t k,
+		  TClasTool* input,
+		  TIdentificator *t,
+		  Int_t (*ptrToSampFrackC)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackFe)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackPb)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackD2)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackC_sim)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackFe_sim)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackPb_sim)(TIdentificator *t, Int_t j),
+		  Int_t (*ptrToSampFrackD2_sim)(TIdentificator *t, Int_t j),
+		  TVector3* (*ptrTouvwCoor)(TIdentificator *t),
+		  TString Metal,
+		  TString dataSimOpt) {
   
     Int_t number_dc =  input->GetNRows("DCPB");
     Int_t number_cc =  input->GetNRows("CCPB"); 
@@ -291,13 +304,22 @@ TString getPartId(Int_t k, TClasTool* input, TIdentificator *t, Int_t (*ptrToSam
 	    phy = phy - 360.;
 	  }
 	  ec_phy = ((Int_t) (phy/60.))*1.0471975;  
-	  rot[0][0] = TMath::Cos(ec_the)*TMath::Cos(ec_phy);rot[0][1] = -TMath::Sin(ec_phy); 
-	  rot[0][2] = TMath::Sin(ec_the)*TMath::Cos(ec_phy);rot[1][0] = TMath::Cos(ec_the)*TMath::Sin(ec_phy);	  
-	  rot[1][1] = TMath::Cos(ec_phy); rot[1][2] = TMath::Sin(ec_the)*TMath::Sin(ec_phy); 	  
-	  rot[2][0] = -TMath::Sin(ec_the); rot[2][1] = 0.;rot[2][2] = TMath::Cos(ec_the);    
-	  yi = ex*rot[0][0]+wy*rot[1][0]+zd*rot[2][0];xi = ex*rot[0][1]+wy*rot[1][1]+zd*rot[2][1];     
-	  zi = ex*rot[0][2]+wy*rot[1][2]+zd*rot[2][2];zi = zi-510.32 ; yu = (yi-ylow)/sinrho; 
-	  ve = (yhi-ylow)/tgrho - xi + (yhi-yi)/tgrho;wu = ((yhi-ylow)/tgrho + xi + (yhi-yi)/tgrho)/2./cosrho;
+	  rot[0][0] = TMath::Cos(ec_the)*TMath::Cos(ec_phy);
+	  rot[0][1] = -TMath::Sin(ec_phy); 
+	  rot[0][2] = TMath::Sin(ec_the)*TMath::Cos(ec_phy);
+	  rot[1][0] = TMath::Cos(ec_the)*TMath::Sin(ec_phy);	  
+	  rot[1][1] = TMath::Cos(ec_phy);
+	  rot[1][2] = TMath::Sin(ec_the)*TMath::Sin(ec_phy); 	  
+	  rot[2][0] = -TMath::Sin(ec_the);
+	  rot[2][1] = 0.;
+	  rot[2][2] = TMath::Cos(ec_the);    
+	  yi = ex*rot[0][0]+wy*rot[1][0]+zd*rot[2][0];
+	  xi = ex*rot[0][1]+wy*rot[1][1]+zd*rot[2][1];     
+	  zi = ex*rot[0][2]+wy*rot[1][2]+zd*rot[2][2];
+	  zi = zi - 510.32 ;
+	  yu = (yi-ylow)/sinrho; 
+	  ve = (yhi-ylow)/tgrho - xi + (yhi-yi)/tgrho;
+	  wu = ((yhi-ylow)/tgrho + xi + (yhi-yi)/tgrho)/2./cosrho;
 	  
 	  if (yu > 40 && yu < 410 && ve < 370 && wu < 405) {
 	      if (dataSimOpt == "data") {

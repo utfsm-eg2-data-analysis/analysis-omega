@@ -37,7 +37,8 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
 
-PROG := GetSimpleTuple FilterNCombine_data FilterNCombine_sim\
+PROG := GetSimpleTuple_data GetSimpleTuple_sim\
+	FilterNCombine_data FilterNCombine_sim\
 	FilterNCombine_f1 MakePlots_f1\
 	MakePlots\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\

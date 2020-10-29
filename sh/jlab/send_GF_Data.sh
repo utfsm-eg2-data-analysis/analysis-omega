@@ -75,10 +75,10 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
-    thebinary1="${PRODIR}/bin/GetSimpleTuple"
+    thebinary1="${PRODIR}/bin/GetSimpleTuple_data"
     thebinary2="${PRODIR}/bin/FilterNCombine_data"
     execfile="${PRODIR}/sh/jlab/run_GF_Data.sh"
-    echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple\"/>"                  >> ${jobfile}
+    echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_data\"/>"             >> ${jobfile}
     echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_data\"/>"             >> ${jobfile}
     echo "  <Input src=\"${execfile}\"    dest=\"run_GF_Data.sh\"/>"                  >> ${jobfile}
     for file in ${INDIR}/clas_${rn}*; do
