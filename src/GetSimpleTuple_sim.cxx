@@ -81,25 +81,27 @@ int main(int argc, char **argv) {
   for (Int_t i = 0; i < nEvents; i++) { // nEvents
     
     /*** STEP 1: FIND PARTICLES ***/
-    
-    if (t->Id(0, 1) == 11) {
-      for (Int_t q = 1; q < input->GetNRows("GSIM"); q++) {
-        if (t->Id(q, 1) == 211) gsimPip_row.push_back(q);
-	else if (t->Id(q, 1) == -211) gsimPim_row.push_back(q);
-	else if (t->Id(q, 1) == 22) gsimGamma_row.push_back(q);
-      } // end of loop in gsim-particles
 
-      if (input->GetNRows("EVNT") > 0) {
-	if (t->GetCategorization(0, "Sim") == "electron") {
-	  for (Int_t p = 1; p < input->GetNRows("EVNT"); p++) {
-	  if (t->GetCategorization(p, "Sim") == "pi+") simrecPip_row.push_back(p);
-	  else if (t->GetCategorization(p, "Sim") == "pi-") simrecPim_row.push_back(p);
-	  else if (t->GetCategorization(p, "Sim") == "gamma") simrecGamma_row.push_back(p);
-	  } // end of loop in simrec-particles
-	} // end of electron-in-simrec condition
-      } // end of something-in-EVNT-bank
+    if (input->GetNRows("GSIM") > 0) { // prevent seg-fault
+      if (t->Id(0, 1) == 11) {
+	for (Int_t q = 1; q < input->GetNRows("GSIM"); q++) {
+	  if (t->Id(q, 1) == 211) gsimPip_row.push_back(q);
+	  else if (t->Id(q, 1) == -211) gsimPim_row.push_back(q);
+	  else if (t->Id(q, 1) == 22) gsimGamma_row.push_back(q);
+	} // end of loop in gsim-particles
+
+	if (input->GetNRows("EVNT") > 0) { // prevent seg-fault
+	  if (t->GetCategorization(0, "Sim") == "electron") {
+	    for (Int_t p = 1; p < input->GetNRows("EVNT"); p++) {
+	      if (t->GetCategorization(p, "Sim") == "pi+") simrecPip_row.push_back(p);
+	      else if (t->GetCategorization(p, "Sim") == "pi-") simrecPim_row.push_back(p);
+	      else if (t->GetCategorization(p, "Sim") == "gamma") simrecGamma_row.push_back(p);
+	    } // end of loop in simrec-particles
+	  } // end of electron-in-simrec condition
+	} // end of smth-in-EVNT-bank
       
-    } // end of electron-in-gsim condition
+      } // end of electron-in-gsim condition
+    } // end of smth-in-GSIM-bank
     
     /*** STEP 2: SORT BY MOMENTUM ***/
     
@@ -120,14 +122,16 @@ int main(int argc, char **argv) {
     /*** STEP 4: FILL ***/
 
     // electron
-    if (t->Id(0, 1) == 11) {
-      AssignElectronVar_GSIM(t, se, i, "Sim"); // (TIdentificatorV2, sim_e, evnt, targetOption)
-      if (input->GetNRows("EVNT") > 0) {
-	if (t->GetCategorization(0, "Sim") != "electron") NullElectronVar_SIMREC(se);
-	else AssignElectronVar_SIMREC(t, se, i, "Sim");
-      }
-      tElectrons->Fill();
-    }
+    if (input->GetNRows("GSIM") > 0) { // prevent seg-fault
+      if (t->Id(0, 1) == 11) {
+	AssignElectronVar_GSIM(t, se, i, "Sim"); // (TIdentificatorV2, sim_e, evnt, targetOption)
+	if (input->GetNRows("EVNT") > 0) { // prevent seg-fault
+	  if (t->GetCategorization(0, "Sim") != "electron") NullElectronVar_SIMREC(se);
+	  else AssignElectronVar_SIMREC(t, se, i, "Sim");
+	} // end of smth-in-EVNT-bank condition
+	tElectrons->Fill();
+      } // end of electorn-in-GSIM condition
+    } // end of smth-in-GSIM-bank condition
     
     // pip
     for (Int_t pip = 0; pip < (Int_t) simrecPip_row.size(); pip++) {

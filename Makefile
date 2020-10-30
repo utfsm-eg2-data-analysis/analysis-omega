@@ -39,6 +39,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
 
 PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	FilterNCombine_data FilterNCombine_sim\
+	MakeRooFits\
 	FilterNCombine_f1 MakePlots_f1\
 	MakePlots\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\

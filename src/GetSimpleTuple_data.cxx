@@ -67,21 +67,22 @@ int main(int argc, char **argv) {
 
   // loop around events
   for (Int_t i = 0; i < nEvents; i++) { // nEvents
-    if (t->GetCategorization(0, targetOption) == "electron") {
-      AssignElectronVar_Data(t, de, i, targetOption); // (TIdentificator, data_e, evnt, targetOption)
-      // and fill
-      tElectrons->Fill();
-      // loop in detected particles
-      for (Int_t p = 1; p < input->GetNRows("EVNT"); p++) {
-	// rest of particles
-	if (t->GetCategorization(p, targetOption) == "gamma" || t->GetCategorization(p, targetOption) == "pi+" || t->GetCategorization(p, targetOption) == "pi-") {
-	  AssignParticleVar_Data(t, dp, p, i, targetOption); // (TIdentificator, data_p, row, evnt, targetOption)
-	  // and fill
-	  tParticles->Fill();
-	}
-      } // end of loop in rest of particles
-    } // end of electron-condition
-    // next event
+    if (input->GetNRows("EVNT") > 0) { // prevent seg-fault
+      if (t->GetCategorization(0, targetOption) == "electron") {
+	AssignElectronVar_Data(t, de, i, targetOption); // (TIdentificator, data_e, evnt, targetOption)
+	tElectrons->Fill();
+	// loop in detected particles
+	for (Int_t p = 1; p < input->GetNRows("EVNT"); p++) {
+	  // rest of particles
+	  if (t->GetCategorization(p, targetOption) == "gamma" || t->GetCategorization(p, targetOption) == "pi+" || t->GetCategorization(p, targetOption) == "pi-") {
+	    AssignParticleVar_Data(t, dp, p, i, targetOption); // (TIdentificator, data_p, row, evnt, targetOption)
+	    tParticles->Fill();
+	  }
+	} // end of loop in rest of particles
+      } // end of electron condition
+    } // end of smth-in-EVNT-bank condition
+    
+    // next event!
     input->Next();
   } // end of loop in events
 

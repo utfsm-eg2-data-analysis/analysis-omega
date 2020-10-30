@@ -51,8 +51,24 @@ public:
   }
 
   Float_t NEvent() {
-    // Returns event number from HEAD bank.
+    // Returns event number from HEAD bank
     return ((THEADERClass *) fCT->GetHEADER())->GetNEvent();
+  }
+  
+  Int_t NRowsDC() {
+    return fCT->GetNRows("DCPB");
+  }
+
+  Int_t NRowsEC() {
+    return fCT->GetNRows("ECPB");
+  }
+
+  Int_t NRowsCC() {
+    return fCT->GetNRows("CCPB");
+  }
+
+  Int_t NRowsSC() {
+    return fCT->GetNRows("SCPB");
   }
 
   /*** EVNT & GSIM ***/
@@ -473,12 +489,13 @@ public:
   Double_t PhiLab(Int_t k, Bool_t kind = 0) {
     // Returns the azimuthal angle in Lab frame for the particle in the row k
     TVector3 v3p(Px(k, kind), Py(k, kind), Pz(k, kind));
-    if (v3p.Phi()*TMath::RadToDeg() < -30.) {
-      return v3p.Phi()*TMath::RadToDeg() + 360.;
-    } else if (v3p.Phi()*TMath::RadToDeg() > 330.) {
-      return v3p.Phi()*TMath::RadToDeg() - 360.;
+    Double_t PhiLab_value = v3p.Phi()*TMath::RadToDeg();
+    if (PhiLab_value < -30.) {
+      return PhiLab_value + 360.;
+    } else if (PhiLab_value > 330.) {
+      return PhiLab_value - 360.;
     } // closure
-    return v3p.Phi()*TMath::RadToDeg(); // default
+    return PhiLab_value; // default
   }
 
   Double_t ThetaVirtLab(Bool_t kind = 0) {
@@ -703,199 +720,151 @@ public:
     return false;
   }
   
-  /*** Fiducial Cuts ***/
-  
-  Double_t FidTheta(Int_t k) {
-    // (?), only for data and reconstructed
-    TVector3 v3p(Px(k, 0), Py(k, 0), Pz(k, 0));
-    return v3p.Theta()*TMath::RadToDeg();
-  }
+  /*** Electrons DC Fiducial Cuts ***/
 
-  Double_t FidThetaMin(Int_t k) {
-    // (?)
-    Int_t sector = Sector(k);
+  Double_t FidThetaMin() {
+    // minimum DC theta angle
+    Int_t sector = Sector(0);
     Double_t theta_min_val = kThetaPar0[sector] +
-      kThetaPar1[sector]/TMath::Power(Momentum(k),2) +
-      kThetaPar2[sector]*Momentum(k) +
-      kThetaPar3[sector]/Momentum(k) +
-      kThetaPar4[sector]*TMath::Exp(kThetaPar5[sector]*Momentum(k));
+      kThetaPar1[sector]/TMath::Power(Momentum(0), 2) +
+      kThetaPar2[sector]*Momentum(0) +
+      kThetaPar3[sector]/Momentum(0) +
+      kThetaPar4[sector]*TMath::Exp(kThetaPar5[sector]*Momentum(0));
     return theta_min_val;
   }
     
-  Double_t FidFunc(Int_t k, Int_t side, Int_t param) {
+  Double_t FidFunc(Int_t side, Int_t param) {
     // (?)
-    Int_t sector = Sector(k);  
+    Int_t sector = Sector(0);  
     if (side == 0 && param == 0) {
-      return kFidPar0Low0[sector] + kFidPar0Low1[sector]*TMath::Exp(kFidPar0Low2[sector]*(Momentum(k) - kFidPar0Low3[sector]));
+      return kFidPar0Low0[sector] + kFidPar0Low1[sector]*TMath::Exp(kFidPar0Low2[sector]*(Momentum(0) - kFidPar0Low3[sector]));
     } else if (side == 1 && param==0) {
-      return kFidPar0High0[sector] + kFidPar0High1[sector]*TMath::Exp(kFidPar0High2[sector]*(Momentum(k) - kFidPar0High3[sector]));
+      return kFidPar0High0[sector] + kFidPar0High1[sector]*TMath::Exp(kFidPar0High2[sector]*(Momentum(0) - kFidPar0High3[sector]));
     } else if (side == 0 && param==1) {
-      return kFidPar1Low0[sector] + kFidPar1Low1[sector]*Momentum(k)*TMath::Exp(kFidPar1Low2[sector]*TMath::Power((Momentum(k) - kFidPar1Low3[sector]), 2));
+      return kFidPar1Low0[sector] + kFidPar1Low1[sector]*Momentum(0)*TMath::Exp(kFidPar1Low2[sector]*TMath::Power((Momentum(0) - kFidPar1Low3[sector]), 2));
     } else if (side == 1 && param==1) {
-      return kFidPar1High0[sector] + kFidPar1High1[sector]*Momentum(k)*TMath::Exp(kFidPar1High2[sector]*TMath::Power((Momentum(k) - kFidPar1High3[sector]), 2));
+      return kFidPar1High0[sector] + kFidPar1High1[sector]*Momentum(0)*TMath::Exp(kFidPar1High2[sector]*TMath::Power((Momentum(0) - kFidPar1High3[sector]), 2));
     } // closure
     return 0.0; // default
   }
   
-  Double_t FidPhi(Int_t k) {
-    // returns (fiducial? shifted?) phi angle for the particle
-    TVector3 v3p(Px(k, 0), Py(k, 0), Pz(k, 0));
-    Double_t fid_phi_val = v3p.Phi()*TMath::RadToDeg();
-    if (fid_phi_val < -30) {
-      return fid_phi_val + 360;
-    } // closure
-    return fid_phi_val - 360;
-  }
-
-  Double_t FidPhiMin(Int_t k) {
+  Double_t FidPhiMin() {
     // (?)
-    Int_t sector = Sector(k);
-    if (FidTheta(k) > FidThetaMin(k)) {
-      return 60.*sector - FidFunc(k,0,0)*(1 - 1/(1 + (FidTheta(k) - FidThetaMin(k))/FidFunc(k,0,1)));
+    Int_t sector = Sector(0);
+    if (ThetaLab(0, 0) > FidThetaMin()) {
+      return 60.*sector - FidFunc(0,0)*(1 - 1/(1 + (ThetaLab(0, 0) - FidThetaMin())/FidFunc(0,1)));
     } // closure
     return 60.*sector;
   }
 
-  Double_t FidPhiMax(Int_t k) {
+  Double_t FidPhiMax() {
     // (?)
-    Int_t sector = Sector(k);  
-    if (FidTheta(k) > FidThetaMin(k)) {
-      return 60.*sector + FidFunc(k,1,0)*(1 - 1/(1 + (FidTheta(k) - FidThetaMin(k))/FidFunc(k,1,1)));
-    }
+    Int_t sector = Sector(0);  
+    if (ThetaLab(0,0) > FidThetaMin()) {
+      return 60.*sector + FidFunc(1,0)*(1 - 1/(1 + (ThetaLab(0, 0) - FidThetaMin())/FidFunc(1,1)));
+    } // closure
     return 60.*sector;
   }
-
+  
   Bool_t FidCheckCut() {
-    // Checks extensive DC fiducial cut exclusive for electrons
-    if (FidTheta(0) > FidThetaMin(0) && FidPhi(0) > FidPhiMin(0) && FidPhi(0) < FidPhiMax(0)) {
+    // Checks DC fiducial cut for electrons
+    if (ThetaLab(0, 0) > FidThetaMin() && PhiLab(0, 0) > FidPhiMin() && PhiLab(0, 0) < FidPhiMax()) {
       return 1;
     } // closure
     return 0;
   }
 
   /*** PID cuts ***/
+
+  Bool_t ElectronPhaseSpace(Int_t k, TString targetOption) {
+    if (targetOption == "Sim") {
+      if ((Etot(k)/0.27 >
+	   (Sector(k)==0||Sector(k)==1)*(1.03*Momentum(k) - 0.42) +
+	   (Sector(k)==2)*(1.05*Momentum(k) - 0.46) + 
+	   (Sector(k)==3)*(1.03*Momentum(k) - 0.44) + 
+	   (Sector(k)==4)*(1.06*Momentum(k) - 0.46) +
+	   (Sector(k)==5)*(1.04*Momentum(k) - 0.47)) &&
+	  (Etot(k)/0.27 <
+	   (Sector(k)==0||Sector(k)==1||Sector(k)==2)*(1.05*Momentum(k) + 0.21) +
+	   (Sector(k)==3)*(1.03*Momentum(k) + 0.23) + 
+	   (Sector(k)==4)*(1.06*Momentum(k) + 0.20) +
+	   (Sector(k)==5)*(1.04*Momentum(k) + 0.22)) &&
+	  ((Ein(k)/0.27 + Eout(k)/0.27) <
+	   (Sector(k)==0||Sector(k)==1)*(1.13*Momentum(k)) +
+	   (Sector(k)==2||Sector(k)==3||Sector(k)==5)*(1.14*Momentum(k)) +
+	   (Sector(k)==4)*(1.15*Momentum(k))) &&
+	  ((Ein(k)/0.27 + Eout(k)/0.27) >
+	   (Sector(k)==0||Sector(k)==1)*(0.79*Momentum(k)) +
+	   (Sector(k)==2||Sector(k)==5)*(0.79*Momentum(k)) +
+	   (Sector(k)==3)*(0.79*Momentum(k)) +
+	   (Sector(k)==4)*(0.79*Momentum(k)))) {
+	return true;
+      }
+    } else if (targetOption != "Sim") {
+      if ((Etot(k)/0.27 >
+	   (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) - 0.46) +
+	   (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) - 0.43) +
+	   (Sector(k)==3)*(1.07*Momentum(k) - 0.43)) &&
+	  (Etot(k)/0.27 <
+	   (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) + 0.18) +
+	   (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) + 0.18) +
+	   (Sector(k)==3)*(1.07*Momentum(k) + 0.18)) &&
+	  ((Ein(k)/0.27 + Eout(k)/0.27) <
+	   (Sector(k)==0||Sector(k)==1)*(1.11*Momentum(k)) +
+	   (Sector(k)==2||Sector(k)==5)*(1.19*Momentum(k)) +
+	   (Sector(k)==3)*(1.15*Momentum(k)) +
+	   (Sector(k)==4)*(1.22*Momentum(k))) &&
+	  ((Ein(k)/0.27 + Eout(k)/0.27) >
+	   (Sector(k)==0||Sector(k)==1)*(0.75*Momentum(k)) +
+	   (Sector(k)==2||Sector(k)==5)*(0.84*Momentum(k)) +
+	   (Sector(k)==3)*(0.83*Momentum(k)) +
+	   (Sector(k)==4)*(0.85*Momentum(k)))) {
+	return true;
+      }
+    } // closure
+    return false;
+  }
   
-  TString GetCategorization(Int_t k, TString targetOption) {
+  Bool_t IsElectron(Int_t k, TString targetOption, TVector3* ECuvw) {
+    if (Status(k) > 0 &&
+	NRowsDC() != 0 && DCStatus(k) > 0 && StatDC(k) > 0 &&
+	NRowsEC() != 0 && StatEC(k) > 0 &&
+	NRowsSC() != 0 && SCStatus(k) == 33 &&
+	NRowsCC() != 0 && Nphe(k) > (Sector(k)==0||Sector(k)==1)*25 + (Sector(k)==2)*26 + (Sector(k)==3)*21 + (Sector(k)==4||Sector(k)==5)*28 &&
+	Charge(k) == -1 &&
+	(TimeEC(k) - TimeSC(k) - (PathEC(k) - PathSC(k))/30) < 5*0.35 && (TimeEC(k) - TimeSC(k) - (PathEC(k) - PathSC(k))/30) > -5*0.35 &&
+	Eout(k) != 0 && Ein(k) > 0.06 &&
+	ECuvw->X() > 40 && ECuvw->X() < 410 && ECuvw->Y() < 370 && ECuvw->Z() < 405 &&
+	SampFracCheck(targetOption) &&
+	ElectronPhaseSpace(k, targetOption) &&
+	FidCheckCut()) {
+      return true;
+    } //closure
+    return false;
+  }
   
-    Int_t number_dc = fCT->GetNRows("DCPB");
-    Int_t number_cc = fCT->GetNRows("CCPB");
-    Int_t number_sc = fCT->GetNRows("SCPB");
-    Int_t number_ec = fCT->GetNRows("ECPB");
+  Bool_t IsPositron(Int_t k, TString targetOption, TVector3* ECuvw) {
+    if (Status(k) > 0 &&
+	NRowsDC() != 0 && DCStatus(k) > 0 && StatDC(k) > 0 &&
+	NRowsEC() != 0 && StatEC(k) > 0 &&
+	NRowsSC() != 0 && SCStatus(k) == 33 &&
+	NRowsCC() != 0 && Nphe(k) > (Sector(k)==0||Sector(k)==1)*25 + (Sector(k)==2)*26 + (Sector(k)==3)*21 + (Sector(k)==4||Sector(k)==5)*28 &&
+	Charge(k) == 1 && // only difference
+	(TimeEC(k) - TimeSC(k) - (PathEC(k) - PathSC(k))/30) < 5*0.35 && (TimeEC(k) - TimeSC(k) - (PathEC(k) - PathSC(k))/30) > -5*0.35 &&
+	Eout(k) != 0 && Ein(k) > 0.06 &&
+	ECuvw->X() > 40 && ECuvw->X() < 410 && ECuvw->Y() < 370 && ECuvw->Z() < 405 &&
+	SampFracCheck(targetOption) &&
+	ElectronPhaseSpace(k, targetOption) &&
+	FidCheckCut()) {
+      return true;
+    } //closure
+    return false;
+  }
 
-    // transformation vectors
-    TVector3 *ECxyz = new TVector3(XEC(k), YEC(k), ZEC(k));
-    TVector3 *ECuvw = XYZToUVW(ECxyz);
-    
-    // define ID cuts
-    Bool_t ID_electron =
-      DCStatus(k) > 0 && StatDC(k) > 0 && Status(k) > 0 &&
-      number_dc != 0 && number_ec != 0 && number_sc != 0 && 
-      StatEC(k) > 0 && SCStatus(k) == 33 &&
-      number_cc != 0 && 
-      Nphe(k) > (Sector(k)==0||Sector(k)==1)*25 + (Sector(k)==2)*26 + (Sector(k)==3)*21 + (Sector(k)==4||Sector(k)==5)*28 &&
-      Charge(k) == -1 &&
-      (TimeEC(k) - TimeSC(k) - (PathEC(k)-PathSC(k))/30) < 5*0.35 && (TimeEC(k) - TimeSC(k) - (PathEC(k)-PathSC(k))/30) > -5*0.35 &&
-      Eout(k) != 0 && Ein(k) > 0.06 &&
-      FidCheckCut() == 1 &&
-      ECuvw->X() > 40 && ECuvw->X() < 410 && ECuvw->Y() < 370 && ECuvw->Z() < 405 &&
-      (
-       ((targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") &&
-	(Etot(k)/0.27 >
-	 (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) - 0.46) +
-	 (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) - 0.43) +
-	 (Sector(k)==3)*(1.07*Momentum(k) - 0.43)) &&
-	(Etot(k)/0.27 <
-	 (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) + 0.18) +
-	 (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) + 0.18) +
-	 (Sector(k)==3)*(1.07*Momentum(k) + 0.18)) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) <
-	 (Sector(k)==0||Sector(k)==1)*(1.11*Momentum(k)) +
-	 (Sector(k)==2||Sector(k)==5)*(1.19*Momentum(k)) +
-	 (Sector(k)==3)*(1.15*Momentum(k)) +
-	 (Sector(k)==4)*(1.22*Momentum(k))) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) >
-	 (Sector(k)==0||Sector(k)==1)*(0.75*Momentum(k)) +
-	 (Sector(k)==2||Sector(k)==5)*(0.84*Momentum(k)) +
-	 (Sector(k)==3)*(0.83*Momentum(k)) +
-	 (Sector(k)==4)*(0.85*Momentum(k)))) ||
-       (targetOption == "Sim" &&
-	(Etot(k)/0.27 >
-	 (Sector(k)==0||Sector(k)==1)*(1.03*Momentum(k) - 0.42) + 
-	 (Sector(k)==2)*(1.05*Momentum(k) - 0.46) + 
-	 (Sector(k)==3)*(1.03*Momentum(k) - 0.44) + 
-	 (Sector(k)==4)*(1.06*Momentum(k) - 0.46) +
-	 (Sector(k)==5)*(1.04*Momentum(k) - 0.47)) &&
-	(Etot(k)/0.27 <
-	 (Sector(k)==0||Sector(k)==1||Sector(k)==2)*(1.05*Momentum(k) + 0.21) + 
-	 (Sector(k)==3)*(1.03*Momentum(k) + 0.23) + 
-	 (Sector(k)==4)*(1.06*Momentum(k) + 0.20) +
-	 (Sector(k)==5)*(1.04*Momentum(k) + 0.22)) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) <
-	 (Sector(k)==0||Sector(k)==1)*(1.13*Momentum(k)) +  
-	 (Sector(k)==2||Sector(k)==3||Sector(k)==5)*(1.14*Momentum(k)) +
-	 (Sector(k)==4)*(1.15*Momentum(k))) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) >
-	 (Sector(k)==0||Sector(k)==1)*(0.79*Momentum(k)) +  
-	 (Sector(k)==2||Sector(k)==5)*(0.79*Momentum(k)) +
-	 (Sector(k)==3)*(0.79*Momentum(k)) +
-	 (Sector(k)==4)*(0.79*Momentum(k))))
-       ) && SampFracCheck(targetOption);
-
-    Bool_t ID_positron =
-      DCStatus(k) > 0 && StatDC(k) > 0 && Status(k) > 0 &&
-      number_dc != 0 && number_ec != 0 && number_sc != 0 && 
-      StatEC(k) > 0 && SCStatus(k) == 33 &&
-      number_cc != 0 && 
-      Nphe(k) > (Sector(k)==0||Sector(k)==1)*25 + (Sector(k)==2)*26 + (Sector(k)==3)*21 + (Sector(k)==4||Sector(k)==5)*28 &&
-      Charge(k) == 1 && // main difference
-      (TimeEC(k) - TimeSC(k) - (PathEC(k)-PathSC(k))/30) < 5*0.35 && (TimeEC(k) - TimeSC(k) - (PathEC(k)-PathSC(k))/30) > -5*0.35 &&
-      Eout(k) != 0 && Ein(k) > 0.06 &&
-      FidCheckCut() == 1 &&
-      ECuvw->X() > 40 && ECuvw->X() < 410 && ECuvw->Y() < 370 && ECuvw->Z() < 405 &&
-      (
-       ((targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") &&
-	(Etot(k)/0.27 >
-	 (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) - 0.46) +
-	 (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) - 0.43) +
-	 (Sector(k)==3)*(1.07*Momentum(k) - 0.43)) &&
-	(Etot(k)/0.27 <
-	 (Sector(k)==0||Sector(k)==1)*(1.05*Momentum(k) + 0.18) +
-	 (Sector(k)==2||Sector(k)==4||Sector(k)==5)*(1.1*Momentum(k) + 0.18) +
-	 (Sector(k)==3)*(1.07*Momentum(k) + 0.18)) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) <
-	 (Sector(k)==0||Sector(k)==1)*(1.11*Momentum(k)) +
-	 (Sector(k)==2||Sector(k)==5)*(1.19*Momentum(k)) +
-	 (Sector(k)==3)*(1.15*Momentum(k)) +
-	 (Sector(k)==4)*(1.22*Momentum(k))) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) >
-	 (Sector(k)==0||Sector(k)==1)*(0.75*Momentum(k)) +
-	 (Sector(k)==2||Sector(k)==5)*(0.84*Momentum(k)) +
-	 (Sector(k)==3)*(0.83*Momentum(k)) +
-	 (Sector(k)==4)*(0.85*Momentum(k)))) ||
-       (targetOption == "Sim" &&
-	(Etot(k)/0.27 >
-	 (Sector(k)==0||Sector(k)==1)*(1.03*Momentum(k) - 0.42) + 
-	 (Sector(k)==2)*(1.05*Momentum(k) - 0.46) + 
-	 (Sector(k)==3)*(1.03*Momentum(k) - 0.44) + 
-	 (Sector(k)==4)*(1.06*Momentum(k) - 0.46) +
-	 (Sector(k)==5)*(1.04*Momentum(k) - 0.47)) &&
-	(Etot(k)/0.27 <
-	 (Sector(k)==0||Sector(k)==1||Sector(k)==2)*(1.05*Momentum(k) + 0.21) + 
-	 (Sector(k)==3)*(1.03*Momentum(k) + 0.23) + 
-	 (Sector(k)==4)*(1.06*Momentum(k) + 0.20) +
-	 (Sector(k)==5)*(1.04*Momentum(k) + 0.22)) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) <
-	 (Sector(k)==0||Sector(k)==1)*(1.13*Momentum(k)) +  
-	 (Sector(k)==2||Sector(k)==3||Sector(k)==5)*(1.14*Momentum(k)) +
-	 (Sector(k)==4)*(1.15*Momentum(k))) &&
-	((Ein(k)/0.27 + Eout(k)/0.27) >
-	 (Sector(k)==0||Sector(k)==1)*(0.79*Momentum(k)) +  
-	 (Sector(k)==2||Sector(k)==5)*(0.79*Momentum(k)) +
-	 (Sector(k)==3)*(0.79*Momentum(k)) +
-	 (Sector(k)==4)*(0.79*Momentum(k))))
-       ) && SampFracCheck(targetOption);
-
-    // paramaters obtained from Sebastian Moran's Study
+  Bool_t PiPlusPhaseSpace_SC(Int_t k) {
+    Float_t P  = Momentum(k);
+    Float_t T4 = TimeCorr4(k, 0.13957);
+    // sebastian's paramaters
     const Double_t lines_PiPlus[14][2] = {{-0.70, 0.70}, {-0.70, 0.65},
 					  {-0.70, 0.65}, {-0.70, 0.65},
 					  {-0.55, 0.55}, {-0.50, 0.55},
@@ -903,17 +872,7 @@ public:
 					  {-0.50, 0.40}, {-0.50, 0.40},
 					  {-0.50, 0.40}, {-0.50, 0.40},
 					  {-0.32, 0.32}, {-0.30, 0.37}};
-
-    // just to shorten a little
-    Float_t P = Momentum(k);
-    Float_t T4 = TimeCorr4(k, 0.13957); // charged pion mass
-    
-    Bool_t ID_pip =
-      ID_positron == 0 &&
-      Charge(k) == 1 &&
-      Status(k) > 0 && StatDC(k) > 0 && DCStatus(k) > 0 && number_dc != 0 &&
-      ((P >= 2.7 && number_cc != 0 && StatCC(k) > 0 && Nphe(k) > 25 && Chi2CC(k) < 5/57.3 && T4 < 0.35 && T4 > -0.35) || // high energy pi+
-       (P < 2.7 && number_sc != 0 && StatSC(k) > 0 &&
+    if (P < 2.7 && NRowsSC() != 0 && StatSC(k) > 0 &&
 	((P > 0.00 && P <= 0.25 && T4 >= lines_PiPlus[0][0] && T4 <= lines_PiPlus[0][1]) ||
 	 (P > 0.25 && P <= 0.50 && T4 >= lines_PiPlus[1][0] && T4 <= lines_PiPlus[1][1]) ||
 	 (P > 0.50 && P <= 0.75 && T4 >= lines_PiPlus[2][0] && T4 <= lines_PiPlus[2][1]) ||
@@ -927,45 +886,101 @@ public:
 	 (P > 2.50 && P < 2.70 && T4 >= lines_PiPlus[10][0] && T4 <= lines_PiPlus[10][1] && Mass2(k) < 0.4) || 
 	 (P > 2.7 && P <= 3.3 && T4 >= -0.5 && T4 <= 0.4 && Mass2(k) < 0.4) || 
 	 (P > 3.3 && P <= 3.7 && T4 >= -0.32 && T4 <= 0.32 && Mass2(k) < 0.37) || 
-	 (P > 3.7 && T4 >= -0.3 && T4 <= 0.3 && Mass2(k) < 0.37))));
+	 (P > 3.7 && T4 >= -0.3 && T4 <= 0.3 && Mass2(k) < 0.37))) {
+      return true;
+    } // closure
+    return false;
+  }
 
+  Bool_t PiPlusPhaseSpace_CC(Int_t k) {
+    // for high energy pi+
+    Float_t P  = Momentum(k);
+    Float_t T4 = TimeCorr4(k, 0.13957);
+    if (NRowsCC() != 0 && StatCC(k) > 0 && Nphe(k) > 25 && Chi2CC(k) < 5/57.3 &&
+	P >= 2.7 && T4 > -0.35 && T4 < 0.35) {
+      return true;
+    } // closure
+    return false;
+  }
+  
+  Bool_t IsPiPlus(Int_t k, TString targetOption, TVector3* ECuvw) {
+    if (!IsPositron(k, targetOption, ECuvw) &&
+	Charge(k) == 1 &&
+	Status(k) > 0 &&
+	NRowsDC() != 0 && StatDC(k) > 0 && DCStatus(k) > 0 && 
+	(PiPlusPhaseSpace_CC(k) || PiPlusPhaseSpace_SC(k))) {
+      return true;
+    } // closure
+    return false;
+  }
+
+  Bool_t PiMinusPhaseSpace_SC(Int_t k) {
+    Float_t P  = Momentum(k);
+    Float_t T4 = TimeCorr4(k, 0.13957);
+    // sebastian's parameters
     const Double_t lines_PiMinus[5][2]= {{-0.75, 0.80},  
 					 {-0.55, 0.55},
 					 {-0.55, 0.55},   
 					 {-0.50, 0.44},
 					 {-0.50, 0.45}};	
- 
-    Float_t deltaBetta = Betta(k) - (Momentum(k)/TMath::Sqrt(Momentum(k)*Momentum(k) + 0.139570*0.139570));
- 
-    Bool_t ID_pim =
-      ID_electron == 0 &&
-      Charge(k) == -1 &&
-      Status(k) > 0 && StatDC(k) > 0 && StatSC(k) > 0 && DCStatus(k) > 0 && number_dc != 0 &&
-      Etot(k) < 0.15 && (Ein(k) < 0.085 - 0.5*Eout(k)) &&
-      deltaBetta >= -0.03 && deltaBetta <= 0.03 &&
-      (P < 5.0) &&
-      ((!(StatCC(k) > 0 && Nphe(k) > 25) && ((0 < P && P <= 0.5 && T4 >= lines_PiMinus[0][0] && T4 <= lines_PiMinus[0][1]) ||
-					     (0.5 < P && P <= 1.0 && T4 >= lines_PiMinus[1][0] && T4 <= lines_PiMinus[1][1]) ||
-					     (1.0 < P && P <= 1.5 && T4 >= lines_PiMinus[2][0] && T4 <= lines_PiMinus[2][1]) ||
-					     (1.5 < P && P <= 2.0 && T4 >= lines_PiMinus[3][0] && T4 <= lines_PiMinus[3][1]) ||
-					     (2.0 < P && P <= 2.5 && T4 >= lines_PiMinus[4][0] && T4 <= lines_PiMinus[4][1]))) ||
-       (P > 2.5 && T4 < 1.50 && T4 > -1.50)); // high energy pi-
-    
-    Bool_t ID_gamma =
-      Charge(k) == 0 &&
-      (ECuvw->X() > 40 && ECuvw->X() < 410) && (ECuvw->Y() < 370) && (ECuvw->Z() < 410) && 
-      ((PathEC(k)/(Betta(k)*30) - PathEC(k)/30) > -2.2) && ((PathEC(k)/(Betta(k)*30) - PathEC(k)/30) < 1.3) &&
-      TMath::Max(Etot(k), Ein(k) + Eout(k))/0.272 > 0.1; // loose cut, so i can turn it on/off at a later stage, borquez_mod
-    
-    // final step
-    if (ID_electron) {
+    if (StatSC(k) > 0 && ((0 < P && P <= 0.5 && T4 >= lines_PiMinus[0][0] && T4 <= lines_PiMinus[0][1]) ||
+			  (0.5 < P && P <= 1.0 && T4 >= lines_PiMinus[1][0] && T4 <= lines_PiMinus[1][1]) ||
+			  (1.0 < P && P <= 1.5 && T4 >= lines_PiMinus[2][0] && T4 <= lines_PiMinus[2][1]) ||
+			  (1.5 < P && P <= 2.0 && T4 >= lines_PiMinus[3][0] && T4 <= lines_PiMinus[3][1]) ||
+			  (2.0 < P && P <= 2.5 && T4 >= lines_PiMinus[4][0] && T4 <= lines_PiMinus[4][1]))) {
+      return true;
+    } // closure
+    return false;
+  }
+
+  Bool_t PiMinusPhaseSpace_CC(Int_t k) {
+    // for high energy pi+
+    Float_t P  = Momentum(k);
+    Float_t T4 = TimeCorr4(k, 0.13957);
+    if (StatCC(k) > 0 && Nphe(k) > 25 &&
+	P > 2.5 && T4 > -1.50 && T4 < 1.50) {
+      return true;
+    } // closure
+    return false;
+  }
+  
+  Bool_t IsPiMinus(Int_t k, TString targetOption, TVector3 *ECuvw) {
+    Float_t deltaBetta = Betta(k) - (Momentum(k)/TMath::Sqrt(Momentum(k)*Momentum(k) + 0.13957*0.13957));
+    if (!IsElectron(k, targetOption, ECuvw) &&
+	Charge(k) == -1 &&
+	Status(k) > 0 &&
+	NRowsDC() != 0 && DCStatus(k) > 0 && StatDC(k) > 0 &&
+	Etot(k) < 0.15 && (Ein(k) < 0.085 - 0.5*Eout(k)) &&
+	deltaBetta >= -0.03 && deltaBetta <= 0.03 &&
+	Momentum(k) < 5.0 &&
+	(PiMinusPhaseSpace_SC(k) || PiMinusPhaseSpace_CC(k))) { // high energy pi-
+      return true;
+    } // closure
+    return false;
+  }
+  
+  Bool_t IsGamma(Int_t k, TString targetOption, TVector3* ECuvw) {
+    if (Charge(k) == 0 &&
+	ECuvw->X() > 40 && ECuvw->X() < 410 && ECuvw->Y() < 370 && ECuvw->Z() < 410 && 
+	((PathEC(k)/(Betta(k)*30) - PathEC(k)/30) > -2.2) && ((PathEC(k)/(Betta(k)*30) - PathEC(k)/30) < 1.3) &&
+	TMath::Max(Etot(k), Ein(k) + Eout(k))/0.272 > 0.1) {
+      return true;
+    } // closure
+    return false;
+  }
+  
+  TString GetCategorization(Int_t k, TString targetOption) {
+    // transformation vectors
+    TVector3 *ECxyz = new TVector3(XEC(k), YEC(k), ZEC(k));
+    TVector3 *ECuvw = XYZToUVW(ECxyz);
+    if (IsElectron(k, targetOption, ECuvw)) {
       return "electron";
-    } else if (ID_gamma) {
-      return "gamma";
-    } else if (ID_pim) {
-      return "pi-";
-    } else if (ID_pip) {
+    } else if (IsPiPlus(k, targetOption, ECuvw)) {
       return "pi+";
+    } else if (IsPiMinus(k, targetOption, ECuvw)) {
+      return "pi-";
+    } else if (IsGamma(k, targetOption, ECuvw)) {
+      return "gamma";
     } // closure
     return "not recognized";
   }
@@ -1021,8 +1036,6 @@ public:
     
   /*** Fiducial Cuts ***/
   
-  const Double_t kFidThetaMax = 54;
-
   // For FidThetaMin calculation for electron
   const Double_t kThetaPar0[6] = { 15        , 15        , 15        , 15        ,  13       ,  13        };
   const Double_t kThetaPar1[6] = { -0.425145 , -1.02217  , -0.7837   , -1.47798  ,   3.47361 ,   3.5714   };
@@ -1054,38 +1067,6 @@ public:
   const Double_t kFidPar1High1[6] = {  2       ,  0.966175 ,  2       ,  0.192701 ,  0.821726 ,  2       };
   const Double_t kFidPar1High2[6] = { -2       , -2        , -1.70021 , -1.27578  , -0.233492 , -2       };
   const Double_t kFidPar1High3[6] = {  0.5     ,  0.527823 ,  0.68655 ,  1.6      ,  1.6      ,  0.70261 };
-
-  // For FidThetaMinPiPlus calculation for pi+
-  const Double_t kThetaPar0PiPlus[6] = {  7.00823   ,  5.5        ,  7.06596   ,  6.32763   ,  5.5       ,  5.5      };
-  const Double_t kThetaPar1PiPlus[6] = {  0.207249  ,  0.1        ,  0.127764  ,  0.1       ,  0.211012  ,  0.281549 };
-  const Double_t kThetaPar2PiPlus[6] = {  0.169287  ,  0.506354   , -0.0663754 ,  0.221727  ,  0.640963  ,  0.358452 };
-  const Double_t kThetaPar3PiPlus[6] = {  0.1       ,  0.1        ,  0.100003  ,  0.1       ,  0.1       ,  0.1      };
-  const Double_t kThetaPar4PiPlus[6] = {  0.1       ,  3.30779    ,  4.499     ,  5.30981   ,  3.20347   ,  0.776161 };
-  const Double_t kThetaPar5PiPlus[6] = { -0.1       , -0.651811   , -3.1793    , -3.3461    , -1.10808   , -0.462045 };
-
-  // For parameter 0 of the FidPhiMinPiPlus calculation for pi+
-  const Double_t kFidPar0Low0PiPlus[6] = {  25.      ,  25.      ,  25.     ,  25.       ,  25.       ,  25.       };
-  const Double_t kFidPar0Low1PiPlus[6] = { -12.      , -12.      , -12.     , -12        , -12        , -12        };
-  const Double_t kFidPar0Low2PiPlus[6] = {   1.64476 ,   1.51915 ,   1.1095 ,   0.977829 ,   0.955366 ,   0.969146 };
-  const Double_t kFidPar0Low3PiPlus[6] = {   4.4     ,   4.4     ,   4.4    ,   4.4      ,   4.4      ,   4.4      };
-
-  // For parameter 1 of the FidPhiMinPiPlus calculation for pi+
-  const Double_t kFidPar1Low0PiPlus[6] = {  4.        ,  4.   ,  2.78427 ,  3.58539 ,  3.32277   ,  4.      };
-  const Double_t kFidPar1Low1PiPlus[6] = {  2.        ,  2.   ,  2.      ,  1.38233 ,  0.0410601 ,  2.      };
-  const Double_t kFidPar1Low2PiPlus[6] = { -0.978469  , -2.   , -1.73543 , -2.      , -0.953828  , -2.      };
-  const Double_t kFidPar1Low3PiPlus[6] = {  0.5       ,  0.5  ,  0.5     ,  0.5     ,  0.5       ,  1.08576 };
-
-  // For parameter 0 of the FidPhiMaxPiPlus calculation for pi+
-  const Double_t kFidPar0High0PiPlus[6] = {  25.      , 24.8096  , 24.8758  ,  25.       , 25.       , 25.      };
-  const Double_t kFidPar0High1PiPlus[6] = { -11.9735  , -8.      , -8.      , -12.       , -8.52574  , -8.      };
-  const Double_t kFidPar0High2PiPlus[6] = {  0.803484 ,  0.85143 ,  1.01249 ,   0.910994 ,  0.682825 ,  0.88846 };
-  const Double_t kFidPar0High3PiPlus[6] = {  4.40024  ,  4.8     ,  4.8     ,   4.4      ,  4.79866  ,  4.8     };
-
-  // For parameter 1 of the FidPhiMaxPiPlus calculation for pi+
-  const Double_t kFidPar1High0PiPlus[6] = {  2.53606  ,  2.65468  ,  3.17084 ,  2.47156 ,  2.42349  ,  2.64394 };
-  const Double_t kFidPar1High1PiPlus[6] = {  0.442034 ,  0.201149 ,  1.27519 ,  1.76076 ,  1.25399  ,  0.15892 };
-  const Double_t kFidPar1High2PiPlus[6] = { -2.       , -0.179631 , -2.      , -1.89436 , -2.       , -2.      };
-  const Double_t kFidPar1High3PiPlus[6] = {  1.02806  ,  1.6      ,  0.5     ,  1.03961 ,  0.815707 ,  1.31013 };    
 };
 
 #endif
