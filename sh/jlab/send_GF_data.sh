@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_GF_Data.sh <target>                                 #
+# ./send_GF_data.sh <target>                                 #
 #     <target> = (C, Fe, Pb)                                 #
 #                                                            #
-# EG: ./send_GF_Data.sh C                                    #
-#     ./send_GF_Data.sh Fe                                   #
-#     ./send_GF_Data.sh Pb                                   #
+# EG: ./send_GF_data.sh C                                    #
+#     ./send_GF_data.sh Fe                                   #
+#     ./send_GF_data.sh Pb                                   #
 ##############################################################
 
 #####
@@ -28,8 +28,8 @@ XMLDIR=${TMPDIR}/xml/data/${tarName}
 LOGDIR=${TMPDIR}/log/data/${tarName}
 GSTDIR=${WORKDIR}/GetSimpleTuple/data/${tarName}
 FNCDIR=${WORKDIR}/FilterNCombine/data/${tarName}
-INDIR="/mss/clas/eg2a/production/Pass2/Clas" # data stored on tape
-NEWDIR=${WORKDIR}/data-EG2 # new!
+INDIR="/mss/clas/eg2a/production/Pass2/Clas" # data stored on tape (just in case)
+NEWDIR=${WORKDIR}/data-EG2
 
 # make dirs, just in case
 mkdir -p ${TMPDIR}
@@ -78,20 +78,22 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     # set inputs
     thebinary1="${PRODIR}/bin/GetSimpleTuple_data"
     thebinary2="${PRODIR}/bin/FilterNCombine_data"
-    execfile="${PRODIR}/sh/jlab/run_GF_Data.sh"
+    execfile="${PRODIR}/sh/jlab/run_GF_data.sh"
     echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_data\"/>"             >> ${jobfile}
     echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_data\"/>"             >> ${jobfile}
-    echo "  <Input src=\"${execfile}\"    dest=\"run_GF_Data.sh\"/>"                  >> ${jobfile}
-    for file in ${INDIR}/clas_${rn}*; do
+    echo "  <Input src=\"${execfile}\"    dest=\"run_GF_data.sh\"/>"                  >> ${jobfile}
+    # for file in ${INDIR}/clas_${rn}*; do
+    for file in ${NEWDIR}/clas_${rn}*; do
 	inrootfile=$(readlink -f ${file})
-	echo "  <Input src=\"mss:${inrootfile}\" dest=\"${file##*/}\"/>"              >> ${jobfile}
+	# echo "  <Input src=\"mss:${inrootfile}\" dest=\"${file##*/}\"/>"              >> ${jobfile}
+	echo "  <Input src=\"${inrootfile}\" dest=\"${file##*/}\" copyOption=\"link\"/>" >> ${jobfile}
     done
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
-    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_Data.sh"             >> ${jobfile}
-    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_Data.sh"             >> ${jobfile}
-    echo "    chmod 755 ./run_GF_Data.sh"                                             >> ${jobfile}
-    echo "    sh run_GF_Data.sh"                                                      >> ${jobfile}
+    echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_data.sh"             >> ${jobfile}
+    echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_data.sh"             >> ${jobfile}
+    echo "    chmod 755 ./run_GF_data.sh"                                             >> ${jobfile}
+    echo "    sh run_GF_data.sh"                                                      >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
     outrootfile1="${GSTDIR}/pruned${tarName}_${rn}.root"
@@ -99,9 +101,9 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     echo "  <Output src=\"pruned${tarName}_${rn}.root\" dest=\"${outrootfile1}\"/>"   >> ${jobfile}
     echo "  <Output src=\"comb${tarName}_${rn}.root\"   dest=\"${outrootfile2}\"/>"   >> ${jobfile}
     # extract from tape
-    for fileagain in ${INDIR}/clas_${rn}*; do
-	echo "  <Output src=\"${fileagain##*/}\" dest=\"${NEWDIR}/${fileagain##*/}\"/>" >> ${jobfile}
-    done
+    # for fileagain in ${INDIR}/clas_${rn}*; do
+    # 	echo "  <Output src=\"${fileagain##*/}\" dest=\"${NEWDIR}/${fileagain##*/}\"/>" >> ${jobfile}
+    # done
     # set logs
     echo "  <Stdout dest=\"${LOGDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${LOGDIR}/${jobname}.err\"/>"                              >> ${jobfile}
