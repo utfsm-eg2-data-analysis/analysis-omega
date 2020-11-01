@@ -106,8 +106,9 @@ if [[ "${setOption}" == "old" || "${setOption}" == "usm" ]]; then
 	echo "  <Input src=\"${inrootfile}\" dest=\"recsis${tarName}_${rn}.root\"/>"      >> ${jobfile}
 	# set command
 	echo "  <Command><![CDATA["                                                       >> ${jobfile}
+	echo "    sed -i \"s|^setOption=|setOption=${setOption}|g\" run_GF_sim.sh"        >> ${jobfile}
 	echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_sim.sh"              >> ${jobfile}
-	echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_sim.sh"              >> ${jobfile}
+	echo "    sed -i \"s|^rn=|rn=${rn}|g\" run_GF_sim.sh"                             >> ${jobfile}
 	echo "    chmod 755 ./run_GF_sim.sh"                                              >> ${jobfile}
 	echo "    sh run_GF_sim.sh"                                                       >> ${jobfile}
 	echo "  ]]></Command>"                                                            >> ${jobfile}
@@ -157,7 +158,7 @@ elif [[ "${setOption}" == "jlab" ]]; then
 	nfiles_begin=$(($set_index*25)) # rn starts at 00
 	diff=25
 	if [[ $set_index == $(($nsets-1)) ]]; then diff=$(($nfiles-$nfiles_begin)); fi
-	nfiles_end=$(($nfiles_begin + $diff))
+	nfiles_end=$(($nfiles_begin + $diff - 1))
 	# set input files
 	for ((COUNTER=$nfiles_begin; COUNTER <= $nfiles_end; COUNTER++)); do
 	    rn=$(get_num_2dig $COUNTER)
@@ -166,8 +167,10 @@ elif [[ "${setOption}" == "jlab" ]]; then
 	done
 	# set command
 	echo "  <Command><![CDATA["                                                       >> ${jobfile}
+	echo "    sed -i \"s|^setOption=|setOption=${setOption}|g\" run_GF_sim.sh"        >> ${jobfile}
 	echo "    sed -i \"s|^tarName=|tarName=${tarName}|g\" run_GF_sim.sh"              >> ${jobfile}
-	echo "    sed -i \"s|^rn=|rn=${rn}|g\"                run_GF_sim.sh"              >> ${jobfile}
+	echo "    sed -i \"s|^nfiles_begin=|nfiles_begin=${nfiles_begin}|g\" run_GF_sim.sh" >> ${jobfile}
+	echo "    sed -i \"s|^nfiles_end=|nfiles_end=${nfiles_end}|g\" run_GF_sim.sh"       >> ${jobfile}
 	echo "    chmod 755 ./run_GF_sim.sh"                                              >> ${jobfile}
 	echo "    sh run_GF_sim.sh"                                                       >> ${jobfile}
 	echo "  ]]></Command>"                                                            >> ${jobfile}
