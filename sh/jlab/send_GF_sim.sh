@@ -143,6 +143,7 @@ elif [[ "${setOption}" == "jlab" ]]; then
 	echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
 	echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 	echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
+	jobtime="8" # hours
 	echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
 	echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
 	echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
