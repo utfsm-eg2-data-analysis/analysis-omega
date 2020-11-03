@@ -39,7 +39,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
 
 PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	FilterNCombine_data FilterNCombine_sim\
-	MakeRooFits\
+	SetBinning MakeRooFits GetElectronNumber # MakeMR\
 	FilterNCombine_f1 MakePlots_f1\
 	MakePlots\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\
@@ -54,7 +54,7 @@ PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents MakeMR-compare SumPtVectors CutFlow\
-	QualityCuts CheckElectronCuts # GetSimpleTuple_old Test MakePlots_old MakePlots-2D_old
+	QualityCuts CheckElectronCuts # MakePlots_old MakePlots-2D_old
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

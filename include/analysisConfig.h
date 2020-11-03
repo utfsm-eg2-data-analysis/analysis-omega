@@ -62,25 +62,6 @@ TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0    = "0.059 < pi0M_corr && pi0M_corr < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
-// latest Status cuts
-TCut statusCuts_electrons = "StatusEl > 0 && DCStatusEl > 0 && SCStatusEl == 33";
-TCut statusCuts_pip       = "Status[2] > 0 && StatDC[2] > 0 && DCStatus[2] > 0"; // MUST UPDATE
-TCut statusCuts_pim       = "Status[3] > 0 && StatDC[3] > 0 && DCStatus[3] > 0"; // MUST UPDATE
-TCut cutStatus            = statusCuts_electrons && statusCuts_pip && statusCuts_pim;
-// TCut statusCuts_pip_le    = "P_corr[2] < 2.7 && StatSC[2] > 0";
-// TCut statusCuts_pip_he    = "P_corr[2] >= 2.7 && Nphe[2] > 25 && StatCC[2] > 0 && Chi2CC[2] < 5./57.3";
-// TCut statusCuts_pim_le    = "P_corr[3] <= 2.5 && !(StatCC[3] > 0 && Nphe[3] > 25)";
-// TCut statusCuts_pim_he    = "P_corr[3] > 2.5";
-// TCut cutStatus            = statusCuts_electrons && statusCuts_pip && (statusCuts_pip_le || statusCuts_pip_he) && statusCuts_pim && (statusCuts_pim_le || statusCuts_pim_he);
-
-// TM vertex cuts
-TCut cutTargType_D  = "-31.8 < Zec && Zec < -28.4";
-TCut cutTargType_C  = "-25.33 < Zec && Zec < -24.10";
-TCut cutTargType_Fe = "-25.65 < Zec && Zec < -24.26";
-TCut cutTargType_Pb = "-25.54 < Zec && Zec < -24.36";
-
-// enhance results
-TCut cutBinLimits = "Q2 > 1 && Q2 < 4 && Nu > 2.2 && Nu < 4.2 && wZ_corr > 0.5 && wZ_corr < 1.0 && wPt2_corr > 0. && wPt2_corr < 1.5";
 
 /*** SIMREC/ACCEPTED CUTS ***/
 
@@ -108,17 +89,17 @@ TCut cutPipPim_gsim = "0.48 > mc_pippimM || 0.51 < mc_pippimM";
 
 /*** OTHER CUTS ***/
 
-// exclusive for ntuple_e
-TCut cutStatus_ntuple_e = "Status > 0 && DCStatus > 0 && SCStatus == 33";
-TCut cutVertex_Y = "Yec > -1.4 && Yec < 1.4"; // lose ~1m candidates
+TCut cutSeba = "Pe > 0.2 && P_corr[0] > 0.2 && P_corr[1] > 0.2";
+TCut cutWill = "P_corr[2] > 0.2 && P_corr[3] > 0.2";
+TCut cutBinLimits = "Q2 > 1. && Q2 < 4. && Nu > 2.2 && Nu < 4.2 && wZ_corr > 0.5 && wZ_corr < 1.0 && wPt2_corr > 0. && wPt2_corr < 1.5";
 
 /*** BINNING ***/
 
-// 5 bins for each kinematic variable, obtained with GetQuantiles.cxx
-const Double_t edgesQ2[6]  = {1.0, 1.187, 1.376, 1.616, 2.008, 4.0};
-const Double_t edgesNu[6]  = {2.2, 3.233, 3.550, 3.786, 3.994, 4.2};
-const Double_t edgesZ[6]   = {0.5, 0.548, 0.601, 0.665, 0.761, 1.0};
-const Double_t edgesPt2[6] = {0.0, 0.049, 0.113, 0.204, 0.361, 1.5};
+// 5 bins for each kinematic variable, obtained with SetBinning.cxx for Pb
+const Double_t edgesQ2[6]  = {1.000, 1.189, 1.378, 1.614, 2.006, 4.000};
+const Double_t edgesNu[6]  = {2.200, 3.208, 3.527, 3.762, 3.976, 4.200};
+const Double_t edgesZ[6]   = {0.500, 0.547, 0.601, 0.664, 0.759, 1.000}; 
+const Double_t edgesPt2[6] = {0.000, 0.049, 0.115, 0.208, 0.367, 1.500};
 
 /*** ELECTRON NUMBERS ***/
 

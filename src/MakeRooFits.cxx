@@ -5,7 +5,7 @@
 /*                               */
 /*********************************/
 
-// October 2020
+// November 2020
 
 #include "analysisConfig.h"
 
@@ -16,6 +16,7 @@
 #include "RooBreitWigner.h"
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
+#include "RooFFTConvPdf.h"
 #include "RooDataHist.h"
 #include "RooPlot.h"
 #include "RooHist.h"
@@ -32,8 +33,8 @@ using namespace RooFit;
 
 TString targetOption;
 
-TString inputDir  = proDir + "/out/FilterNCombine/data";
-TString outputDir = proDir + "/out/MakeRooFits";
+TString inputDir  = workDir + "/FilterNCombine/data";
+TString outputDir = workDir + "/MakeRooFits";
 
 /*** Declaration of functions ***/
 
@@ -41,7 +42,7 @@ inline int parseCommandLine(int argc, char* argv[]);
 void printOptions();
 void printUsage();
 
-// void MakeRooFit(TTree *treeExtracted, TString histName);
+void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV);
 
 /*** Main ***/
 
@@ -54,28 +55,22 @@ int main(int argc, char **argv) {
   TChain *treeExtracted = new TChain();
   TCut cutVertex;
   if (targetOption == "D") { // unified D
-    // treeExtracted->Add(inputDir + "/C/combC_data.root/mix");
-    treeExtracted->Add(inputDir + "/Fe/combFe_data.root/mix");
-    // treeExtracted->Add(inputDir + "/Pb/combPb_data.root/mix");
+    treeExtracted->Add(inputDir + "/C/comb_data-C.root/mix");
+    treeExtracted->Add(inputDir + "/Fe/comb_data-Fe.root/mix");
+    treeExtracted->Add(inputDir + "/Pb/comb_data-Pb.root/mix");
     cutVertex = "TargType == 1 && Yec > -1.4 && Yec < 1.4";
   } else {
-    treeExtracted->Add(inputDir + "/" + targetOption + "/comb" + targetOption + "_data.root/mix");
+    treeExtracted->Add(inputDir + "/" + targetOption + "/comb_data-" + targetOption + ".root/mix");
     cutVertex = "TargType == 2 && Yec > -1.4 && Yec < 1.4";
   }
 
   // create and open output file
   TFile *rootOutputFile = new TFile(outputDir + "/roofits_" + targetOption + ".root", "RECREATE");
 
-  // define array
-  TString kinVar[4] = {"Q", "N", "Z", "P"};
-  TString currentHistName;
-
   /*** STEP 1: BIG PICTURE ***/
   
   // set cuts
-  TCut cutSeba = "P_corr[0] > 0.2 && P_corr[1] > 0.2";;
-  TCut cutWill = "P_corr[2] > 0.2 && P_corr[3] > 0.2";
-  TCut cutDATA = cutDIS && cutVertex && cutPi0 && cutSeba && cutWill;
+  TCut cutDATA = cutDIS && cutPi0 && cutPipPim && cutVertex;
   
   // create histogram
   TH1F *bigHist_DATA;
@@ -86,76 +81,53 @@ int main(int argc, char **argv) {
   // save hist
   bigHist_DATA->Write();
   
-  /*** STEP 2: BINNING ***/
+  // define arrays, cut for each bin and hist
+  TString kinvarIndex[4]  = {"Q", "N", "Z", "P"};
+  TString kinvarName[4]   = {"Q2", "Nu", "Z", "Pt2"};
+  TString kinvarOption[4] = {"Q2", "Nu", "wZ_corr", "wPt2_corr"};
+
+  // fill edges array
+  Double_t edgesKinvar[4][6];
+  for (Int_t j = 0; j < 6; j++) {
+    edgesKinvar[0][j] = edgesQ2[j];
+    edgesKinvar[1][j] = edgesNu[j];
+    edgesKinvar[2][j] = edgesZ[j];
+    edgesKinvar[3][j] = edgesPt2[j];
+  }
+
+  // define initial guess values
+  Double_t meanIGV  = 0.782;
+  Double_t sigmaIGV = 2.0e-2; // 1.75, 3.5
   
-  TCut binCutDATA;
+  TCut cutBIN;
 
   TH1F   *binHist;
   TString binHistName;
   
-  // Q2
-  for (Int_t i = 0; i < 5; i++) {
-    // update
-    binHistName = "DATA_" + targetOption + Form("_Q%d", i);
-    binCutDATA = Form("Q2 > %.3f && Q2 < %.3f" , edgesQ2[i], edgesQ2[i+1]);
-    // extract
-    treeExtracted->Draw("wD_corr>>" + binHistName + "(120, 0., 1.6)", cutDATA && binCutDATA, "goff");
-    binHist = (TH1F *)gROOT->FindObject(binHistName);
-    binHist->SetTitle("DATA #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Q2 < %.2f)" , edgesQ2[i], edgesQ2[i+1]));
-    // save
-    binHist->Write();
-  }
-
-  // Nu
-  for (Int_t i = 0; i < 5; i++) {
-    // update
-    binHistName = "DATA_" + targetOption + Form("_N%d", i);
-    binCutDATA = Form("Nu > %.3f && Nu < %.3f" , edgesNu[i], edgesNu[i+1]);
-    // extract
-    treeExtracted->Draw("wD_corr>>" + binHistName + "(120, 0., 1.6)", cutDATA && binCutDATA, "goff");
-    binHist = (TH1F *)gROOT->FindObject(binHistName);
-    binHist->SetTitle("DATA #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Nu < %.2f)" , edgesNu[i], edgesNu[i+1]));
-    // save
-    binHist->Write();
-  }
-
-  // Pt2
-  for (Int_t i = 0; i < 5; i++) {
-    // update
-    binHistName = "DATA_" + targetOption + Form("_P%d", i);
-    binCutDATA = Form("wPt2_corr > %.3f && wPt2_corr < %.3f" , edgesPt2[i], edgesPt2[i+1]);
-    // extract
-    treeExtracted->Draw("wD_corr>>" + binHistName + "(120, 0., 1.6)", cutDATA && binCutDATA, "goff");
-    binHist = (TH1F *)gROOT->FindObject(binHistName);
-    binHist->SetTitle("DATA #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Pt2 < %.2f)", edgesPt2[i], edgesPt2[i+1]));
-    // save
-    binHist->Write();
-  }
-
-  // Z
-  for (Int_t i = 0; i < 5; i++) {
-    // update
-    binHistName = "DATA_" + targetOption + Form("_Z%d", i);
-    binCutDATA = Form("wZ_corr > %.3f && wZ_corr < %.3f" , edgesZ[i], edgesZ[i+1]);
-    // extract
-    treeExtracted->Draw("wD_corr>>" + binHistName + "(120, 0., 1.6)", cutDATA && binCutDATA, "goff");
-    binHist = (TH1F *)gROOT->FindObject(binHistName);
-    binHist->SetTitle("DATA #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in " + Form("(%.2f < Z < %.2f)", edgesZ[i], edgesZ[i+1]));
-    // save
-    binHist->Write();
-  }
-  
-  /*** STEP 3: FIT ***/
-  /*
-  // loop on kinvars
-  for (Int_t k = 0; k < 4; k++) {
-    // loop on bin numbers
+  // kinvar loop
+  for (Int_t k = 0; k < 4; k++) { // 4
+    // bins loop
     for (Int_t i = 0; i < 5; i++) {
-	currentHistName = "DATA-" + targetOption + "_" + kinVar[k] + Form("%d", i);
-	MakeRooFit(treeExtracted, currentHistName);
+
+      /*** STEP 2: DRAW SPECTRUM ***/
+      
+      // update
+      binHistName = "DATA_" + targetOption + "_" + kinvarIndex[k] + Form("%d", i);
+      cutBIN = kinvarOption[k] + Form(" > %.3f && ", edgesKinvar[k][i]) + kinvarOption[k] + Form(" < %.3f", edgesKinvar[k][i+1]);
+      // extract
+      treeExtracted->Draw("wD_corr>>" + binHistName + "(160, 0., 1.6)", cutDATA && cutBIN, "goff"); // 10 MeV
+      binHist = (TH1F *)gROOT->FindObject(binHistName);
+      binHist->SetTitle("DATA #Deltam(#gamma #gamma #pi^{+} #pi^{-}) for " + targetOption + " in (" +
+			kinvarName[k] + Form(" > %.2f && ", edgesKinvar[k][i]) + kinvarName[k] + Form(" < %.2f)", edgesKinvar[k][i+1]));
+      // save
+      binHist->Write();
+
+      /*** STEP 3: FIT ***/
+
+      MakeRooFit(binHist, meanIGV, sigmaIGV);
     }
   }
-  */
+  
   // close file
   rootOutputFile->Close();
   
@@ -198,96 +170,221 @@ void printUsage() {
   std::cout << std::endl;
 }
 
-/*
-void MakeRooFit(TTree *treeExtracted, TString histName) {
+void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV) {
 
-  // Cuts
+  // define plot range and variable
+  Double_t plotRangeDown = meanIGV - 9*sigmaIGV;
+  Double_t plotRangeUp   = meanIGV + 9*sigmaIGV;
+  RooRealVar x("IMD", "Reconstructed Mass (GeV)", plotRangeDown, plotRangeUp);
+
+  // define data
+  RooDataHist data("data", "my data", x, theHist);
+  TString histName = theHist->GetName();
   
-  TH1F *omegaHist;
-  treeExtracted->Draw(Form("wD>>" + histName + "(%d, %f, %f)", Nbins, fitRangeDown, fitRangeUp), cutAll && cutTargType && kinvarCut, "goff");
-  omegaHist = (TH1F *)gROOT->FindObject(histName);
+  /***** FIT A: BKG *****/
+  // (left of the signal)
 
-  // Fit Options
-  
-  // bin x-width = 5 MeV
-  Int_t    Nbins        = omegaHist->GetNbinsX();
-  Double_t fitRangeDown = omegaHist->GetXaxis()->GetXmin();
-  Double_t fitRangeUp   = omegaHist->GetXaxis()->GetXmax();
-
-  Double_t meanIGV       = omegaHist->GetMean();
-  Double_t meanRangeDown = meanIGV - 0.03;
-  Double_t meanRangeUp   = meanIGV + 0.03;
-  
-  Double_t sigmaIGV       = omegaHist->GetRMS();
-  Double_t sigmaRangeDown = 0;
-  Double_t sigmaRangeUp   = sigmaIGV + 0.3;
-  
-  // RooFit stuff
-
-  RooRealVar x("IMD", "Invariant Mass Difference (GeV)", fitRangeDown, fitRangeUp);
-
-  RooRealVar  omegaMean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
-  RooRealVar  omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
-  // RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);
-  RooBreitWigner omega("omega-bw", "omega-bw peak", x, omegaMean, omegaSigma);    
+  Double_t fitRangeDown  = meanIGV - 9*sigmaIGV;
+  Double_t fitRangeUp    = meanIGV - 2*sigmaIGV;
 
   RooRealVar   b1("b1", "linear term", 0., -20, 20);
-  RooChebychev bkg("bkg", "background", x, RooArgList(b1));
-  // RooRealVar   b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
-  // RooChebychev bkg("bkg", "background", x, RooArgList(b1, b2));
-
-  // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
-  RooRealVar nsig("N_{#omega}", "omega yields", 0., omegaHist->GetEntries());
-  RooRealVar nbkg("N_{b}", "bkg yields", 0., omegaHist->GetEntries());
-  RooAddPdf  model("model", "model", RooArgList(omega, bkg), RooArgList(nsig, nbkg));
-  
-  // define data
-  RooDataHist data("data", "my data", x, omegaHist);
+  RooRealVar   b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
+  RooChebychev bkg("bkg", "background", x, RooArgList(b1, b2));
 
   // define frame
-  RooPlot *frame = x.frame(Name(histName), Title(histName), Bins(Nbins));
+  Int_t    Nbins  = (Int_t) (((round(100*(plotRangeUp))/100) - (round(100*(plotRangeDown))/100))/1e-2); // 10 MeV
+  RooPlot *frameA = x.frame(Name("fA_" + histName), Title(theHist->GetTitle()), Bins(Nbins));
   
   // fit the normal way
-  RooFitResult *r1 = model.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-  r1->Print("v");
+  bkg.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  
+  // draw
+  data.plotOn(frameA, Name("Data")); // DataError(RooAbsData::SumW2)
+  bkg.plotOn(frameA, Name("Model"), LineColor(kBlue));
+
+  // draw params values
+  bkg.paramOn(frameA, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameA->getAttText()->SetTextSize(0.025);
+  frameA->getAttLine()->SetLineWidth(0);
+  frameA->GetXaxis()->CenterTitle();
+  frameA->GetYaxis()->SetTitle("Counts");
+  frameA->GetYaxis()->CenterTitle();
+  
+  frameA->Write();
+  
+  /***** FIT B: GAUSSIAN *****/
+  // (the signal)
+  
+  fitRangeDown  = meanIGV - 3*sigmaIGV;
+  fitRangeUp    = meanIGV + 3*sigmaIGV;
+
+  Double_t meanRangeDown = meanIGV - 5e-2;
+  Double_t meanRangeUp   = meanIGV + 5e-2;
+  
+  Double_t sigmaRangeDown = sigmaIGV - 5e-3;
+  Double_t sigmaRangeUp   = sigmaIGV + 1.5e-2;
+  
+  RooRealVar  mean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
+  RooRealVar  sigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
+  RooGaussian gauss("gauss", "omega-g peak", x, mean, sigma);
+
+  // define frame
+  RooPlot *frameB = x.frame(Name("fB_" + histName), Title(theHist->GetTitle()), Bins(Nbins));
+  
+  // fit the normal way
+  gauss.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  
+  // draw
+  data.plotOn(frameB, Name("Data")); // DataError(RooAbsData::SumW2)
+  gauss.plotOn(frameB, Name("Model"), LineColor(kRed));
+
+  // draw params values
+  gauss.paramOn(frameB, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameB->getAttText()->SetTextSize(0.025);
+  frameB->getAttLine()->SetLineWidth(0);
+  frameB->GetXaxis()->CenterTitle();
+  frameB->GetYaxis()->SetTitle("Counts");
+  frameB->GetYaxis()->CenterTitle();
+  
+  frameB->Write();
+
+  /***** FIT C: BKG *****/
+  // (right of the signal)
+
+  fitRangeDown  = meanIGV + 3*sigmaIGV;
+  fitRangeUp    = meanIGV + 9*sigmaIGV;
+
+  RooRealVar   b3("b3", "linear term", 0., -20, 20);
+  RooRealVar   b4("b4", "quadratic term", -0.1, -10., 0.);
+  RooChebychev bkg2("bkg2", "background2", x, RooArgList(b3, b4));
+
+  // define frame
+  RooPlot *frameC = x.frame(Name("fC_" + histName), Title(theHist->GetTitle()), Bins(Nbins));
+  
+  // fit the normal way
+  bkg2.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  
+  // draw
+  data.plotOn(frameC, Name("Data")); // DataError(RooAbsData::SumW2)
+  bkg2.plotOn(frameC, Name("Model"), LineColor(kBlue));
+
+  // draw params values
+  bkg2.paramOn(frameC, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameC->getAttText()->SetTextSize(0.025);
+  frameC->getAttLine()->SetLineWidth(0);
+  frameC->GetXaxis()->CenterTitle();
+  frameC->GetYaxis()->SetTitle("Counts");
+  frameC->GetYaxis()->CenterTitle();
+  
+  frameC->Write();
+  
+  /***** FIT AB: GAUSSIAN+POL2 *****/
+  // (left bkg + signal)
+
+  fitRangeDown  = meanIGV - 9*sigmaIGV;
+  fitRangeUp    = meanIGV + 3*sigmaIGV;
+
+  // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
+  RooRealVar nsig("N_{#omega}", "omega yields", 0., theHist->GetEntries());
+  RooRealVar nbkg("N_{b}", "bkg yields", 0., theHist->GetEntries());
+  // RooAddPdf  model("model", "model", RooArgList(gxbw, bkg), RooArgList(nsig, nbkg));
+  RooAddPdf  modelAB("model", "model", RooArgList(gauss, bkg), RooArgList(nsig, nbkg));
+
+  // define frame
+  RooPlot *frameAB = x.frame(Name("fAB_" + histName), Title(theHist->GetTitle()), Bins(Nbins));
+  
+  // fit the normal way
+  modelAB.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  
+  // draw
+  data.plotOn(frameAB, Name("Data"));
+  modelAB.plotOn(frameAB, LineColor(kRed));
+  modelAB.plotOn(frameAB, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
+
+  // draw params values
+  modelAB.paramOn(frameAB, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameAB->getAttText()->SetTextSize(0.025);
+  frameAB->getAttLine()->SetLineWidth(0);
+  frameAB->GetXaxis()->CenterTitle();
+  frameAB->GetYaxis()->SetTitle("Counts");
+  frameAB->GetYaxis()->CenterTitle();
+  
+  frameAB->Write();
+
+  /***** FIT ABC: GAUSSIAN+POL2 *****/
+  // (left bkg + signal)
+
+  fitRangeDown  = meanIGV - 9*sigmaIGV;
+  fitRangeUp    = meanIGV + 9*sigmaIGV;
+
+  // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
+  RooAddPdf  modelABC("model", "model", RooArgList(gauss, bkg), RooArgList(nsig, nbkg));
+
+  // define frame
+  RooPlot *frameABC = x.frame(Name("fABC_" + histName), Title(theHist->GetTitle()), Bins(Nbins));
+  
+  // fit the normal way
+  modelABC.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  
+  // draw
+  data.plotOn(frameABC, Name("Data"));
+  modelABC.plotOn(frameABC, LineColor(kRed));
+  modelABC.plotOn(frameABC, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
+
+  // draw params values
+  modelABC.paramOn(frameABC, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameABC->getAttText()->SetTextSize(0.025);
+  frameABC->getAttLine()->SetLineWidth(0);
+  frameABC->GetXaxis()->CenterTitle();
+  frameABC->GetYaxis()->SetTitle("Counts");
+  frameABC->GetYaxis()->CenterTitle();
+  
+  frameABC->Write();
+  
+  /*** FIT CONSTRAINED ***/
 
   // define constraints
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.001));
-  RooProdPdf  cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
+  RooGaussian conSigma("conSigma", "conSigma", sigma, RooConst(2.5e-2), RooConst(1e-2));
+  RooProdPdf  modelCON("modelCON", "model with constraint", RooArgSet(modelABC, conSigma));
+
+  RooPlot *frameCON = x.frame(Name("fCON_" + histName), Title(theHist->GetTitle()), Bins(Nbins));  
   
   // fit constraint model
-  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-  r2->Print("v");
+  RooFitResult *rCON = modelCON.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  rCON->Print("v");
   
-  // draw points
-  data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
+  // draw
+  data.plotOn(frameCON, Name("Data")); // DataError(RooAbsData::SumW2)
+  modelCON.plotOn(frameCON, Name("Model"), LineColor(kRed));
+  modelCON.plotOn(frameCON, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   
+  // draw params values
+  modelCON.paramOn(frameCON, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameCON->getAttText()->SetTextSize(0.025);
+  frameCON->getAttLine()->SetLineWidth(0);
+  frameCON->GetXaxis()->CenterTitle();
+  frameCON->GetYaxis()->SetTitle("Counts");
+  frameCON->GetYaxis()->CenterTitle();
+  
+  // draw and save results
+  frameCON->Write();
+  rCON->Write("rfCON_" + histName);
+}
+
   // visualize error
+  /*
   cmodel.plotOn(frame, VisualizeError(*r2, 1, kFALSE), FillColor(kRed-9));                     // FillStyle(3001)
   cmodel.plotOn(frame, Components("bkg"), VisualizeError(*r2, 1, kFALSE), FillColor(kBlue-9)); // DrawOption("L"), LineWidth(2), LineColor(kRed)
+  data.plotOn(frame, Name("Data"));   // overlay data points
+  */
+  
 
-  // overlay data points
-  data.plotOn(frame, Name("Data"));
-  
-  // overlay center values
-  cmodel.plotOn(frame, Name("Model"), LineColor(kRed));
-  
-  // add params
-  cmodel.paramOn(frame, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
-  frame->getAttText()->SetTextSize(0.025);
-  frame->getAttLine()->SetLineWidth(0);
-  
-  frame->GetXaxis()->CenterTitle();
-  frame->GetYaxis()->SetTitle("Counts");
-  frame->GetYaxis()->CenterTitle();
-  
-  // draw!
-  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
-  frame->Write();
+  /*
+  RooBreitWigner breitwigner("omega-bw", "omega-bw peak", x, mean, sigma);    
+  RooFFTConvPdf gxbw("omega", "gauss (X) breit-wigner", x, gauss, breitwigner);
+  RooChebychev bkg("bkg", "background", x, RooArgList(b1));
+  */
 
-  r2->Write("rf" + histName);
-}
-*/
 
 /*
   DEPRECATED STUFF
