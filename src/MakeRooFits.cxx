@@ -42,7 +42,7 @@ inline int parseCommandLine(int argc, char* argv[]);
 void printOptions();
 void printUsage();
 
-void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV);
+void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV, Double_t sigmaLimit);
 
 /*** Main ***/
 
@@ -124,7 +124,15 @@ int main(int argc, char **argv) {
 
       /*** STEP 3: FIT ***/
 
-      MakeRooFit(binHist, meanIGV, sigmaIGV);
+      // exceptions
+      if ((targetOption == "D" && ((k == 0 && i==0) || (k==1 && i==0) || (k==1 && i==3) || (k==1 && i==4) || (k==2 && i==0) || (k==3 && i==0))) ||
+	  (targetOption == "C" && ((k == 0 && i==0) || (k==1 && i==2) || (k==1 && i==4) || (k==2 && i==0) || (k==2 && i==3))) ||
+	  (targetOption == "Fe" && (k == 1 && i==0)) ||
+	  (targetOption == "Pb" && ((k==0 && i==4) || (k==1 && i==3) || (k==3 && i==3)))) {
+	MakeRooFit(binHist, meanIGV, sigmaIGV, 5e-3);
+      } else {
+	MakeRooFit(binHist, meanIGV, sigmaIGV, 1.5e-2);
+      }
     }
   }
   
@@ -170,7 +178,7 @@ void printUsage() {
   std::cout << std::endl;
 }
 
-void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV) {
+void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV, Double_t sigmaLimit) {
 
   // define plot range and variable
   Double_t plotRangeDown = meanIGV - 9*sigmaIGV;
@@ -222,7 +230,7 @@ void MakeRooFit(TH1F *theHist, Double_t meanIGV, Double_t sigmaIGV) {
   Double_t meanRangeUp   = meanIGV + 5e-2;
   
   Double_t sigmaRangeDown = sigmaIGV - 5e-3;
-  Double_t sigmaRangeUp   = sigmaIGV + 1.5e-2;
+  Double_t sigmaRangeUp   = sigmaIGV + sigmaLimit;
   
   RooRealVar  mean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
   RooRealVar  sigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);

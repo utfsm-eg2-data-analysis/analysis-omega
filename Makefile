@@ -39,9 +39,10 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
 
 PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	FilterNCombine_data FilterNCombine_sim\
-	SetBinning MakeRooFits GetElectronNumber # MakeMR\
+	MakePlots_DvD\
+	SetBinning MakeRooFits GetElectronNumber MakeMR\
+	Acceptance_fit-omega Acceptance_factors # MakePlots\
 	FilterNCombine_f1 MakePlots_f1\
-	MakePlots\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\
 	SystPi0Mass\
 	CheckBkg_f1 CheckPi0Corr_ratio\
@@ -50,7 +51,7 @@ PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	CheckVertexCuts CheckVertexCorr CheckVertexCorr_imd\
 	CheckGammasOpAngle CheckGammasOpAngle_plot\
 	SampFrac_tree SampFrac_plot SampFrac_fit SampFrac_points\
-	Acceptance_pi0 Acceptance_fit-pi0 Acceptance_omega Acceptance_EN MassPlots_omega Acceptance_fit-omega Acceptance_factors # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
+	Acceptance_pi0 Acceptance_fit-pi0 Acceptance_omega Acceptance_EN MassPlots_omega  Acceptance_factors # QuickFit CheckStatusCuts CheckElectronCuts_S2 GetQuantiles\
 	CheckGSIMCards SystPi0Mass SystPi0Compare MakeMR-sim MakePlots-DvsR DiffractiveProcesses\
 	MakeRooFits MakeMR-nbs MakePlots-2D PlotParams MakeMR-bs MakeSimFits SystPi0Fits SystPi0MR SystPi0Diff MakeMR-sn GetElectronNumber\
 	MakePlots-DvsD FilterNCombine DalitzPlots GetEvents MakeMR-compare SumPtVectors CutFlow\

@@ -62,7 +62,6 @@ TCut cutDIS = "Q2 > 1 && W > 2 && Yb < 0.85";
 TCut cutPi0    = "0.059 < pi0M_corr && pi0M_corr < 0.203"; // mean=0.131 & sigma=0.024
 TCut cutPipPim = "0.48 > pippimM || 0.51 < pippimM";
 
-
 /*** SIMREC/ACCEPTED CUTS ***/
 
 // DIS
@@ -95,24 +94,26 @@ TCut cutBinLimits = "Q2 > 1. && Q2 < 4. && Nu > 2.2 && Nu < 4.2 && wZ_corr > 0.5
 
 /*** BINNING ***/
 
-// 5 bins for each kinematic variable, obtained with SetBinning.cxx for Pb
+// 5 bins for each kinematic variable, obtained with SetBinning.cxx for Pb (November 2020)
 const Double_t edgesQ2[6]  = {1.000, 1.189, 1.378, 1.614, 2.006, 4.000};
 const Double_t edgesNu[6]  = {2.200, 3.208, 3.527, 3.762, 3.976, 4.200};
-const Double_t edgesZ[6]   = {0.500, 0.547, 0.601, 0.664, 0.759, 1.000}; 
+const Double_t edgesZ[6]   = {0.500, 0.547, 0.601, 0.664, 0.759, 1.000};
 const Double_t edgesPt2[6] = {0.000, 0.049, 0.115, 0.208, 0.367, 1.500};
 
 /*** ELECTRON NUMBERS ***/
 
-// [D,C,Fe,Pb][bin], obtained from GetElectronNumber.cxx
-const Double_t electronNumber[4] = {69544805., 15054966., 29018550., 11256909.};
-const Double_t electronNumberQ2[4][5] = {{12842908., 13596600., 13772639., 14536805., 14795432.},
-					 {2815127., 2969424., 2983337., 3136969., 3149865.},
-					 {5472138., 5782588., 5778550., 6038794., 5946114.},
-					 {2189122., 2292324., 2263405., 2312089., 2199791.}};
-const Double_t electronNumberNu[4][5] = {{24118754., 13777701., 11012654., 9580918., 8663965.},
-					 {5115492., 2932212., 2366977., 2110598., 1972135.},
-					 {9572387., 5684183., 4664129., 4149167., 3856291.},
-					 {3793213., 2175171., 1761324., 1584883., 1584883.}};
+// [D,C,Fe,Pb][bin], obtained from GetElectronNumber.cxx (November 2020)
+const Double_t electronNumber[4] = {55282117., 10632419., 23054001., 8251081.};
+
+const Double_t electronNumberQ2[4][5] = {{10492915., 11054834., 10944488., 11588882., 11200762.},
+					 {1989167., 2114602., 2094215., 2231596., 2202685.},
+					 {4455203., 4694724., 4601285., 4817075., 4485482.},
+					 {1623626., 1701044., 1658118., 1705631., 1562553.}};
+
+const Double_t electronNumberNu[4][5] = {{19833269., 11156152., 8451550., 7446410., 6805425.},
+					 {3644239., 2123576., 1640084., 1484880., 1404638.},
+					 {8062824., 4610703., 3534854., 3169639., 2967719.},
+					 {2855565., 1637204., 1260671., 1143653., 1089963.}};
 
 /*** CONSTANTS ***/
 

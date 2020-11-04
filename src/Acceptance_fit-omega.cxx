@@ -5,6 +5,8 @@
 /*                                    */
 /**************************************/
 
+// November 2020
+
 // fits omega invariant mass difference with
 // gaussian function for the signal
 // 1st order polynomial for the bkg
@@ -43,7 +45,7 @@ inline int parseCommandLine(int argc, char* argv[]);
 void printOptions();
 void printUsage();
 
-void MakeSimFit(TFile *theFile, TString histName);
+void MakeSimFit(TFile *theFile, TString histName, TString type);
 
 int main(int argc, char **argv) {
 
@@ -66,19 +68,20 @@ int main(int argc, char **argv) {
   
   /*** GSIM ***/
 
-  for (Int_t k = 0; k < 4; k++) { // kinvar loop
+  for (Int_t k = 0; k < 4; k++) {
     for (Int_t i = 0; i < 5; i++) {
       currentHistName = "GSIM_" + targetOption + "_" + kinVar[k] + Form("%d", i);
       std::cout << currentHistName << std::endl;
-      MakeSimFit(rootInputFile, currentHistName);
+      MakeSimFit(rootInputFile, currentHistName, "GSIM");
     }
   }
 
   /*** SIMREC ***/
+
   for (Int_t k = 0; k < 4; k++) {
     for (Int_t i = 0; i < 5; i++) {
-	currentHistName = "SIMREC_" + targetOption + "_" + kinVar[k] + Form("%d", i) + kinVar[k] + Form("%d", i);
-	MakeSimFit(rootInputFile, currentHistName);
+      currentHistName = "SIMREC_" + targetOption + "_" + kinVar[k] + Form("%d", i);
+      MakeSimFit(rootInputFile, currentHistName, "SIMREC");
     }
   }
   
@@ -120,81 +123,136 @@ void printUsage() {
   std::cout << "    prints usage and exit program" << std::endl;
   std::cout << std::endl;
   std::cout << "./Acceptance_fit-omega -t[target]" << std::endl;
-  std::cout << "    selects target: D | C | Fe | Pb" << std::endl;
+  std::cout << "    selects target: D, C, Fe, Pb" << std::endl;
   std::cout << std::endl;
 }
 
-void MakeSimFit(TFile *theFile, TString histName) {
+void MakeSimFit(TFile *theFile, TString histName, TString type) {
 
-  TH1F *omegaHist = (TH1F *)theFile->Get(histName); 
+  // define hist
+  TH1F *omegaHist = (TH1F *)theFile->Get(histName);
 
   /*** Fit Options ***/
-  
-  // bin x-width = 5 MeV
-  Int_t    Nbins        = omegaHist->GetNbinsX();
-  Double_t fitRangeDown = omegaHist->GetXaxis()->GetXmin();
-  Double_t fitRangeUp   = omegaHist->GetXaxis()->GetXmax();
+
+  Double_t plotRangeDown = 0.56;
+  Double_t plotRangeUp   = 1.00;
+  Int_t Nbins = (Int_t) (((round(100*(plotRangeUp))/100) - (round(100*(plotRangeDown))/100))/5e-3); // 5 MeV
 
   Double_t meanIGV       = omegaHist->GetMean();
-  Double_t meanRangeDown = meanIGV - 0.03;
-  Double_t meanRangeUp   = meanIGV + 0.03;
+  Double_t meanRangeDown = meanIGV - 0.3;
+  Double_t meanRangeUp   = meanIGV + 0.3;
   
   Double_t sigmaIGV       = omegaHist->GetRMS();
   Double_t sigmaRangeDown = 0;
   Double_t sigmaRangeUp   = sigmaIGV + 0.3;
   
-  /*** RooFit stuff ***/
+  // define variable and data
+  RooRealVar x("IMD", "Invariant Mass Difference (GeV)", plotRangeDown, plotRangeUp);
+  RooDataHist data("data", "my data", x, omegaHist);
 
-  RooRealVar x("IMD", "Invariant Mass Difference (GeV)", fitRangeDown, fitRangeUp);
+  /*** FIT A: BKG ***/
+  // (left region)
+  
+  // starting values
+  Double_t fitRangeDown = 0.56;
+  Double_t fitRangeUp   = 0.65;
+  
+  RooRealVar   b1("b1", "linear term", 0., -20, 20);
+  RooRealVar   b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
+  RooChebychev bkg("bkg", "background", x, RooArgList(b1, b2));
 
-  RooRealVar  omegaMean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
-  RooRealVar  omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
-  // RooGaussian omega("omega", "omega peak", x, omegaMean, omegaSigma);
+  // fit the normal way
+  RooFitResult *rA = bkg.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  rA->Print("v");
+
+  // define frame
+  RooPlot *frameA = x.frame(Name("fA_" + histName), Title(histName), Bins(Nbins));
+  
+  // draw!
+  data.plotOn(frameA, Name("Data"));
+  bkg.plotOn(frameA, Name("Bkg"), LineStyle(kDashed), LineColor(kBlue));
+
+  // add params
+  bkg.paramOn(frameA, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameA->getAttText()->SetTextSize(0.025);
+  frameA->getAttLine()->SetLineWidth(0);
+  
+  frameA->GetXaxis()->CenterTitle();
+  frameA->GetYaxis()->SetTitle("Counts");
+  frameA->GetYaxis()->CenterTitle();
+  
+  // draw!
+  frameA->Write();
+  rA->Write("rfA_" + histName);
+  
+  /*** FIT B: SIGNAL ***/
+  // (center region)
+  
+  if (type == "GSIM") {
+    fitRangeDown = 0.75;
+    fitRangeUp   = 0.81;
+  } else if (type == "SIMREC") {
+    fitRangeDown = 0.70;
+    fitRangeUp   = 0.86;
+  }
+  
+  RooRealVar omegaMean("#mu(#omega)", "Mean of Gaussian", meanIGV, meanRangeDown, meanRangeUp);
+  RooRealVar omegaSigma("#sigma(#omega)", "Width of Gaussian", sigmaIGV, sigmaRangeDown, sigmaRangeUp);
   RooBreitWigner omega("omega-bw", "omega-bw peak", x, omegaMean, omegaSigma);    
 
-  RooRealVar   b1("b1", "linear term", 0., -20, 20);
-  RooChebychev bkg("bkg", "background", x, RooArgList(b1));
-  // RooRealVar   b2("b2", "quadratic term", -0.1, -10., 0.); // definition, use it only when bkgOption=2
-  // RooChebychev bkg("bkg", "background", x, RooArgList(b1, b2));
+  // fit the normal way
+  RooFitResult *rB = omega.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
+  rB->Print("v");
 
+  // define frame
+  RooPlot *frameB = x.frame(Name("fB_" + histName), Title(histName), Bins(Nbins));
+  
+  // draw!
+  data.plotOn(frameB, Name("Data"));
+  omega.plotOn(frameB, Name("Model"), LineColor(kRed));
+
+  // add params
+  omega.paramOn(frameB, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  frameB->getAttText()->SetTextSize(0.025);
+  frameB->getAttLine()->SetLineWidth(0);
+  
+  frameB->GetXaxis()->CenterTitle();
+  frameB->GetYaxis()->SetTitle("Counts");
+  frameB->GetYaxis()->CenterTitle();
+  
+  // draw!
+  frameB->Write();
+  rB->Write("rfB_" + histName);
+
+  /*** FIT ABC: SIGNAL ***/
+
+  if (type == "GSIM") {
+    fitRangeDown = 0.70;
+    fitRangeUp   = 0.86;
+  } else if (type == "SIMREC") {
+    fitRangeDown = 0.56;
+    fitRangeUp   = 1.00;
+  }  
+  
   // model(x) = sig_yield*sig(x) + bkg_yield*bkg(x)
   RooRealVar nsig("N_{#omega}", "omega yields", 0., omegaHist->GetEntries());
   RooRealVar nbkg("N_{b}", "bkg yields", 0., omegaHist->GetEntries());
   RooAddPdf  model("model", "model", RooArgList(omega, bkg), RooArgList(nsig, nbkg));
   
-  // define data
-  RooDataHist data("data", "my data", x, omegaHist);
-
-  // define frame
-  RooPlot *frame = x.frame(Name(histName), Title(histName), Bins(Nbins));
-  
   // fit the normal way
   RooFitResult *r1 = model.fitTo(data, Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
   r1->Print("v");
 
-  // define constraints
-  RooGaussian conSigma("conSigma", "conSigma", omegaSigma, RooConst(0.02), RooConst(0.001));
-  RooProdPdf  cmodel("cmodel", "model with constraint", RooArgSet(model, conSigma));
+  // define frame
+  RooPlot *frame = x.frame(Name("fABC_" + histName), Title(histName), Bins(Nbins));
   
-  // fit constraint model
-  RooFitResult *r2 = cmodel.fitTo(data, Constrain(conSigma), Minos(kTRUE), Extended(), Save(), Range(fitRangeDown, fitRangeUp));
-  r2->Print("v");
-  
-  // draw points
-  data.plotOn(frame, Name("Data")); // DataError(RooAbsData::SumW2)
-  
-  // visualize error
-  cmodel.plotOn(frame, VisualizeError(*r2, 1, kFALSE), FillColor(kRed-9));                     // FillStyle(3001)
-  cmodel.plotOn(frame, Components("bkg"), VisualizeError(*r2, 1, kFALSE), FillColor(kBlue-9)); // DrawOption("L"), LineWidth(2), LineColor(kRed)
-
-  // overlay data points
+  // draw!
   data.plotOn(frame, Name("Data"));
-  
-  // overlay center values
-  cmodel.plotOn(frame, Name("Model"), LineColor(kRed));
+  model.plotOn(frame, Name("Model"), LineColor(kRed));
+  model.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   
   // add params
-  cmodel.paramOn(frame, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
+  model.paramOn(frame, Layout(0.11, 0.3, 0.89), Format("NEAU", AutoPrecision(2))); // x1, x2, delta-y
   frame->getAttText()->SetTextSize(0.025);
   frame->getAttLine()->SetLineWidth(0);
   
@@ -203,8 +261,7 @@ void MakeSimFit(TFile *theFile, TString histName) {
   frame->GetYaxis()->CenterTitle();
   
   // draw!
-  cmodel.plotOn(frame, Components("bkg"), LineStyle(kDashed), LineColor(kBlue));
   frame->Write();
 
-  r2->Write("rf" + histName);
+  r1->Write("rfABC_" + histName);
 }
