@@ -41,7 +41,8 @@ PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	FilterNCombine_data FilterNCombine_sim\
 	MakePlots_DvD\
 	SetBinning MakeRooFits GetElectronNumber MakeMR\
-	Acceptance_fit-omega Acceptance_factors # MakePlots\
+	Acceptance_fit-omega Acceptance_factors\
+	MakeMR_Acc # MakePlots\
 	FilterNCombine_f1 MakePlots_f1\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\
 	SystPi0Mass\
