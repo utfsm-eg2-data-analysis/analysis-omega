@@ -42,7 +42,8 @@ PROG := GetSimpleTuple_data GetSimpleTuple_sim\
 	MakePlots_DvD\
 	SetBinning MakeRooFits GetElectronNumber MakeMR\
 	Acceptance_fit-omega Acceptance_factors\
-	MakeMR_Acc # MakePlots\
+	MakeMR_Acc\
+	BinMigration_map # MakePlots\
 	FilterNCombine_f1 MakePlots_f1\
 	CheckStatusCuts_flow CheckStatusCuts_indiv CheckStatusCuts_ratio CheckStatusCuts_MR CheckStatusCuts_pip\
 	SystPi0Mass\
