@@ -144,16 +144,12 @@ int main(int argc, char **argv) {
 
     nPipThisEvent   = pipVector.size();
     nPimThisEvent   = pimVector.size();
-    nGammaThisEvent = gammaVector.size();  
+    nGammaThisEvent = gammaVector.size();
+    
     nMCPipThisEvent   = mc_pipVector.size();
     nMCPimThisEvent   = mc_pimVector.size();
     nMCGammaThisEvent = mc_gammaVector.size();
 
-    // testing
-    mc_m.nPip = nMCPipThisEvent;
-    mc_m.nPim = nMCPimThisEvent;
-    mc_m.nGamma = nMCGammaThisEvent;
-    
     // commentary
     /*
     std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
@@ -279,12 +275,15 @@ int main(int argc, char **argv) {
     
     /*** FILL MIX ***/
 
+    Int_t cIndex = 0; // counter for simrec combinations
+    
     // candidate appeared for GSIM
     for (Int_t cc = 0; cc < (Int_t) mc_combVector.size(); cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 4; pp++) { // loop on final state particles
 	// gsim
 	tree->GetEntry(mc_combVector[cc][pp]);
 	AssignMixVar_GSIM(mc_t, mc_m, mc_combVector[cc][pp], pp);
+	AssignMoreVar_GSIM(mc_m, nMCPipThisEvent, nMCPimThisEvent, nMCGammaThisEvent, cc);
 	// candidate appeared for SIMREC
 	if ((Int_t) combVector.size() > 0) {
 	  // any matching?
@@ -292,13 +291,11 @@ int main(int argc, char **argv) {
 	    if (matchingVector[cc][pp] != -1) {
 	      tree->GetEntry(matchingVector[cc][pp]);
 	      AssignMixVar_SIMREC(t, m, matchingVector[cc][pp], pp);
-	      AssignMoreVar_SIMREC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent);
 	    }
 	  } else {
 	    if (cc < (Int_t) combVector.size()) {
 	      tree->GetEntry(combVector[cc][pp]);
 	      AssignMixVar_SIMREC(t, m, combVector[cc][pp], pp);
-	      AssignMoreVar_SIMREC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent);
 	    }
 	  }
 	}
@@ -311,6 +308,8 @@ int main(int argc, char **argv) {
 	// any matching?
 	if ((Int_t) matchingVector.size() > 0) {
 	  if (matchingVector[cc] != nullVector) {
+	    AssignMoreVar_SIMREC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, cIndex);
+	    cIndex++;
 	    AssignPi0Var_SIMREC(m, pi0);
 	    AssignOmegaVar_SIMREC(m, pi0, w);
 	  } else {
@@ -318,6 +317,8 @@ int main(int argc, char **argv) {
 	  }
 	} else {
 	  if (cc < (Int_t) combVector.size()) {
+	    AssignMoreVar_SIMREC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, cIndex);
+	    cIndex++;
 	    AssignPi0Var_SIMREC(m, pi0);
 	    AssignOmegaVar_SIMREC(m, pi0, w);
 	  } else {
@@ -342,7 +343,9 @@ int main(int argc, char **argv) {
     nPipThisEvent = 0;
     nPimThisEvent = 0;
     nGammaThisEvent = 0;
-    	
+
+    cIndex = 0;
+    
     // reset vectors
     mc_pipVector.clear();
     mc_pimVector.clear();

@@ -10,6 +10,8 @@ Float_t CorrectMomentum(data_i& t, TString option, TString component, TString ta
 
 Float_t PhiPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
+Float_t PhiLab(Float_t fPx, Float_t fPy, Float_t fPz);
+Float_t ThetaLab(Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t DeltaTheta(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
 
 Float_t BettaCalc(Float_t fP, Float_t fPid);
@@ -55,23 +57,27 @@ void SetInputBranches(TChain *chain, data_i& t) {
   chain->SetBranchAddress("XECe", &t.XECe);
   chain->SetBranchAddress("YECe", &t.YECe);
   chain->SetBranchAddress("ZECe", &t.ZECe);
-  // electron status (16)
-  chain->SetBranchAddress("StatDCEl", &t.StatDCEl);
+  // electron status (20)
+  chain->SetBranchAddress("StatDCEl",   &t.StatDCEl);
   chain->SetBranchAddress("DCStatusEl", &t.DCStatusEl);
-  chain->SetBranchAddress("StatECEl", &t.StatECEl);
+  chain->SetBranchAddress("StatECEl",   &t.StatECEl);
   chain->SetBranchAddress("ECStatusEl", &t.ECStatusEl);
-  chain->SetBranchAddress("TimeECEl", &t.TimeECEl);
-  chain->SetBranchAddress("PathECEl", &t.PathECEl);
-  chain->SetBranchAddress("Chi2ECEl", &t.Chi2ECEl);
-  chain->SetBranchAddress("StatSCEl", &t.StatSCEl);
+  chain->SetBranchAddress("TimeECEl",   &t.TimeECEl);
+  chain->SetBranchAddress("PathECEl",   &t.PathECEl);
+  chain->SetBranchAddress("Chi2ECEl",   &t.Chi2ECEl);
+  chain->SetBranchAddress("StatSCEl",   &t.StatSCEl);
   chain->SetBranchAddress("SCStatusEl", &t.SCStatusEl);
-  chain->SetBranchAddress("TimeSCEl", &t.TimeSCEl);
-  chain->SetBranchAddress("PathSCEl", &t.PathSCEl);
-  chain->SetBranchAddress("StatCCEl", &t.StatCCEl);
+  chain->SetBranchAddress("TimeSCEl",   &t.TimeSCEl);
+  chain->SetBranchAddress("PathSCEl",   &t.PathSCEl);
+  chain->SetBranchAddress("StatCCEl",   &t.StatCCEl);
   chain->SetBranchAddress("CCStatusEl", &t.CCStatusEl);
-  chain->SetBranchAddress("NpheEl", &t.NpheEl);
-  chain->SetBranchAddress("Chi2CCEl", &t.Chi2CCEl);
-  chain->SetBranchAddress("StatusEl", &t.StatusEl);  
+  chain->SetBranchAddress("NpheEl",     &t.NpheEl);
+  chain->SetBranchAddress("Chi2CCEl",   &t.Chi2CCEl);
+  chain->SetBranchAddress("StatusEl",   &t.StatusEl);
+  chain->SetBranchAddress("NRowsDCEl",  &t.NRowsDCEl);
+  chain->SetBranchAddress("NRowsECEl",  &t.NRowsECEl);
+  chain->SetBranchAddress("NRowsSCEl",  &t.NRowsSCEl);
+  chain->SetBranchAddress("NRowsCCEl",  &t.NRowsCCEl);  
   // particle (26)
   chain->SetBranchAddress("Zh", &t.Zh);
   chain->SetBranchAddress("Pt2", &t.Pt2);
@@ -99,23 +105,27 @@ void SetInputBranches(TChain *chain, data_i& t) {
   chain->SetBranchAddress("Mass2", &t.Mass2);
   chain->SetBranchAddress("T4", &t.T4);
   chain->SetBranchAddress("deltaZ", &t.deltaZ);
-  // status (16)
-  chain->SetBranchAddress("StatDC", &t.StatDC);
+  // status (20)
+  chain->SetBranchAddress("StatDC",   &t.StatDC);
   chain->SetBranchAddress("DCStatus", &t.DCStatus);
-  chain->SetBranchAddress("StatEC", &t.StatEC);
+  chain->SetBranchAddress("StatEC",   &t.StatEC);
   chain->SetBranchAddress("ECStatus", &t.ECStatus);
-  chain->SetBranchAddress("TimeEC", &t.TimeEC);
-  chain->SetBranchAddress("PathEC", &t.PathEC);
-  chain->SetBranchAddress("Chi2EC", &t.Chi2EC);
-  chain->SetBranchAddress("StatSC", &t.StatSC);
+  chain->SetBranchAddress("TimeEC",   &t.TimeEC);
+  chain->SetBranchAddress("PathEC",   &t.PathEC);
+  chain->SetBranchAddress("Chi2EC",   &t.Chi2EC);
+  chain->SetBranchAddress("StatSC",   &t.StatSC);
   chain->SetBranchAddress("SCStatus", &t.SCStatus);
-  chain->SetBranchAddress("TimeSC", &t.TimeSC);
-  chain->SetBranchAddress("PathSC", &t.PathSC);
-  chain->SetBranchAddress("StatCC", &t.StatCC);
+  chain->SetBranchAddress("TimeSC",   &t.TimeSC);
+  chain->SetBranchAddress("PathSC",   &t.PathSC);
+  chain->SetBranchAddress("StatCC",   &t.StatCC);
   chain->SetBranchAddress("CCStatus", &t.CCStatus);
-  chain->SetBranchAddress("Nphe", &t.Nphe);
-  chain->SetBranchAddress("Chi2CC", &t.Chi2CC);
-  chain->SetBranchAddress("Status", &t.Status);
+  chain->SetBranchAddress("Nphe",     &t.Nphe);
+  chain->SetBranchAddress("Chi2CC",   &t.Chi2CC);
+  chain->SetBranchAddress("Status",   &t.Status);
+  chain->SetBranchAddress("NRowsDC",  &t.NRowsDC);
+  chain->SetBranchAddress("NRowsEC",  &t.NRowsEC);
+  chain->SetBranchAddress("NRowsSC",  &t.NRowsSC);
+  chain->SetBranchAddress("NRowsCC",  &t.NRowsCC);
   // evnt related (1)
   chain->SetBranchAddress("evnt", &t.evnt);
 }
@@ -136,11 +146,13 @@ void SetOriginalBranches(TTree *tree, data_o& o) {
   tree->Branch("Pex", &o.Pex);
   tree->Branch("Pey", &o.Pey);
   tree->Branch("Pez", &o.Pez);
-  tree->Branch("Pe", &o.Pe);
+  tree->Branch("Pe",  &o.Pe);
   tree->Branch("P2e", &o.P2e);
-  tree->Branch("BettaEl", &o.BettaEl);
+  tree->Branch("BettaEl",    &o.BettaEl);
+  tree->Branch("ThetaLabEl", &o.ThetaLabEl);
+  tree->Branch("PhiLabEl",   &o.PhiLabEl);
   tree->Branch("Etote", &o.Etote);
-  tree->Branch("Eine", &o.Eine);
+  tree->Branch("Eine",  &o.Eine);
   tree->Branch("Eoute", &o.Eoute);
   tree->Branch("Xec", &o.Xec);
   tree->Branch("Yec", &o.Yec);
@@ -148,22 +160,27 @@ void SetOriginalBranches(TTree *tree, data_o& o) {
   tree->Branch("XECe", &o.XECe);
   tree->Branch("YECe", &o.YECe);
   tree->Branch("ZECe", &o.ZECe);
-  tree->Branch("StatDCEl", &o.StatDCEl);
+  // electron status (20)
+  tree->Branch("StatDCEl",   &o.StatDCEl);
   tree->Branch("DCStatusEl", &o.DCStatusEl);
-  tree->Branch("StatECEl", &o.StatECEl);
+  tree->Branch("StatECEl",   &o.StatECEl);
   tree->Branch("ECStatusEl", &o.ECStatusEl);
-  tree->Branch("TimeECEl", &o.TimeECEl);
-  tree->Branch("PathECEl", &o.PathECEl);
-  tree->Branch("Chi2ECEl", &o.Chi2ECEl);
-  tree->Branch("StatSCEl", &o.StatSCEl);
+  tree->Branch("TimeECEl",   &o.TimeECEl);
+  tree->Branch("PathECEl",   &o.PathECEl);
+  tree->Branch("Chi2ECEl",   &o.Chi2ECEl);
+  tree->Branch("StatSCEl",   &o.StatSCEl);
   tree->Branch("SCStatusEl", &o.SCStatusEl);
-  tree->Branch("TimeSCEl", &o.TimeSCEl);
-  tree->Branch("PathSCEl", &o.PathSCEl);
-  tree->Branch("StatCCEl", &o.StatCCEl);
+  tree->Branch("TimeSCEl",   &o.TimeSCEl);
+  tree->Branch("PathSCEl",   &o.PathSCEl);
+  tree->Branch("StatCCEl",   &o.StatCCEl);
   tree->Branch("CCStatusEl", &o.CCStatusEl);
-  tree->Branch("NpheEl", &o.NpheEl);
-  tree->Branch("Chi2CCEl", &o.Chi2CCEl);
-  tree->Branch("StatusEl", &o.StatusEl);
+  tree->Branch("NpheEl",     &o.NpheEl);
+  tree->Branch("Chi2CCEl",   &o.Chi2CCEl);
+  tree->Branch("StatusEl",   &o.StatusEl);
+  tree->Branch("NRowsDCEl",  &o.NRowsDCEl);
+  tree->Branch("NRowsECEl",  &o.NRowsECEl);
+  tree->Branch("NRowsSCEl",  &o.NRowsSCEl);
+  tree->Branch("NRowsCCEl",  &o.NRowsCCEl);  
   // independent (16)
   tree->Branch("Etot", &o.Etot);
   tree->Branch("Ein", &o.Ein);
@@ -202,34 +219,40 @@ void SetOriginalBranches(TTree *tree, data_o& o) {
   tree->Branch("Pz_corr", &o.Pz_corr);
   tree->Branch("P2_corr", &o.P2_corr);
   tree->Branch("P_corr",  &o.P_corr);
-  // remaining (10)
+  // remaining (12)
   tree->Branch("Z", &o.Z);
   tree->Branch("PhiPQ", &o.PhiPQ);
   tree->Branch("ThetaPQ", &o.ThetaPQ);
   tree->Branch("CosThetaPQ", &o.CosThetaPQ);
+  tree->Branch("PhiLab", &o.PhiLab);
+  tree->Branch("ThetaLab", &o.ThetaLab);
   tree->Branch("Pt2", &o.Pt2);
   tree->Branch("Pl2", &o.Pl2);
   tree->Branch("Mx2", &o.Mx2);
   tree->Branch("T", &o.T);
   tree->Branch("BettaCalc", &o.BettaCalc);
   tree->Branch("deltaTheta", &o.deltaTheta);
-  // status (16)
-  tree->Branch("StatDC", &o.StatDC);
+  // status (20)
+  tree->Branch("StatDC",   &o.StatDC);
   tree->Branch("DCStatus", &o.DCStatus);
-  tree->Branch("StatEC", &o.StatEC);
+  tree->Branch("StatEC",   &o.StatEC);
   tree->Branch("ECStatus", &o.ECStatus);
-  tree->Branch("TimeEC", &o.TimeEC);
-  tree->Branch("PathEC", &o.PathEC);
-  tree->Branch("Chi2EC", &o.Chi2EC);
-  tree->Branch("StatSC", &o.StatSC);
+  tree->Branch("TimeEC",   &o.TimeEC);
+  tree->Branch("PathEC",   &o.PathEC);
+  tree->Branch("Chi2EC",   &o.Chi2EC);
+  tree->Branch("StatSC",   &o.StatSC);
   tree->Branch("SCStatus", &o.SCStatus);
-  tree->Branch("TimeSC", &o.TimeSC);
-  tree->Branch("PathSC", &o.PathSC);
-  tree->Branch("StatCC", &o.StatCC);
+  tree->Branch("TimeSC",   &o.TimeSC);
+  tree->Branch("PathSC",   &o.PathSC);
+  tree->Branch("StatCC",   &o.StatCC);
   tree->Branch("CCStatus", &o.CCStatus);
-  tree->Branch("Nphe", &o.Nphe);
-  tree->Branch("Chi2CC", &o.Chi2CC);
-  tree->Branch("Status", &o.Status);
+  tree->Branch("Nphe",     &o.Nphe);
+  tree->Branch("Chi2CC",   &o.Chi2CC);
+  tree->Branch("Status",   &o.Status);
+  tree->Branch("NRowsDC",  &o.NRowsDC);
+  tree->Branch("NRowsEC",  &o.NRowsEC);
+  tree->Branch("NRowsSC",  &o.NRowsSC);
+  tree->Branch("NRowsCC",  &o.NRowsCC);  
   // event-related (2)
   tree->Branch("Event", &o.Event);
   tree->Branch("Entry", &o.Entry);
@@ -246,7 +269,9 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.SectorEl = t.SectorEl;
   o.TargType = t.TargType;
   o.Pex = t.Pex; o.Pey = t.Pey; o.Pez = t.Pez; o.Pe = t.Pe; o.P2e = o.Pe*o.Pe;
-  o.BettaEl = t.BettaEl;
+  o.BettaEl    = t.BettaEl;
+  o.PhiLabEl   = PhiLab(o.Pex, o.Pey, o.Pez);
+  o.ThetaLabEl = ThetaLab(o.Pex, o.Pey, o.Pez);
   o.Etote = t.Etote;
   o.Eine  = t.Eine;
   o.Eoute = t.Eoute;
@@ -256,6 +281,7 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.XECe = t.XECe;
   o.YECe = t.YECe;
   o.ZECe = t.ZECe;
+  // electron stratus (20)
   o.StatDCEl   = t.StatDCEl;
   o.DCStatusEl = t.DCStatusEl;
   o.StatECEl   = t.StatECEl;
@@ -272,6 +298,10 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.NpheEl     = t.NpheEl;
   o.Chi2CCEl   = t.Chi2CCEl;
   o.StatusEl   = t.StatusEl;
+  o.NRowsDCEl  = t.NRowsDCEl;
+  o.NRowsECEl  = t.NRowsECEl;
+  o.NRowsSCEl  = t.NRowsSCEl;
+  o.NRowsCCEl  = t.NRowsCCEl;
   // independent variables (16)
   o.vxh = t.vxh;
   o.vyh = t.vyh;
@@ -295,7 +325,7 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.Py_prev = t.Py;
   o.Pz_prev = t.Pz;
   o.P_prev  = t.P;
-  o.P2_prev = o.P_prev*o.P_prev; // recalc
+  o.P2_prev = o.P_prev*o.P_prev;
   // true (6)
   o.E_true  = CorrectEnergy(t, "true", targetOption);
   o.Px_true = CorrectMomentum(t, "x", "true", targetOption);
@@ -310,18 +340,20 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.Pz_corr = CorrectMomentum(t, "z", "corr", targetOption);
   o.P2_corr = o.Px_corr*o.Px_corr + o.Py_corr*o.Py_corr + o.Pz_corr*o.Pz_corr;
   o.P_corr  = TMath::Sqrt(o.P2_corr);
-  // remaining (10) - using corr values
+  // remaining (12) - using corr values
   o.Z          = o.E_corr/o.Nu;
   o.PhiPQ      = PhiPQ(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
   o.ThetaPQ    = ThetaPQ(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
   o.CosThetaPQ = ((kEbeam - o.Pez)*o.Pz_corr - o.Pex*o.Px_corr - o.Pey*o.Py_corr)/(TMath::Sqrt(o.P2_corr*(o.Q2 + o.Nu*o.Nu)));
+  o.PhiLab     = PhiLab(o.Px_corr, o.Py_corr, o.Pz_corr);
+  o.ThetaLab   = ThetaLab(o.Px_corr, o.Py_corr, o.Pz_corr);
   o.Pt2        = o.P2_corr*(1 - o.CosThetaPQ*o.CosThetaPQ);
   o.Pl2        = o.P2_corr*o.CosThetaPQ*o.CosThetaPQ;
   o.Mx2        = t.W*t.W + o.M*o.M - 2*o.Z*o.Nu*o.Nu + 2*TMath::Sqrt(o.Pl2*(o.Nu*o.Nu + o.Q2)) - 2*kMproton*o.Z*o.Nu;
   o.T          = o.M*o.M - 2*o.Z*o.Nu*o.Nu + 2*TMath::Sqrt(o.Pl2*(o.Nu*o.Nu + o.Q2)) - o.Q2;
   o.BettaCalc  = BettaCalc(o.P_corr, o.Pid);
   o.deltaTheta = DeltaTheta(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
-  // status (16)
+  // particle status (20
   o.StatDC   = t.StatDC;
   o.DCStatus = t.DCStatus;
   o.StatEC   = t.StatEC;
@@ -338,13 +370,17 @@ void AssignOriginalVar(data_i& t, data_o& o, Int_t entry, TString targetOption) 
   o.Nphe     = t.Nphe;
   o.Chi2CC   = t.Chi2CC;
   o.Status   = t.Status;
+  o.NRowsDC  = t.NRowsDC;
+  o.NRowsEC  = t.NRowsEC;
+  o.NRowsSC  = t.NRowsSC;
+  o.NRowsCC  = t.NRowsCC;
   // event-related (2)
   o.Entry = (Float_t) entry;
   o.Event = (Float_t) t.evnt;  
 }
 
 void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
-  // electron (41)
+  // electron (27)
   tree->Branch("Q2", &m.Q2);
   tree->Branch("W",  &m.W);
   tree->Branch("Nu", &m.Nu);
@@ -361,6 +397,8 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("Pe",  &m.Pe);
   tree->Branch("P2e", &m.P2e);
   tree->Branch("BettaEl", &m.BettaEl);
+  tree->Branch("PhiLabEl", &m.PhiLabEl);
+  tree->Branch("ThetaLabEl", &m.ThetaLabEl);
   tree->Branch("Etote", &m.Etote);
   tree->Branch("Eine", &m.Eine);
   tree->Branch("Eoute", &m.Eoute);
@@ -370,22 +408,27 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("XECe", &m.XECe);
   tree->Branch("YECe", &m.YECe);
   tree->Branch("ZECe", &m.ZECe);
-  tree->Branch("StatDCEl", &m.StatDCEl);
+  // electron status (20)
+  tree->Branch("StatDCEl",   &m.StatDCEl);
   tree->Branch("DCStatusEl", &m.DCStatusEl);
-  tree->Branch("StatECEl", &m.StatECEl);
+  tree->Branch("StatECEl",   &m.StatECEl);
   tree->Branch("ECStatusEl", &m.ECStatusEl);
-  tree->Branch("TimeECEl", &m.TimeECEl);
-  tree->Branch("PathECEl", &m.PathECEl);
-  tree->Branch("Chi2ECEl", &m.Chi2ECEl);
-  tree->Branch("StatSCEl", &m.StatSCEl);
+  tree->Branch("TimeECEl",   &m.TimeECEl);
+  tree->Branch("PathECEl",   &m.PathECEl);
+  tree->Branch("Chi2ECEl",   &m.Chi2ECEl);
+  tree->Branch("StatSCEl",   &m.StatSCEl);
   tree->Branch("SCStatusEl", &m.SCStatusEl);
-  tree->Branch("TimeSCEl", &m.TimeSCEl);
-  tree->Branch("PathSCEl", &m.PathSCEl);
-  tree->Branch("StatCCEl", &m.StatCCEl);
+  tree->Branch("TimeSCEl",   &m.TimeSCEl);
+  tree->Branch("PathSCEl",   &m.PathSCEl);
+  tree->Branch("StatCCEl",   &m.StatCCEl);
   tree->Branch("CCStatusEl", &m.CCStatusEl);
-  tree->Branch("NpheEl", &m.NpheEl);
-  tree->Branch("Chi2CCEl", &m.Chi2CCEl);
-  tree->Branch("StatusEl", &m.StatusEl);
+  tree->Branch("NpheEl",     &m.NpheEl);
+  tree->Branch("Chi2CCEl",   &m.Chi2CCEl);
+  tree->Branch("StatusEl",   &m.StatusEl);
+  tree->Branch("NRowsDCEl",  &m.NRowsDCEl);
+  tree->Branch("NRowsECEl",  &m.NRowsECEl);
+  tree->Branch("NRowsSCEl",  &m.NRowsSCEl);
+  tree->Branch("NRowsCCEl",  &m.NRowsCCEl);
   // independent (16)
   tree->Branch("vxh", &m.vxh, "vxh[4]/F");
   tree->Branch("vyh", &m.vyh, "vyh[4]/F");
@@ -424,66 +467,74 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("P2_corr", &m.P2_corr, "P2_corr[4]/F");
   tree->Branch("P_corr", &m.P_corr, "P_corr[4]/F");
   tree->Branch("E_corr", &m.E_corr, "E_corr[4]/F");
-  // remaining (10)
+  // remaining (12)
   tree->Branch("Z", &m.Z, "Z[4]/F");
-  tree->Branch("PhiPQ", &m.PhiPQ, "PhiPQ[4]/F");
-  tree->Branch("ThetaPQ", &m.ThetaPQ, "ThetaPQ[4]/F");
+  tree->Branch("PhiPQ",      &m.PhiPQ,      "PhiPQ[4]/F");
+  tree->Branch("ThetaPQ",    &m.ThetaPQ,    "ThetaPQ[4]/F");
   tree->Branch("CosThetaPQ", &m.CosThetaPQ, "CosThetaPQ[4]/F");
+  tree->Branch("PhiLab",     &m.PhiLab,     "PhiLab[4]/F");
+  tree->Branch("ThetaLab",   &m.ThetaLab,   "ThetaLab[4]/F");
   tree->Branch("Pt2", &m.Pt2, "Pt2[4]/F");
   tree->Branch("Pl2", &m.Pl2, "Pl2[4]/F");
   tree->Branch("Mx2", &m.Mx2, "Mx2[4]/F");
   tree->Branch("T", &m.T, "T[4]/F");
   tree->Branch("deltaTheta", &m.deltaTheta, "deltaTheta[4]/F");
   tree->Branch("BettaCalc", &m.BettaCalc, "BettaCalc[4]/F");
-  // status (16)
-  tree->Branch("StatDC", &m.StatDC, "StatDC[4]/F");
+  // status (20)
+  tree->Branch("StatDC",   &m.StatDC,   "StatDC[4]/F");
   tree->Branch("DCStatus", &m.DCStatus, "DCStatus[4]/F");
-  tree->Branch("StatEC", &m.StatEC, "StatEC[4]/F");
+  tree->Branch("StatEC",   &m.StatEC,   "StatEC[4]/F");
   tree->Branch("ECStatus", &m.ECStatus, "ECStatus[4]/F");
-  tree->Branch("TimeEC", &m.TimeEC, "TimeEC[4]/F");
-  tree->Branch("PathEC", &m.PathEC, "PathEC[4]/F");
-  tree->Branch("Chi2EC", &m.Chi2EC, "Chi2EC[4]/F");
-  tree->Branch("StatSC", &m.StatSC, "StatSC[4]/F");
+  tree->Branch("TimeEC",   &m.TimeEC,   "TimeEC[4]/F");
+  tree->Branch("PathEC",   &m.PathEC,   "PathEC[4]/F");
+  tree->Branch("Chi2EC",   &m.Chi2EC,   "Chi2EC[4]/F");
+  tree->Branch("StatSC",   &m.StatSC,   "StatSC[4]/F");
   tree->Branch("SCStatus", &m.SCStatus, "SCStatus[4]/F");
-  tree->Branch("TimeSC", &m.TimeSC, "TimeSC[4]/F");
-  tree->Branch("PathSC", &m.PathSC, "PathSC[4]/F");
-  tree->Branch("StatCC", &m.StatCC, "StatCC[4]/F");
+  tree->Branch("TimeSC",   &m.TimeSC,   "TimeSC[4]/F");
+  tree->Branch("PathSC",   &m.PathSC,   "PathSC[4]/F");
+  tree->Branch("StatCC",   &m.StatCC,   "StatCC[4]/F");
   tree->Branch("CCStatus", &m.CCStatus, "CCStatus[4]/F");
-  tree->Branch("Nphe", &m.Nphe, "Nphe[4]/F");
-  tree->Branch("Chi2CC", &m.Chi2CC, "Chi2CC[4]/F");
-  tree->Branch("Status", &m.Status, "Status[4]/F");
+  tree->Branch("Nphe",     &m.Nphe,     "Nphe[4]/F");
+  tree->Branch("Chi2CC",   &m.Chi2CC,   "Chi2CC[4]/F");
+  tree->Branch("Status",   &m.Status,   "Status[4]/F");
+  tree->Branch("NRowsDC",  &m.NRowsDC,  "NRowsDC[4]/F");
+  tree->Branch("NRowsEC",  &m.NRowsEC,  "NRowsEC[4]/F");
+  tree->Branch("NRowsSC",  &m.NRowsSC,  "NRowsSC[4]/F");
+  tree->Branch("NRowsCC",  &m.NRowsCC,  "NRowsCC[4]/F");
   // pi0 prev (8)
   tree->Branch("pi0Px_prev", &pi0.Px_prev);
   tree->Branch("pi0Py_prev", &pi0.Py_prev);
   tree->Branch("pi0Pz_prev", &pi0.Pz_prev);
   tree->Branch("pi0P2_prev", &pi0.P2_prev);
-  tree->Branch("pi0P_prev", &pi0.P_prev);
-  tree->Branch("pi0E_prev", &pi0.E_prev);
-  tree->Branch("pi0M_prev", &pi0.M_prev);
+  tree->Branch("pi0P_prev",  &pi0.P_prev);
+  tree->Branch("pi0E_prev",  &pi0.E_prev);
+  tree->Branch("pi0M_prev",  &pi0.M_prev);
   tree->Branch("pi0Theta_prev", &pi0.Theta_prev);
   // pi0 true (8)
   tree->Branch("pi0Px_true", &pi0.Px_true);
   tree->Branch("pi0Py_true", &pi0.Py_true);
   tree->Branch("pi0Pz_true", &pi0.Pz_true);
   tree->Branch("pi0P2_true", &pi0.P2_true);
-  tree->Branch("pi0P_true", &pi0.P_true);
-  tree->Branch("pi0E_true", &pi0.E_true);
-  tree->Branch("pi0M_true", &pi0.M_true);
+  tree->Branch("pi0P_true",  &pi0.P_true);
+  tree->Branch("pi0E_true",  &pi0.E_true);
+  tree->Branch("pi0M_true",  &pi0.M_true);
   tree->Branch("pi0Theta_true", &pi0.Theta_true);
   // pi0 corr (8)
   tree->Branch("pi0Px_corr", &pi0.Px_corr);
   tree->Branch("pi0Py_corr", &pi0.Py_corr);
   tree->Branch("pi0Pz_corr", &pi0.Pz_corr);
   tree->Branch("pi0P2_corr", &pi0.P2_corr);
-  tree->Branch("pi0P_corr", &pi0.P_corr);
-  tree->Branch("pi0E_corr", &pi0.E_corr);
-  tree->Branch("pi0M_corr", &pi0.M_corr);
+  tree->Branch("pi0P_corr",  &pi0.P_corr);
+  tree->Branch("pi0E_corr",  &pi0.E_corr);
+  tree->Branch("pi0M_corr",  &pi0.M_corr);
   tree->Branch("pi0Theta_corr", &pi0.Theta_corr);
-  // omega prev (18)
+  // omega prev (20)
   tree->Branch("wZ_prev", &w.Z_prev);
-  tree->Branch("wPhiPQ_prev", &w.PhiPQ_prev);
-  tree->Branch("wThetaPQ_prev", &w.ThetaPQ_prev);
+  tree->Branch("wPhiPQ_prev",      &w.PhiPQ_prev);
+  tree->Branch("wThetaPQ_prev",    &w.ThetaPQ_prev);
   tree->Branch("wCosThetaPQ_prev", &w.CosThetaPQ_prev);
+  tree->Branch("wPhiLab_prev",     &w.PhiLab_prev);
+  tree->Branch("wThetaLab_prev",   &w.ThetaLab_prev);
   tree->Branch("wPt2_prev", &w.Pt2_prev);
   tree->Branch("wPl2_prev", &w.Pl2_prev);
   tree->Branch("wMx2_prev", &w.Mx2_prev);
@@ -498,11 +549,13 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("wdeltaTheta_prev", &w.deltaTheta_prev);
   tree->Branch("wD_prev", &w.D_prev);
   tree->Branch("wM_prev", &w.M_prev);
-  // omega true (18)
+  // omega true (20)
   tree->Branch("wZ_true", &w.Z_true);
-  tree->Branch("wPhiPQ_true", &w.PhiPQ_true);
-  tree->Branch("wThetaPQ_true", &w.ThetaPQ_true);
+  tree->Branch("wPhiPQ_true",      &w.PhiPQ_true);
+  tree->Branch("wThetaPQ_true",    &w.ThetaPQ_true);
   tree->Branch("wCosThetaPQ_true", &w.CosThetaPQ_true);
+  tree->Branch("wPhiLab_true",     &w.PhiLab_true);
+  tree->Branch("wThetaLab_true",   &w.ThetaLab_true);
   tree->Branch("wPt2_true", &w.Pt2_true);
   tree->Branch("wPl2_true", &w.Pl2_true);
   tree->Branch("wMx2_true", &w.Mx2_true);
@@ -517,11 +570,13 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("wdeltaTheta_true", &w.deltaTheta_true);
   tree->Branch("wD_true", &w.D_true);
   tree->Branch("wM_true", &w.M_true);
-  // omega corr (18)
+  // omega corr (20)
   tree->Branch("wZ_corr", &w.Z_corr);
-  tree->Branch("wPhiPQ_corr", &w.PhiPQ_corr);
-  tree->Branch("wThetaPQ_corr", &w.ThetaPQ_corr);
+  tree->Branch("wPhiPQ_corr",      &w.PhiPQ_corr);
+  tree->Branch("wThetaPQ_corr",    &w.ThetaPQ_corr);
   tree->Branch("wCosThetaPQ_corr", &w.CosThetaPQ_corr);
+  tree->Branch("wPhiLab_corr",     &w.PhiLab_corr);
+  tree->Branch("wThetaLab_corr",   &w.ThetaLab_corr);
   tree->Branch("wPt2_corr", &w.Pt2_corr);
   tree->Branch("wPl2_corr", &w.Pl2_corr);
   tree->Branch("wMx2_corr", &w.Mx2_corr);
@@ -546,16 +601,17 @@ void SetMixBranches(TTree *tree, data_m& m, data_pi0& pi0, data_w& w) {
   tree->Branch("pimpi0P", &m.pimpi0P);
   tree->Branch("pimpi0E", &m.pimpi0E);
   tree->Branch("pimpi0M", &m.pimpi0M);
-  // number of particles in that event (3)
+  // number of particles in that event + combination number (4)
   tree->Branch("nPip",   &m.nPip);
   tree->Branch("nPim",   &m.nPim);
   tree->Branch("nGamma", &m.nGamma);
+  tree->Branch("cIndex", &m.cIndex);
   // event related (2)
   tree->Branch("Entry", &m.Entry, "Entry[4]/F");
   tree->Branch("Event", &m.Event);
 }
 
-void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString targetOption) {
+void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString targetOption, Int_t cIndex) {
   // electron (41)
   m.Q2 = t.Q2;
   m.W  = t.W;
@@ -572,7 +628,9 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.Pez = t.Pez;
   m.Pe  = t.Pe;
   m.P2e = m.Pe*m.Pe;
-  m.BettaEl = t.BettaEl;
+  m.BettaEl    = t.BettaEl;
+  m.PhiLabEl   = PhiLab(m.Pex, m.Pey, m.Pez);
+  m.ThetaLabEl = ThetaLab(m.Pex, m.Pey, m.Pez);
   m.Etote = t.Etote;
   m.Eine  = t.Eine;
   m.Eoute = t.Eoute;
@@ -582,6 +640,7 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.XECe = t.XECe;
   m.YECe = t.YECe;
   m.ZECe = t.ZECe;
+  // electron status (20)
   m.StatDCEl   = t.StatDCEl;
   m.DCStatusEl = t.DCStatusEl;
   m.StatECEl   = t.StatECEl;
@@ -598,6 +657,10 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.NpheEl     = t.NpheEl;
   m.Chi2CCEl   = t.Chi2CCEl;
   m.StatusEl   = t.StatusEl;
+  m.NRowsDCEl  = t.NRowsDCEl;
+  m.NRowsECEl  = t.NRowsECEl;
+  m.NRowsSCEl  = t.NRowsSCEl;
+  m.NRowsCCEl  = t.NRowsCCEl;
   // independent variables (16)
   m.vxh[index] = t.vxh;
   m.vyh[index] = t.vyh;
@@ -636,11 +699,13 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.Pz_corr[index] = CorrectMomentum(t, "z", "corr", targetOption);
   m.P2_corr[index] = m.Px_corr[index]*m.Px_corr[index] + m.Py_corr[index]*m.Py_corr[index] + m.Pz_corr[index]*m.Pz_corr[index];
   m.P_corr[index]  = TMath::Sqrt(m.P2_corr[index]);
-  // remaining (10) - using corr values
+  // remaining (12) - using corr values
   m.Z[index]          = m.E_corr[index]/m.Nu;
   m.PhiPQ[index]      = PhiPQ(t.Pex, t.Pey, t.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.ThetaPQ[index]    = ThetaPQ(t.Pex, t.Pey, t.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.CosThetaPQ[index] = ((kEbeam - m.Pez)*m.Pz_corr[index] - m.Pex*m.Px_corr[index] - m.Pey*m.Py_corr[index])/(TMath::Sqrt(m.P2_corr[index]*(m.Q2 + m.Nu*m.Nu)));
+  m.PhiLab[index]     = PhiLab(m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
+  m.ThetaLab[index]   = ThetaLab(m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.Pt2[index]        = m.P2_corr[index]*(1 - m.CosThetaPQ[index]*m.CosThetaPQ[index]);
   m.Pl2[index]        = m.P2_corr[index]*m.CosThetaPQ[index]*m.CosThetaPQ[index];
   m.deltaTheta[index] = DeltaTheta(m.Pex, m.Pey, m.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
@@ -664,9 +729,14 @@ void AssignMixVar(data_i& t, data_m& m, Int_t entry, Int_t index, TString target
   m.Nphe[index]     = t.Nphe;
   m.Chi2CC[index]   = t.Chi2CC;
   m.Status[index]   = t.Status;
+  m.NRowsDC[index]  = t.NRowsDC;
+  m.NRowsEC[index]  = t.NRowsEC;
+  m.NRowsSC[index]  = t.NRowsSC;
+  m.NRowsCC[index]  = t.NRowsCC;
   // event-related (2)
   m.Entry[index] = (Float_t) entry;
   m.Event        = t.evnt;
+  m.cIndex       = (Float_t) cIndex;
 }
 
 void AssignPi0Var(data_m& m, data_pi0& pi0) {
@@ -719,9 +789,11 @@ void AssignOmegaVar(data_m& m, data_pi0& pi0, data_w& w) {
   w.M_prev  = TMath::Sqrt(w.E_prev*w.E_prev - w.P2_prev);
   w.D_prev  = w.M_prev - pi0.M_prev + kMpi0;
   w.Z_prev  = w.E_prev/m.Nu;
-  w.PhiPQ_prev = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
+  w.PhiPQ_prev   = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
   w.ThetaPQ_prev = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
   w.CosThetaPQ_prev = ((kEbeam - m.Pez)*w.Pz_prev - m.Pex*w.Px_prev - m.Pey*w.Py_prev)/(TMath::Sqrt(w.P2_prev*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_prev   = PhiLab(w.Px_prev, w.Py_prev, w.Pz_prev);
+  w.ThetaLab_prev = ThetaLab(w.Px_prev, w.Py_prev, w.Pz_prev);
   w.Pt2_prev = w.P2_prev*(1 - w.CosThetaPQ_prev*w.CosThetaPQ_prev);
   w.Pl2_prev = w.P2_prev*w.CosThetaPQ_prev*w.CosThetaPQ_prev;
   w.Mx2_prev = m.W*m.W + w.M_prev*w.M_prev - 2*w.Z_prev*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_prev*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_prev*m.Nu;
@@ -741,6 +813,8 @@ void AssignOmegaVar(data_m& m, data_pi0& pi0, data_w& w) {
   w.PhiPQ_true = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
   w.ThetaPQ_true = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
   w.CosThetaPQ_true = ((kEbeam - m.Pez)*w.Pz_true - m.Pex*w.Px_true - m.Pey*w.Py_true)/(TMath::Sqrt(w.P2_true*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_true   = PhiLab(w.Px_true, w.Py_true, w.Pz_true);
+  w.ThetaLab_true = ThetaLab(w.Px_true, w.Py_true, w.Pz_true);
   w.Pt2_true = w.P2_true*(1 - w.CosThetaPQ_true*w.CosThetaPQ_true);
   w.Pl2_true = w.P2_true*w.CosThetaPQ_true*w.CosThetaPQ_true;
   w.Mx2_true = m.W*m.W + w.M_true*w.M_true - 2*w.Z_true*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_true*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_true*m.Nu;
@@ -760,6 +834,8 @@ void AssignOmegaVar(data_m& m, data_pi0& pi0, data_w& w) {
   w.PhiPQ_corr = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
   w.ThetaPQ_corr = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
   w.CosThetaPQ_corr = ((kEbeam - m.Pez)*w.Pz_corr - m.Pex*w.Px_corr - m.Pey*w.Py_corr)/(TMath::Sqrt(w.P2_corr*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_corr   = PhiLab(w.Px_corr, w.Py_corr, w.Pz_corr);
+  w.ThetaLab_corr = ThetaLab(w.Px_corr, w.Py_corr, w.Pz_corr);
   w.Pt2_corr = w.P2_corr*(1 - w.CosThetaPQ_corr*w.CosThetaPQ_corr);
   w.Pl2_corr = w.P2_corr*w.CosThetaPQ_corr*w.CosThetaPQ_corr;
   w.Mx2_corr = m.W*m.W + w.M_corr*w.M_corr - 2*w.Z_corr*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_corr*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_corr*m.Nu;
@@ -883,6 +959,24 @@ Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t f
   fThetaPQ = virt.Angle(hadr)*TMath::RadToDeg();
 
   return fThetaPQ;
+}
+
+Float_t PhiLab(Float_t fPx, Float_t fPy, Float_t fPz) {
+  // Returns the azimuthal angle in Lab frame for the particle
+  TVector3 v3p(fPx, fPy, fPz);
+  Double_t fPhiLab = v3p.Phi()*TMath::RadToDeg();
+  if (fPhiLab < -30.) {
+      return fPhiLab + 360.;
+  } else if (fPhiLab > 330.) {
+    return fPhiLab - 360.;
+  } // closure
+  return fPhiLab; // default
+}
+
+Float_t ThetaLab(Float_t fPx, Float_t fPy, Float_t fPz) {
+  // Returns the polar angle in Lab frame for the particle
+  TVector3 v3p(fPx, fPy, fPz);
+  return v3p.Theta()*TMath::RadToDeg();
 }
 
 Float_t DeltaTheta(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz) {

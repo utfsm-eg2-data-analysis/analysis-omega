@@ -11,6 +11,8 @@ Float_t CorrectMomentum(simrec_i& t, TString option, TString component);
 Float_t PhiPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
 Float_t DeltaTheta(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz);
+Float_t PhiLab(Float_t fPx, Float_t fPy, Float_t fPz);
+Float_t ThetaLab(Float_t fPx, Float_t fPy, Float_t fPz);
 
 Float_t BettaCalc(Float_t fP, Float_t fPid);
 
@@ -57,23 +59,27 @@ void SetInputBranches(TChain *chain, simrec_i& t, gsim_i& mc_t) {
   chain->SetBranchAddress("XECe", &t.XECe);
   chain->SetBranchAddress("YECe", &t.YECe);
   chain->SetBranchAddress("ZECe", &t.ZECe);
-  // electron status (16)
-  chain->SetBranchAddress("StatDCEl", &t.StatDCEl);
+  // electron status (20)
+  chain->SetBranchAddress("StatDCEl",   &t.StatDCEl);
   chain->SetBranchAddress("DCStatusEl", &t.DCStatusEl);
-  chain->SetBranchAddress("StatECEl", &t.StatECEl);
+  chain->SetBranchAddress("StatECEl",   &t.StatECEl);
   chain->SetBranchAddress("ECStatusEl", &t.ECStatusEl);
-  chain->SetBranchAddress("TimeECEl", &t.TimeECEl);
-  chain->SetBranchAddress("PathECEl", &t.PathECEl);
-  chain->SetBranchAddress("Chi2ECEl", &t.Chi2ECEl);
-  chain->SetBranchAddress("StatSCEl", &t.StatSCEl);
+  chain->SetBranchAddress("TimeECEl",   &t.TimeECEl);
+  chain->SetBranchAddress("PathECEl",   &t.PathECEl);
+  chain->SetBranchAddress("Chi2ECEl",   &t.Chi2ECEl);
+  chain->SetBranchAddress("StatSCEl",   &t.StatSCEl);
   chain->SetBranchAddress("SCStatusEl", &t.SCStatusEl);
-  chain->SetBranchAddress("TimeSCEl", &t.TimeSCEl);
-  chain->SetBranchAddress("PathSCEl", &t.PathSCEl);
-  chain->SetBranchAddress("StatCCEl", &t.StatCCEl);
+  chain->SetBranchAddress("TimeSCEl",   &t.TimeSCEl);
+  chain->SetBranchAddress("PathSCEl",   &t.PathSCEl);
+  chain->SetBranchAddress("StatCCEl",   &t.StatCCEl);
   chain->SetBranchAddress("CCStatusEl", &t.CCStatusEl);
-  chain->SetBranchAddress("NpheEl", &t.NpheEl);
-  chain->SetBranchAddress("Chi2CCEl", &t.Chi2CCEl);
-  chain->SetBranchAddress("StatusEl", &t.StatusEl);  
+  chain->SetBranchAddress("NpheEl",     &t.NpheEl);
+  chain->SetBranchAddress("Chi2CCEl",   &t.Chi2CCEl);
+  chain->SetBranchAddress("StatusEl",   &t.StatusEl);
+  chain->SetBranchAddress("NRowsDCEl",  &t.NRowsDCEl);
+  chain->SetBranchAddress("NRowsECEl",  &t.NRowsECEl);
+  chain->SetBranchAddress("NRowsSCEl",  &t.NRowsSCEl);
+  chain->SetBranchAddress("NRowsCCEl",  &t.NRowsCCEl);
   // particle (26)
   chain->SetBranchAddress("Zh", &t.Zh);
   chain->SetBranchAddress("Pt2", &t.Pt2);
@@ -118,6 +124,10 @@ void SetInputBranches(TChain *chain, simrec_i& t, gsim_i& mc_t) {
   chain->SetBranchAddress("Nphe", &t.Nphe);
   chain->SetBranchAddress("Chi2CC", &t.Chi2CC);
   chain->SetBranchAddress("Status", &t.Status);
+  chain->SetBranchAddress("NRowsDC", &t.NRowsDC);
+  chain->SetBranchAddress("NRowsEC", &t.NRowsEC);
+  chain->SetBranchAddress("NRowsSC", &t.NRowsSC);
+  chain->SetBranchAddress("NRowsCC", &t.NRowsCC);
   // (34 variables for gsim)
   // electron (15)
   chain->SetBranchAddress("mc_Q2", &mc_t.Q2);
@@ -178,6 +188,8 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("Pe", &o.Pe);
   tree->Branch("P2e", &o.P2e);
   tree->Branch("BettaEl", &o.BettaEl);
+  tree->Branch("PhiLabEl", &o.PhiLabEl);
+  tree->Branch("ThetaLabEl", &o.ThetaLabEl);
   tree->Branch("Etote", &o.Etote);
   tree->Branch("Eine", &o.Eine);
   tree->Branch("Eoute", &o.Eoute);
@@ -203,6 +215,10 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("NpheEl", &o.NpheEl);
   tree->Branch("Chi2CCEl", &o.Chi2CCEl);
   tree->Branch("StatusEl", &o.StatusEl);
+  tree->Branch("NRowsDCEl", &o.NRowsDCEl);
+  tree->Branch("NRowsECEl", &o.NRowsECEl);
+  tree->Branch("NRowsSCEl", &o.NRowsSCEl);
+  tree->Branch("NRowsCCEl", &o.NRowsCCEl);
   // independent (16)
   tree->Branch("Etot", &o.Etot);
   tree->Branch("Ein", &o.Ein);
@@ -246,13 +262,15 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("PhiPQ", &o.PhiPQ);
   tree->Branch("ThetaPQ", &o.ThetaPQ);
   tree->Branch("CosThetaPQ", &o.CosThetaPQ);
+  tree->Branch("PhiLab", &o.PhiLab);
+  tree->Branch("ThetaLab", &o.ThetaLab);
   tree->Branch("Pt2", &o.Pt2);
   tree->Branch("Pl2", &o.Pl2);
   tree->Branch("Mx2", &o.Mx2);
   tree->Branch("T", &o.T);
   tree->Branch("BettaCalc", &o.BettaCalc);
   tree->Branch("deltaTheta", &o.deltaTheta);
-  // status (16)
+  // status (20)
   tree->Branch("StatDC", &o.StatDC);
   tree->Branch("DCStatus", &o.DCStatus);
   tree->Branch("StatEC", &o.StatEC);
@@ -269,6 +287,10 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("Nphe", &o.Nphe);
   tree->Branch("Chi2CC", &o.Chi2CC);
   tree->Branch("Status", &o.Status);
+  tree->Branch("NRowsDC", &o.NRowsDC);
+  tree->Branch("NRowsEC", &o.NRowsEC);
+  tree->Branch("NRowsSC", &o.NRowsSC);
+  tree->Branch("NRowsCC", &o.NRowsCC);
   // event-related (2)
   tree->Branch("Entry", &o.Entry);
   // (41 variables for gsim)
@@ -288,6 +310,8 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("mc_Pez", &mc_o.Pez);
   tree->Branch("mc_Pe", &mc_o.Pe);
   tree->Branch("mc_BettaEl", &mc_o.BettaEl);
+  tree->Branch("mc_PhiLabEl", &mc_o.PhiLabEl);
+  tree->Branch("mc_ThetaLabEl", &mc_o.ThetaLabEl);
   tree->Branch("mc_P2e", &mc_o.P2e);
   // particle (25)
   tree->Branch("mc_vxh", &mc_o.vxh);
@@ -306,10 +330,12 @@ void SetOriginalBranches(TTree *tree, simrec_o& o, gsim_o& mc_o) {
   tree->Branch("mc_P2", &mc_o.P2);
   tree->Branch("mc_P", &mc_o.P);
   tree->Branch("mc_Z", &mc_o.Z);
-  tree->Branch("mc_ThetaPQ", &mc_o.ThetaPQ);
   tree->Branch("mc_Pt2", &mc_o.Pt2);
   tree->Branch("mc_Pl2", &mc_o.Pl2);
   tree->Branch("mc_PhiPQ", &mc_o.PhiPQ);
+  tree->Branch("mc_ThetaPQ", &mc_o.ThetaPQ);
+  tree->Branch("mc_PhiLab", &mc_o.PhiLab);
+  tree->Branch("mc_ThetaLab", &mc_o.ThetaLab);
   tree->Branch("mc_Mx2", &mc_o.Mx2);
   tree->Branch("mc_T", &mc_o.T);
   tree->Branch("mc_CosThetaPQ", &mc_o.CosThetaPQ);
@@ -328,6 +354,8 @@ void NullOriginalVar_SIMREC(simrec_o& o) {
   o.TargType = INVLD;
   o.Pex = INVLD; o.Pey = INVLD; o.Pez = INVLD; o.Pe = INVLD; o.P2e = INVLD;
   o.BettaEl = INVLD;
+  o.PhiLabEl = INVLD;
+  o.ThetaLabEl = INVLD;
   o.Etote = INVLD; o.Eine = INVLD; o.Eoute = INVLD;
   o.Xec = INVLD; o.Yec = INVLD; o.Zec = INVLD;
   o.XECe = INVLD; o.YECe = INVLD; o.ZECe = INVLD;
@@ -347,6 +375,10 @@ void NullOriginalVar_SIMREC(simrec_o& o) {
   o.NpheEl    = INVLD;
   o.Chi2CCEl  = INVLD;
   o.StatusEl  = INVLD;
+  o.NRowsDCEl = INVLD;
+  o.NRowsECEl = INVLD;
+  o.NRowsSCEl = INVLD;
+  o.NRowsCCEl = INVLD;
   // independent variables (16)
   o.vxh = INVLD; o.vyh = INVLD; o.vzh = INVLD;
   o.Sector = INVLD;
@@ -369,6 +401,8 @@ void NullOriginalVar_SIMREC(simrec_o& o) {
   o.PhiPQ = INVLD;
   o.ThetaPQ = INVLD;
   o.CosThetaPQ = INVLD;
+  o.PhiLab = INVLD;
+  o.ThetaLab = INVLD;
   o.Pt2 = INVLD;
   o.Pl2 = INVLD;
   o.Mx2 = INVLD;
@@ -392,6 +426,10 @@ void NullOriginalVar_SIMREC(simrec_o& o) {
   o.Nphe   = INVLD;
   o.Chi2CC  = INVLD;
   o.Status  = INVLD;
+  o.NRowsDC = INVLD;
+  o.NRowsEC = INVLD;
+  o.NRowsSC = INVLD;
+  o.NRowsCC = INVLD;
   // event-related (1)
   o.Entry = INVLD;
 }
@@ -407,7 +445,9 @@ void AssignOriginalVar_SIMREC(simrec_i& t, simrec_o& o, Int_t entry) {
   o.SectorEl = t.SectorEl;
   o.TargType = t.TargType;
   o.Pex = t.Pex; o.Pey = t.Pey; o.Pez = t.Pez; o.Pe = t.Pe; o.P2e = o.Pe*o.Pe;
-  o.BettaEl = t.BettaEl;
+  o.BettaEl    = t.BettaEl;
+  o.PhiLabEl   = PhiLab(o.Pex, o.Pey, o.Pez);
+  o.ThetaLabEl = ThetaLab(o.Pex, o.Pey, o.Pez);
   o.Etote = t.Etote;
   o.Eine  = t.Eine;
   o.Eoute = t.Eoute;
@@ -417,6 +457,7 @@ void AssignOriginalVar_SIMREC(simrec_i& t, simrec_o& o, Int_t entry) {
   o.XECe = t.XECe;
   o.YECe = t.YECe;
   o.ZECe = t.ZECe;
+  // electron status (20)
   o.StatDCEl   = t.StatDCEl;
   o.DCStatusEl = t.DCStatusEl;
   o.StatECEl   = t.StatECEl;
@@ -433,6 +474,10 @@ void AssignOriginalVar_SIMREC(simrec_i& t, simrec_o& o, Int_t entry) {
   o.NpheEl     = t.NpheEl;
   o.Chi2CCEl   = t.Chi2CCEl;
   o.StatusEl   = t.StatusEl;
+  o.NRowsDCEl  = t.NRowsDCEl;
+  o.NRowsECEl  = t.NRowsECEl;
+  o.NRowsSCEl  = t.NRowsSCEl;
+  o.NRowsCCEl  = t.NRowsCCEl;
   // independent variables (16)
   o.vxh = t.vxh;
   o.vyh = t.vyh;
@@ -471,18 +516,20 @@ void AssignOriginalVar_SIMREC(simrec_i& t, simrec_o& o, Int_t entry) {
   o.Pz_corr = CorrectMomentum(t, "z", "corr");
   o.P2_corr = o.Px_corr*o.Px_corr + o.Py_corr*o.Py_corr + o.Pz_corr*o.Pz_corr;
   o.P_corr  = TMath::Sqrt(o.P2_corr);
-  // remaining (10) - using corr values
+  // remaining (12) - using corr values
   o.Z          = o.E_corr/o.Nu;
   o.PhiPQ      = PhiPQ(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
   o.ThetaPQ    = ThetaPQ(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
   o.CosThetaPQ = ((kEbeam - o.Pez)*o.Pz_corr - o.Pex*o.Px_corr - o.Pey*o.Py_corr)/(TMath::Sqrt(o.P2_corr*(o.Q2 + o.Nu*o.Nu)));
+  o.PhiLab     = PhiLab(o.Px_corr, o.Py_corr, o.Pz_corr);
+  o.ThetaLab   = ThetaLab(o.Px_corr, o.Py_corr, o.Pz_corr);
   o.Pt2        = o.P2_corr*(1 - o.CosThetaPQ*o.CosThetaPQ);
   o.Pl2        = o.P2_corr*o.CosThetaPQ*o.CosThetaPQ;
   o.Mx2        = t.W*t.W + o.M*o.M - 2*o.Z*o.Nu*o.Nu + 2*TMath::Sqrt(o.Pl2*(o.Nu*o.Nu + o.Q2)) - 2*kMproton*o.Z*o.Nu;
   o.T          = o.M*o.M - 2*o.Z*o.Nu*o.Nu + 2*TMath::Sqrt(o.Pl2*(o.Nu*o.Nu + o.Q2)) - o.Q2;
   o.BettaCalc  = BettaCalc(o.P_corr, o.Pid);
   o.deltaTheta = DeltaTheta(t.Pex, t.Pey, t.Pez, o.Px_corr, o.Py_corr, o.Pz_corr);
-  // status (16)
+  // status (20)
   o.StatDC   = t.StatDC;
   o.DCStatus = t.DCStatus;
   o.StatEC   = t.StatEC;
@@ -499,6 +546,10 @@ void AssignOriginalVar_SIMREC(simrec_i& t, simrec_o& o, Int_t entry) {
   o.Nphe     = t.Nphe;
   o.Chi2CC   = t.Chi2CC;
   o.Status   = t.Status;
+  o.NRowsDC  = t.NRowsDC;
+  o.NRowsEC  = t.NRowsEC;
+  o.NRowsSC  = t.NRowsSC;
+  o.NRowsCC  = t.NRowsCC;
   // event-related (1)
   o.Entry = (Float_t) entry;
 }
@@ -520,6 +571,8 @@ void AssignOriginalVar_GSIM(gsim_i& mc_t, gsim_o& mc_o, Int_t entry) {
   mc_o.Pez = mc_t.Pez;
   mc_o.Pe  = mc_t.Pe;
   mc_o.BettaEl = mc_t.BettaEl;
+  mc_o.PhiLabEl   = PhiLab(mc_o.Pex, mc_o.Pey, mc_o.Pez);
+  mc_o.ThetaLabEl = ThetaLab(mc_o.Pex, mc_o.Pey, mc_o.Pez);
   mc_o.P2e = mc_o.Pe*mc_o.Pe;
   // particle (25)
   mc_o.vxh = mc_t.vxh;
@@ -535,10 +588,12 @@ void AssignOriginalVar_GSIM(gsim_i& mc_t, gsim_o& mc_o, Int_t entry) {
   mc_o.Pz = mc_t.Pz;
   mc_o.P = mc_t.P;
   mc_o.Z = mc_t.Zh;
-  mc_o.ThetaPQ = mc_t.ThetaPQ;
   mc_o.Pt2 = mc_t.Pt2;
   mc_o.Pl2 = mc_t.Pl2;
   mc_o.PhiPQ = mc_t.PhiPQ;
+  mc_o.ThetaPQ = mc_t.ThetaPQ;
+  mc_o.PhiLab   = PhiLab(mc_o.Px, mc_o.Py, mc_o.Pz);
+  mc_o.ThetaLab = ThetaLab(mc_o.Px, mc_o.Py, mc_o.Pz);
   mc_o.Mx2 = mc_t.Mx2;
   mc_o.T = mc_t.T;
   mc_o.P2 = mc_o.P*mc_o.P;
@@ -570,6 +625,8 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("Pe",  &m.Pe);
   tree->Branch("P2e", &m.P2e);
   tree->Branch("BettaEl", &m.BettaEl);
+  tree->Branch("PhiLabEl", &m.PhiLabEl);
+  tree->Branch("ThetaLabEl", &m.ThetaLabEl);
   tree->Branch("Etote", &m.Etote);
   tree->Branch("Eine", &m.Eine);
   tree->Branch("Eoute", &m.Eoute);
@@ -579,6 +636,7 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("XECe", &m.XECe);
   tree->Branch("YECe", &m.YECe);
   tree->Branch("ZECe", &m.ZECe);
+  // electron status (20)
   tree->Branch("StatDCEl", &m.StatDCEl);
   tree->Branch("DCStatusEl", &m.DCStatusEl);
   tree->Branch("StatECEl", &m.StatECEl);
@@ -595,6 +653,10 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("NpheEl", &m.NpheEl);
   tree->Branch("Chi2CCEl", &m.Chi2CCEl);
   tree->Branch("StatusEl", &m.StatusEl);
+  tree->Branch("NRowsDCEl", &m.NRowsDCEl);
+  tree->Branch("NRowsECEl", &m.NRowsECEl);
+  tree->Branch("NRowsSCEl", &m.NRowsSCEl);
+  tree->Branch("NRowsCCEl", &m.NRowsCCEl);
   // independent (16)
   tree->Branch("vxh", &m.vxh, "vxh[4]/F");
   tree->Branch("vyh", &m.vyh, "vyh[4]/F");
@@ -638,13 +700,15 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("PhiPQ", &m.PhiPQ, "PhiPQ[4]/F");
   tree->Branch("ThetaPQ", &m.ThetaPQ, "ThetaPQ[4]/F");
   tree->Branch("CosThetaPQ", &m.CosThetaPQ, "CosThetaPQ[4]/F");
+  tree->Branch("PhiLab", &m.PhiLab, "PhiLab[4]/F");
+  tree->Branch("ThetaLab", &m.ThetaLab, "ThetaLab[4]/F");
   tree->Branch("Pt2", &m.Pt2, "Pt2[4]/F");
   tree->Branch("Pl2", &m.Pl2, "Pl2[4]/F");
   tree->Branch("Mx2", &m.Mx2, "Mx2[4]/F");
   tree->Branch("T", &m.T, "T[4]/F");
   tree->Branch("deltaTheta", &m.deltaTheta, "deltaTheta[4]/F");
   tree->Branch("BettaCalc", &m.BettaCalc, "BettaCalc[4]/F");
-  // status (16)
+  // status (20)
   tree->Branch("StatDC", &m.StatDC, "StatDC[4]/F");
   tree->Branch("DCStatus", &m.DCStatus, "DCStatus[4]/F");
   tree->Branch("StatEC", &m.StatEC, "StatEC[4]/F");
@@ -661,6 +725,10 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("Nphe", &m.Nphe, "Nphe[4]/F");
   tree->Branch("Chi2CC", &m.Chi2CC, "Chi2CC[4]/F");
   tree->Branch("Status", &m.Status, "Status[4]/F");
+  tree->Branch("NRowsDC", &m.NRowsDC, "NRowsDC[4]/F");
+  tree->Branch("NRowsEC", &m.NRowsEC, "NRowsEC[4]/F");
+  tree->Branch("NRowsSC", &m.NRowsSC, "NRowsSC[4]/F");
+  tree->Branch("NRowsCC", &m.NRowsCC, "NRowsCC[4]/F");
   // pi0 prev (8)
   tree->Branch("pi0Px_prev", &pi0.Px_prev);
   tree->Branch("pi0Py_prev", &pi0.Py_prev);
@@ -693,6 +761,8 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("wPhiPQ_prev", &w.PhiPQ_prev);
   tree->Branch("wThetaPQ_prev", &w.ThetaPQ_prev);
   tree->Branch("wCosThetaPQ_prev", &w.CosThetaPQ_prev);
+  tree->Branch("wPhiLab_prev", &w.PhiLab_prev);
+  tree->Branch("wThetaLab_prev", &w.ThetaLab_prev);
   tree->Branch("wPt2_prev", &w.Pt2_prev);
   tree->Branch("wPl2_prev", &w.Pl2_prev);
   tree->Branch("wMx2_prev", &w.Mx2_prev);
@@ -712,6 +782,8 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("wPhiPQ_true", &w.PhiPQ_true);
   tree->Branch("wThetaPQ_true", &w.ThetaPQ_true);
   tree->Branch("wCosThetaPQ_true", &w.CosThetaPQ_true);
+  tree->Branch("wPhiLab_true", &w.PhiLab_true);
+  tree->Branch("wThetaLab_true", &w.ThetaLab_true);
   tree->Branch("wPt2_true", &w.Pt2_true);
   tree->Branch("wPl2_true", &w.Pl2_true);
   tree->Branch("wMx2_true", &w.Mx2_true);
@@ -726,11 +798,13 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("wdeltaTheta_true", &w.deltaTheta_true);
   tree->Branch("wD_true", &w.D_true);
   tree->Branch("wM_true", &w.M_true);
-  // omega corr (18)
+  // omega corr (20)
   tree->Branch("wZ_corr", &w.Z_corr);
   tree->Branch("wPhiPQ_corr", &w.PhiPQ_corr);
   tree->Branch("wThetaPQ_corr", &w.ThetaPQ_corr);
   tree->Branch("wCosThetaPQ_corr", &w.CosThetaPQ_corr);
+  tree->Branch("wPhiLab_corr", &w.PhiLab_corr);
+  tree->Branch("wThetaLab_corr", &w.ThetaLab_corr);
   tree->Branch("wPt2_corr", &w.Pt2_corr);
   tree->Branch("wPl2_corr", &w.Pl2_corr);
   tree->Branch("wMx2_corr", &w.Mx2_corr);
@@ -755,10 +829,11 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("pimpi0P", &m.pimpi0P);
   tree->Branch("pimpi0E", &m.pimpi0E);
   tree->Branch("pimpi0M", &m.pimpi0M);
-  // number of particles in that event (3)
+  // number of particles in that event (4)
   tree->Branch("nPip",   &m.nPip);
   tree->Branch("nPim",   &m.nPim);
   tree->Branch("nGamma", &m.nGamma);
+  tree->Branch("cIndex", &m.cIndex);
   // event related (2)
   tree->Branch("Entry", &m.Entry, "Entry[4]/F");
   // (72 variables for gsim)
@@ -778,6 +853,8 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("mc_Pez", &mc_m.Pez);
   tree->Branch("mc_Pe", &mc_m.Pe);
   tree->Branch("mc_BettaEl", &mc_m.BettaEl);
+  tree->Branch("mc_PhiLabEl", &mc_m.PhiLabEl);
+  tree->Branch("mc_ThetaLabEl", &mc_m.ThetaLabEl);
   tree->Branch("mc_P2e", &mc_m.P2e);
   // particle (25)
   tree->Branch("mc_vxh", &mc_m.vxh, "mc_vxh[4]/F");
@@ -796,13 +873,15 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("mc_P2", &mc_m.P2, "mc_P2[4]/F");
   tree->Branch("mc_P", &mc_m.P, "mc_P[4]/F");
   tree->Branch("mc_Z", &mc_m.Z, "mc_Z[4]/F");
-  tree->Branch("mc_ThetaPQ", &mc_m.ThetaPQ, "mc_ThetaPQ[4]/F");
   tree->Branch("mc_Pt2", &mc_m.Pt2, "mc_Pt2[4]/F");
   tree->Branch("mc_Pl2", &mc_m.Pl2, "mc_Pl2[4]/F");
   tree->Branch("mc_PhiPQ", &mc_m.PhiPQ, "mc_PhiPQ[4]/F");
+  tree->Branch("mc_ThetaPQ", &mc_m.ThetaPQ, "mc_ThetaPQ[4]/F");
+  tree->Branch("mc_CosThetaPQ", &mc_m.CosThetaPQ, "mc_CosThetaPQ[4]/F");
+  tree->Branch("mc_PhiLab", &mc_m.PhiLab, "mc_PhiLab[4]/F");
+  tree->Branch("mc_ThetaLab", &mc_m.ThetaLab, "mc_ThetaLab[4]/F");
   tree->Branch("mc_Mx2", &mc_m.Mx2, "mc_Mx2[4]/F");
   tree->Branch("mc_T", &mc_m.T, "mc_T[4]/F");
-  tree->Branch("mc_CosThetaPQ", &mc_m.CosThetaPQ, "mc_CosThetaPQ[4]/F");
   tree->Branch("mc_BettaCalc", &mc_m.BettaCalc, "mc_BettaCalc[4]/F");
   tree->Branch("mc_deltaTheta", &mc_m.deltaTheta, "mc_deltaTheta[4]/F");
   // pi0 (8)
@@ -822,11 +901,13 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("mc_wP2", &mc_w.P2);
   tree->Branch("mc_wE", &mc_w.E);
   tree->Branch("mc_wZ", &mc_w.Z);
-  tree->Branch("mc_wCosThetaPQ", &mc_w.CosThetaPQ);
-  tree->Branch("mc_wThetaPQ", &mc_w.ThetaPQ);
   tree->Branch("mc_wPt2", &mc_w.Pt2);
   tree->Branch("mc_wPl2", &mc_w.Pl2);
   tree->Branch("mc_wPhiPQ", &mc_w.PhiPQ);
+  tree->Branch("mc_wThetaPQ", &mc_w.ThetaPQ);
+  tree->Branch("mc_wCosThetaPQ", &mc_w.CosThetaPQ);
+  tree->Branch("mc_wPhiLab", &mc_w.PhiLab);
+  tree->Branch("mc_wThetaLab", &mc_w.ThetaLab);
   tree->Branch("mc_wMx2", &mc_w.Mx2);
   tree->Branch("mc_wT", &mc_w.T);
   tree->Branch("mc_wBettaCalc", &mc_w.BettaCalc);
@@ -844,12 +925,13 @@ void SetMixBranches(TTree *tree, simrec_m& m, simrec_pi0& pi0, simrec_w& w, gsim
   tree->Branch("mc_pimpi0E", &mc_m.pimpi0E);
   tree->Branch("mc_pimpi0M", &mc_m.pimpi0M);
   // number of particles (3)
-  tree->Branch("mc_nPip", &mc_m.nPip);
-  tree->Branch("mc_nPim", &mc_m.nPim);
+  tree->Branch("mc_nPip",   &mc_m.nPip);
+  tree->Branch("mc_nPim",   &mc_m.nPim);
   tree->Branch("mc_nGamma", &mc_m.nGamma);
-    // event related (2)
+  tree->Branch("mc_cIndex", &mc_m.cIndex);
+  // event related (2)
   tree->Branch("mc_Entry", &mc_m.Entry, "mc_Entry[4]/F");
-  tree->Branch("Event", &mc_m.Event);
+  tree->Branch("Event",    &mc_m.Event);
 }
 
 void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
@@ -870,6 +952,8 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   m.Pe = INVLD;
   m.P2e = INVLD;
   m.BettaEl = INVLD;
+  m.PhiLabEl = INVLD;
+  m.ThetaLabEl = INVLD;
   m.Etote = INVLD;
   m.Eine  = INVLD;
   m.Eoute = INVLD;
@@ -879,6 +963,7 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   m.XECe = INVLD;
   m.YECe = INVLD;
   m.ZECe = INVLD;
+  // electron status (20)
   m.StatDCEl   = INVLD;
   m.DCStatusEl = INVLD;
   m.StatECEl   = INVLD;
@@ -895,6 +980,10 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   m.NpheEl     = INVLD;
   m.Chi2CCEl   = INVLD;
   m.StatusEl   = INVLD;
+  m.NRowsDCEl  = INVLD;
+  m.NRowsECEl  = INVLD;
+  m.NRowsSCEl  = INVLD;
+  m.NRowsCCEl  = INVLD;
   for (Int_t index = 0; index < 4; index++) {
     // independent variables (16)
     m.vxh[index] = INVLD;
@@ -939,6 +1028,8 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
     m.PhiPQ[index]   = INVLD;
     m.ThetaPQ[index] = INVLD;
     m.CosThetaPQ[index] = INVLD;
+    m.PhiLab[index]   = INVLD;
+    m.ThetaLab[index] = INVLD;
     m.Pt2[index] = INVLD;
     m.Pl2[index] = INVLD;
     m.deltaTheta[index] = INVLD;
@@ -962,6 +1053,10 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
     m.Nphe[index]     = INVLD;
     m.Chi2CC[index]   = INVLD;
     m.Status[index]   = INVLD;
+    m.NRowsDC[index]  = INVLD;
+    m.NRowsEC[index]  = INVLD;
+    m.NRowsSC[index]  = INVLD;
+    m.NRowsCC[index]  = INVLD;
     // last but not least
     m.Entry[index] = INVLD;
   }
@@ -1005,6 +1100,8 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.PhiPQ_prev = INVLD;
   w.ThetaPQ_prev = INVLD;
   w.CosThetaPQ_prev = INVLD;
+  w.PhiLab_prev = INVLD;
+  w.ThetaLab_prev = INVLD;
   w.Pt2_prev = INVLD;
   w.Pl2_prev = INVLD;
   w.Mx2_prev = INVLD;
@@ -1024,6 +1121,8 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.PhiPQ_true = INVLD;
   w.ThetaPQ_true = INVLD;
   w.CosThetaPQ_true = INVLD;
+  w.PhiLab_true = INVLD;
+  w.ThetaLab_true = INVLD;
   w.Pt2_true = INVLD;
   w.Pl2_true = INVLD;
   w.Mx2_true = INVLD;
@@ -1043,6 +1142,8 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.PhiPQ_corr = INVLD;
   w.ThetaPQ_corr = INVLD;
   w.CosThetaPQ_corr = INVLD;
+  w.PhiLab_corr = INVLD;
+  w.ThetaLab_corr = INVLD;
   w.Pt2_corr = INVLD;
   w.Pl2_corr = INVLD;
   w.Mx2_corr = INVLD;
@@ -1059,10 +1160,11 @@ void NullMixVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   m.pimpi0P = INVLD;
   m.pimpi0E = INVLD;
   m.pimpi0M = INVLD;
-  // number of particles (3)
+  // number of particles (4)
   m.nGamma = INVLD;
   m.nPip   = INVLD;
   m.nPim   = INVLD;
+  m.cIndex = INVLD;
 }
 
 void AssignMixVar_SIMREC(simrec_i& t, simrec_m& m, Int_t entry, Int_t index) {
@@ -1082,7 +1184,9 @@ void AssignMixVar_SIMREC(simrec_i& t, simrec_m& m, Int_t entry, Int_t index) {
   m.Pez = t.Pez;
   m.Pe  = t.Pe;
   m.P2e = m.Pe*m.Pe;
-  m.BettaEl = t.BettaEl;
+  m.BettaEl    = t.BettaEl;
+  m.PhiLabEl   = PhiLab(m.Pex, m.Pey, m.Pez);
+  m.ThetaLabEl = ThetaLab(m.Pex, m.Pey, m.Pez);
   m.Etote = t.Etote;
   m.Eine  = t.Eine;
   m.Eoute = t.Eoute;
@@ -1108,6 +1212,10 @@ void AssignMixVar_SIMREC(simrec_i& t, simrec_m& m, Int_t entry, Int_t index) {
   m.NpheEl     = t.NpheEl;
   m.Chi2CCEl   = t.Chi2CCEl;
   m.StatusEl   = t.StatusEl;
+  m.NRowsDCEl  = t.NRowsDCEl;
+  m.NRowsECEl  = t.NRowsECEl;
+  m.NRowsSCEl  = t.NRowsSCEl;
+  m.NRowsCCEl  = t.NRowsCCEl;
   // independent variables (16)
   m.vxh[index] = t.vxh;
   m.vyh[index] = t.vyh;
@@ -1151,6 +1259,8 @@ void AssignMixVar_SIMREC(simrec_i& t, simrec_m& m, Int_t entry, Int_t index) {
   m.PhiPQ[index]      = PhiPQ(t.Pex, t.Pey, t.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.ThetaPQ[index]    = ThetaPQ(t.Pex, t.Pey, t.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.CosThetaPQ[index] = ((kEbeam - m.Pez)*m.Pz_corr[index] - m.Pex*m.Px_corr[index] - m.Pey*m.Py_corr[index])/(TMath::Sqrt(m.P2_corr[index]*(m.Q2 + m.Nu*m.Nu)));
+  m.PhiLab[index]     = PhiLab(m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
+  m.ThetaLab[index]   = ThetaLab(m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
   m.Pt2[index]        = m.P2_corr[index]*(1 - m.CosThetaPQ[index]*m.CosThetaPQ[index]);
   m.Pl2[index]        = m.P2_corr[index]*m.CosThetaPQ[index]*m.CosThetaPQ[index];
   m.deltaTheta[index] = DeltaTheta(m.Pex, m.Pey, m.Pez, m.Px_corr[index], m.Py_corr[index], m.Pz_corr[index]);
@@ -1174,16 +1284,20 @@ void AssignMixVar_SIMREC(simrec_i& t, simrec_m& m, Int_t entry, Int_t index) {
   m.Nphe[index]     = t.Nphe;
   m.Chi2CC[index]   = t.Chi2CC;
   m.Status[index]   = t.Status;
+  m.NRowsDC[index]  = t.NRowsDC;
+  m.NRowsEC[index]  = t.NRowsEC;
+  m.NRowsSC[index]  = t.NRowsSC;
+  m.NRowsCC[index]  = t.NRowsCC;
   // event-related (1)
   m.Entry[index] = (Float_t) entry;  
 }
 
-void AssignMoreVar_SIMREC(simrec_m& m, Int_t nPipThisEvent, Int_t nPimThisEvent, Int_t nGammaThisEvent) {
-  m.nPip = nPipThisEvent;
-  m.nPim = nPimThisEvent;
+void AssignMoreVar_SIMREC(simrec_m& m, Int_t nPipThisEvent, Int_t nPimThisEvent, Int_t nGammaThisEvent, Int_t cIndex) {
+  m.nPip   = nPipThisEvent;
+  m.nPim   = nPimThisEvent;
   m.nGamma = nGammaThisEvent;
+  m.cIndex = (Float_t) cIndex;
 }
-
 
 void AssignPi0Var_SIMREC(simrec_m& m, simrec_pi0& pi0) {
   // pi0 prev (8)
@@ -1235,9 +1349,11 @@ void AssignOmegaVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.M_prev  = TMath::Sqrt(w.E_prev*w.E_prev - w.P2_prev);
   w.D_prev  = w.M_prev - pi0.M_prev + kMpi0;
   w.Z_prev  = w.E_prev/m.Nu;
-  w.PhiPQ_prev = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
-  w.ThetaPQ_prev = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
+  w.PhiPQ_prev      = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
+  w.ThetaPQ_prev    = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_prev, w.Py_prev, w.Pz_prev);
   w.CosThetaPQ_prev = ((kEbeam - m.Pez)*w.Pz_prev - m.Pex*w.Px_prev - m.Pey*w.Py_prev)/(TMath::Sqrt(w.P2_prev*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_prev     = PhiLab(w.Px_prev, w.Py_prev, w.Pz_prev);
+  w.ThetaLab_prev   = ThetaLab(w.Px_prev, w.Py_prev, w.Pz_prev);
   w.Pt2_prev = w.P2_prev*(1 - w.CosThetaPQ_prev*w.CosThetaPQ_prev);
   w.Pl2_prev = w.P2_prev*w.CosThetaPQ_prev*w.CosThetaPQ_prev;
   w.Mx2_prev = m.W*m.W + w.M_prev*w.M_prev - 2*w.Z_prev*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_prev*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_prev*m.Nu;
@@ -1254,9 +1370,11 @@ void AssignOmegaVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.M_true  = TMath::Sqrt(w.E_true*w.E_true - w.P2_true);
   w.D_true  = w.M_true - pi0.M_true + kMpi0;
   w.Z_true  = w.E_true/m.Nu;
-  w.PhiPQ_true = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
-  w.ThetaPQ_true = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
+  w.PhiPQ_true      = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
+  w.ThetaPQ_true    = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_true, w.Py_true, w.Pz_true);
   w.CosThetaPQ_true = ((kEbeam - m.Pez)*w.Pz_true - m.Pex*w.Px_true - m.Pey*w.Py_true)/(TMath::Sqrt(w.P2_true*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_true     = PhiLab(w.Px_true, w.Py_true, w.Pz_true);
+  w.ThetaLab_true   = ThetaLab(w.Px_true, w.Py_true, w.Pz_true);
   w.Pt2_true = w.P2_true*(1 - w.CosThetaPQ_true*w.CosThetaPQ_true);
   w.Pl2_true = w.P2_true*w.CosThetaPQ_true*w.CosThetaPQ_true;
   w.Mx2_true = m.W*m.W + w.M_true*w.M_true - 2*w.Z_true*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_true*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_true*m.Nu;
@@ -1273,9 +1391,11 @@ void AssignOmegaVar_SIMREC(simrec_m& m, simrec_pi0& pi0, simrec_w& w) {
   w.M_corr  = TMath::Sqrt(w.E_corr*w.E_corr - w.P2_corr);
   w.D_corr  = w.M_corr - pi0.M_corr + kMpi0;
   w.Z_corr  = w.E_corr/m.Nu;
-  w.PhiPQ_corr = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
-  w.ThetaPQ_corr = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
+  w.PhiPQ_corr      = PhiPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
+  w.ThetaPQ_corr    = ThetaPQ(m.Pex, m.Pey, m.Pez, w.Px_corr, w.Py_corr, w.Pz_corr);
   w.CosThetaPQ_corr = ((kEbeam - m.Pez)*w.Pz_corr - m.Pex*w.Px_corr - m.Pey*w.Py_corr)/(TMath::Sqrt(w.P2_corr*(m.Q2 + m.Nu*m.Nu)));
+  w.PhiLab_corr     = PhiLab(w.Px_corr, w.Py_corr, w.Pz_corr);
+  w.ThetaLab_corr   = ThetaLab(w.Px_corr, w.Py_corr, w.Pz_corr);
   w.Pt2_corr = w.P2_corr*(1 - w.CosThetaPQ_corr*w.CosThetaPQ_corr);
   w.Pl2_corr = w.P2_corr*w.CosThetaPQ_corr*w.CosThetaPQ_corr;
   w.Mx2_corr = m.W*m.W + w.M_corr*w.M_corr - 2*w.Z_corr*m.Nu*m.Nu + 2*TMath::Sqrt(w.Pl2_corr*(m.Nu*m.Nu + m.Q2)) - 2*kMproton*w.Z_corr*m.Nu;
@@ -1301,6 +1421,8 @@ void AssignMixVar_GSIM(gsim_i& mc_t, gsim_m& mc_m, Int_t entry, Int_t index) {
   mc_m.Pez = mc_t.Pez;
   mc_m.Pe = mc_t.Pe;
   mc_m.BettaEl = mc_t.BettaEl;
+  mc_m.PhiLabEl   = PhiLab(mc_m.Pex, mc_m.Pey, mc_m.Pez);
+  mc_m.ThetaLabEl = ThetaLab(mc_m.Pex, mc_m.Pey, mc_m.Pez);
   mc_m.P2e = mc_m.Pe*mc_m.Pe;
   // particle (25)
   mc_m.vxh[index] = mc_t.vxh;
@@ -1316,10 +1438,10 @@ void AssignMixVar_GSIM(gsim_i& mc_t, gsim_m& mc_m, Int_t entry, Int_t index) {
   mc_m.Pz[index] = mc_t.Pz;
   mc_m.P[index] = mc_t.P;
   mc_m.Z[index] = mc_t.Zh;
-  mc_m.ThetaPQ[index] = mc_t.ThetaPQ;
   mc_m.Pt2[index] = mc_t.Pt2;
   mc_m.Pl2[index] = mc_t.Pl2;
-  mc_m.PhiPQ[index] = mc_t.PhiPQ;
+  mc_m.PhiPQ[index]   = mc_t.PhiPQ;
+  mc_m.ThetaPQ[index] = mc_t.ThetaPQ;
   mc_m.Mx2[index] = mc_t.Mx2;
   mc_m.T[index] = mc_t.T;
   // recalc
@@ -1327,11 +1449,20 @@ void AssignMixVar_GSIM(gsim_i& mc_t, gsim_m& mc_m, Int_t entry, Int_t index) {
   mc_m.M[index]  = particleMass(mc_m.Pid[index]);
   mc_m.E[index]  = TMath::Sqrt(mc_m.P2[index] + mc_m.M[index]*mc_m.M[index]);
   mc_m.CosThetaPQ[index] = ((kEbeam - mc_m.Pez)*mc_m.Pz[index] - mc_m.Pex*mc_m.Px[index] - mc_m.Pey*mc_m.Py[index])/(TMath::Sqrt(mc_m.P2[index]*(mc_m.Q2 + mc_m.Nu*mc_m.Nu)));
+  mc_m.PhiLab[index]   = PhiLab(mc_m.Px[index], mc_m.Py[index], mc_m.Pz[index]);
+  mc_m.ThetaLab[index] = ThetaLab(mc_m.Px[index], mc_m.Py[index], mc_m.Pz[index]);
   mc_m.deltaTheta[index] = DeltaTheta(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_m.Px[index], mc_m.Py[index], mc_m.Pz[index]);
   mc_m.BettaCalc[index]  = BettaCalc(mc_m.P[index], mc_m.Pid[index]);
   // event-related (2)
   mc_m.Entry[index] = (Float_t) entry;
   mc_m.Event = mc_t.evnt; // important!
+}
+
+void AssignMoreVar_GSIM(gsim_m& mc_m, Int_t nMCPipThisEvent, Int_t nMCPimThisEvent, Int_t nMCGammaThisEvent, Int_t cIndex) {
+  mc_m.nPip   = nMCPipThisEvent;
+  mc_m.nPim   = nMCPimThisEvent;
+  mc_m.nGamma = nMCGammaThisEvent;
+  mc_m.cIndex = (Float_t) cIndex;
 }
 
 void AssignPi0Var_GSIM(gsim_m& mc_m, gsim_pi0& mc_pi0) {
@@ -1360,9 +1491,11 @@ void AssignOmegaVar_GSIM(gsim_m& mc_m, gsim_pi0& mc_pi0, gsim_w& mc_w) {
   mc_w.M  = TMath::Sqrt(mc_w.E*mc_w.E - mc_w.P2);
   mc_w.D  = mc_w.M - mc_pi0.M + kMpi0;
   mc_w.Z  = mc_w.E/mc_m.Nu;
-  mc_w.PhiPQ = PhiPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_w.Px, mc_w.Py, mc_w.Pz);
-  mc_w.ThetaPQ = ThetaPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_w.Px, mc_w.Py, mc_w.Pz);
+  mc_w.PhiPQ      = PhiPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_w.Px, mc_w.Py, mc_w.Pz);
+  mc_w.ThetaPQ    = ThetaPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_w.Px, mc_w.Py, mc_w.Pz);
   mc_w.CosThetaPQ = ((kEbeam - mc_m.Pez)*mc_w.Pz - mc_m.Pex*mc_w.Px - mc_m.Pey*mc_w.Py)/(TMath::Sqrt(mc_w.P2*(mc_m.Q2 + mc_m.Nu*mc_m.Nu)));
+  mc_w.PhiLab     = PhiLab(mc_w.Px, mc_w.Py, mc_w.Pz);
+  mc_w.ThetaLab   = ThetaLab(mc_w.Px, mc_w.Py, mc_w.Pz);
   mc_w.Pt2 = mc_w.P2*(1 - mc_w.CosThetaPQ*mc_w.CosThetaPQ);
   mc_w.Pl2 = mc_w.P2*mc_w.CosThetaPQ*mc_w.CosThetaPQ;
   mc_w.Mx2 = mc_m.W*mc_m.W + mc_w.M*mc_w.M - 2*mc_w.Z*mc_m.Nu*mc_m.Nu + 2*TMath::Sqrt(mc_w.Pl2*(mc_m.Nu*mc_m.Nu + mc_m.Q2)) - 2*kMproton*mc_w.Z*mc_m.Nu;
@@ -1481,6 +1614,24 @@ Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t f
   fThetaPQ = virt.Angle(hadr)*TMath::RadToDeg();
 
   return fThetaPQ;
+}
+
+Float_t PhiLab(Float_t fPx, Float_t fPy, Float_t fPz) {
+  // Returns the azimuthal angle in Lab frame for the particle
+  TVector3 v3p(fPx, fPy, fPz);
+  Double_t fPhiLab = v3p.Phi()*TMath::RadToDeg();
+  if (fPhiLab < -30.) {
+    return fPhiLab + 360.;
+  } else if (fPhiLab > 330.) {
+    return fPhiLab - 360.;
+  } // closure
+  return fPhiLab; // default 
+}
+
+Float_t ThetaLab(Float_t fPx, Float_t fPy, Float_t fPz) {
+  // Returns the polar angle in Lab frame for the particle
+  TVector3 v3p(fPx, fPy, fPz);
+  return v3p.Theta()*TMath::RadToDeg();  
 }
 
 Float_t DeltaTheta(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz) {

@@ -12,7 +12,7 @@
 */
 
 struct data_e {
-  // (41 variables)
+  // (45 variables)
   Float_t Q2, W, Nu, Xb, Yb;
   Float_t vxe, vye, vze;
   Float_t Sector;
@@ -22,11 +22,12 @@ struct data_e {
   Float_t TargType;
   Float_t XEC, YEC, ZEC;
   Float_t StatDC, DCStatus, StatEC, ECStatus, TimeEC, PathEC, Chi2EC, StatSC, SCStatus, TimeSC, PathSC, StatCC, CCStatus, Nphe, Chi2CC, Status;
+  Float_t NRowsDC, NRowsEC, NRowsSC, NRowsCC;
   Float_t evnt;
 };
 
 struct data_p {
-  // (83 variables)
+  // (91 variables)
   // electron
   Float_t Q2, W, Nu, Xb, Yb;
   Float_t vxe, vye, vze;
@@ -37,6 +38,7 @@ struct data_p {
   Float_t TargType;
   Float_t XECe, YECe, ZECe;
   Float_t StatDCEl, DCStatusEl, StatECEl, ECStatusEl, TimeECEl, PathECEl, Chi2ECEl, StatSCEl, SCStatusEl, TimeSCEl, PathSCEl, StatCCEl, CCStatusEl, NpheEl, Chi2CCEl, StatusEl;
+  Float_t NRowsDCEl, NRowsECEl, NRowsSCEl, NRowsCCEl;
   // particle
   Float_t Zh, ThetaPQ, Pt2, Pl2, PhiPQ, Mx2, T;
   Float_t vxh, vyh, vzh;
@@ -46,13 +48,14 @@ struct data_p {
   Float_t XEC, YEC, ZEC;
   Float_t pid, T4, deltaZ;
   Float_t StatDC, DCStatus, StatEC, ECStatus, TimeEC, PathEC, Chi2EC, StatSC, SCStatus, TimeSC, PathSC, StatCC, CCStatus, Nphe, Chi2CC, Status;
+  Float_t NRowsDC, NRowsEC, NRowsSC, NRowsCC;
   // event
   Float_t evnt;
 };
 
 struct sim_e {
-  // (56 variables)
-  // simrec (41)
+  // (60 variables)
+  // simrec (45)
   Float_t Q2, W, Nu, Xb, Yb;
   Float_t vxe, vye, vze;
   Float_t Sector;
@@ -62,6 +65,7 @@ struct sim_e {
   Float_t vxec, vyec, vzec;
   Float_t XEC, YEC, ZEC;
   Float_t StatDC, DCStatus, StatEC, ECStatus, TimeEC, PathEC, Chi2EC, StatSC, SCStatus, TimeSC, PathSC, StatCC, CCStatus, Nphe, Chi2CC, Status;
+  Float_t NRowsDC, NRowsEC, NRowsSC, NRowsCC;
   Float_t evnt;
   // gsim (15)
   Float_t mc_Q2, mc_W, mc_Nu, mc_Xb, mc_Yb;
@@ -73,8 +77,8 @@ struct sim_e {
 };
 
 struct sim_p {
-  // (117 variables)
-  // simrec electron (40)
+  // (125 variables)
+  // simrec electron (44)
   Float_t Q2, W, Nu, Xb, Yb;
   Float_t vxe, vye, vze;
   Float_t SectorEl, TargType;
@@ -83,7 +87,8 @@ struct sim_p {
   Float_t vxec, vyec, vzec;
   Float_t XECe, YECe, ZECe;
   Float_t StatDCEl, DCStatusEl, StatECEl, ECStatusEl, TimeECEl, PathECEl, Chi2ECEl, StatSCEl, SCStatusEl, TimeSCEl, PathSCEl, StatCCEl, CCStatusEl, NpheEl, Chi2CCEl, StatusEl;
-  // simrec particle (42)
+  Float_t NRowsDCEl, NRowsECEl, NRowsSCEl, NRowsCCEl;
+  // simrec particle (46)
   Float_t Zh, ThetaPQ, Pt2, Pl2, PhiPQ, Mx2, T;
   Float_t vxh, vyh, vzh;
   Float_t Sector;
@@ -93,6 +98,7 @@ struct sim_p {
   Float_t pid;
   Float_t T4, deltaZ;
   Float_t StatDC, DCStatus, StatEC, ECStatus, TimeEC, PathEC, Chi2EC, StatSC, SCStatus, TimeSC, PathSC, StatCC, CCStatus, Nphe, Chi2CC, Status;
+  Float_t NRowsDC, NRowsEC, NRowsSC, NRowsCC;
   // event-related (1)
   Float_t evnt;
   // gsim electron (15)

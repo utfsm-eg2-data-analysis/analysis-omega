@@ -28,6 +28,7 @@ void SetElectronBranches_Data(TTree *tree, data_e& de) {
   tree->Branch("XEC",      &de.XEC);
   tree->Branch("YEC",      &de.YEC);
   tree->Branch("ZEC",      &de.ZEC);
+  // status (20)
   tree->Branch("StatDC",   &de.StatDC);
   tree->Branch("DCStatus", &de.DCStatus);
   tree->Branch("StatEC",   &de.StatEC);
@@ -44,6 +45,10 @@ void SetElectronBranches_Data(TTree *tree, data_e& de) {
   tree->Branch("Nphe",     &de.Nphe);
   tree->Branch("Chi2CC",   &de.Chi2CC);
   tree->Branch("Status",   &de.Status);
+  tree->Branch("NRowsDC",  &de.NRowsDC);
+  tree->Branch("NRowsEC",  &de.NRowsEC);
+  tree->Branch("NRowsSC",  &de.NRowsSC);
+  tree->Branch("NRowsCC",  &de.NRowsCC);
   tree->Branch("evnt",     &de.evnt);
 }
 
@@ -73,6 +78,7 @@ void SetParticleBranches_Data(TTree *tree, data_p& dp) {
   tree->Branch("XECe",       &dp.XECe);
   tree->Branch("YECe",       &dp.YECe);
   tree->Branch("ZECe",       &dp.ZECe);
+  // status (20)
   tree->Branch("StatDCEl",   &dp.StatDCEl);
   tree->Branch("DCStatusEl", &dp.DCStatusEl);
   tree->Branch("StatECEl",   &dp.StatECEl);
@@ -89,6 +95,10 @@ void SetParticleBranches_Data(TTree *tree, data_p& dp) {
   tree->Branch("NpheEl",     &dp.NpheEl);
   tree->Branch("Chi2CCEl",   &dp.Chi2CCEl);
   tree->Branch("StatusEl",   &dp.StatusEl);
+  tree->Branch("NRowsDCEl",  &dp.NRowsDCEl);
+  tree->Branch("NRowsECEl",  &dp.NRowsECEl);
+  tree->Branch("NRowsSCEl",  &dp.NRowsSCEl);
+  tree->Branch("NRowsCCEl",  &dp.NRowsCCEl);
   // particle
   tree->Branch("Zh",       &dp.Zh);
   tree->Branch("ThetaPQ",  &dp.ThetaPQ);
@@ -116,6 +126,7 @@ void SetParticleBranches_Data(TTree *tree, data_p& dp) {
   tree->Branch("pid",      &dp.pid);
   tree->Branch("T4",       &dp.T4);
   tree->Branch("deltaZ",   &dp.deltaZ);
+  // status (20)
   tree->Branch("StatDC",   &dp.StatDC);
   tree->Branch("DCStatus", &dp.DCStatus);
   tree->Branch("StatEC",   &dp.StatEC);
@@ -132,6 +143,10 @@ void SetParticleBranches_Data(TTree *tree, data_p& dp) {
   tree->Branch("Nphe",     &dp.Nphe);
   tree->Branch("Chi2CC",   &dp.Chi2CC);
   tree->Branch("Status",   &dp.Status);
+  tree->Branch("NRowsDC",  &dp.NRowsDC);
+  tree->Branch("NRowsEC",  &dp.NRowsEC);
+  tree->Branch("NRowsSC",  &dp.NRowsSC);
+  tree->Branch("NRowsCC",  &dp.NRowsCC);
   // event
   tree->Branch("evnt", &dp.evnt);
 }
@@ -178,6 +193,10 @@ void AssignElectronVar_Data(TIdentificatorV2* t, data_e& de, Int_t evnt, TString
   de.Nphe     = t->Nphe(0);
   de.Chi2CC   = t->Chi2CC(0);
   de.Status   = t->Status(0);
+  de.NRowsDC  = t->NRowsDC();
+  de.NRowsEC  = t->NRowsEC();
+  de.NRowsSC  = t->NRowsSC();
+  de.NRowsCC  = t->NRowsCC();
   de.evnt     = evnt;
 }
 
@@ -224,6 +243,10 @@ void AssignParticleVar_Data(TIdentificatorV2* t, data_p& dp, Int_t row, Int_t ev
   dp.NpheEl     = t->Nphe(0);
   dp.Chi2CCEl   = t->Chi2CC(0);
   dp.StatusEl   = t->Status(0);
+  dp.NRowsDCEl  = t->NRowsDC();
+  dp.NRowsECEl  = t->NRowsEC();
+  dp.NRowsSCEl  = t->NRowsSC();
+  dp.NRowsCCEl  = t->NRowsCC();
   // particle
   dp.pid        = particleID(t->GetCategorization(row, targetOption));
   Float_t mass  = particleMass(dp.pid);
@@ -268,5 +291,9 @@ void AssignParticleVar_Data(TIdentificatorV2* t, data_p& dp, Int_t row, Int_t ev
   dp.Nphe       = t->Nphe(row);
   dp.Chi2CC     = t->Chi2CC(row);
   dp.Status     = t->Status(row);
+  dp.NRowsDC    = t->NRowsDC();
+  dp.NRowsEC    = t->NRowsEC();
+  dp.NRowsSC    = t->NRowsSC();
+  dp.NRowsCC    = t->NRowsCC();
   dp.evnt       = evnt;
 }

@@ -5,7 +5,7 @@
 /*                                       */
 /*****************************************/
 
-// October 2020, reworked version
+// November 2020
 
 #include "FilterNCombine_data.h"
 
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
     for (Int_t cc = 0; cc < (Int_t) combVector.size(); cc++) { // loop on combinations
       for (Int_t pp = 0; pp < 4; pp++) { // loop on final state particles
 	tree->GetEntry(combVector[cc][pp]);
-	AssignMixVar(t, m, combVector[cc][pp], pp, targetOption);
+	AssignMixVar(t, m, combVector[cc][pp], pp, targetOption, cc);
       } // end of loop on fs particles
       // asign more vars
       m.nPip   = nPipThisEvent;

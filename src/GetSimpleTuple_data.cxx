@@ -5,7 +5,8 @@
 /*                                     */
 /***************************************/
 
-// developed on October 2020, independent of Analyser
+// November 2020
+// Independent of Analyser
 
 #include "GetSimpleTuple_data.h"
 

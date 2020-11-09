@@ -51,6 +51,10 @@ void SetElectronBranches_Sim(TTree *tree, sim_e& se) {
   tree->Branch("Nphe",     &se.Nphe);
   tree->Branch("Chi2CC",   &se.Chi2CC);
   tree->Branch("Status",   &se.Status);
+  tree->Branch("NRowsDC",  &se.NRowsDC);
+  tree->Branch("NRowsEC",  &se.NRowsEC);
+  tree->Branch("NRowsSC",  &se.NRowsSC);
+  tree->Branch("NRowsCC",  &se.NRowsCC);
   tree->Branch("evnt",     &se.evnt);
   // gsim (15)
   tree->Branch("mc_Q2",       &se.mc_Q2);
@@ -112,6 +116,10 @@ void SetParticleBranches_Sim(TTree *tree, sim_p& sp) {
   tree->Branch("NpheEl",     &sp.NpheEl);
   tree->Branch("Chi2CCEl",   &sp.Chi2CCEl);
   tree->Branch("StatusEl",   &sp.StatusEl);
+  tree->Branch("NRowsDCEl",  &sp.NRowsDCEl);
+  tree->Branch("NRowsECEl",  &sp.NRowsECEl);
+  tree->Branch("NRowsSCEl",  &sp.NRowsSCEl);
+  tree->Branch("NRowsCCEl",  &sp.NRowsCCEl);
   // simrec particle (42)
   tree->Branch("Zh",       &sp.Zh);
   tree->Branch("ThetaPQ",  &sp.ThetaPQ);
@@ -155,8 +163,12 @@ void SetParticleBranches_Sim(TTree *tree, sim_p& sp) {
   tree->Branch("Nphe",     &sp.Nphe);
   tree->Branch("Chi2CC",   &sp.Chi2CC);
   tree->Branch("Status",   &sp.Status);
+  tree->Branch("NRowsDC",  &sp.NRowsDC);
+  tree->Branch("NRowsEC",  &sp.NRowsEC);
+  tree->Branch("NRowsSC",  &sp.NRowsSC);
+  tree->Branch("NRowsCC",  &sp.NRowsCC);
   // event-related (1)
-  tree->Branch("evnt",     &sp.evnt);
+  tree->Branch("evnt", &sp.evnt);
   // gsim electron (15)
   tree->Branch("mc_Q2",       &sp.mc_Q2);
   tree->Branch("mc_W",        &sp.mc_W);
@@ -237,50 +249,58 @@ void NullElectronVar_SIMREC(sim_e& se) {
   se.Nphe     = INVLD;
   se.Chi2CC   = INVLD;
   se.Status   = INVLD;  
+  se.NRowsDC  = INVLD;
+  se.NRowsEC  = INVLD;
+  se.NRowsSC  = INVLD;
+  se.NRowsCC  = INVLD;
 }
 
 void NullParticleVar_SIMREC(sim_p& sp) {
   // electron (40)
-  sp.Q2       = INVLD;
-  sp.W        = INVLD;
-  sp.Nu       = INVLD;
-  sp.Xb       = INVLD;
-  sp.Yb       = INVLD;
-  sp.vxe      = INVLD;
-  sp.vye      = INVLD;
-  sp.vze      = INVLD;
-  sp.Sector   = INVLD;
-  sp.Px       = INVLD;
-  sp.Py       = INVLD;
-  sp.Pz       = INVLD;
-  sp.P        = INVLD;
-  sp.Betta    = INVLD;
-  sp.Etot     = INVLD;
-  sp.Ein      = INVLD;
-  sp.Eout     = INVLD;
-  sp.vxec     = INVLD;
-  sp.vyec     = INVLD;
-  sp.vzec     = INVLD;
-  sp.TargType = INVLD;
-  sp.XEC      = INVLD;
-  sp.YEC      = INVLD;
-  sp.ZEC      = INVLD;
-  sp.StatDC   = INVLD;
-  sp.DCStatus = INVLD;
-  sp.StatEC   = INVLD;
-  sp.ECStatus = INVLD;
-  sp.TimeEC   = INVLD;
-  sp.PathEC   = INVLD;
-  sp.Chi2EC   = INVLD;
-  sp.StatSC   = INVLD;
-  sp.SCStatus = INVLD;
-  sp.TimeSC   = INVLD;
-  sp.PathSC   = INVLD;
-  sp.StatCC   = INVLD;
-  sp.CCStatus = INVLD;
-  sp.Nphe     = INVLD;
-  sp.Chi2CC   = INVLD;
-  sp.Status   = INVLD;
+  sp.Q2         = INVLD;
+  sp.W          = INVLD;
+  sp.Nu         = INVLD;
+  sp.Xb         = INVLD;
+  sp.Yb         = INVLD;
+  sp.vxe        = INVLD;
+  sp.vye        = INVLD;
+  sp.vze        = INVLD;
+  sp.SectorEl   = INVLD;
+  sp.Pex        = INVLD;
+  sp.Pey        = INVLD;
+  sp.Pez        = INVLD;
+  sp.Pe         = INVLD;
+  sp.BettaEl    = INVLD;
+  sp.Etote      = INVLD;
+  sp.Eine       = INVLD;
+  sp.Eoute      = INVLD;
+  sp.vxec       = INVLD;
+  sp.vyec       = INVLD;
+  sp.vzec       = INVLD;
+  sp.TargType   = INVLD;
+  sp.XECe       = INVLD;
+  sp.YECe       = INVLD;
+  sp.ZECe       = INVLD;
+  sp.StatDCEl   = INVLD;
+  sp.DCStatusEl = INVLD;
+  sp.StatECEl   = INVLD;
+  sp.ECStatusEl = INVLD;
+  sp.TimeECEl   = INVLD;
+  sp.PathECEl   = INVLD;
+  sp.Chi2ECEl   = INVLD;
+  sp.StatSCEl   = INVLD;
+  sp.SCStatusEl = INVLD;
+  sp.TimeSCEl   = INVLD;
+  sp.PathSCEl   = INVLD;
+  sp.StatCCEl   = INVLD;
+  sp.CCStatusEl = INVLD;
+  sp.NpheEl     = INVLD;
+  sp.Chi2CCEl   = INVLD;
+  sp.StatusEl   = INVLD;
+  sp.NRowsDCEl  = INVLD;
+  sp.NRowsECEl  = INVLD;
+  sp.NRowsSCEl  = INVLD;
+  sp.NRowsCCEl  = INVLD;
   // particle (42)
   sp.pid        = INVLD;
   sp.Zh         = INVLD;
@@ -324,6 +344,10 @@ void NullParticleVar_SIMREC(sim_p& sp) {
   sp.Nphe       = INVLD;
   sp.Chi2CC     = INVLD;
   sp.Status     = INVLD;
+  sp.NRowsDC    = INVLD;
+  sp.NRowsEC    = INVLD;
+  sp.NRowsSC    = INVLD;
+  sp.NRowsCC    = INVLD;
 }
 
 void AssignElectronVar_SIMREC(TIdentificatorV2* t, sim_e& se, Int_t evnt, TString targetOption) {  
@@ -369,6 +393,10 @@ void AssignElectronVar_SIMREC(TIdentificatorV2* t, sim_e& se, Int_t evnt, TStrin
   se.Nphe     = t->Nphe(0);
   se.Chi2CC   = t->Chi2CC(0);
   se.Status   = t->Status(0);
+  se.NRowsDC  = t->NRowsDC();
+  se.NRowsEC  = t->NRowsEC();
+  se.NRowsSC  = t->NRowsSC();
+  se.NRowsCC  = t->NRowsCC();
 }
 
 void AssignElectronVar_GSIM(TIdentificatorV2* t, sim_e& se, Int_t evnt, TString targetOption) {  
@@ -436,6 +464,10 @@ void AssignParticleVar_SIMREC(TIdentificatorV2* t, sim_p& sp, Int_t row, Int_t e
   sp.NpheEl     = t->Nphe(0);
   sp.Chi2CCEl   = t->Chi2CC(0);
   sp.StatusEl   = t->Status(0);
+  sp.NRowsDCEl  = t->NRowsDC();
+  sp.NRowsECEl  = t->NRowsEC();
+  sp.NRowsSCEl  = t->NRowsSC();
+  sp.NRowsCCEl  = t->NRowsCC();
   // simrec particle (42)
   sp.pid        = particleID(t->GetCategorization(row, targetOption));
   Float_t mass  = particleMass(sp.pid);
@@ -480,6 +512,10 @@ void AssignParticleVar_SIMREC(TIdentificatorV2* t, sim_p& sp, Int_t row, Int_t e
   sp.Nphe       = t->Nphe(row);
   sp.Chi2CC     = t->Chi2CC(row);
   sp.Status     = t->Status(row);
+  sp.NRowsDC    = t->NRowsDC();
+  sp.NRowsEC    = t->NRowsEC();
+  sp.NRowsSC    = t->NRowsSC();
+  sp.NRowsCC    = t->NRowsCC();
 }
 
 void AssignParticleVar_GSIM(TIdentificatorV2* t, sim_p& sp, Int_t row, Int_t evnt, TString targetOption) {
