@@ -31,11 +31,10 @@ else
 	LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
 endif
 
-INCLUDES := -I$(ANALYSER)/include\
-               -I$(CLASTOOL)/include -I$(PRODIR)/include
+INCLUDES := -I$(CLASTOOL)/include -I$(PRODIR)/include
 LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
-               -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
+	       -lSpectrum -lEG
 
 PROG := GetSimpleTuple_data GetSimpleTuple_sim GetSimpleTuple_basic\
 	FilterNCombine_data FilterNCombine_sim\

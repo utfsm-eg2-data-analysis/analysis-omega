@@ -24,7 +24,7 @@ source ~/.bashrc
 
 # define important dirs
 TMPDIR=${WORKDIR}/tmp
-JOBDIR=${TMPDIR}/job/data/${tarName}
+
 
 GSTDIR=${WORKDIR}/GetSimpleTuple/data/${tarName}
 FNCDIR=${WORKDIR}/FilterNCombine/data/${tarName}
@@ -33,7 +33,6 @@ INDIR=/data/jlab/mss/clas/eg2a/production/Pass2/Clas
 
 # make dirs, just in case
 mkdir -p ${TMPDIR}
-mkdir -p ${JOBDIR}
 mkdir -p ${GSTDIR} ${FNCDIR}
 
 # obtain run numbers
@@ -49,7 +48,11 @@ nfiles=$(wc -l < ${rnlist})
 for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     # update rn value
     rn=$(sed -n "$COUNTER{p;q}" ${rnlist}) # data from rnlist
-
+    
+    # make node dir
+    JOBDIR=${TMPDIR}/job/data/${tarName}/${rn}
+    mkdir -p ${JOBDIR}
+    
     # setting jobname
     jobname="GF_basic-${tarName}_${rn}"
     jobfile="${JOBDIR}/${jobname}.sh"
