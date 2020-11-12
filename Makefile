@@ -37,7 +37,7 @@ LIBS := $(ROOTGLIBS) -lRooFit -lRooFitCore -lMinuit\
                -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lVirtualReader -lDSTReader -lMathMore -lMatrix\
                -L$(ANALYSER)/slib -lTIdentificator -lSpectrum -lEG
 
-PROG := GetSimpleTuple_data GetSimpleTuple_sim\
+PROG := GetSimpleTuple_data GetSimpleTuple_sim GetSimpleTuple_basic\
 	FilterNCombine_data FilterNCombine_sim\
 	MakePlots_DvD\
 	SetBinning MakeRooFits GetElectronNumber MakeMR\
