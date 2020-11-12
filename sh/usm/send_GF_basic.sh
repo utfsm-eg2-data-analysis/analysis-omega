@@ -64,7 +64,7 @@ for ((COUNTER=1; COUNTER <= ${nfiles}; COUNTER++)); do # ${nfiles} or 1
     echo "#SBATCH -o ${JOBDIR}/${jobname}.out"                        >> ${jobfile}
     echo "#SBATCH -e ${JOBDIR}/${jobname}.err"                        >> ${jobfile}
     echo "#SBATCH --time=4:00:00"                                     >> ${jobfile}
-    echo "#SBATCH --mem=${jobmemory}GB"                               >> ${jobfile}
+    echo "#SBATCH --mem=2GB"                                          >> ${jobfile}
     echo ""                                                           >> ${jobfile}
     # first, set env and copy files into nodedir
     echo "source ${HOME}/.bashrc"                                     >> ${jobfile}
