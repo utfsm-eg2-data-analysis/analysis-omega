@@ -10,6 +10,7 @@
 #include "FilterNCombine_data.hxx"
 
 int main(int argc, char **argv) {
+
   gDataKind = "data";
 
   parseCommandLine(argc, argv);

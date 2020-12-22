@@ -1,4 +1,4 @@
-#include "UI.hxx"
+#include "FilterNCombine_UI.hxx"
 #include "TreeOps.hxx"
 
 #ifndef INVLD

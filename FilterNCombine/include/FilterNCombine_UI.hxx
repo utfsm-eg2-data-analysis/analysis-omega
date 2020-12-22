@@ -1,20 +1,21 @@
-#ifndef UI_HXX
-#define UI_HXX
+#ifndef FILTERNCOMBINE_UI_HXX
+#define FILTERNCOMBINE_UI_HXX
 
 #ifndef HEADERS_HXX
 #include "Headers.hxx"
 #endif
 
-/*** Global Variables ***/
+/*** Global variables ***/
 
 TString gDataKind = "";
 
 TString gTargetOption;
 TString gRunNumber;
 
-// input
 TString gInputFile;
 TString gOutputFile;
+
+/*** Input-related functions ***/
 
 void printUsage() {
   std::cout << "FilterNCombine_" << gDataKind << " program. Usage is:" << std::endl;
