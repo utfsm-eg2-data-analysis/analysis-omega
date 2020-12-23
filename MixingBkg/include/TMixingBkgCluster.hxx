@@ -9,7 +9,6 @@ class TMixingBkgCluster {
   */
 
  public:
-
   TMixingBkgCluster(Int_t N, Int_t M, Int_t L) : NBinsQ2(N), NBinsNu(M), BufferLength(L) {
     // Default constructor
     // first, resize cluster
@@ -77,9 +76,10 @@ class TMixingBkgCluster {
       return 9;
   }
 
-  void Add(Int_t entry, Int_t evnt, Int_t pid, Double_t Q2, Double_t Nu, std::vector<Int_t>& Candidate) {
+  void Add(Int_t entry, Int_t evnt, Int_t pid, Double_t Q2, Double_t Nu, std::vector<Int_t>& Candidate, Double_t fPex, Double_t fPey, Double_t fPez, Double_t fPx, Double_t fPy,
+           Double_t fPz, TVector3* lastElectron, std::vector<TVector3*> rotatedMomentum) {
     if (Q2 > 1. && Q2 < 4. && Nu > 2.2 && Nu < 4.2) {
-      GetBuffer(AssignBinQ2(Q2), AssignBinNu(Nu))->AddParticle(entry, evnt, pid, Candidate);
+      GetBuffer(AssignBinQ2(Q2), AssignBinNu(Nu))->AddParticle(entry, evnt, pid, Candidate, fPex, fPey, fPez, fPx, fPy, fPz, lastElectron, rotatedMomentum);
     }
   }
 
@@ -92,7 +92,6 @@ class TMixingBkgCluster {
   }
 
  private:
-
   Int_t NBinsQ2, NBinsNu;
   Int_t BufferLength;  // same size for all buffers
   std::vector<std::vector<TMixingBkgBuffer>> Cluster;

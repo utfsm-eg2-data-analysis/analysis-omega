@@ -9,6 +9,7 @@
 
 #include "MixingBkg_UI.hxx"
 
+#include "RotatedTreeOps.hxx"
 #include "TMixingBkgCluster.hxx"
 #include "TreeOps.hxx"
 
@@ -50,7 +51,8 @@ int main(int argc, char **argv) {
 
   Int_t Ne = (Int_t)tree->GetEntries();
 #ifdef DEBUG
-  Ne = 1000;
+  Ne = 200;
+#else
 #endif
 
   /*** DEFINITIONS ***/
@@ -64,10 +66,15 @@ int main(int argc, char **argv) {
   // init buffer
   TMixingBkgCluster *theCluster = new TMixingBkgCluster(10, 10, 10);
 
+  // define rotated momentum
+  TVector3* lastElectron = new TVector3(0, 0, 0);
+  std::vector<TVector3 *> rotatedMomentum = {new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0)};
+
   // loop in entries
   for (Int_t i = 0; i <= Ne; i++) {
     tree->GetEntry(i);
-    theCluster->Add(i, t.evnt, t.pid, t.Q2, t.Nu, currentComb);  // (entry, evnt, pid, Q2, Nu, candidate vector)
+    theCluster->Add(i, t.evnt, t.pid, t.Q2, t.Nu, currentComb, t.Pex, t.Pey, t.Pez, t.Px, t.Py, t.Pz,
+                    lastElectron, rotatedMomentum);
 
     // prevents repetition (comparison operators for std::vector were removed in C++20)
     if (currentComb != previousComb) {
@@ -79,11 +86,14 @@ int main(int argc, char **argv) {
       std::cout << "OMEGA CANDIDATE FOUND : ";
       for (Int_t j = 0; j < 4; j++) std::cout << currentComb[j] << " ";
       std::cout << std::endl;
+#else
 #endif
 
       for (Int_t pp = 0; pp < 4; pp++) {  // loop on final state particles
         tree->GetEntry(currentComb[pp]);
         AssignMixVar_REC(t, m, currentComb[pp], pp);  // AssignMixVar_REC(t, m, currentComb[pp], pp)
+        // overwrite momentum-dependent variables
+        AssignRotatedMixVar_REC(m, pp, lastElectron, rotatedMomentum);  // AssignMixVar_REC(m, pp, pMomentum)
       }
       AssignMoreVar_REC(m, 1, 1, 2, 0);  // AssignMoreVar_REC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, number of combination)
       AssignPi0Var_REC(m, pi0);          // AssignPi0Var_REC(m, pi0)
@@ -104,7 +114,8 @@ int main(int argc, char **argv) {
   std::cout << "This file has been created: " << gOutputFile << std::endl;
 
 #ifdef DEBUG
-// theCluster->Print();
+  // theCluster->Print();
+#else
 #endif
 
   return 0;
