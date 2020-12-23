@@ -8,6 +8,7 @@
 // December 2020
 
 #include "MixingBkg_UI.hxx"
+#include "MixingBkg_Math.hxx"
 
 #include "RotatedTreeOps.hxx"
 #include "TMixingBkgCluster.hxx"
@@ -49,9 +50,9 @@ int main(int argc, char **argv) {
   tree->SetBranchStatus("*", 1);
   SetInputBranches_REC(tree, t);
 
-  Int_t Ne = (Int_t)tree->GetEntries();
+  Int_t Ne = tree->GetEntries();
 #ifdef DEBUG
-  Ne = 200;
+  Ne = 1000;
 #else
 #endif
 
@@ -64,12 +65,15 @@ int main(int argc, char **argv) {
   previousComb.resize(4);
 
   // init buffer
-  TMixingBkgCluster *theCluster = new TMixingBkgCluster(10, 10, 10);
+  TMixingBkgCluster *theCluster = new TMixingBkgCluster(10, 10, 100);
 
   // define rotated momentum
   TVector3* lastElectron = new TVector3(0, 0, 0);
   std::vector<TVector3 *> rotatedMomentum = {new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0)};
 
+  Int_t omegaCounter = 0;
+  Int_t omegaLimit = 35000; // ten times the maximum of omega candidates in a run number
+  
   // loop in entries
   for (Int_t i = 0; i <= Ne; i++) {
     tree->GetEntry(i);
@@ -78,7 +82,7 @@ int main(int argc, char **argv) {
 
     // prevents repetition (comparison operators for std::vector were removed in C++20)
     if (currentComb != previousComb) {
-
+      
       /*** FILL MIX ***/
 
 #ifdef DEBUG
@@ -102,8 +106,11 @@ int main(int argc, char **argv) {
       tMix->Fill();
 
       previousComb = currentComb;
+
+      omegaCounter++;
     }
 
+    if (omegaCounter == omegaLimit) break;
   }  // end of loop in entries
 
   /*** WRITE ***/

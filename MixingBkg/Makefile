@@ -14,7 +14,7 @@ ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 
-CXX := c++ -D DEBUG
+CXX := c++ # -D DEBUG
 LD := c++
 
 CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # O0

@@ -67,7 +67,7 @@ void assignOptions() {
 void printOptions() {
   std::cout << "Executing MixingBkg program. The chosen parameters are: " << std::endl;
   std::cout << "  gTargetOption = " << gTargetOption << std::endl;
-  std::cout << "  gRunNumber     = " << gRunNumber << std::endl;
+  std::cout << "  gRunNumber    = " << gRunNumber << std::endl;
   std::cout << std::endl;
 }
 

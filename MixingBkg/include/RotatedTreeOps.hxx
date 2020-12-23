@@ -18,18 +18,19 @@ void AssignRotatedMixVar_REC(rec_m& m, Int_t index, TVector3* eMomentum, std::ve
   m.Pez = eMomentum->Z();
   m.PhiLabEl = PhiLab(m.Pex, m.Pey, m.Pez);
   m.ThetaLabEl = ThetaLab(m.Pex, m.Pey, m.Pez);
-  m.Q2 = 4.*kEbeam*eMomentum->Mag()*TMath::Sin(m.ThetaLabEl*TMath::DegToRad()/2)*TMath::Sin(m.ThetaLabEl*TMath::DegToRad()/2);
+  m.Q2 = 4. * kEbeam * eMomentum->Mag() * TMath::Sin(m.ThetaLabEl * TMath::DegToRad() / 2) * TMath::Sin(m.ThetaLabEl * TMath::DegToRad() / 2);
   m.Nu = kEbeam - eMomentum->Mag();
-  m.W = TMath::Sqrt(kMassProton*kMassProton + 2.*kMassProton*m.Nu - m.Q2);
-  m.Xb = m.Q2/2./m.Nu/kMassProton;
-  m.Yb = m.Nu/kEbeam;
+  m.W = TMath::Sqrt(kMassProton * kMassProton + 2. * kMassProton * m.Nu - m.Q2);
+  m.Xb = m.Q2 / 2. / m.Nu / kMassProton;
+  m.Yb = m.Nu / kEbeam;
   // particles
   Double_t fM = GetParticleMass((Int_t)m.Pid[index]);
-  Double_t fP = pMomentum[index]->Mag();
-  m.E[index] = TMath::Sqrt(fP * fP + fM * fM);
-  m.Px[index] = pMomentum[index]->X();
-  m.Py[index] = pMomentum[index]->Y();
-  m.Pz[index] = pMomentum[index]->Z();
+  TLorentzVector* fGamma = GetCorrPhotonEnergy_ForMixingBkg(pMomentum[index]);
+  Double_t fP = (m.Pid[index] == 22) * fGamma->E() + (m.Pid[index] != 22) * pMomentum[index]->Mag();
+  m.E[index] = (m.Pid[index] == 22) * fGamma->E() + (m.Pid[index] != 22) * TMath::Sqrt(fP * fP + fM * fM);
+  m.Px[index] = (m.Pid[index] == 22) * fGamma->Px() + (m.Pid[index] != 22) * pMomentum[index]->X();
+  m.Py[index] = (m.Pid[index] == 22) * fGamma->Py() + (m.Pid[index] != 22) * pMomentum[index]->Y();
+  m.Pz[index] = (m.Pid[index] == 22) * fGamma->Pz() + (m.Pid[index] != 22) * pMomentum[index]->Z();
   Double_t fCosThetaPQ = ((kEbeam - m.Pez) * m.Pz[index] - m.Pex * m.Px[index] - m.Pey * m.Py[index]) / (TMath::Sqrt(fP * fP * (m.Q2 + m.Nu * m.Nu)));
   m.Mass2[index] = fP * fP * (TMath::Power(m.Betta[index], -2) - 1);
   m.PhiPQ[index] = PhiPQ(m.Pex, m.Pey, m.Pez, m.Px[index], m.Py[index], m.Pz[index]);
