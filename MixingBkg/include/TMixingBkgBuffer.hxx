@@ -67,11 +67,19 @@ class TMixingBkgBuffer {
     // assigns entry-vector to an external vector called Candidate (which corresponds to the output of an entirely filled row),
     // then it erases the first row and resizes again
     if (GetRow(N)->IsFull()) {
+      // save information of last electron into "lastElectron" vector
       GetRow(N)->GetElectronDir(lastElectron);
       for (Int_t i = 0; i < 4; i++) {
+	// rotate all particles w.r.t. last electron added
+	GetRow(N)->RotateParticle(i);
         Candidate[i] = GetRow(N)->GetEntry(i);
+	// save information of particle into "rotatedMomentum" vector
         GetRow(N)->GetParticleDir(rotatedMomentum, i);
       }
+#ifdef DEBUG
+      GetRow(N)->Print();
+#else
+#endif
       Buffer.erase(Buffer.begin() + N);
       Buffer.resize(BufferLength);
     }

@@ -5,7 +5,7 @@
 /*                                       */
 /*****************************************/
 
-// December 2020
+// January 2021
 
 #include "MixingBkg_UI.hxx"
 #include "MixingBkg_Math.hxx"
@@ -52,12 +52,13 @@ int main(int argc, char **argv) {
 
   Int_t Ne = tree->GetEntries();
 #ifdef DEBUG
-  Ne = 1000;
+  Ne = 3500;
 #else
 #endif
 
   /*** DEFINITIONS ***/
 
+  // these vectors only get edited when an omega candidate is fully formed
   std::vector<Int_t> currentComb;
   currentComb.resize(4);
 

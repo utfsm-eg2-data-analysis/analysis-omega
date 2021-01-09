@@ -42,10 +42,8 @@ class TMixingBkgRow {
     // assign particle direction
     particleDir[index]->SetXYZ(fPx, fPy, fPz);
     // fill the original angles w.r.t. last electron added
-    rDeltaTheta[index] = particleDir[index]->Theta() - electronDir->Theta();
-    rDeltaPhi[index] = particleDir[index]->Phi() - electronDir->Phi();
-    // lastly, rotate all particles w.r.t. last electron added
-    for (Int_t i = 0; i < 4; i++) RotateParticle(i);
+    rDeltaTheta[index] = GetDeltaTheta(index);
+    rDeltaPhi[index] = GetDeltaPhi(index);
   }
 
   Int_t GetEvent(Int_t index) { return rEvent[index]; }
@@ -70,15 +68,16 @@ class TMixingBkgRow {
   Bool_t Gamma2Filled() { return rPid[3] == 22; }
 
   void Print() {
-    std::cout << "(" << rPid[0] << ", " << rPid[1] << ", " << rPid[2] << ", " << rPid[3] << ")" << std::endl;
-    std::cout << "(" << rEntry[0] << ", " << rEntry[1] << ", " << rEntry[2] << ", " << rEntry[3] << ")" << std::endl;
-    std::cout << "(" << rEvent[0] << ", " << rEvent[1] << ", " << rEvent[2] << ", " << rEvent[3] << ")" << std::endl;
+    std::cout << "PID   = (" << rPid[0] << ", " << rPid[1] << ", " << rPid[2] << ", " << rPid[3] << ")" << std::endl;
+    std::cout << "Entry = (" << rEntry[0] << ", " << rEntry[1] << ", " << rEntry[2] << ", " << rEntry[3] << ")" << std::endl;
+    std::cout << "Event = (" << rEvent[0] << ", " << rEvent[1] << ", " << rEvent[2] << ", " << rEvent[3] << ")" << std::endl;
     std::cout << "Px = (" << particleDir[0]->X() << ", " << particleDir[1]->X() << ", " << particleDir[2]->X() << ", " << particleDir[3]->X() << ")" << std::endl;
     std::cout << "Py = (" << particleDir[0]->Y() << ", " << particleDir[1]->Y() << ", " << particleDir[2]->Y() << ", " << particleDir[3]->Y() << ")" << std::endl;
     std::cout << "Pz = (" << particleDir[0]->Z() << ", " << particleDir[1]->Z() << ", " << particleDir[2]->Z() << ", " << particleDir[3]->Z() << ")" << std::endl;
-    std::cout << "Theta = (" << particleDir[0]->Theta() << ", " << particleDir[1]->Theta() << ", " << particleDir[2]->Theta() << ", " << particleDir[3]->Theta() << ")"
-              << std::endl;
-    std::cout << "Phi   = (" << particleDir[0]->Phi() << ", " << particleDir[1]->Phi() << ", " << particleDir[2]->Phi() << ", " << particleDir[3]->Phi() << ")" << std::endl;
+    std::cout << "orig_DeltaTheta = (" << rDeltaTheta[0] << ", " << rDeltaTheta[1] << ", " << rDeltaTheta[2] << ", " << rDeltaTheta[3] << ")" << std::endl;
+    std::cout << "curr_DeltaTheta = (" << particleDir[0]->Theta() - electronDir->Theta() << ", " << particleDir[1]->Theta() - electronDir->Theta() << ", " << particleDir[2]->Theta() - electronDir->Theta() << ", " << particleDir[3]->Theta() - electronDir->Theta() << ")" << std::endl;
+    std::cout << "orig_DeltaPhi   = (" << rDeltaPhi[0] << ", " << rDeltaPhi[1] << ", " << rDeltaPhi[2] << ", " << rDeltaPhi[3] << ")" << std::endl;
+    std::cout << "curr_DeltaPhi   = (" << particleDir[0]->Phi() - electronDir->Phi() << ", " << particleDir[1]->Phi() - electronDir->Phi() << ", " << particleDir[2]->Phi() - electronDir->Phi() << ", " << particleDir[3]->Phi() - electronDir->Phi() << ")" << std::endl;
     std::cout << "Pe    = (" << electronDir->X() << ", " << electronDir->Y() << ", " << electronDir->Z() << ")" << std::endl;
   }
 
@@ -98,14 +97,16 @@ class TMixingBkgRow {
   }
 
   void RotateParticle(Int_t index) {
+    // rotate on theta
     particleDir[index]->SetTheta(electronDir->Theta() + rDeltaTheta[index]);
+    // rotate on phi
     particleDir[index]->SetPhi(electronDir->Phi() + rDeltaPhi[index]);
   }
 
   void GetParticleDir(std::vector<TVector3 *> rotatedMomentum, Int_t index) {
     rotatedMomentum[index]->SetX(particleDir[index]->X());
     rotatedMomentum[index]->SetY(particleDir[index]->Y());
-    rotatedMomentum[index]->SetZ(particleDir[index]->Z());	    
+    rotatedMomentum[index]->SetZ(particleDir[index]->Z());
   }
 
   void GetElectronDir(TVector3* lastElectron) {
@@ -113,7 +114,24 @@ class TMixingBkgRow {
     lastElectron->SetY(electronDir->Y());
     lastElectron->SetZ(electronDir->Z());
   }
-  
+
+  Double_t GetDeltaTheta(Int_t index) {
+    return particleDir[index]->Theta() - electronDir->Theta();
+  }
+
+  Double_t GetDeltaPhi(Int_t index) {
+    TVector3* particleAux = new TVector3(*particleDir[index]);
+    TVector3* electronAux = new TVector3(*electronDir);
+    Double_t phi_z = TMath::Pi() - electronAux->Phi();
+    electronAux->RotateZ(phi_z);
+    particleAux->RotateZ(phi_z);
+    TVector3 Vhelp(0., 0., 1.);
+    Double_t phi_y = electronAux->Angle(Vhelp);
+    electronAux->RotateY(phi_y);
+    particleAux->RotateY(phi_y);
+    return particleAux->Phi();
+  }
+
  private:
   Int_t rEntry[4];
   Int_t rPid[4];
