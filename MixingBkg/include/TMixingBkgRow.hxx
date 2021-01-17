@@ -120,16 +120,7 @@ class TMixingBkgRow {
   }
 
   Double_t GetDeltaPhi(Int_t index) {
-    TVector3* particleAux = new TVector3(*particleDir[index]);
-    TVector3* electronAux = new TVector3(*electronDir);
-    Double_t phi_z = TMath::Pi() - electronAux->Phi();
-    electronAux->RotateZ(phi_z);
-    particleAux->RotateZ(phi_z);
-    TVector3 Vhelp(0., 0., 1.);
-    Double_t phi_y = electronAux->Angle(Vhelp);
-    electronAux->RotateY(phi_y);
-    particleAux->RotateY(phi_y);
-    return particleAux->Phi();
+    return particleDir[index]->Phi() - electronDir->Phi();
   }
 
  private:
