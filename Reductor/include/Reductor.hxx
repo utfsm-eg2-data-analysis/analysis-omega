@@ -1,0 +1,216 @@
+#ifndef REDUCTOR_HXX
+#define REDUCTOR_HXX
+
+#ifndef HEADERS_HXX
+#include "Headers.hxx"
+#endif
+
+#ifndef GSTTREE_H
+#include "GSTtree.h"
+#endif
+
+void SetParticleBranches_Input(TChain* chain, data_p& dp) {
+  // electron (46)
+  chain->SetBranchAddress("Q2", &dp.Q2);
+  chain->SetBranchAddress("W", &dp.W);
+  chain->SetBranchAddress("Nu", &dp.Nu);
+  chain->SetBranchAddress("Xb", &dp.Xb);
+  chain->SetBranchAddress("Yb", &dp.Yb);
+  chain->SetBranchAddress("vxe", &dp.vxe);
+  chain->SetBranchAddress("vye", &dp.vye);
+  chain->SetBranchAddress("vze", &dp.vze);
+  chain->SetBranchAddress("SectorEl", &dp.SectorEl);
+  chain->SetBranchAddress("TargType", &dp.TargType);
+  chain->SetBranchAddress("Pex", &dp.Pex);
+  chain->SetBranchAddress("Pey", &dp.Pey);
+  chain->SetBranchAddress("Pez", &dp.Pez);
+  chain->SetBranchAddress("Pe", &dp.Pe);
+  chain->SetBranchAddress("BettaEl", &dp.BettaEl);
+  chain->SetBranchAddress("Etote", &dp.Etote);
+  chain->SetBranchAddress("Eine", &dp.Eine);
+  chain->SetBranchAddress("Eoute", &dp.Eoute);
+  chain->SetBranchAddress("vxec", &dp.vxec);
+  chain->SetBranchAddress("vyec", &dp.vyec);
+  chain->SetBranchAddress("vzec", &dp.vzec);
+  chain->SetBranchAddress("XECe", &dp.XECe);
+  chain->SetBranchAddress("YECe", &dp.YECe);
+  chain->SetBranchAddress("ZECe", &dp.ZECe);
+  chain->SetBranchAddress("PhiLabEl", &dp.PhiLabEl);
+  chain->SetBranchAddress("ThetaLabEl", &dp.ThetaLabEl);
+  chain->SetBranchAddress("StatDCEl", &dp.StatDCEl);
+  chain->SetBranchAddress("DCStatusEl", &dp.DCStatusEl);
+  chain->SetBranchAddress("StatECEl", &dp.StatECEl);
+  chain->SetBranchAddress("ECStatusEl", &dp.ECStatusEl);
+  chain->SetBranchAddress("TimeECEl", &dp.TimeECEl);
+  chain->SetBranchAddress("PathECEl", &dp.PathECEl);
+  chain->SetBranchAddress("Chi2ECEl", &dp.Chi2ECEl);
+  chain->SetBranchAddress("StatSCEl", &dp.StatSCEl);
+  chain->SetBranchAddress("SCStatusEl", &dp.SCStatusEl);
+  chain->SetBranchAddress("TimeSCEl", &dp.TimeSCEl);
+  chain->SetBranchAddress("PathSCEl", &dp.PathSCEl);
+  chain->SetBranchAddress("StatCCEl", &dp.StatCCEl);
+  chain->SetBranchAddress("CCStatusEl", &dp.CCStatusEl);
+  chain->SetBranchAddress("NpheEl", &dp.NpheEl);
+  chain->SetBranchAddress("Chi2CCEl", &dp.Chi2CCEl);
+  chain->SetBranchAddress("StatusEl", &dp.StatusEl);
+  chain->SetBranchAddress("NRowsDCEl", &dp.NRowsDCEl);
+  chain->SetBranchAddress("NRowsECEl", &dp.NRowsECEl);
+  chain->SetBranchAddress("NRowsSCEl", &dp.NRowsSCEl);
+  chain->SetBranchAddress("NRowsCCEl", &dp.NRowsCCEl);
+  // particle (49)
+  chain->SetBranchAddress("Eh", &dp.Eh);
+  chain->SetBranchAddress("Zh", &dp.Zh);
+  chain->SetBranchAddress("ThetaPQ", &dp.ThetaPQ);
+  chain->SetBranchAddress("Pt2", &dp.Pt2);
+  chain->SetBranchAddress("Pl2", &dp.Pl2);
+  chain->SetBranchAddress("PhiPQ", &dp.PhiPQ);
+  chain->SetBranchAddress("Mx2", &dp.Mx2);
+  chain->SetBranchAddress("T", &dp.T);
+  chain->SetBranchAddress("PhiLab", &dp.PhiLab);
+  chain->SetBranchAddress("ThetaLab", &dp.ThetaLab);
+  chain->SetBranchAddress("vxh", &dp.vxh);
+  chain->SetBranchAddress("vyh", &dp.vyh);
+  chain->SetBranchAddress("vzh", &dp.vzh);
+  chain->SetBranchAddress("Sector", &dp.Sector);
+  chain->SetBranchAddress("Px", &dp.Px);
+  chain->SetBranchAddress("Py", &dp.Py);
+  chain->SetBranchAddress("Pz", &dp.Pz);
+  chain->SetBranchAddress("P", &dp.P);
+  chain->SetBranchAddress("Betta", &dp.Betta);
+  chain->SetBranchAddress("Mass2", &dp.Mass2);
+  chain->SetBranchAddress("Etot", &dp.Etot);
+  chain->SetBranchAddress("Ein", &dp.Ein);
+  chain->SetBranchAddress("Eout", &dp.Eout);
+  chain->SetBranchAddress("XEC", &dp.XEC);
+  chain->SetBranchAddress("YEC", &dp.YEC);
+  chain->SetBranchAddress("ZEC", &dp.ZEC);
+  chain->SetBranchAddress("pid", &dp.pid);
+  chain->SetBranchAddress("T4", &dp.T4);
+  chain->SetBranchAddress("deltaZ", &dp.deltaZ);
+  chain->SetBranchAddress("StatDC", &dp.StatDC);
+  chain->SetBranchAddress("DCStatus", &dp.DCStatus);
+  chain->SetBranchAddress("StatEC", &dp.StatEC);
+  chain->SetBranchAddress("ECStatus", &dp.ECStatus);
+  chain->SetBranchAddress("TimeEC", &dp.TimeEC);
+  chain->SetBranchAddress("PathEC", &dp.PathEC);
+  chain->SetBranchAddress("Chi2EC", &dp.Chi2EC);
+  chain->SetBranchAddress("StatSC", &dp.StatSC);
+  chain->SetBranchAddress("SCStatus", &dp.SCStatus);
+  chain->SetBranchAddress("TimeSC", &dp.TimeSC);
+  chain->SetBranchAddress("PathSC", &dp.PathSC);
+  chain->SetBranchAddress("StatCC", &dp.StatCC);
+  chain->SetBranchAddress("CCStatus", &dp.CCStatus);
+  chain->SetBranchAddress("Nphe", &dp.Nphe);
+  chain->SetBranchAddress("Chi2CC", &dp.Chi2CC);
+  chain->SetBranchAddress("Status", &dp.Status);
+  chain->SetBranchAddress("NRowsDC", &dp.NRowsDC);
+  chain->SetBranchAddress("NRowsEC", &dp.NRowsEC);
+  chain->SetBranchAddress("NRowsSC", &dp.NRowsSC);
+  chain->SetBranchAddress("NRowsCC", &dp.NRowsCC);
+  // event (1)
+  chain->SetBranchAddress("evnt", &dp.evnt);
+}
+
+void SetParticleBranches_Output(TTree* tree, data_p& dp) {
+  // electron (46)
+  tree->Branch("Q2", &dp.Q2);
+  tree->Branch("W", &dp.W);
+  tree->Branch("Nu", &dp.Nu);
+  tree->Branch("Xb", &dp.Xb);
+  tree->Branch("Yb", &dp.Yb);
+  tree->Branch("vxe", &dp.vxe);
+  tree->Branch("vye", &dp.vye);
+  tree->Branch("vze", &dp.vze);
+  tree->Branch("SectorEl", &dp.SectorEl);
+  tree->Branch("TargType", &dp.TargType);
+  tree->Branch("Pex", &dp.Pex);
+  tree->Branch("Pey", &dp.Pey);
+  tree->Branch("Pez", &dp.Pez);
+  tree->Branch("Pe", &dp.Pe);
+  tree->Branch("BettaEl", &dp.BettaEl);
+  tree->Branch("Etote", &dp.Etote);
+  tree->Branch("Eine", &dp.Eine);
+  tree->Branch("Eoute", &dp.Eoute);
+  tree->Branch("vxec", &dp.vxec);
+  tree->Branch("vyec", &dp.vyec);
+  tree->Branch("vzec", &dp.vzec);
+  tree->Branch("XECe", &dp.XECe);
+  tree->Branch("YECe", &dp.YECe);
+  tree->Branch("ZECe", &dp.ZECe);
+  tree->Branch("PhiLabEl", &dp.PhiLabEl);
+  tree->Branch("ThetaLabEl", &dp.ThetaLabEl);
+  tree->Branch("StatDCEl", &dp.StatDCEl);
+  tree->Branch("DCStatusEl", &dp.DCStatusEl);
+  tree->Branch("StatECEl", &dp.StatECEl);
+  tree->Branch("ECStatusEl", &dp.ECStatusEl);
+  tree->Branch("TimeECEl", &dp.TimeECEl);
+  tree->Branch("PathECEl", &dp.PathECEl);
+  tree->Branch("Chi2ECEl", &dp.Chi2ECEl);
+  tree->Branch("StatSCEl", &dp.StatSCEl);
+  tree->Branch("SCStatusEl", &dp.SCStatusEl);
+  tree->Branch("TimeSCEl", &dp.TimeSCEl);
+  tree->Branch("PathSCEl", &dp.PathSCEl);
+  tree->Branch("StatCCEl", &dp.StatCCEl);
+  tree->Branch("CCStatusEl", &dp.CCStatusEl);
+  tree->Branch("NpheEl", &dp.NpheEl);
+  tree->Branch("Chi2CCEl", &dp.Chi2CCEl);
+  tree->Branch("StatusEl", &dp.StatusEl);
+  tree->Branch("NRowsDCEl", &dp.NRowsDCEl);
+  tree->Branch("NRowsECEl", &dp.NRowsECEl);
+  tree->Branch("NRowsSCEl", &dp.NRowsSCEl);
+  tree->Branch("NRowsCCEl", &dp.NRowsCCEl);
+  // particle (49)
+  tree->Branch("Eh", &dp.Eh);
+  tree->Branch("Zh", &dp.Zh);
+  tree->Branch("ThetaPQ", &dp.ThetaPQ);
+  tree->Branch("Pt2", &dp.Pt2);
+  tree->Branch("Pl2", &dp.Pl2);
+  tree->Branch("PhiPQ", &dp.PhiPQ);
+  tree->Branch("Mx2", &dp.Mx2);
+  tree->Branch("T", &dp.T);
+  tree->Branch("PhiLab", &dp.PhiLab);
+  tree->Branch("ThetaLab", &dp.ThetaLab);
+  tree->Branch("vxh", &dp.vxh);
+  tree->Branch("vyh", &dp.vyh);
+  tree->Branch("vzh", &dp.vzh);
+  tree->Branch("Sector", &dp.Sector);
+  tree->Branch("Px", &dp.Px);
+  tree->Branch("Py", &dp.Py);
+  tree->Branch("Pz", &dp.Pz);
+  tree->Branch("P", &dp.P);
+  tree->Branch("Betta", &dp.Betta);
+  tree->Branch("Mass2", &dp.Mass2);
+  tree->Branch("Etot", &dp.Etot);
+  tree->Branch("Ein", &dp.Ein);
+  tree->Branch("Eout", &dp.Eout);
+  tree->Branch("XEC", &dp.XEC);
+  tree->Branch("YEC", &dp.YEC);
+  tree->Branch("ZEC", &dp.ZEC);
+  tree->Branch("pid", &dp.pid);
+  tree->Branch("T4", &dp.T4);
+  tree->Branch("deltaZ", &dp.deltaZ);
+  tree->Branch("StatDC", &dp.StatDC);
+  tree->Branch("DCStatus", &dp.DCStatus);
+  tree->Branch("StatEC", &dp.StatEC);
+  tree->Branch("ECStatus", &dp.ECStatus);
+  tree->Branch("TimeEC", &dp.TimeEC);
+  tree->Branch("PathEC", &dp.PathEC);
+  tree->Branch("Chi2EC", &dp.Chi2EC);
+  tree->Branch("StatSC", &dp.StatSC);
+  tree->Branch("SCStatus", &dp.SCStatus);
+  tree->Branch("TimeSC", &dp.TimeSC);
+  tree->Branch("PathSC", &dp.PathSC);
+  tree->Branch("StatCC", &dp.StatCC);
+  tree->Branch("CCStatus", &dp.CCStatus);
+  tree->Branch("Nphe", &dp.Nphe);
+  tree->Branch("Chi2CC", &dp.Chi2CC);
+  tree->Branch("Status", &dp.Status);
+  tree->Branch("NRowsDC", &dp.NRowsDC);
+  tree->Branch("NRowsEC", &dp.NRowsEC);
+  tree->Branch("NRowsSC", &dp.NRowsSC);
+  tree->Branch("NRowsCC", &dp.NRowsCC);
+  // event (1)
+  tree->Branch("evnt", &dp.evnt);
+}
+
+#endif
