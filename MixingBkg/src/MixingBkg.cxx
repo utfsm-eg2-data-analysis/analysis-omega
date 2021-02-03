@@ -5,14 +5,16 @@
 /*                                       */
 /*****************************************/
 
-// January 2021
+// February 2021
 
-#include "MixingBkg_UI.hxx"
 #include "MixingBkg_Math.hxx"
+#include "MixingBkg_UX.hxx"
 
 #include "RotatedTreeOps.hxx"
 #include "TMixingBkgCluster.hxx"
 #include "TreeOps.hxx"
+
+#include "TRandom3.h"  // extra
 
 int main(int argc, char **argv) {
 
@@ -50,10 +52,9 @@ int main(int argc, char **argv) {
   tree->SetBranchStatus("*", 1);
   SetInputBranches_REC(tree, t);
 
-  Int_t Ne = tree->GetEntries();
+  Int_t nEntries = tree->GetEntries();
 #ifdef DEBUG
-  Ne = 3500;
-#else
+  nEntries = 14000;
 #endif
 
   /*** DEFINITIONS ***/
@@ -66,24 +67,35 @@ int main(int argc, char **argv) {
   previousComb.resize(4);
 
   // init buffer
-  TMixingBkgCluster *theCluster = new TMixingBkgCluster(10, 10, 100);
+  TMixingBkgCluster *theCluster = new TMixingBkgCluster(1, 1, 100);
 
   // define rotated momentum
-  TVector3* lastElectron = new TVector3(0, 0, 0);
+  TVector3 *lastElectron = new TVector3(0, 0, 0);
   std::vector<TVector3 *> rotatedMomentum = {new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0), new TVector3(0, 0, 0)};
 
   Int_t omegaCounter = 0;
-  Int_t omegaLimit = 35000; // ten times the maximum of omega candidates in a run number
-  
-  // loop in entries
-  for (Int_t i = 0; i <= Ne; i++) {
-    tree->GetEntry(i);
-    theCluster->Add(i, t.evnt, t.pid, t.Q2, t.Nu, currentComb, t.Pex, t.Pey, t.Pez, t.Px, t.Py, t.Pz,
-                    lastElectron, rotatedMomentum);
+  Int_t omegaLimit = 35000;  // ten times the maximum of omega candidates in a run number
 
-    // prevents repetition (comparison operators for std::vector were removed in C++20)
+  /*** RANDOMNESS ***/
+
+  // hardcoded variable to determine how much events do we want
+  Int_t Scale = 1;
+  TRandom3 r;  // variable to create random event numbers
+
+  // loop in entries
+  for (Int_t i = 0; i <= Scale * nEntries; i++) {
+
+    // insert randomness!
+    Int_t j = r.Integer(nEntries + 1);
+    tree->GetEntry(j);
+
+    // add particle to the cluster, if all the conditions ared satisfied, currentComb would change
+    theCluster->Add(j, t.evnt, t.pid, t.Q2, t.Nu, currentComb, t.Pex, t.Pey, t.Pez, t.Px, t.Py, t.Pz, lastElectron, rotatedMomentum);
+
+    // if currentComb change, there was an artifical omega created
+    // also prevents repetition (comparison operators for std::vector were removed in C++20)
     if (currentComb != previousComb) {
-      
+
       /*** FILL MIX ***/
 
 #ifdef DEBUG
@@ -91,7 +103,6 @@ int main(int argc, char **argv) {
       std::cout << "OMEGA CANDIDATE FOUND : ";
       for (Int_t j = 0; j < 4; j++) std::cout << currentComb[j] << " ";
       std::cout << std::endl;
-#else
 #endif
 
       for (Int_t pp = 0; pp < 4; pp++) {  // loop on final state particles
@@ -123,7 +134,6 @@ int main(int argc, char **argv) {
 
 #ifdef DEBUG
   // theCluster->Print();
-#else
 #endif
 
   return 0;

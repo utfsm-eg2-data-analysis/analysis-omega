@@ -13,6 +13,7 @@
 
 void AssignRotatedMixVar_REC(rec_m& m, Int_t index, TVector3* eMomentum, std::vector<TVector3*> pMomentum) {
   // electron
+  // necessary because we want to update the electron values from the last electron added
   m.Pex = eMomentum->X();
   m.Pey = eMomentum->Y();
   m.Pez = eMomentum->Z();
@@ -26,7 +27,7 @@ void AssignRotatedMixVar_REC(rec_m& m, Int_t index, TVector3* eMomentum, std::ve
   // particles
   Double_t fM = GetParticleMass((Int_t)m.Pid[index]);
   TLorentzVector* fGamma = GetCorrPhotonEnergy_ForMixingBkg(pMomentum[index]);
-  Double_t fP = (m.Pid[index] == 22) * fGamma->E() + (m.Pid[index] != 22) * pMomentum[index]->Mag();
+  Double_t fP = (m.Pid[index] == 22) * fGamma->P() + (m.Pid[index] != 22) * pMomentum[index]->Mag();
   m.E[index] = (m.Pid[index] == 22) * fGamma->E() + (m.Pid[index] != 22) * TMath::Sqrt(fP * fP + fM * fM);
   m.Px[index] = (m.Pid[index] == 22) * fGamma->Px() + (m.Pid[index] != 22) * pMomentum[index]->X();
   m.Py[index] = (m.Pid[index] == 22) * fGamma->Py() + (m.Pid[index] != 22) * pMomentum[index]->Y();

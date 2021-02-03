@@ -30,50 +30,32 @@ class TMixingBkgCluster {
 
   TMixingBkgBuffer* GetBuffer(Int_t X, Int_t Y) { return &Cluster[X][Y]; }
 
-  Int_t AssignBinQ2(Double_t Q2) {  // there must be a more elegant way to do this
-    if (Q2 > 1. && Q2 <= 1.3)
-      return 0;
-    else if (Q2 > 1.3 && Q2 <= 1.6)
-      return 1;
-    else if (Q2 > 1.6 && Q2 <= 1.9)
-      return 2;
-    else if (Q2 > 1.9 && Q2 <= 2.2)
-      return 3;
-    else if (Q2 > 2.2 && Q2 <= 2.5)
-      return 4;
-    else if (Q2 > 2.5 && Q2 <= 2.8)
-      return 5;
-    else if (Q2 > 2.8 && Q2 <= 3.1)
-      return 6;
-    else if (Q2 > 3.1 && Q2 <= 3.4)
-      return 7;
-    else if (Q2 > 3.4 && Q2 <= 3.7)
-      return 8;
-    else if (Q2 > 3.4 && Q2 <= 4.0)
-      return 9;
+  Int_t AssignBinQ2(Double_t Q2) {
+    Double_t LowerLimit = 1.0;
+    Double_t UpperLimit = 4.0;
+    Double_t BinWidth = (UpperLimit - LowerLimit)/(Double_t)NBinsQ2;
+    Int_t Bin;  
+    for (Int_t c = NBinsQ2; c >= 0; c--) {
+      if (Q2 > LowerLimit + c*BinWidth) {
+	Bin = c;
+	break;
+      }
+    }
+    return Bin;
   }
 
-  Int_t AssignBinNu(Double_t Nu) {  // there must be a more elegant way to do this
-    if (Nu > 2.2 && Nu <= 2.4)
-      return 0;
-    else if (Nu > 2.4 && Nu <= 2.6)
-      return 1;
-    else if (Nu > 2.6 && Nu <= 2.8)
-      return 2;
-    else if (Nu > 2.8 && Nu <= 3.0)
-      return 3;
-    else if (Nu > 3.0 && Nu <= 3.2)
-      return 4;
-    else if (Nu > 3.2 && Nu <= 3.4)
-      return 5;
-    else if (Nu > 3.4 && Nu <= 3.6)
-      return 6;
-    else if (Nu > 3.6 && Nu <= 3.8)
-      return 7;
-    else if (Nu > 3.8 && Nu <= 4.0)
-      return 8;
-    else if (Nu > 4.0 && Nu <= 4.2)
-      return 9;
+  Int_t AssignBinNu(Double_t Nu) {
+    Double_t LowerLimit = 2.2;
+    Double_t UpperLimit = 4.2;
+    Double_t BinWidth = (UpperLimit - LowerLimit)/(Double_t)NBinsNu;
+    Int_t Bin;  
+    for (Int_t c = NBinsNu; c >= 0; c--) {
+      if (Nu > LowerLimit + c*BinWidth) {
+	Bin = c;
+	break;
+      }
+    }
+    return Bin;
   }
 
   void Add(Int_t entry, Int_t evnt, Int_t pid, Double_t Q2, Double_t Nu, std::vector<Int_t>& Candidate, Double_t fPex, Double_t fPey, Double_t fPez, Double_t fPx, Double_t fPy,

@@ -1,7 +1,9 @@
 #ifndef TMIXINGBKGROW_HXX
 #define TMIXINGBKGROW_HXX
 
+#ifndef HEADERS_HXX
 #include "Headers.hxx"
+#endif
 
 class TMixingBkgRow {
   /*
@@ -38,7 +40,8 @@ class TMixingBkgRow {
     rEvent[index] = evnt;
     lastEvent = evnt;
     // assign direction of last electron
-    electronDir->SetXYZ(fPex, fPey, fPez);
+    electronDir->SetXYZ(fPex, fPey, fPez); // electron, test
+    // electronDir->SetXYZ(-fPex, -fPey, kEbeam - fPez);  // virt photon, test
     // assign particle direction
     particleDir[index]->SetXYZ(fPx, fPy, fPz);
     // fill the original angles w.r.t. last electron added
@@ -68,17 +71,13 @@ class TMixingBkgRow {
   Bool_t Gamma2Filled() { return rPid[3] == 22; }
 
   void Print() {
-    std::cout << "PID   = (" << rPid[0] << ", " << rPid[1] << ", " << rPid[2] << ", " << rPid[3] << ")" << std::endl;
-    std::cout << "Entry = (" << rEntry[0] << ", " << rEntry[1] << ", " << rEntry[2] << ", " << rEntry[3] << ")" << std::endl;
-    std::cout << "Event = (" << rEvent[0] << ", " << rEvent[1] << ", " << rEvent[2] << ", " << rEvent[3] << ")" << std::endl;
-    std::cout << "Px = (" << particleDir[0]->X() << ", " << particleDir[1]->X() << ", " << particleDir[2]->X() << ", " << particleDir[3]->X() << ")" << std::endl;
-    std::cout << "Py = (" << particleDir[0]->Y() << ", " << particleDir[1]->Y() << ", " << particleDir[2]->Y() << ", " << particleDir[3]->Y() << ")" << std::endl;
-    std::cout << "Pz = (" << particleDir[0]->Z() << ", " << particleDir[1]->Z() << ", " << particleDir[2]->Z() << ", " << particleDir[3]->Z() << ")" << std::endl;
-    std::cout << "orig_DeltaTheta = (" << rDeltaTheta[0] << ", " << rDeltaTheta[1] << ", " << rDeltaTheta[2] << ", " << rDeltaTheta[3] << ")" << std::endl;
-    std::cout << "curr_DeltaTheta = (" << particleDir[0]->Theta() - electronDir->Theta() << ", " << particleDir[1]->Theta() - electronDir->Theta() << ", " << particleDir[2]->Theta() - electronDir->Theta() << ", " << particleDir[3]->Theta() - electronDir->Theta() << ")" << std::endl;
-    std::cout << "orig_DeltaPhi   = (" << rDeltaPhi[0] << ", " << rDeltaPhi[1] << ", " << rDeltaPhi[2] << ", " << rDeltaPhi[3] << ")" << std::endl;
-    std::cout << "curr_DeltaPhi   = (" << particleDir[0]->Phi() - electronDir->Phi() << ", " << particleDir[1]->Phi() - electronDir->Phi() << ", " << particleDir[2]->Phi() - electronDir->Phi() << ", " << particleDir[3]->Phi() - electronDir->Phi() << ")" << std::endl;
-    std::cout << "Pe    = (" << electronDir->X() << ", " << electronDir->Y() << ", " << electronDir->Z() << ")" << std::endl;
+    std::cout << std::fixed << std::setprecision(4) << std::setw(7) << "Event\t" << std::setw(7) << "Entry\t" << std::setw(7) << "PID\t" << std::setw(7) << "Px\t" << std::setw(7)
+              << "Py\t" << std::setw(7) << "Pz\t" << std::setw(7) << "Pex\t" << std::setw(7) << "Pey\t" << std::setw(7) << "Pez" << std::endl;
+    for (Int_t i = 0; i < 4; i++) {
+      std::cout << std::fixed << std::setprecision(4) << std::setw(7) << rEvent[i] << "\t" << std::setw(7) << rEntry[i] << "\t" << std::setw(7) << rPid[i] << "\t" << std::setw(7)
+                << particleDir[i]->X() << "\t" << std::setw(7) << particleDir[i]->Y() << "\t" << std::setw(7) << particleDir[i]->Z() << "\t" << std::setw(7) << electronDir->X()
+                << "\t" << std::setw(7) << electronDir->Y() << "\t" << std::setw(7) << electronDir->Z() << std::endl;
+    }
   }
 
   Bool_t IsFull() { return (rPid[0] == 211) && (rPid[1] == -211) && (rPid[2] == 22) && (rPid[3] == 22); }
@@ -97,13 +96,37 @@ class TMixingBkgRow {
   }
 
   void RotateParticle(Int_t index) {
+    /* Rotation alla Antonio */
+    /*
+    // rotate phi angle in delta phi of virtual photons
+    TVector3* auxP = new TVector3(Particle_OVP[index]->X(), Particle_OVP[index]->Y(), Particle_OVP[index]->Z());
+    auxP->RotateZ(NewVirtPhoton->Phi() - OrigVirtPhoton[index]->Phi());
+
+    // rotate theta angle
+    // first, align virtual photons to same phi angle
+    TVector3* auxOVP = new TVector3(0, 0, 0);
+    auxOVP->SetMagThetaPhi(1, OrigVirtPhoton[index]->Theta(), NewVirtPhoton->Phi());  // same phi as NVP
+
+    // then, rotate angle-axis
+    TVector3 auxAxis = auxOVP->Cross(*NewVirtPhoton); // vector perp to the theta rotation plane
+    Double_t deltaTheta = TMath::Abs(OrigVirtPhoton[index]->Theta() - NewVirtPhoton->Theta());
+    auxP->Rotate(deltaTheta, auxAxis);
+
+    // set magnitude, just in case
+    auxP->SetMag(Particle_OVP[index]->Mag());
+
+    // set vector
+    Particle_NVP[index]->SetX(auxP->X());
+    Particle_NVP[index]->SetY(auxP->Y());
+    Particle_NVP[index]->SetZ(auxP->Z());
+    */
     // rotate on theta
     particleDir[index]->SetTheta(electronDir->Theta() + rDeltaTheta[index]);
     // rotate on phi
     particleDir[index]->SetPhi(electronDir->Phi() + rDeltaPhi[index]);
   }
 
-  void GetParticleDir(std::vector<TVector3 *> rotatedMomentum, Int_t index) {
+  void GetParticleDir(std::vector<TVector3*> rotatedMomentum, Int_t index) {
     rotatedMomentum[index]->SetX(particleDir[index]->X());
     rotatedMomentum[index]->SetY(particleDir[index]->Y());
     rotatedMomentum[index]->SetZ(particleDir[index]->Z());
@@ -113,15 +136,16 @@ class TMixingBkgRow {
     lastElectron->SetX(electronDir->X());
     lastElectron->SetY(electronDir->Y());
     lastElectron->SetZ(electronDir->Z());
+    /*
+    lastElectron->SetX(-electronDir->X());
+    lastElectron->SetY(-electronDir->Y());
+    lastElectron->SetZ(kEbeam - electronDir->Z());
+    */
   }
 
-  Double_t GetDeltaTheta(Int_t index) {
-    return particleDir[index]->Theta() - electronDir->Theta();
-  }
+  Double_t GetDeltaTheta(Int_t index) { return particleDir[index]->Theta() - electronDir->Theta(); }
 
-  Double_t GetDeltaPhi(Int_t index) {
-    return particleDir[index]->Phi() - electronDir->Phi();
-  }
+  Double_t GetDeltaPhi(Int_t index) { return particleDir[index]->Phi() - electronDir->Phi(); }
 
  private:
   Int_t rEntry[4];

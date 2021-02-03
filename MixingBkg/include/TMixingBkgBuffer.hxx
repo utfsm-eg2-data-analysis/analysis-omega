@@ -31,7 +31,7 @@ class TMixingBkgBuffer {
     Q2Min = 1.0 + BinQ2 * 0.3;
     Q2Max = 1.0 + (BinQ2 + 1.) * 0.3;
     NuMin = 2.2 + BinNu * 0.2;
-    NuMax = 2.2 + (BinNu + 1) * 0.2;
+    NuMax = 2.2 + (BinNu + 1.) * 0.2;
   }
 
   void Resize(Int_t L) {
@@ -55,10 +55,12 @@ class TMixingBkgBuffer {
                    TVector3* lastElectron, std::vector<TVector3 *> rotatedMomentum) {
     for (Int_t N = 0; N < BufferLength; N++) {
       if (evnt != GetRow(N)->GetLastEvent() && !GetRow(N)->ParticleFilled(pid)) {
-        // fill
-        GetRow(N)->Fill(entry, evnt, pid, fPex, fPey, fPez, fPx, fPy, fPz);
-        UpdateBuffer(N, Candidate, lastElectron, rotatedMomentum);
-        break;
+	if (entry != GetRow(N)->GetEntry(2)) { // because randomness
+	  // fill
+	  GetRow(N)->Fill(entry, evnt, pid, fPex, fPey, fPez, fPx, fPy, fPz);
+	  UpdateBuffer(N, Candidate, lastElectron, rotatedMomentum);
+	  break;
+	}
       }
     }
   }

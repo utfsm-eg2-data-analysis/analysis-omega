@@ -1,6 +1,14 @@
 #ifndef MIXINGBKG_MATH_HXX
 #define MIXINGBKG_MATH_HXX
 
+#ifndef HEADERS_HXX
+#include "Headers.hxx"
+#endif
+
+#ifndef MIXINGBKG_UX_HXX
+#include "MixingBkg_UX.hxx"
+#endif
+
 TLorentzVector *GetCorrPhotonEnergy_ForMixingBkg(TVector3 *gammaMomentum) {
   /*
      for gammas, based on TM's Analysis Note
@@ -21,9 +29,9 @@ TLorentzVector *GetCorrPhotonEnergy_ForMixingBkg(TVector3 *gammaMomentum) {
     corrFactor = 1.000 + 0.005 / initialEnergy - 0.0052 / (initialEnergy * initialEnergy);
   }
   Double_t fGammaE = initialEnergy / corrFactor;
-  Double_t fGammaPx = gammaMomentum->X() / corrFactor;
-  Double_t fGammaPy = gammaMomentum->Y() / corrFactor;
-  Double_t fGammaPz = gammaMomentum->Z() / corrFactor;
+  Double_t fGammaPx = fGammaE * gammaMomentum->X() / initialEnergy;  // same as gammaMomentum->X() / corrFactor
+  Double_t fGammaPy = fGammaE * gammaMomentum->Y() / initialEnergy;
+  Double_t fGammaPz = fGammaE * gammaMomentum->Z() / initialEnergy;
   TLorentzVector *fGammaP = new TLorentzVector(fGammaPx, fGammaPy, fGammaPz, fGammaE);
   return fGammaP;
 }

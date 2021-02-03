@@ -1,5 +1,5 @@
-#ifndef MIXINGBKG_UI_HXX
-#define MIXINGBKG_UI_HXX
+#ifndef MIXINGBKG_UX_HXX
+#define MIXINGBKG_UX_HXX
 
 #ifndef HEADERS_HXX
 #include "Headers.hxx"
