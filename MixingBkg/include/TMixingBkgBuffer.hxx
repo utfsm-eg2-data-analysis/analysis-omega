@@ -21,9 +21,10 @@ class TMixingBkgBuffer {
 
   TMixingBkgRow *GetRow(Int_t N) { return &Buffer[N]; }
 
-  void SetBin(Int_t X, Int_t Y) {
+  void SetBin(Int_t X, Int_t Y, Int_t Z) {
     BinQ2 = X;
     BinNu = Y;
+    BinVertex = Z;
     SetBinLimits();
   }
 
@@ -52,30 +53,30 @@ class TMixingBkgBuffer {
   Double_t GetNuMax() { return NuMax; }
 
   void AddParticle(Int_t entry, Int_t evnt, Int_t pid, std::vector<Int_t> &Candidate, Double_t fPex, Double_t fPey, Double_t fPez, Double_t fPx, Double_t fPy, Double_t fPz,
-                   TVector3* lastElectron, std::vector<TVector3 *> rotatedMomentum) {
+                   TVector3 *lastElectron, std::vector<TVector3 *> rotatedMomentum) {
     for (Int_t N = 0; N < BufferLength; N++) {
       if (evnt != GetRow(N)->GetLastEvent() && !GetRow(N)->ParticleFilled(pid)) {
-	if (entry != GetRow(N)->GetEntry(2)) { // because randomness
-	  // fill
-	  GetRow(N)->Fill(entry, evnt, pid, fPex, fPey, fPez, fPx, fPy, fPz);
-	  UpdateBuffer(N, Candidate, lastElectron, rotatedMomentum);
-	  break;
-	}
+        if (entry != GetRow(N)->GetEntry(2)) {  // because randomness
+          // fill
+          GetRow(N)->Fill(entry, evnt, pid, fPex, fPey, fPez, fPx, fPy, fPz);
+          UpdateBuffer(N, Candidate, lastElectron, rotatedMomentum);
+          break;
+        }
       }
     }
   }
 
-  void UpdateBuffer(Int_t N, std::vector<Int_t> &Candidate, TVector3* lastElectron, std::vector<TVector3 *> rotatedMomentum) {
+  void UpdateBuffer(Int_t N, std::vector<Int_t> &Candidate, TVector3 *lastElectron, std::vector<TVector3 *> rotatedMomentum) {
     // assigns entry-vector to an external vector called Candidate (which corresponds to the output of an entirely filled row),
     // then it erases the first row and resizes again
     if (GetRow(N)->IsFull()) {
       // save information of last electron into "lastElectron" vector
       GetRow(N)->GetElectronDir(lastElectron);
       for (Int_t i = 0; i < 4; i++) {
-	// rotate all particles w.r.t. last electron added
-	GetRow(N)->RotateParticle(i);
+        // rotate all particles w.r.t. last electron added
+        GetRow(N)->RotateParticle(i);
         Candidate[i] = GetRow(N)->GetEntry(i);
-	// save information of particle into "rotatedMomentum" vector
+        // save information of particle into "rotatedMomentum" vector
         GetRow(N)->GetParticleDir(rotatedMomentum, i);
       }
 #ifdef DEBUG
@@ -88,7 +89,7 @@ class TMixingBkgBuffer {
   }
 
   void Print() {
-    std::cout << "/*** PRINTING BUFFER (Q2 = " << BinQ2 << ", Nu = " << BinNu << ") ***/" << std::endl;
+    std::cout << "/*** PRINTING BUFFER (Q2 = " << BinQ2 << ", Nu = " << BinNu << ", TargType = " << BinVertex+1 << ") ***/" << std::endl;
     std::cout << std::endl;
     for (Int_t N = 0; N < BufferLength; N++) {
       if (GetRow(N)->IsEmpty()) break;
@@ -100,6 +101,7 @@ class TMixingBkgBuffer {
 
  private:
   Int_t BinQ2 = 0, BinNu = 0;
+  Int_t BinVertex;
   Int_t BufferLength = 0;
   Int_t Q2Min, Q2Max;
   Int_t NuMin, NuMax;
