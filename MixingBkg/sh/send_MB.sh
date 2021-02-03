@@ -25,7 +25,7 @@ source ~/.bashrc
 # define important dirs
 TMPDIR=${WORKDIR}/tmp/data/${TARNAME}
 MBDIR=${VLTLDIR}/analysis-omega/MixingBkg
-DATADIR=${WORKDIR}/out/GetSimpleTuple/data/${TARNAME}
+DATADIR=${WORKDIR}/out/GST_Reduced/data/${TARNAME}
 OUDIR=${WORKDIR}/out/MixingBkg/data/${TARNAME}
 
 # make dirs, just in case
@@ -36,16 +36,17 @@ jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="12" # hours
-jobspace="1" # GB
+jobtime="30" # minutes
+jobspace="500" # MB
 jobmemory="500" # MB
 
 for file in ${DATADIR}/*; do
     RN=${file##*_}
     RN=${RN%.root}
-
+    RN="${RN}_red"
+    
     # setting jobname
-    jobname="MB_${TARNAME}_${RN}"
+    jobname="MB_${TARNAME}_${RN%_red}"
     jobfile="${TMPDIR}/${jobname}.xml"
 
     echo ${jobname}
@@ -56,8 +57,8 @@ for file in ${DATADIR}/*; do
     echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
     echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
     echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-    echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
-    echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
+    echo "  <TimeLimit time=\"${jobtime}\" unit=\"minutes\"/>"                        >> ${jobfile}
+    echo "  <DiskSpace space=\"${jobspace}\" unit=\"MB\"/>"                           >> ${jobfile}
     echo "  <Memory space=\"${jobmemory}\" unit=\"MB\"/>"                             >> ${jobfile}
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
@@ -74,7 +75,7 @@ for file in ${DATADIR}/*; do
     echo "    sh run_MB.sh"                                                           >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
-    outrootfile="${OUDIR}/bkgmix${TARNAME}_${RN}.root"
+    outrootfile="${OUDIR}/bkgmix${TARNAME}_${RN%_red}.root"
     echo "  <Output src=\"bkgmix${TARNAME}_${RN}.root\" dest=\"${outrootfile}\"/>"   >> ${jobfile}
     # set logs
     echo "  <Stdout dest=\"${TMPDIR}/${jobname}.out\"/>"                              >> ${jobfile}
