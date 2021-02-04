@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   previousComb.resize(4);
 
   // init buffer
-  TMixingBkgCluster *theCluster = new TMixingBkgCluster(10, 10, 2, 100);
+  TMixingBkgCluster *theCluster = new TMixingBkgCluster(5, 5, 2, 100);
 
   // define rotated momentum
   TVector3 *lastElectron = new TVector3(0, 0, 0);
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   /*** RANDOMNESS ***/
 
   // ten times the maximum of omega candidates in a run number
-  Int_t Scale = 10;
+  Int_t Scale = 100;
   Int_t omegaCounter = 0;
   Int_t omegaLimit = Scale*nEntries/2.9; // nEntries/2.9 is an approx. number of how many omegas to expect
 

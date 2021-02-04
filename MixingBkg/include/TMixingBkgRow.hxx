@@ -121,9 +121,9 @@ class TMixingBkgRow {
     Particle_NVP[index]->SetZ(auxP->Z());
     */
     // rotate on theta
-    particleDir[index]->SetTheta(electronDir->Theta() + rDeltaTheta[index]);
+    // particleDir[index]->SetTheta(electronDir->Theta() + rDeltaTheta[index]);
     // rotate on phi
-    particleDir[index]->SetPhi(electronDir->Phi() + rDeltaPhi[index]);
+    // particleDir[index]->SetPhi(electronDir->Phi() + rDeltaPhi[index]);
   }
 
   void GetParticleDir(std::vector<TVector3*> rotatedMomentum, Int_t index) {
