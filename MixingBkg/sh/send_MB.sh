@@ -41,12 +41,12 @@ jobspace="500" # MB
 jobmemory="500" # MB
 
 for file in ${DATADIR}/*; do
-    RN=${file##*_}
-    RN=${RN%.root}
-    RN="${RN}_red"
+    file2=${file//_red}
+    file3=${file2##*_}
+    RN=${file3%.root}
     
     # setting jobname
-    jobname="MB_${TARNAME}_${RN%_red}"
+    jobname="MB_${TARNAME}_${RN}"
     jobfile="${TMPDIR}/${jobname}.xml"
 
     echo ${jobname}
@@ -63,20 +63,20 @@ for file in ${DATADIR}/*; do
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     thebinary="${MBDIR}/bin/MixingBkg"
-    execfile="${VLTLDIR}/analysis-omega/sh/run_MB.sh"
+    execfile="${MBDIR}/sh/run_MB.sh"
     echo "  <Input src=\"${thebinary}\" dest=\"MixingBkg\"/>"                         >> ${jobfile}
     echo "  <Input src=\"${execfile}\" dest=\"run_MB.sh\"/>"                          >> ${jobfile}
     echo "  <Input src=\"${file}\" dest=\"${file##*/}\" />"                           >> ${jobfile}
     # set command
     echo "  <Command><![CDATA["                                                       >> ${jobfile}
     echo "    sed -i \"s|^TARNAME=|TARNAME=${TARNAME}|g\" run_MB.sh"                  >> ${jobfile}
-    echo "    sed -i \"s|^RN=|RN=${RN}|g\"                run_MB.sh"                  >> ${jobfile}
+    echo "    sed -i \"s|^RN=|RN=${RN}_red|g\"                run_MB.sh"                  >> ${jobfile}
     echo "    chmod 755 ./run_MB.sh"                                                  >> ${jobfile}
     echo "    sh run_MB.sh"                                                           >> ${jobfile}
     echo "  ]]></Command>"                                                            >> ${jobfile}
     # set outputs
-    outrootfile="${OUDIR}/bkgmix${TARNAME}_${RN%_red}.root"
-    echo "  <Output src=\"bkgmix${TARNAME}_${RN}.root\" dest=\"${outrootfile}\"/>"   >> ${jobfile}
+    outrootfile="${OUDIR}/bkgmix${TARNAME}_${RN}.root"
+    echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red.root\" dest=\"${outrootfile}\"/>"   >> ${jobfile}
     # set logs
     echo "  <Stdout dest=\"${TMPDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${TMPDIR}/${jobname}.err\"/>"                              >> ${jobfile}
