@@ -51,7 +51,10 @@ int main(int argc, char **argv) {
   Int_t nPim = 0;
   Int_t nGamma = 0;
 
-  // define entries vector
+  // define entries vectors (to sort by pid)
+  std::vector<Int_t> pospions;
+  std::vector<Int_t> negpions;
+  std::vector<Int_t> gammas;
   std::vector<Int_t> entries;
 
   // loop around events (it says entries, but they are really events)
@@ -81,27 +84,33 @@ int main(int argc, char **argv) {
     // count particles in the current event
     for (Int_t j = i; j <= nEntries; j++) {
       tInput->GetEntry(j);
-      
+
+      // same-event condition
       if (currentEvent == (Int_t)dpInput.evnt) {
 #ifdef DEBUG
 	std::cout << "Current pid:          " << dpInput.pid << std::endl;
 #endif
         // count the particles
-        if ((Int_t)dpInput.pid == 22) {
-	  nGamma++;
-	  entries.push_back(j);
-        } else if ((Int_t)dpInput.pid == 211) {
+        if ((Int_t)dpInput.pid == 211) {
           nPip++;
-	  entries.push_back(j);
+	  pospions.push_back(j);
 	} else if ((Int_t)dpInput.pid == -211) {
           nPim++;
-	  entries.push_back(j);
-	}
+	  negpions.push_back(j);
+	} else if ((Int_t)dpInput.pid == 22) {
+	  nGamma++;
+	  gammas.push_back(j);
+        }
       } else {
         break;
       } // end of same-event condition
       
     } // end loop of particles in current event
+
+    // arrange all particles in entries vector
+    entries.insert(entries.end(), pospions.begin(), pospions.end());
+    entries.insert(entries.end(), negpions.begin(), negpions.end());
+    entries.insert(entries.end(), gammas.begin(), gammas.end());
     
 #ifdef DEBUG
     std::cout << "N = (" << nPip << ", " << nPim << ", " << nGamma << ")" << std::endl;
@@ -120,14 +129,16 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
         std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 #endif
-
     
     // reset particle counters
     nPip = 0;
     nPim = 0;
     nGamma = 0;
 
-    // reset vector
+    // reset vectors
+    pospions.clear();
+    negpions.clear();
+    gammas.clear();
     entries.clear();
   } // end of loop in events
 
