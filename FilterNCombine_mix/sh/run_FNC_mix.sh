@@ -7,9 +7,9 @@ TARNAME=
 RN=
 
 # run for every particle
-./MixingBkg -t${TARNAME} -r${RN} -p211
-./MixingBkg -t${TARNAME} -r${RN} -p-211
-./MixingBkg -t${TARNAME} -r${RN} -p22
+./FilterNCombine_mix -t${TARNAME} -r${RN} -p211
+./FilterNCombine_mix -t${TARNAME} -r${RN} -p-211
+./FilterNCombine_mix -t${TARNAME} -r${RN} -p22
 
 # then, mix all
-./MixingBkg -t${TARNAME} -r${RN} -p1
+./FilterNCombine_mix -t${TARNAME} -r${RN} -p1
