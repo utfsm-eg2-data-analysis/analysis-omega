@@ -16,21 +16,6 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
-  /*** DECLARATIONS ***/
-
-  // data counting variables
-  Int_t nPipThisEvent = 0;
-  Int_t nPimThisEvent = 0;
-  Int_t nGammaThisEvent = 0;
-
-  std::vector<int> gammaVector;
-  std::vector<int> pipVector;
-  std::vector<int> pimVector;
-
-  std::vector<int> currentComb;
-
-  std::vector<std::vector<int>> combVector;
-
   /*** DATA STRUCTURES ***/
 
   // input
@@ -53,40 +38,37 @@ int main(int argc, char **argv) {
   TTree *tMix = new TTree("mix", "Combination of particles");
   SetMixBranches_REC(tMix, m, pi0, w);
 
-  /*** START ***/
+  /*** DECLARATIONS ***/
 
+  // data counting variables
+  Int_t nPipThisEvent = 0;
+  Int_t nPimThisEvent = 0;
+  Int_t nGammaThisEvent = 0;
+
+  std::vector<int> gammaVector;
+  std::vector<int> pipVector;
+  std::vector<int> pimVector;
+
+  std::vector<int> currentComb;
+
+  std::vector<std::vector<int>> combVector;
+  
+  // definition of variables for event-mixing
+  Int_t currentTargType;
+  TRandom3 r;  // variable to create random event numbers
+  Int_t prevRNG = 0;
+  Int_t rng;
+  Int_t ParticleIndex = 0*(gParticleToSwap == 211) + 1*(gParticleToSwap == -211) + 2*(gParticleToSwap == 111);
+  
   // turn off every leaf, only read what's necessary
   tree->SetBranchStatus("*", 0);
   SetMinimalBranches_REC(tree, t);
 
   Int_t nEntries = (Int_t) tree->GetEntries();  // 500 for testing
   Int_t currentEvent, previousEvent;
-
-  // definition of variables for event-mixing
-  std::vector<int> nParticlesSwapped = {0, 0, 0}; // counter, 3 values for pip, pim, gamma
-  std::vector<int> maxParticlesToSwap = {0, 0, 0}; // 3 values for pip, pim, gamma
-  std::vector<int> ParticleToSwap = {211, -211, 22}; // non-global
-  std::vector<std::vector<int>> swapVector;
-  swapVector.resize(3); // 3 vectors for pip, pim, gamma
-  Int_t currentTargType;
-  TRandom3 r;  // variable to create random event numbers
-  Int_t prevRNG = 0;
-  Int_t rng;
-
-  Int_t swapFirstIndex, swapLastIndex;
-  if (gParticleToSwap == 1) {
-    swapFirstIndex = 0;
-    swapLastIndex = 3;
-  } else {
-    if (gParticleToSwap == 211)
-      swapFirstIndex = 0;
-    else if (gParticleToSwap == -211)
-      swapFirstIndex = 1;
-    else if (gParticleToSwap == 22)
-      swapFirstIndex = 2;
-    swapLastIndex = swapFirstIndex + 1;
-  }
-
+  
+  /*** START ***/
+  
   // loop in entries
   for (Int_t i = 0; i <= nEntries; i++) {
     tree->GetEntry(i);
@@ -127,45 +109,6 @@ int main(int argc, char **argv) {
       }
     }
 
-    /*** EVENT-MIXING ***/
-    // for the regular cases (pid=211,-211,22), only one component is used
-    
-    maxParticlesToSwap[0] = (Int_t) pipVector.size();
-    maxParticlesToSwap[1] = (Int_t) pimVector.size();
-    maxParticlesToSwap[2] = (Int_t) gammaVector.size();
-    
-    swapVector[0].resize(maxParticlesToSwap[0]);
-    swapVector[1].resize(maxParticlesToSwap[1]);
-    swapVector[2].resize(maxParticlesToSwap[2]);
-
-    // swap them all!
-    for (Int_t s = swapFirstIndex; s < swapLastIndex; s++) {
-      // repeat the regular case three times
-      while (nParticlesSwapped[s] < maxParticlesToSwap[s]) {
-	// insert randomness!
-	rng = r.Integer(nEntries);
-	tree->GetEntry(rng);
-	if ((Int_t)t.pid == ParticleToSwap[s] && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
-	  swapVector[s][nParticlesSwapped[s]] = rng; // swap particle
-	  nParticlesSwapped[s]++;
-	  prevRNG = rng;
-	}
-      }
-    }
-
-    // important conditions, don't overwrite vectors with empty vectors
-    if (gParticleToSwap == 211) {
-      pipVector = swapVector[0];
-    } else if (gParticleToSwap == -211) {
-      pimVector = swapVector[1];
-    } else if (gParticleToSwap == 22) {
-      gammaVector = swapVector[2];
-    } else if (gParticleToSwap == 1) {
-      pipVector = swapVector[0];
-      pimVector = swapVector[1];
-      gammaVector = swapVector[2];
-    }
-    
     nPipThisEvent = pipVector.size();
     nPimThisEvent = pimVector.size();
     nGammaThisEvent = gammaVector.size();
@@ -209,11 +152,40 @@ int main(int argc, char **argv) {
       }  // end of loop in pi+
     }    // end of at-least-one-omega condition
 
+    /*** EVENT-MIXING ***/
+
+    // when choosing to change pi0, search for one gamma
+    if (gParticleToSwap == 111) gParticleToSwap = 22;
+    // loop on possible combinations, each desired particle will be swapped
+    for (Size_t s = 0; s < combVector.size(); s++) {
+      // choose a random entry
+      while (1) {
+	rng = r.Integer(nEntries);
+	tree->GetEntry(rng);
+	// check if it corresponds to the desired particle, same target and it's different from previous random entry
+	if ((Int_t)t.pid == gParticleToSwap && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
+	  combVector[s][ParticleIndex] = rng;
+	  // in the case of one gamma, find its partner to form a pi0
+	  if (gParticleToSwap == 22) {
+	    tree->GetEntry(rng-1);
+	    if ((Int_t)t.pid == gParticleToSwap) combVector[s][ParticleIndex+1] = rng-1;
+	    tree->GetEntry(rng+1);
+	    if ((Int_t)t.pid == gParticleToSwap) combVector[s][ParticleIndex+1] = rng+1;
+	  }
+	  prevRNG = rng;
+	  break;
+	}
+      }
+    }
+
     /*** FILL MIX ***/
 
     // candidate appeared
-    for (Int_t cc = 0; cc < (Int_t)combVector.size(); cc++) {  // loop on combinations
-      for (Int_t pp = 0; pp < 4; pp++) {                       // loop on final state particles
+    for (Size_t cc = 0; cc < combVector.size(); cc++) {  // loop on combinations
+#ifdef DEBUG
+      std::cout << "combVector[" << cc << "] = {" << combVector[cc][0] << ", " << combVector[cc][1] << ", " << combVector[cc][2] << ", " << combVector[cc][3] << "}" << std::endl;
+#endif
+      for (Int_t pp = 0; pp < 4; pp++) {                 // loop on final state particles
         tree->GetEntry(combVector[cc][pp]);
         AssignMixVar_REC(t, m, combVector[cc][pp], pp);
       }  // end of loop on fs particles
@@ -230,17 +202,11 @@ int main(int argc, char **argv) {
     nPipThisEvent = 0;
     nPimThisEvent = 0;
     nGammaThisEvent = 0;
-    nParticlesSwapped[0] = 0;
-    nParticlesSwapped[1] = 0;
-    nParticlesSwapped[2] = 0;
     
     // reset vectors
     pipVector.clear();
     pimVector.clear();
     gammaVector.clear();
-    swapVector[0].clear();
-    swapVector[1].clear();
-    swapVector[2].clear();
     
     currentComb.clear();
     combVector.clear();
