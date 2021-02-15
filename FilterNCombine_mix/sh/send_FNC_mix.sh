@@ -77,8 +77,7 @@ for file in ${DATADIR}/*; do
     # set outputs
     echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red_sPip.root\"   dest=\"${OUDIR}/bkgmix${TARNAME}_${RN}_sPip.root\"/>" >> ${jobfile}
     echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red_sPim.root\"   dest=\"${OUDIR}/bkgmix${TARNAME}_${RN}_sPim.root\"/>" >> ${jobfile}
-    echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red_sGamma.root\" dest=\"${OUDIR}/bkgmix${TARNAME}_${RN}_sGamma.root\"/>" >> ${jobfile}
-    echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red_sAll.root\"   dest=\"${OUDIR}/bkgmix${TARNAME}_${RN}_sAll.root\"/>" >> ${jobfile}
+    echo "  <Output src=\"bkgmix${TARNAME}_${RN}_red_sPi0.root\" dest=\"${OUDIR}/bkgmix${TARNAME}_${RN}_sPi0.root\"/>" >> ${jobfile}
     # set logs
     echo "  <Stdout dest=\"${TMPDIR}/${jobname}.out\"/>"                              >> ${jobfile}
     echo "  <Stderr dest=\"${TMPDIR}/${jobname}.err\"/>"                              >> ${jobfile}
