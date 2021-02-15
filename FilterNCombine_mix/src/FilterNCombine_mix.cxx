@@ -58,7 +58,11 @@ int main(int argc, char **argv) {
   TRandom3 r;  // variable to create random event numbers
   Int_t prevRNG = 0;
   Int_t rng;
-  Int_t ParticleIndex = 0*(gParticleToSwap == 211) + 1*(gParticleToSwap == -211) + 2*(gParticleToSwap == 111);
+  Int_t ParticleIndex = 0*(gParticleToSwap == 211) + 1*(gParticleToSwap == -211) + 2*(gParticleToSwap == 111) + 0*(gParticleToSwap == 999);
+
+  // generalization
+  Int_t LastIndex = ParticleIndex + 1*(gParticleToSwap == 211 || gParticleToSwap == -211 || gParticleToSwap == 111) + 3*(gParticleToSwap == 999);
+  Int_t ParticleToSwap[3] = {211, -211, 22};
   
   // turn off every leaf, only read what's necessary
   tree->SetBranchStatus("*", 0);
@@ -154,30 +158,34 @@ int main(int argc, char **argv) {
 
     /*** EVENT-MIXING ***/
 
-    // when choosing to change pi0, search for one gamma
-    if (gParticleToSwap == 111) gParticleToSwap = 22;
-    // loop on possible combinations, each desired particle will be swapped
-    for (Size_t s = 0; s < combVector.size(); s++) {
-      // choose a random entry
-      while (1) {
-	rng = r.Integer(nEntries);
-	tree->GetEntry(rng);
-	// check if it corresponds to the desired particle, same target and it's different from previous random entry
-	if ((Int_t)t.pid == gParticleToSwap && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
-	  combVector[s][ParticleIndex] = rng;
-	  // in the case of one gamma, find its partner to form a pi0
-	  if (gParticleToSwap == 22) {
-	    tree->GetEntry(rng-1);
-	    if ((Int_t)t.pid == gParticleToSwap) combVector[s][ParticleIndex+1] = rng-1;
-	    tree->GetEntry(rng+1);
-	    if ((Int_t)t.pid == gParticleToSwap) combVector[s][ParticleIndex+1] = rng+1;
+    // generalization
+    for (Int_t Index = ParticleIndex; Index < LastIndex; Index++) {
+      // when choosing to change pi0, search for one gamma, it stays at 22
+      if (gParticleToSwap == 111) gParticleToSwap = 22;
+      // loop on possible combinations, each desired particle will be swapped
+      for (Size_t s = 0; s < combVector.size(); s++) {
+	// choose a random entry
+	while (1) {
+	  rng = r.Integer(nEntries);
+	  tree->GetEntry(rng);
+	  // check if it corresponds to the desired particle, same target and it's different from previous random entry
+	  if (((Int_t)t.pid == gParticleToSwap || (Int_t)t.pid == ParticleToSwap[Index]) && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
+	    combVector[s][Index] = rng;
+	    // in the case of one gamma, find its partner to form a pi0, which can be the previous or next entry
+	    // and save it into the spot of the 4th particle
+	    if (gParticleToSwap == 22 || ParticleToSwap[Index] == 22) {
+	      tree->GetEntry(rng-1);
+	      if ((Int_t)t.pid == 22) combVector[s][Index+1] = rng-1;
+	      tree->GetEntry(rng+1);
+	      if ((Int_t)t.pid == 22) combVector[s][Index+1] = rng+1;
+	    }
+	    prevRNG = rng;
+	    break;
 	  }
-	  prevRNG = rng;
-	  break;
 	}
       }
     }
-
+    
     /*** FILL MIX ***/
 
     // candidate appeared

@@ -30,9 +30,9 @@ void printUsage() {
   std::cout << "    selects run number" << std::endl;
   std::cout << "    numbering scheme for input files = pruned<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
-  std::cout << "./FilterNCombine_mix -p[211, -211, 111]" << std::endl;
+  std::cout << "./FilterNCombine_mix -p[211, -211, 111, 999]" << std::endl;
   std::cout << "    selects particles to swap:" << std::endl;
-  std::cout << "    pi plus (211), pi minus (-211), pi0 (111)" << std::endl;
+  std::cout << "    pi plus (211), pi minus (-211), pi0 (111), all three (999)" << std::endl;
   std::cout << std::endl;
 }
 
@@ -60,6 +60,7 @@ void assignOptions() {
   if (gParticleToSwap == 211) sufixParticleToSwap = "sPip";
   else if (gParticleToSwap == -211) sufixParticleToSwap = "sPim";
   else if (gParticleToSwap == 111) sufixParticleToSwap = "sPi0";
+  else if (gParticleToSwap == 999) sufixParticleToSwap = "sAll";
   // for everyone, at node dir
   gInputFile  = "pruned" + gTargetOption + "_" + gRunNumber + ".root";
   gOutputFile = "bkgmix" + gTargetOption + "_" + gRunNumber + "_" + sufixParticleToSwap + ".root";
