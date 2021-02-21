@@ -3,15 +3,20 @@
 #include "GausParams.h"  // struct
 #include "Global.h"
 
-void EventMixing_FitSub(TString targetOption) {
+void EventMixing_FitSub(TString targetOption, TString particleOption = "omega") {
   // This macro fits the subtracted bkg.
 
-  TFile *RootInputFile = new TFile(gProDir + "/macros/out/evnt-mixing_binned_" + targetOption + ".root");
-  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing_fit-sub_" + targetOption + ".root", "RECREATE");
+  /*** INPUT ***/
+  
+  TFile *RootInputFile = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_binned_" + targetOption + ".root");
+  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_fit-sub_" + targetOption + ".root", "RECREATE");
+
+   
+  /*** MAIN ***/  
 
   const Int_t Nkinvars = 4;
   const Int_t Nbins = 4;
-
+  
   TString CurrentHistName;
   TH1D *CurrentHist;
 
@@ -23,12 +28,16 @@ void EventMixing_FitSub(TString targetOption) {
       CurrentHistName = Form("sub_%d_%d", i, j);
       CurrentHist = (TH1D *)RootInputFile->Get(CurrentHistName);
 
-      FitGaussian(Form("fit_%d_%d", i, j), CurrentHist, Parameters[i][j]);
+      if (particleOption == "omega") FitGaussian(Form("fit_%d_%d", i, j), CurrentHist, Parameters[i][j]);
+      else if (particleOption == "eta") FitGaussian(Form("fit_%d_%d", i, j), CurrentHist, Parameters[i][j], 3e-2, .5e-2, 0.55, 1e-2, 1);
     }
   }
 
   /*** SET CANVAS ***/
 
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  
   TCanvas *can3 = new TCanvas("bkgfit-all-bins", "bkgfit-all-bins", 1200, 1200);
   can3->Divide(Nbins, Nkinvars, 0.001, 0.001);
 

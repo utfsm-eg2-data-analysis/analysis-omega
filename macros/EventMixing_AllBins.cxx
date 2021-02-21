@@ -2,7 +2,7 @@
 #include "SetAliases.cxx"
 #include "DrawHorizontalLine.cxx"
 
-void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization = 0, Int_t BkgSubtraction = 0) {
+void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization = 0, Int_t BkgSubtraction = 0, TString particleOption = "omega") {
 
   /*** INPUT ***/
 
@@ -38,9 +38,34 @@ void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization =
   SetAliases(dataTree);
   SetAliases(bkgTree);
 
+  // to choose between eta and omega
+  TString histProperties;
+  Int_t plotNbins;
+  Double_t plotMin, plotMax;
+  Int_t BinsForNormalization[4];
+  if (particleOption == "omega") {
+    histProperties = "(25, 0.65, 0.90)";
+    plotNbins = 25;
+    plotMin = 0.65;
+    plotMax = 0.90;
+    BinsForNormalization[0] = 1;
+    BinsForNormalization[1] = 5;
+    BinsForNormalization[2] = 20;
+    BinsForNormalization[3] = 25;
+  } else if (particleOption == "eta") {
+    histProperties = "(20, 0.45, 0.65)";
+    plotNbins = 20;
+    plotMin = 0.45;
+    plotMax = 0.65;
+    BinsForNormalization[0] = 1;
+    BinsForNormalization[1] = 5;
+    BinsForNormalization[2] = 15;
+    BinsForNormalization[3] = 20;
+  }
+  
   /*** SET OUTPUT FILE ***/
 
-  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing_binned_" + targetOption + ".root", "RECREATE");
+  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_binned_" + targetOption + ".root", "RECREATE");
 
   TString kinvarOption[4] = {"Q2", "Nu", "wZ", "wPt2"};
   Double_t EdgesKinvar[4][5];
@@ -70,7 +95,7 @@ void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization =
 
       std::cout << auxCut << std::endl;
       
-      dataTree->Draw(Form("wD>>data_%i_%i(25, 0.65, 0.90)", i, j), gCutDIS && CutBin && gCutPi0 && CutVertex && gCutRegion && gCutKaons && gCutPhotonsOpAngle, "goff");
+      dataTree->Draw(Form("wD>>data_%i_%i", i, j) + histProperties, gCutDIS && CutBin && gCutPi0 && CutVertex && gCutRegion && gCutKaons && gCutPhotonsOpAngle, "goff");
       dataMassive[i][j] = (TH1D *)gROOT->FindObject(Form("data_%i_%i", i, j));
 
       dataMassive[i][j]->SetMarkerColor(kBlue+3);
@@ -87,7 +112,7 @@ void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization =
       dataMassive[i][j]->GetXaxis()->SetTitle("Reconstructed Mass #Deltam(#pi^{+}#pi^{-}#pi^{0}) [GeV]");
       dataMassive[i][j]->GetYaxis()->SetTitle("Counts");
 
-      bkgTree->Draw(Form("wD>>bkg_%i_%i(25, 0.65, 0.90)", i, j), gCutDIS && CutBin && gCutPi0 && CutVertex && gCutRegion && gCutKaons && gCutPhotonsOpAngle, "goff");
+      bkgTree->Draw(Form("wD>>bkg_%i_%i", i, j) + histProperties, gCutDIS && CutBin && gCutPi0 && CutVertex && gCutRegion && gCutKaons && gCutPhotonsOpAngle, "goff");
       bkgMassive[i][j] = (TH1D *)gROOT->FindObject(Form("bkg_%i_%i", i, j));
 
       bkgMassive[i][j]->SetMarkerColor(kOrange+7);
@@ -129,10 +154,10 @@ void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization =
       /*** NORMALIZATION ***/
 
       if (CustomNormalization) {
-	dataNorm = dataMassive[i][j]->Integral(1, 5) + dataMassive[i][j]->Integral(20, 25);
+	dataNorm = dataMassive[i][j]->Integral(BinsForNormalization[0], BinsForNormalization[1]) + dataMassive[i][j]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
 	std::cout << "dataNorm = " << dataNorm << std::endl;
 	
-	bkgNorm = bkgMassive[i][j]->Integral(1, 5) + bkgMassive[i][j]->Integral(20, 25);
+	bkgNorm = bkgMassive[i][j]->Integral(BinsForNormalization[0], BinsForNormalization[1]) + bkgMassive[i][j]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
 	std::cout << "bkgNorm  = " << bkgNorm << std::endl;
 	bkgMassive[i][j]->Scale(dataNorm / bkgNorm);
       }
@@ -182,7 +207,7 @@ void EventMixing_AllBins(TString targetOption = "D", Int_t CustomNormalization =
     for (Int_t j = 0; j < Nkinvars; j++) {
       for (Int_t i = 0; i < Nbins; i++) {
 	// bkg subtraction needs data and bkg normalization
-	subMassive[i][j] = new TH1D(Form("sub_%i_%i", i, j), "", 25, 0.65, 0.90);
+	subMassive[i][j] = new TH1D(Form("sub_%i_%i", i, j), "", plotNbins, plotMin, plotMax);
 	subMassive[i][j]->Add(dataMassive[i][j], bkgMassive[i][j], 1, -1);
 
 	auxCut = Form("%.2f", EdgesKinvar[j][i]);

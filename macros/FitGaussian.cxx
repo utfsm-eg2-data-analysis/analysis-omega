@@ -5,7 +5,7 @@
 #ifndef FITGAUSSIAN_CXX
 #define FITGAUSSIAN_CXX
 
-void FitGaussian(TString FitName, TH1D* Hist, GausParams &Parameters, Double_t MeanLimit = 2e-2, Double_t SigmaLimit = 1e-2, Double_t MeanIGV = 0.78, Double_t SigmaIGV = 2e-2) {
+void FitGaussian(TString FitName, TH1D* Hist, GausParams &Parameters, Double_t MeanLimit = 2e-2, Double_t SigmaLimit = 1e-2, Double_t MeanIGV = 0.78, Double_t SigmaIGV = 2e-2, Int_t ForcePositiveValues = 0) {
 
   TF1 *Fit = new TF1(FitName, "gaus", MeanIGV - 3 * SigmaIGV, MeanIGV + 3 * SigmaIGV);
 
@@ -13,6 +13,7 @@ void FitGaussian(TString FitName, TH1D* Hist, GausParams &Parameters, Double_t M
   Fit->SetParameter(1, MeanIGV);
   Fit->SetParameter(2, SigmaIGV);
 
+  if (ForcePositiveValues) Fit->SetParLimits(0, 0., 999999);
   Fit->SetParLimits(1, MeanIGV - MeanLimit, MeanIGV + MeanLimit);
   Fit->SetParLimits(2, SigmaIGV - SigmaLimit, SigmaIGV + SigmaLimit);
 

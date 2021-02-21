@@ -2,62 +2,95 @@
 
 // from FitSub.cxx results
 
-void EventMixing_MakeMR(TString kinvarOption) {
-  
+void EventMixing_MakeMR(TString kinvarOption, TString particleOption = "omega") {
+
   const Int_t Nbins = 4;
   const Int_t Ntargets = 4;
-  
+
   Double_t fitOmega[Ntargets][Nbins];
-  Double_t fitOmegaError[Ntargets][Nbins]; 
+  Double_t fitOmegaError[Ntargets][Nbins];
 
   /*** INPUT ***/
 
   Int_t kinvarIndex;
+  TString kinvarTitle;
   Double_t EdgesKinvar[Nbins + 1];
   if (kinvarOption == "Q2") {
     kinvarIndex = 0;
+    kinvarTitle = "Q^{2} (GeV^{2})";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesQ2[i];
   } else if (kinvarOption == "Nu") {
     kinvarIndex = 1;
+    kinvarTitle = "#nu (GeV)";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesNu[i];
   } else if (kinvarOption == "wZ") {
     kinvarIndex = 2;
+    kinvarTitle = "Z";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesZ[i];
   } else if (kinvarOption == "wPt2") {
     kinvarIndex = 3;
+    kinvarTitle = "p_{T}^{2} (GeV^{2})";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesPt2[i];
   }
 
+  Double_t plotMin, plotMax;
+  Double_t maxMR;
+  if (particleOption == "omega") {
+    plotMin = 0.65;
+    plotMax = 0.90;
+    maxMR = 1.4;
+  } else if (particleOption == "eta") {
+    plotMin = 0.45;
+    plotMax = 0.65;
+    maxMR = 2.0;
+  }
+
   TString targetString[4] = {"D", "C", "Fe", "Pb"};
-  Color_t targetColor[4] = {kGreen+3, kRed, kBlue, kBlack};
+  Color_t targetColor[4] = {kGreen + 3, kRed, kBlue, kBlack};
 
   /*** MAIN ***/
-  
+
   TFile *rootInputFile[Ntargets];
-  TH1F *omegaHist[Ntargets];
-  TH1F *omegaMR[Ntargets];
-  
+  TH1D *omegaHist[Ntargets];
+  TH1D *electronHist[Ntargets];
+  TH1D *ratioHist[Ntargets];
+  TH1D *omegaMR[Ntargets];
+
   for (Int_t t = 0; t < Ntargets; t++) {
-    rootInputFile[t] = new TFile(gProDir + "/macros/out/evnt-mixing_fit-sub_" + targetString[t] + ".root");
-    omegaHist[t] = new TH1F("omegaNumber_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    omegaMR[t] = new TH1F("omegaMR_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    for (Int_t i = 0; i < Nbins; i++) {  // i for bins
+    rootInputFile[t] = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_fit-sub_" + targetString[t] + ".root");
+    omegaHist[t] = new TH1D("omegaNumber_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
+    electronHist[t] = new TH1D("electronNumber_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
+    ratioHist[t] = new TH1D("ratio_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
+    omegaMR[t] = new TH1D("omegaMR_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
+    for (Int_t i = 0; i < Nbins; i++) {
       TF1 *Fit = (TF1 *)rootInputFile[t]->Get(Form("fit_%d_%d", i, kinvarIndex));
       TFitResultPtr FitResult = (TFitResult *)rootInputFile[t]->Get(Form("TFitResult-sub_%d_%d-fit_%d_%d", i, kinvarIndex, i, kinvarIndex));
       std::vector<Double_t> Parameters = FitResult->Parameters();
       std::vector<Double_t> Errors = FitResult->Errors();
-      fitOmega[t][i] = Fit->Integral(0.65, 0.90)/0.01;
-      fitOmegaError[t][i] = Fit->IntegralError(0.65, 0.90, FitResult->GetParams(), FitResult->GetCovarianceMatrix().GetMatrixArray(), 1e-1)/0.01;
+      fitOmega[t][i] = Fit->Integral(plotMin, plotMax) / 0.01;
+      fitOmegaError[t][i] = Fit->IntegralError(plotMin, plotMax, FitResult->GetParams(), FitResult->GetCovarianceMatrix().GetMatrixArray(), 1e-1) / 0.01;
       // fill hist
       omegaHist[t]->SetBinContent(i + 1, fitOmega[t][i]);
       omegaHist[t]->SetBinError(i + 1, fitOmegaError[t][i]);
+      // electron hist
+      if (kinvarIndex == 0) {
+        electronHist[t]->SetBinContent(i + 1, kNElecQ2[t][i]);
+        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2[t][i]));
+      } else if (kinvarIndex == 1) {
+        electronHist[t]->SetBinContent(i + 1, kNElecNu[t][i]);
+        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu[t][i]));
+      } else if (kinvarIndex == 2 || kinvarIndex == 3) {
+        electronHist[t]->SetBinContent(i + 1, kNElec[t]);
+        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElec[t]));
+      }
+      ratioHist[t]->Divide(omegaHist[t], electronHist[t]);
       // divide solid targets with liquid target
-      if (t > 0) omegaMR[t]->Divide(omegaHist[t], omegaHist[0]);
+      if (t > 0) omegaMR[t]->Divide(ratioHist[t], ratioHist[0]);
     }
   }
 
-  /*** DEFINE TGRAPHERRORS ***/
-  
+  /*** DEFINE GRAPHS ***/
+
   // define arrays
   Double_t empty[Nbins];
   Double_t MR_x[Nbins];
@@ -72,46 +105,36 @@ void EventMixing_MakeMR(TString kinvarOption) {
     MR_xerr[i] = (EdgesKinvar[i + 1] - EdgesKinvar[i]) / TMath::Sqrt(12);
     for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
       MR_y[tt][i] = omegaMR[tt]->GetBinContent(i + 1);
-      MR_yerr[tt][i] = omegaMR[tt]->GetBinError(i + 1);      
+      MR_yerr[tt][i] = omegaMR[tt]->GetBinError(i + 1);
     }
   }
 
-  std::cout << "N OMEGA DEUT = ";
-  for (Int_t i = 0; i < Nbins; i++) std::cout << fitOmega[0][i] << "\t";
-  std::cout << std::endl;
-  std::cout << "N OMEGA CARB = ";
-  for (Int_t i = 0; i < Nbins; i++) std::cout << fitOmega[1][i] << "\t";
-  std::cout << std::endl;
-  std::cout << "RATIO CARB/DEUT = ";
-  for (Int_t i = 0; i < Nbins; i++) std::cout << MR_y[1][i] << "\t";
-  std::cout << std::endl;
-
   // define graphs
   TGraphErrors *MRgraph[Ntargets];
-  for (Int_t tt = 1; tt < Ntargets; tt++) { // solid targets only  
+  for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
     MRgraph[tt] = new TGraphErrors(Nbins, MR_x, MR_y[tt], MR_xerr, MR_yerr[tt]);
   }
 
   // set style
-  MRgraph[1]->SetTitle("Multiplicity Ratio: #omega");
-  // MRgraph[1]->GetXaxis()->SetTitle(kinvarTitle);
-  MRgraph[1]->GetXaxis()->CenterTitle();
-  MRgraph[1]->GetXaxis()->SetNdivisions(400 + Nbins, kFALSE);
+  MRgraph[1]->SetTitle("Multiplicity Ratio: #" + particleOption);
+  MRgraph[1]->GetXaxis()->SetTitle(kinvarTitle);
+  MRgraph[1]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
   MRgraph[1]->GetXaxis()->SetLimits(EdgesKinvar[0], EdgesKinvar[Nbins]);
-  MRgraph[1]->GetYaxis()->SetTitle("R_{#omega}");
-  MRgraph[1]->GetYaxis()->CenterTitle();
-  MRgraph[1]->GetYaxis()->SetRangeUser(0., 2.0);
+  MRgraph[1]->GetYaxis()->SetTitle("R_{#" + particleOption + "}");
+  MRgraph[1]->GetYaxis()->SetRangeUser(0., maxMR);
 
-  for (Int_t tt = 1; tt < Ntargets; tt++) { // solid targets only 
+  for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
     MRgraph[tt]->SetMarkerStyle(21);
     MRgraph[tt]->SetMarkerSize(1.5);
     MRgraph[tt]->SetMarkerColor(targetColor[tt]);
     MRgraph[tt]->SetLineColor(targetColor[tt]);
     MRgraph[tt]->SetLineWidth(3);
-    
-  }  
-  
+  }
+
   /*** DRAW ***/
+
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   
   // define canvas
   TCanvas *c = new TCanvas("evnt-mixing_MR_" + kinvarOption, "", 1000, 1000);
@@ -122,18 +145,14 @@ void EventMixing_MakeMR(TString kinvarOption) {
   MRgraph[2]->Draw("P");   // Iron
   MRgraph[3]->Draw("P");   // Lead
 
-    // legend position
-  /*
-  Double_t legendX = 0.8;
-  if (kinvarOption == "Nu") legendX = 0.1;
-
   // legend
-  TLegend *legend = new TLegend(legendX, 0.75, legendX + 0.1, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(CarbonMR_gr, "Carbon", "p");
-  legend->AddEntry(IronMR_gr, "Iron", "p");
-  legend->AddEntry(LeadMR_gr, "Lead", "p");
+  TLegend *legend = new TLegend(0.7, 0.7, 0.9, 0.9);  // x1,y1,x2,y2
+  legend->AddEntry(MRgraph[1], "Carbon", "p");
+  legend->AddEntry(MRgraph[2], "Iron", "p");
+  legend->AddEntry(MRgraph[3], "Lead", "p");
   legend->Draw();
-
+  
+  /*
   c->Print(plotFile);  // output file
   */
 }
