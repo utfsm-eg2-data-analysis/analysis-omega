@@ -4,7 +4,7 @@
 # ./send_GF_sim.sh <set> <target> <ndir>                     #
 #     <set>    = (old, usm, jlab)                            #
 #     <target> = (D, C, Fe, Pb)                              #
-#     <ndir>   = (01, 02, ...)                               #
+#     <ndir>   = (00, 01, 02, ...)                           #
 #                                                            #
 # EG: ./send_GF_sim.sh old Fe                                #
 #     ./send_GF_sim.sh usm D                                 #
@@ -67,7 +67,7 @@ jobemail="andres.borquez.14@sansano.usm.cl"
 jobproject="eg2a"
 jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
-jobtime="2" # hours
+jobtime= # different for (old,usm) vs (jlab)
 jobspace="2" # GB
 jobmemory="2" # GB
 
@@ -86,6 +86,7 @@ if [[ "${SETOPTION}" == "old" || "${SETOPTION}" == "usm" ]]; then
 	echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
 	echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 	echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
+	jobtime="2" # hours
 	echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
 	echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
 	echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
@@ -138,7 +139,7 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	echo "  <Track name=\"${jobtrack}\"/>"                                            >> ${jobfile}
 	echo "  <OS name=\"${jobos}\"/>"                                                  >> ${jobfile}
 	echo "  <Name name=\"${jobname}\"/>"                                              >> ${jobfile}
-	jobtime="8" # hours
+	jobtime="12" # hours
 	echo "  <TimeLimit time=\"${jobtime}\" unit=\"hours\"/>"                          >> ${jobfile}
 	echo "  <DiskSpace space=\"${jobspace}\" unit=\"GB\"/>"                           >> ${jobfile}
 	echo "  <Memory space=\"${jobmemory}\" unit=\"GB\"/>"                             >> ${jobfile}
@@ -155,6 +156,12 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	diff=25
 	if [[ $set_index == $(($nsets-1)) ]]; then diff=$(($NFILES-$NFILES_BEGIN)); fi
 	NFILES_END=$(($NFILES_BEGIN + $diff - 1))
+	# prevent giant initial files
+	if [[ "${set_index}" == "0" && "${NDIR}" == "00" ]]; then
+	    if [[ "${TARNAME}" == "D" || "${TARNAME}" == "C" || "${TARNAME}" == "Fe" ]]; then
+		NFILES_BEGIN=6		
+	    fi
+	fi
 	# set input files
 	for ((COUNTER=${NFILES_BEGIN}; COUNTER<=${NFILES_END}; COUNTER++)); do
 	    RN=$(get_num_2dig $COUNTER)
