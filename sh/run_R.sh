@@ -27,7 +27,7 @@ source ~/.bashrc
 # set main dirs
 GSTDIR=${WORKDIR}/out/GetSimpleTuple/data/${TARNAME}
 REDDIR=${VLTLDIR}/analysis-omega/Reductor/bin
-OUTDIR=${WORKDIR}/out/GST_Reduced/data
+OUTDIR=${WORKDIR}/out/Reductor/data
 mkdir -p ${OUTDIR} # just in case
 
 cp -v ${REDDIR}/Reductor ${GSTDIR} # copy binary to GSTDIR
