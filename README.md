@@ -1,30 +1,18 @@
 analysis-omega
 =================
 
-First of all, an installation of ROOT v6.14 onwards (with RooFit) is required.
+Codes developed for the analysis of the hadronization of the omega(782) meson, using data from the EG2 experiment of the CLAS Collaboration.
 
-Then, define the environment variable in your local `.bashrc`, located in your home directory
+## Requirements
 
-To do so, add this line at the end (PRODIR stands for Project Directory)
+* ROOT (version 6.14 onwards)
 
-PLEASE, note that it says installation directory!! You MUST change it for this location!
-```
-export PRODIR=/installation/directory
-```
-Save file and then, in the command line, execute:
-```
-$ source .bashrc
-```
-After this, setup `ext/Analyser` and `ext/ClasTool`
+* Environment variables:
 
-Then,
-```
-$ cd ${PRODIR}
-$ make
-```
-Everything should work just fine by now!
+  * `PRODIR` as the current installation directory (e.g. `/home/user/analysis-omega/`)
+  
+  * `WORKDIR` as the output directory (e.g. `/home/user/analysis-omega/out` or `/work/user/out`)
 
-Just in case, you can set the directory structure by running
-```
-./sh/create_dir_structure.sh
-```
+## Author
+
+[Andrés Bórquez](http://github.com/aborquez).
