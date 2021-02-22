@@ -10,7 +10,7 @@ ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 
-CXX := c++
+CXX := c++ # -D DEBUG
 LD := c++
 
 CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # O0
@@ -19,7 +19,7 @@ LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
 INCLUDES := -I./include
 LIBS := $(ROOTGLIBS)
 
-PROG := FilterNCombine_data FilterNCombine_sim
+PROG := FilterNCombine_data FilterNCombine_sim FilterNCombine_mix
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean

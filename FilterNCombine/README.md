@@ -1,2 +1,2 @@
-OmegaFinder
-=============
+FilterNCombine
+=================

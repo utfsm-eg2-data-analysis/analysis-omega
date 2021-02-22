@@ -5,11 +5,12 @@
 /*                                       */
 /*****************************************/
 
-// December 2020
+// February 2021
 
 #include "FilterNCombine_sim.hxx"
 
 int main(int argc, char **argv) {
+
   gDataKind = "sim";
 
   parseCommandLine(argc, argv);
@@ -93,24 +94,23 @@ int main(int argc, char **argv) {
       if (previousEvent == currentEvent) continue;
     }
 
-    // commentary
-    /*
+#ifdef DEBUG
     std::cout << "Current event number: " << currentEvent << std::endl;
     std::cout << "Current entry number: " << i << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    */
+#endif
 
     // count particles in the current event
     for (Int_t j = i; j <= Ne; j++) {
       tree->GetEntry(j);
       if (currentEvent == (Int_t)t.evnt) {
-        // commentary
-        /*
+
+#ifdef DEBUG
         std::cout << "  Entry number: " << j << std::endl;
         std::cout << "  mc_pid =      " << mc_t.pid << std::endl;
         std::cout << "  pid    =      " << t.pid << std::endl;
         std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-        */
+#endif
         // count the simrec particles
         if (t.pid == (Float_t)22)
           gammaVector.push_back(j);
@@ -138,16 +138,16 @@ int main(int argc, char **argv) {
     nMCPimThisEvent = mc_pimVector.size();
     nMCGammaThisEvent = mc_gammaVector.size();
 
-    // commentary
-    /*
-    std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
-    std::cout << "  nPim     = " << nPimThisEvent     << std::endl;
-    std::cout << "  nGamma   = " << nGammaThisEvent   << std::endl;
-    std::cout << "  nMCPip   = " << nMCPipThisEvent   << std::endl;
-    std::cout << "  nMCPim   = " << nMCPimThisEvent   << std::endl;
+#ifdef DEBUG
+    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
+    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
+    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
     std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-    */
+#endif
+
     // init all input branches
     tree->SetBranchStatus("*", 1);
     SetInputBranches_REC(tree, t);
@@ -165,10 +165,9 @@ int main(int argc, char **argv) {
             mc_currentComb.push_back(mc_gammaVector[iGamma]);
             for (Int_t jGamma = iGamma + 1; jGamma < nMCGammaThisEvent; jGamma++) {
               mc_currentComb.push_back(mc_gammaVector[jGamma]);
-              // commentary
-              /*
-              std::cout << "mc_currentComb = {" << mc_currentComb[0] << ", " << mc_currentComb[1] << ", "  << mc_currentComb[2] << ", " << mc_currentComb[3] << "}" << std::endl;
-              */
+#ifdef DEBUG
+              std::cout << "mc_currentComb = {" << mc_currentComb[0] << ", " << mc_currentComb[1] << ", " << mc_currentComb[2] << ", " << mc_currentComb[3] << "}" << std::endl;
+#endif
               // fill vector
               mc_combVector.push_back(mc_currentComb);
               mc_currentComb.pop_back();
@@ -191,10 +190,9 @@ int main(int argc, char **argv) {
             currentComb.push_back(gammaVector[iGamma]);
             for (Int_t jGamma = iGamma + 1; jGamma < nGammaThisEvent; jGamma++) {
               currentComb.push_back(gammaVector[jGamma]);
-              // commentary
-              /*
-              std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
-              */
+#ifdef DEBUG
+              std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", " << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
+#endif
               // fill vector
               combVector.push_back(currentComb);
               currentComb.pop_back();
@@ -270,7 +268,7 @@ int main(int argc, char **argv) {
         for (Int_t rr = 0; rr < 4; rr++) {  // loop on final state particles
           tree->GetEntry(newVector[cc][rr]);
           AssignMixVar_REC(t, m, newVector[cc][rr], rr);
-	  CheckContamination(mc_t, m, rr);
+          CheckContamination(mc_t, m, rr);
         }
         AssignMoreVar_REC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, combCounter);
         AssignPi0Var_REC(m, pi0);
@@ -303,25 +301,24 @@ int main(int argc, char **argv) {
     mc_pipVector.clear();
     mc_pimVector.clear();
     mc_gammaVector.clear();
-    
+
     mc_currentComb.clear();
     mc_combVector.clear();
 
     pipVector.clear();
     pimVector.clear();
     gammaVector.clear();
-    
+
     currentComb.clear();
     combVector.clear();
 
     mc_newVector.clear();
     newVector.clear();
-    
-    // commentary
-    /*
+
+#ifdef DEBUG
     std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
-    */
+#endif
   }  // end of loop in entries
 
   /*** WRITE ***/

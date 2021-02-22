@@ -5,7 +5,7 @@
 /*                                       */
 /*****************************************/
 
-// December 2020
+// February 2021
 
 #include "FilterNCombine_data.hxx"
 
@@ -75,23 +75,21 @@ int main(int argc, char **argv) {
       if (previousEvent == currentEvent) continue;
     }
 
-    // commentary
-    /*
+#ifdef DEBUG
     std::cout << "Current event number: " << currentEvent << std::endl;
     std::cout << "Current entry number: " << i << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    */
+#endif
 
     // count particles in the current event
     for (Int_t j = i; j <= Ne; j++) {
       tree->GetEntry(j);
       if (currentEvent == (Int_t)t.evnt) {
-        // commentary
-        /*
+#ifdef DEBUG
         std::cout << "  Entry number: " << j << std::endl;
         std::cout << "  pid    =      " << t.pid << std::endl;
         std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-        */
+#endif
         // count the particles
         if (t.pid == (Float_t)22)
           gammaVector.push_back(j);
@@ -108,13 +106,12 @@ int main(int argc, char **argv) {
     nPimThisEvent = pimVector.size();
     nGammaThisEvent = gammaVector.size();
 
-    // commentary
-    /*
-    std::cout << "  nPip     = " << nPipThisEvent     << std::endl;
-    std::cout << "  nPim     = " << nPimThisEvent     << std::endl;
-    std::cout << "  nGamma   = " << nGammaThisEvent   << std::endl;
+#ifdef DEBUG
+    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
+    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
+    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
     std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-    */
+#endif
 
     // turn on all input leaves
     tree->SetBranchStatus("*", 1);
@@ -132,8 +129,9 @@ int main(int argc, char **argv) {
             currentComb.push_back(gammaVector[iGamma]);
             for (Int_t jGamma = iGamma + 1; jGamma < nGammaThisEvent; jGamma++) {
               currentComb.push_back(gammaVector[jGamma]);
-              // commentary
-              // std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", "  << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
+#ifdef DEBUG
+              std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", " << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
+#endif
               // fill vector
               combVector.push_back(currentComb);
               currentComb.pop_back();
@@ -175,11 +173,10 @@ int main(int argc, char **argv) {
     currentComb.clear();
     combVector.clear();
 
-    // commentary
-    /*
+#ifdef DEBUG
     std::cout << "  !! Finished event" << std::endl;
     std::cout << std::endl;
-    */
+#endif
   }  // end of loop in entries
 
   /*** WRITE ***/

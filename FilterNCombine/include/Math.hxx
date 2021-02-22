@@ -12,7 +12,7 @@
 TLorentzVector *GetCorrPhotonEnergy(rec_i& t) {  
   // for gammas, based on TM's Analysis Note
   Double_t corrFactor;
-  if (gDataKind == "data") {
+  if (gDataKind == "data" || gDataKind == "mix") { // DECIDE!
     if (gTargetOption == "C" || gTargetOption == "Pb") {
       corrFactor = 1.129 - 0.05793/t.Eh - 1.0773e-12/(t.Eh*t.Eh);
     } else if (gTargetOption == "Fe") {
