@@ -12,6 +12,10 @@ TString gDataKind = "";
 TString gTargetOption;
 TString gRunNumber;
 
+// event mixing, turned off by default
+Int_t gMixData = 0;
+Int_t gMixReconstructed = 0;
+Int_t gMixGenerated = 0;
 Int_t gParticleToSwap;
 
 TString gInputFile;
@@ -32,30 +36,48 @@ void printUsage() {
   std::cout << "    selects run number" << std::endl;
   std::cout << "    numbering scheme for input files = pruned<target>_<run number>.root" << std::endl;
   std::cout << std::endl;
-  if (gDataKind == "mix") {
-    std::cout << "./FilterNCombine_" << gDataKind << " -p[211, -211, 111, 999]" << std::endl;
-    std::cout << "    selects particles to swap:" << std::endl;
+  std::cout << "./FilterNCombine_" << gDataKind << " -m[211, -211, 111, 999]" << std::endl;
+  std::cout << "    (event mixing for data or sim.rec.) swap the same kind of particle for all the omega candidates:" << std::endl;
+  std::cout << "    pi plus (211), pi minus (-211), pi0 (111), all three (999)" << std::endl;
+  std::cout << std::endl;
+  if (gDataKind == "sim") {
+    std::cout << "./FilterNCombine_" << gDataKind << " -g[211, -211, 111, 999]" << std::endl;
+    std::cout << "    (event mixing for sim.gen.) swap the same kind of particle for all the omega candidates:" << std::endl;
     std::cout << "    pi plus (211), pi minus (-211), pi0 (111), all three (999)" << std::endl;
     std::cout << std::endl;
   }
 }
 
-inline void parseCommandLine(int argc, char* argv[]) {
+void parseCommandLine(int argc, char* argv[]) {
   Int_t c;
   if (argc == 1) {
     std::cerr << "Empty command line. Execute ./FilterNCombine_" << gDataKind << " -h to print help." << std::endl;
     exit(0);
   }
-  while ((c = getopt(argc, argv, "ht:r:p:")) != -1)
-    switch (c) {
-    case 'h': printUsage(); exit(0); break;
-    case 't': gTargetOption = optarg; break;
-    case 'r': gRunNumber = optarg; break;
-    case 'p': gParticleToSwap = atoi(optarg); break;
-    default:
-      std::cerr << "Unrecognized argument. Execute ./FilterNCombine_" << gDataKind << " -h to print help." << std::endl;
-      exit(0);
-      break;
+  while ((c = getopt(argc, argv, "ht:r:m:g:")) != -1) switch (c) {
+      case 'h':
+        printUsage();
+        exit(0);
+        break;
+      case 't':
+        gTargetOption = optarg;
+        break;
+      case 'r':
+        gRunNumber = optarg;
+        break;
+      case 'm':
+        gMixData = 1;
+        gMixReconstructed = 1;
+        gParticleToSwap = atoi(optarg);
+        break;
+      case 'g':
+        gMixGenerated = 1;
+        gParticleToSwap = atoi(optarg);
+        break;
+      default:
+        std::cerr << "Unrecognized argument. Execute ./FilterNCombine_" << gDataKind << " -h to print help." << std::endl;
+        exit(0);
+        break;
     }
 }
 
@@ -69,8 +91,10 @@ void assignOptions() {
     sufixParticleToSwap = "sPi0";
   else if (gParticleToSwap == 999)
     sufixParticleToSwap = "sAll";
+  else
+    sufixParticleToSwap = "";
   // for everyone, at node dir
-  if (gDataKind == "mix") {
+  if (gMixData || gMixReconstructed || gMixGenerated) {
     gInputFile = "pruned" + gTargetOption + "_" + gRunNumber + ".root";
     gOutputFile = "bkgmix" + gTargetOption + "_" + gRunNumber + "_" + sufixParticleToSwap + ".root";
   } else {
@@ -81,9 +105,9 @@ void assignOptions() {
 
 void printOptions() {
   std::cout << "Executing FilterNCombine_" << gDataKind << " program. The chosen parameters are: " << std::endl;
-  std::cout << "  gTargetOption = " << gTargetOption << std::endl;
-  std::cout << "  gRunNumber    = " << gRunNumber << std::endl;
-  std::cout << "  gParticleToSwap = " << gParticleToSwap << std::endl;
+  std::cout << "  gTargetOption   = " << gTargetOption << std::endl;
+  std::cout << "  gRunNumber      = " << gRunNumber << std::endl;
+  if (gMixData || gMixReconstructed || gMixGenerated) std::cout << "  gParticleToSwap = " << gParticleToSwap << std::endl;
   std::cout << std::endl;
 }
 

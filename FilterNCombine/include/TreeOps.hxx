@@ -11,106 +11,106 @@
 #define INVLD -9999
 #endif
 
-void SetMinimalBranches_REC(TChain *chain, rec_i& t) {
+void SetMinimalBranches_REC(TTree *tree, rec_i& t) {
   // turn on only necessary branches
-  chain->SetBranchStatus("pid", 1);
-  chain->SetBranchAddress("pid",  &t.pid);
-  chain->SetBranchStatus("evnt", 1);
-  chain->SetBranchAddress("evnt", &t.evnt); // always non-null
+  tree->SetBranchStatus("pid", 1);
+  tree->SetBranchAddress("pid",  &t.pid);
+  tree->SetBranchStatus("evnt", 1);
+  tree->SetBranchAddress("evnt", &t.evnt); // always non-null
 }
 
-void SetMinimalBranches_GEN(TChain *chain, gen_i& mc_t) {
+void SetMinimalBranches_GEN(TTree *tree, gen_i& mc_t) {
   // turn on only necessary branches
-  chain->SetBranchStatus("mc_pid", 1);
-  chain->SetBranchAddress("mc_pid", &mc_t.pid);
+  tree->SetBranchStatus("mc_pid", 1);
+  tree->SetBranchAddress("mc_pid", &mc_t.pid);
 }
 
-void SetInputBranches_REC(TChain* chain, rec_i& t) {
+void SetInputBranches_REC(TTree* tree, rec_i& t) {
   // electron (19)
-  chain->SetBranchAddress("Q2", &t.Q2);
-  chain->SetBranchAddress("W", &t.W);
-  chain->SetBranchAddress("Nu", &t.Nu);
-  chain->SetBranchAddress("Xb", &t.Xb);
-  chain->SetBranchAddress("Yb", &t.Yb);
-  chain->SetBranchAddress("vxe", &t.vxe);
-  chain->SetBranchAddress("vye", &t.vye);
-  chain->SetBranchAddress("vze", &t.vze);
-  chain->SetBranchAddress("SectorEl", &t.SectorEl);
-  chain->SetBranchAddress("TargType", &t.TargType);
-  chain->SetBranchAddress("Pex", &t.Pex);
-  chain->SetBranchAddress("Pey", &t.Pey);
-  chain->SetBranchAddress("Pez", &t.Pez);
-  chain->SetBranchAddress("BettaEl", &t.BettaEl);
-  chain->SetBranchAddress("vxec", &t.vxec);
-  chain->SetBranchAddress("vyec", &t.vyec);
-  chain->SetBranchAddress("vzec", &t.vzec);
-  chain->SetBranchAddress("ThetaLabEl", &t.ThetaLabEl);
-  chain->SetBranchAddress("PhiLabEl", &t.PhiLabEl);
+  tree->SetBranchAddress("Q2", &t.Q2);
+  tree->SetBranchAddress("W", &t.W);
+  tree->SetBranchAddress("Nu", &t.Nu);
+  tree->SetBranchAddress("Xb", &t.Xb);
+  tree->SetBranchAddress("Yb", &t.Yb);
+  tree->SetBranchAddress("vxe", &t.vxe);
+  tree->SetBranchAddress("vye", &t.vye);
+  tree->SetBranchAddress("vze", &t.vze);
+  tree->SetBranchAddress("SectorEl", &t.SectorEl);
+  tree->SetBranchAddress("TargType", &t.TargType);
+  tree->SetBranchAddress("Pex", &t.Pex);
+  tree->SetBranchAddress("Pey", &t.Pey);
+  tree->SetBranchAddress("Pez", &t.Pez);
+  tree->SetBranchAddress("BettaEl", &t.BettaEl);
+  tree->SetBranchAddress("vxec", &t.vxec);
+  tree->SetBranchAddress("vyec", &t.vyec);
+  tree->SetBranchAddress("vzec", &t.vzec);
+  tree->SetBranchAddress("ThetaLabEl", &t.ThetaLabEl);
+  tree->SetBranchAddress("PhiLabEl", &t.PhiLabEl);
   // particles (21)
-  chain->SetBranchAddress("Eh", &t.Eh);
-  chain->SetBranchAddress("Zh", &t.Zh);
-  chain->SetBranchAddress("ThetaPQ", &t.ThetaPQ);
-  chain->SetBranchAddress("Pt2", &t.Pt2);
-  chain->SetBranchAddress("Pl2", &t.Pl2);
-  chain->SetBranchAddress("PhiPQ", &t.PhiPQ);
-  chain->SetBranchAddress("Mx2", &t.Mx2);
-  chain->SetBranchAddress("ThetaLab", &t.ThetaLab);
-  chain->SetBranchAddress("PhiLab", &t.PhiLab);
-  chain->SetBranchAddress("vxh", &t.vxh);
-  chain->SetBranchAddress("vyh", &t.vyh);
-  chain->SetBranchAddress("vzh", &t.vzh);
-  chain->SetBranchAddress("Sector", &t.Sector);
-  chain->SetBranchAddress("Px", &t.Px);
-  chain->SetBranchAddress("Py", &t.Py);
-  chain->SetBranchAddress("Pz", &t.Pz);
-  chain->SetBranchAddress("Betta", &t.Betta);
-  chain->SetBranchAddress("Mass2", &t.Mass2);
-  chain->SetBranchAddress("pid", &t.pid);
-  chain->SetBranchAddress("T4", &t.T4);
-  chain->SetBranchAddress("deltaZ", &t.deltaZ);
+  tree->SetBranchAddress("Eh", &t.Eh);
+  tree->SetBranchAddress("Zh", &t.Zh);
+  tree->SetBranchAddress("ThetaPQ", &t.ThetaPQ);
+  tree->SetBranchAddress("Pt2", &t.Pt2);
+  tree->SetBranchAddress("Pl2", &t.Pl2);
+  tree->SetBranchAddress("PhiPQ", &t.PhiPQ);
+  tree->SetBranchAddress("Mx2", &t.Mx2);
+  tree->SetBranchAddress("ThetaLab", &t.ThetaLab);
+  tree->SetBranchAddress("PhiLab", &t.PhiLab);
+  tree->SetBranchAddress("vxh", &t.vxh);
+  tree->SetBranchAddress("vyh", &t.vyh);
+  tree->SetBranchAddress("vzh", &t.vzh);
+  tree->SetBranchAddress("Sector", &t.Sector);
+  tree->SetBranchAddress("Px", &t.Px);
+  tree->SetBranchAddress("Py", &t.Py);
+  tree->SetBranchAddress("Pz", &t.Pz);
+  tree->SetBranchAddress("Betta", &t.Betta);
+  tree->SetBranchAddress("Mass2", &t.Mass2);
+  tree->SetBranchAddress("pid", &t.pid);
+  tree->SetBranchAddress("T4", &t.T4);
+  tree->SetBranchAddress("deltaZ", &t.deltaZ);
   // event (1)
-  chain->SetBranchAddress("evnt", &t.evnt);
+  tree->SetBranchAddress("evnt", &t.evnt);
 }
 
-void SetInputBranches_GEN(TChain *chain, gen_i& mc_t) {
+void SetInputBranches_GEN(TTree *tree, gen_i& mc_t) {
   // electron (16)
-  chain->SetBranchAddress("mc_Q2", &mc_t.Q2);
-  chain->SetBranchAddress("mc_W", &mc_t.W);
-  chain->SetBranchAddress("mc_Nu", &mc_t.Nu);
-  chain->SetBranchAddress("mc_Xb", &mc_t.Xb);
-  chain->SetBranchAddress("mc_Yb", &mc_t.Yb);
-  chain->SetBranchAddress("mc_vxe", &mc_t.vxe);
-  chain->SetBranchAddress("mc_vye", &mc_t.vye);
-  chain->SetBranchAddress("mc_vze", &mc_t.vze);
-  chain->SetBranchAddress("mc_SectorEl", &mc_t.SectorEl);
-  chain->SetBranchAddress("mc_TargType", &mc_t.TargType);
-  chain->SetBranchAddress("mc_Pex", &mc_t.Pex);
-  chain->SetBranchAddress("mc_Pey", &mc_t.Pey);
-  chain->SetBranchAddress("mc_Pez", &mc_t.Pez);
-  chain->SetBranchAddress("mc_BettaEl", &mc_t.BettaEl);
-  chain->SetBranchAddress("mc_ThetaLabEl", &mc_t.ThetaLabEl);
-  chain->SetBranchAddress("mc_PhiLabEl", &mc_t.PhiLabEl);
+  tree->SetBranchAddress("mc_Q2", &mc_t.Q2);
+  tree->SetBranchAddress("mc_W", &mc_t.W);
+  tree->SetBranchAddress("mc_Nu", &mc_t.Nu);
+  tree->SetBranchAddress("mc_Xb", &mc_t.Xb);
+  tree->SetBranchAddress("mc_Yb", &mc_t.Yb);
+  tree->SetBranchAddress("mc_vxe", &mc_t.vxe);
+  tree->SetBranchAddress("mc_vye", &mc_t.vye);
+  tree->SetBranchAddress("mc_vze", &mc_t.vze);
+  tree->SetBranchAddress("mc_SectorEl", &mc_t.SectorEl);
+  tree->SetBranchAddress("mc_TargType", &mc_t.TargType);
+  tree->SetBranchAddress("mc_Pex", &mc_t.Pex);
+  tree->SetBranchAddress("mc_Pey", &mc_t.Pey);
+  tree->SetBranchAddress("mc_Pez", &mc_t.Pez);
+  tree->SetBranchAddress("mc_BettaEl", &mc_t.BettaEl);
+  tree->SetBranchAddress("mc_ThetaLabEl", &mc_t.ThetaLabEl);
+  tree->SetBranchAddress("mc_PhiLabEl", &mc_t.PhiLabEl);
   // particles (20)
-  chain->SetBranchAddress("mc_Eh", &mc_t.Eh);
-  chain->SetBranchAddress("mc_Zh", &mc_t.Zh);
-  chain->SetBranchAddress("mc_ThetaPQ", &mc_t.ThetaPQ);
-  chain->SetBranchAddress("mc_Pt2", &mc_t.Pt2);
-  chain->SetBranchAddress("mc_Pl2", &mc_t.Pl2);
-  chain->SetBranchAddress("mc_PhiPQ", &mc_t.PhiPQ);
-  chain->SetBranchAddress("mc_Mx2", &mc_t.Mx2);
-  chain->SetBranchAddress("mc_ThetaLab", &mc_t.ThetaLab);
-  chain->SetBranchAddress("mc_PhiLab", &mc_t.PhiLab);
-  chain->SetBranchAddress("mc_vxh", &mc_t.vxh);
-  chain->SetBranchAddress("mc_vyh", &mc_t.vyh);
-  chain->SetBranchAddress("mc_vzh", &mc_t.vzh);
-  chain->SetBranchAddress("mc_Sector", &mc_t.Sector);
-  chain->SetBranchAddress("mc_Px", &mc_t.Px);
-  chain->SetBranchAddress("mc_Py", &mc_t.Py);
-  chain->SetBranchAddress("mc_Pz", &mc_t.Pz);
-  chain->SetBranchAddress("mc_Betta", &mc_t.Betta);
-  chain->SetBranchAddress("mc_Mass2", &mc_t.Mass2);
-  chain->SetBranchAddress("mc_pid", &mc_t.pid);
-  chain->SetBranchAddress("mc_deltaZ", &mc_t.deltaZ);
+  tree->SetBranchAddress("mc_Eh", &mc_t.Eh);
+  tree->SetBranchAddress("mc_Zh", &mc_t.Zh);
+  tree->SetBranchAddress("mc_ThetaPQ", &mc_t.ThetaPQ);
+  tree->SetBranchAddress("mc_Pt2", &mc_t.Pt2);
+  tree->SetBranchAddress("mc_Pl2", &mc_t.Pl2);
+  tree->SetBranchAddress("mc_PhiPQ", &mc_t.PhiPQ);
+  tree->SetBranchAddress("mc_Mx2", &mc_t.Mx2);
+  tree->SetBranchAddress("mc_ThetaLab", &mc_t.ThetaLab);
+  tree->SetBranchAddress("mc_PhiLab", &mc_t.PhiLab);
+  tree->SetBranchAddress("mc_vxh", &mc_t.vxh);
+  tree->SetBranchAddress("mc_vyh", &mc_t.vyh);
+  tree->SetBranchAddress("mc_vzh", &mc_t.vzh);
+  tree->SetBranchAddress("mc_Sector", &mc_t.Sector);
+  tree->SetBranchAddress("mc_Px", &mc_t.Px);
+  tree->SetBranchAddress("mc_Py", &mc_t.Py);
+  tree->SetBranchAddress("mc_Pz", &mc_t.Pz);
+  tree->SetBranchAddress("mc_Betta", &mc_t.Betta);
+  tree->SetBranchAddress("mc_Mass2", &mc_t.Mass2);
+  tree->SetBranchAddress("mc_pid", &mc_t.pid);
+  tree->SetBranchAddress("mc_deltaZ", &mc_t.deltaZ);
 }
 
 void SetMixBranches_REC(TTree *tree, rec_m& m, rec_pi0& pi0, rec_w& w) {

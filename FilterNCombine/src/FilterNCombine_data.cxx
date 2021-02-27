@@ -17,6 +17,31 @@ int main(int argc, char **argv) {
   assignOptions();
   printOptions();
 
+  /*** DATA STRUCTURES ***/
+
+  // input
+  rec_i t;
+
+  // output - mix
+  rec_m m;
+  rec_pi0 pi0;
+  rec_w w;
+
+  /*** INPUT ***/
+
+  TFile *InputRootFile = new TFile(gInputFile, "READ");
+  
+  TTree *tree = InputRootFile->Get<TTree>("ntuple_data");
+  tree->SetBranchStatus("*", 0);           // only read what's necessary
+  SetMinimalBranches_REC(tree, t);
+
+  /*** OUTPUT ***/
+
+  TFile *OutputRootFile = new TFile(gOutputFile, "RECREATE", "Omega Meson Filtered Combinations");
+
+  TTree *tMix = new TTree("mix", "Combination of particles");
+  SetMixBranches_REC(tMix, m, pi0, w);
+
   /*** DECLARATIONS ***/
 
   // data counting variables
@@ -32,42 +57,31 @@ int main(int argc, char **argv) {
 
   std::vector<std::vector<int>> combVector;
 
-  /*** DATA STRUCTURES ***/
+  // definition of variables for event-mixing
+  Int_t currentTargType;
+  TRandom3 r;  // variable to create random event numbers
+  Int_t prevRNG = 0;
+  Int_t rng;
+  Int_t ParticleIndex = 0 * (gParticleToSwap == 211) + 1 * (gParticleToSwap == -211) + 2 * (gParticleToSwap == 111) + 0 * (gParticleToSwap == 999);
 
-  // input
-  rec_i t;
+  // generalization
+  Int_t LastIndex = ParticleIndex + 1 * (gParticleToSwap == 211 || gParticleToSwap == -211 || gParticleToSwap == 111) + 3 * (gParticleToSwap == 999);
+  Int_t ParticleToSwap[3] = {211, -211, 22};
 
-  // output - mix
-  rec_m m;
-  rec_pi0 pi0;
-  rec_w w;
-
-  /*** INPUT ***/
-
-  TChain *tree = new TChain();
-  tree->Add(gInputFile + "/ntuple_data");  // input
-
-  /*** OUTPUT ***/
-
-  TFile *rootFile = new TFile(gOutputFile, "RECREATE", "Omega Meson Filtered Combinations");
-
-  TTree *tMix = new TTree("mix", "Combination of particles");
-  SetMixBranches_REC(tMix, m, pi0, w);
+  Int_t currentEvent, previousEvent;
+  Int_t nEntries = (Int_t)tree->GetEntries();
+#ifdef DEBUG
+  nEntries = 500;
+#endif
 
   /*** START ***/
 
-  // turn off every leaf, only read what's necessary
-  tree->SetBranchStatus("*", 0);
-  SetMinimalBranches_REC(tree, t);
-
-  Int_t Ne = (Int_t)tree->GetEntries();  // 500 for testing
-  Int_t currentEvent, previousEvent;
-
   // loop in entries
-  for (Int_t i = 0; i <= Ne; i++) {
+  for (Int_t i = 0; i <= nEntries; i++) {
     tree->GetEntry(i);
     currentEvent = (Int_t)t.evnt;
-
+    currentTargType = (Int_t)t.TargType;  // necessary for event-mixing
+    
     // prevents repetition of same event
     if (i > 0) {
       tree->GetEntry(i - 1);
@@ -82,7 +96,7 @@ int main(int argc, char **argv) {
 #endif
 
     // count particles in the current event
-    for (Int_t j = i; j <= Ne; j++) {
+    for (Int_t j = i; j <= nEntries; j++) {
       tree->GetEntry(j);
       if (currentEvent == (Int_t)t.evnt) {
 #ifdef DEBUG
@@ -144,10 +158,45 @@ int main(int argc, char **argv) {
       }  // end of loop in pi+
     }    // end of at-least-one-omega condition
 
+    /*** EVENT-MIXING ***/
+
+    if (gMixData) {
+      // generalization
+      for (Int_t Index = ParticleIndex; Index < LastIndex; Index++) {
+	// when choosing to change pi0, search for one gamma, it stays at 22
+	if (gParticleToSwap == 111) gParticleToSwap = 22;
+	// loop on possible combinations, each desired particle will be swapped
+	for (Size_t s = 0; s < combVector.size(); s++) {
+	  // choose a random entry
+	  while (1) {
+	    rng = r.Integer(nEntries);
+	    tree->GetEntry(rng);
+	    // check if it corresponds to the desired particle, same target and it's different from previous random entry
+	    if (((Int_t)t.pid == gParticleToSwap || (Int_t)t.pid == ParticleToSwap[Index]) && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
+	      combVector[s][Index] = rng;
+	      // in the case of one gamma, find its partner to form a pi0, which can be the previous or next entry
+	      // and save it into the spot of the 4th particle
+	      if (gParticleToSwap == 22 || ParticleToSwap[Index] == 22) {
+		tree->GetEntry(rng - 1);
+		if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng - 1;
+		tree->GetEntry(rng + 1);
+		if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng + 1;
+	      }
+	      prevRNG = rng;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+    
     /*** FILL MIX ***/
 
     // candidate appeared
-    for (Int_t cc = 0; cc < (Int_t)combVector.size(); cc++) {  // loop on combinations
+    for (Size_t cc = 0; cc < combVector.size(); cc++) {  // loop on combinations
+#ifdef DEBUG
+      std::cout << "combVector[" << cc << "] = {" << combVector[cc][0] << ", " << combVector[cc][1] << ", " << combVector[cc][2] << ", " << combVector[cc][3] << "}" << std::endl;
+#endif
       for (Int_t pp = 0; pp < 4; pp++) {                       // loop on final state particles
         tree->GetEntry(combVector[cc][pp]);
         AssignMixVar_REC(t, m, combVector[cc][pp], pp);
@@ -170,6 +219,7 @@ int main(int argc, char **argv) {
     pipVector.clear();
     pimVector.clear();
     gammaVector.clear();
+
     currentComb.clear();
     combVector.clear();
 
@@ -181,8 +231,8 @@ int main(int argc, char **argv) {
 
   /*** WRITE ***/
 
-  rootFile->Write();
-  rootFile->Close();
+  OutputRootFile->Write();
+  OutputRootFile->Close();
 
   std::cout << "This file has been created: " << gOutputFile << std::endl;
 
