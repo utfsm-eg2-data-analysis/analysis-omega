@@ -59,7 +59,9 @@ void EventMixingSim_AllBins(TString setOption = "old", TString targetOption = "D
   
   /*** SET OUTPUT FILE ***/
 
-  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing-sim-" + particleOption + "_binned_" + targetOption + ".root", "RECREATE");
+  TString OutputFileName = "evnt-mixing-sim-" + particleOption + "_binned_" + setOption + "-" + targetOption;
+  if (setOption == "jlab") OutputFileName += "-" + dirOption;
+  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/" + OutputFileName + ".root", "RECREATE");
 
   TString kinvarOption[4] = {"Q2", "Nu", "wZ", "wPt2"};
   TString kinvarTitle[4] = {"Q^{2}", "#nu", "Z", "p_{T}^{2}"};

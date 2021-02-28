@@ -59,7 +59,9 @@ void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D"
   
   /*** SET OUTPUT FILE ***/
 
-  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/evnt-mixing-mc-" + particleOption + "_binned_" + targetOption + ".root", "RECREATE");
+  TString OutputFileName = "evnt-mixing-mc-" + particleOption + "_binned_" + setOption + "-" + targetOption;
+  if (setOption == "jlab") OutputFileName += "-" + dirOption;
+  TFile *RootOutputFile = new TFile(gProDir + "/macros/out/" + OutputFileName + ".root", "RECREATE");
 
   TString kinvarOption[4] = {"mc_Q2", "mc_Nu", "mc_wZ", "mc_wPt2"};
   TString kinvarTitle[4] = {"Q^{2}", "#nu", "Z", "p_{T}^{2}"};
