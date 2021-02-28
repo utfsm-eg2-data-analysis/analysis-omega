@@ -7,12 +7,12 @@ void GetElectronNumber(TString targetOption) {
   TChain *treeExtracted = new TChain();
   TCut CutVertex;
   if (targetOption == "D") { // unified D
-    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/C/prunedC_*.root/ntuple_e");
-    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/Fe/prunedFe_*.root/ntuple_e");
-    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/Pb/prunedPb_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/C/*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/Fe/*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/Pb/*.root/ntuple_e");
     CutVertex = "TargType == 1 && vyec > -1.4 && vyec < 1.4"; // GST format
   } else {
-    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/" + targetOption + "/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/data/" + targetOption + "/*.root/ntuple_e");
     CutVertex = "TargType == 2 && vyec > -1.4 && vyec < 1.4"; // GST format
   }
   
