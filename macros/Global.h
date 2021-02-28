@@ -5,7 +5,7 @@
 
 TString gProDir = getenv("PRODIR");
 TString gWorkDir = getenv("WORKDIR");
-TString gDataDir = gProDir + "/FilterNCombine/out";
+TString gDataDir = gWorkDir + "/out/FilterNCombine/data";
 
 TCut gCutDIS = "Q2 > 1. && W > 2. && Yb < 0.85";
 TCut gCutPi0 = "0.059 < pi0M && pi0M < 0.203";  // mean=0.131 & sigma=0.024
@@ -15,8 +15,11 @@ TCut gCutLiquid = "TargType == 1 && Yec > -1.4 && Yec < 1.4";
 TCut gCutKaons = "0.48 > pippimM || 0.51 < pippimM";
 TCut gCutPhotonsOpAngle = "deltaTheta[2] > 10. && deltaTheta[3] > 10.";
 
-TCut gCutDIS_GEN = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
-TCut gCutPi0_GEN = "0.1333 < mc_pi0M && mc_pi0M < 0.1367";  // mean=0.135 & sigma=5.7e-4
+TCut gCutDIS_MC = "mc_Q2 > 1 && mc_W > 2 && mc_Yb < 0.85";
+TCut gCutPi0_MC = "0.1333 < mc_pi0M && mc_pi0M < 0.1367";  // mean=0.135 & sigma=5.7e-4
+TCut gCutRegion_MC = "mc_Q2 > 1. && mc_Q2 < 4. && mc_Nu > 2.2 && mc_Nu < 4.2 && mc_wPt2 > 0 && mc_wPt2 < 1.5 && mc_wZ > 0.5 && mc_wZ < 0.9";
+TCut gCutKaons_MC = "0.48 > mc_pippimM || 0.51 < mc_pippimM";
+TCut gCutPhotonsOpAngle_MC = "mc_deltaTheta[2] > 10. && mc_deltaTheta[3] > 10.";
 
 // 4 bins (5 edges) for each kinematic variable, obtained with macros/SetBinning.cxx for Pb (Feb. 2021)
 const Double_t kEdgesZ[5] = {0.5, 0.557422, 0.623973, 0.71513, 0.9};

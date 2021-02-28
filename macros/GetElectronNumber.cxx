@@ -1,6 +1,9 @@
+#ifndef GLOBAL_H
 #include "Global.h"
+#endif
 
 void GetElectronNumber(TString targetOption) {
+  // Count the number of electrons from data.
 
   /*** INPUT ***/
   

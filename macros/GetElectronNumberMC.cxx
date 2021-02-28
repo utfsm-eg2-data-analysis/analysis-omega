@@ -2,7 +2,7 @@
 #include "Global.h"
 #endif
 
-void GetElectronNumberMC(TString setOption, TString targetOption, TString dirOption) {
+void GetElectronNumberMC(TString setOption, TString targetOption, TString dirOption = "") {
   // Count the number of electrons from MC files.
   // Doesn't need vertex cuts (like data), or demanding non-null-values (like simrec), I'm not sure if it need RegionCuts.
   

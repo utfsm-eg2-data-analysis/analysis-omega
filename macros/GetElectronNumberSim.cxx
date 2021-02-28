@@ -2,7 +2,7 @@
 #include "Global.h"
 #endif
 
-void GetElectronNumberSim(TString setOption, TString targetOption, TString dirOption) {
+void GetElectronNumberSim(TString setOption, TString targetOption, TString dirOption = "") {
   // Count the number of electrons from simulation reconstructed files.
   // Doesn't need vertex cuts (like data).
   
