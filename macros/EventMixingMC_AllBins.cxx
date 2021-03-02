@@ -10,6 +10,7 @@
 
 void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D", TString dirOption = "", Int_t CustomNormalization = 0, Int_t BkgSubtraction = 0, TString particleOption = "omega") {
   // Plot all bins, comparing event-mixing from MC files.
+  // HH: there shouldn't be any selection cuts for the MC omegas, only kinematical cuts
   
   /*** INPUT ***/
 
@@ -28,10 +29,6 @@ void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D"
   bkgTree->Add(BkgDir + "/*_red_MC_sPi0.root/mix");
   bkgTree->Add(BkgDir + "/*_red_MC_sAll.root/mix");
 
-  // necessary for gCutKaons
-  SetAliases(simTree, 1);
-  SetAliases(bkgTree, 1);
-
   // to choose between eta and omega
   TString histProperties;
   Int_t plotNbins;
@@ -44,7 +41,7 @@ void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D"
     plotMax = 0.90;
     BinsForNormalization[0] = 1;
     BinsForNormalization[1] = 15;
-    BinsForNormalization[2] = 35;
+    BinsForNormalization[2] = 40;
     BinsForNormalization[3] = 50;
   } else if (particleOption == "eta") {
     histProperties = "(40, 0.45, 0.65)";
@@ -92,7 +89,7 @@ void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D"
 
       std::cout << auxCut << std::endl;
       
-      simTree->Draw(Form("mc_wD>>mc_%i_%i", i, j) + histProperties, gCutDIS_MC && CutBin_MC && gCutPi0_MC && gCutKaons_MC && gCutPhotonsOpAngle_MC, "goff");
+      simTree->Draw(Form("mc_wD>>mc_%i_%i", i, j) + histProperties, gCutDIS_MC && CutBin_MC && gCutRegion_MC, "goff");
       simMassive[i][j] = (TH1D *)gROOT->FindObject(Form("mc_%i_%i", i, j));
 
       simMassive[i][j]->SetMarkerColor(kBlack);
@@ -109,7 +106,7 @@ void EventMixingMC_AllBins(TString setOption = "old", TString targetOption = "D"
       simMassive[i][j]->GetXaxis()->SetTitle("#Deltam(#pi^{+}#pi^{-}#pi^{0}) [GeV]");
       simMassive[i][j]->GetYaxis()->SetTitle("Counts");
 
-      bkgTree->Draw(Form("mc_wD>>mc2_%i_%i", i, j) + histProperties, gCutDIS_MC && CutBin_MC && gCutPi0_MC && gCutKaons_MC && gCutPhotonsOpAngle_MC, "goff");
+      bkgTree->Draw(Form("mc_wD>>mc2_%i_%i", i, j) + histProperties, gCutDIS_MC && CutBin_MC && gCutRegion_MC, "goff");
       bkgMassive[i][j] = (TH1D *)gROOT->FindObject(Form("mc2_%i_%i", i, j));
 
       bkgMassive[i][j]->SetMarkerColor(kRed);
