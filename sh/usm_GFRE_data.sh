@@ -61,7 +61,7 @@ for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do # ${NFILES} or 1
 
     # setting jobname
     jobname="GFRE_${TARNAME}_${RN}"
-    jobfile="${TMPDIR}/${jobname}.xml"
+    jobfile="${TMPDIR}/${jobname}.sh"
 
     echo ${jobname}
 
