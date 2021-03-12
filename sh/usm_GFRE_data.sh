@@ -90,14 +90,14 @@ for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do # ${NFILES} or 1
     # Reductor
     echo "cd ${OUDIR3}"                                               >> ${jobfile} # enter output dir 3
     echo "./Reductor -t${TARNAME} -r${RN}"                            >> ${jobfile} # execute program
-    echo "cp pruned${TARNAME}_${RN}_red.root ${OUDIR4}"               >> ${jobfile} # copy output files to dir 4
+    echo "cp -v pruned${TARNAME}_${RN}_red.root ${OUDIR4}"            >> ${jobfile} # copy output files to dir 4
     echo "rm -v pruned${TARNAME}_${RN}.root"                          >> ${jobfile} # remove copied input files
     # EventMixing
     echo "cd ${OUDIR4}"                                               >> ${jobfile} # enter output dir 4
-    echo "./FilterNCombine -t${TARNAME} -r${RN}_red -m211"            >> ${jobfile} # execute program, swap pi+
-    echo "./FilterNCombine -t${TARNAME} -r${RN}_red -m-211"           >> ${jobfile} # execute program, swap pi-
-    echo "./FilterNCombine -t${TARNAME} -r${RN}_red -m111"            >> ${jobfile} # execute program, swap pi0
-    echo "./FilterNCombine -t${TARNAME} -r${RN}_red -m999"            >> ${jobfile} # execute program, swap all
+    echo "./FilterNCombine_data -t${TARNAME} -r${RN}_red -m211"       >> ${jobfile} # execute program, swap pi+
+    echo "./FilterNCombine_data -t${TARNAME} -r${RN}_red -m-211"      >> ${jobfile} # execute program, swap pi-
+    echo "./FilterNCombine_data -t${TARNAME} -r${RN}_red -m111"       >> ${jobfile} # execute program, swap pi0
+    echo "./FilterNCombine_data -t${TARNAME} -r${RN}_red -m999"       >> ${jobfile} # execute program, swap all
     echo "rm -v pruned${TARNAME}_${RN}_red.root"                      >> ${jobfile} # remove copied input files
 
     echo "Submitting job: ${jobfile}"
