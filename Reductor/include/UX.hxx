@@ -9,6 +9,8 @@
 
 /*** Options/global variables ***/
 
+TString gVariant = "";
+
 TString gDataKind = "data";  // default
 TString gTreeName;
 
@@ -24,18 +26,18 @@ TString gOutputFile;
 /*** Input/output functions ***/
 
 void printUsage() {
-  std::cout << "Reductor program. Usage is:" << std::endl;
+  std::cout << "Reductor" << gVariant << " program. Usage is:" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Reductor -h" << std::endl;
+  std::cout << "./Reductor" << gVariant << " -h" << std::endl;
   std::cout << "    prints usage and exit program" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Reductor -t[target]" << std::endl;
+  std::cout << "./Reductor" << gVariant << " -t[target]" << std::endl;
   std::cout << "    selects target, which can be: C, Fe, Pb" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Reductor -r[run number]" << std::endl;
+  std::cout << "./Reductor" << gVariant << " -r[run number]" << std::endl;
   std::cout << "    selects run number" << std::endl;
   std::cout << std::endl;
-  std::cout << "./Reductor -s[int]" << std::endl;
+  std::cout << "./Reductor" << gVariant << " -s[int]" << std::endl;
   std::cout << "    reduce simulations instead of data" << std::endl;
   std::cout << "    0 to reduce MC, 1 to reduce simrec" << std::endl;
   std::cout << std::endl;
@@ -44,7 +46,7 @@ void printUsage() {
 void parseCommandLine(int argc, char *argv[]) {
   int c;
   if (argc == 1) {
-    std::cerr << "Empty command line. Execute ./bin/Reductor -h to print usage." << std::endl;
+    std::cerr << "Empty command line. Execute ./bin/Reductor" << gVariant << " -h to print usage." << std::endl;
     exit(1);
   }
   while ((c = getopt(argc, argv, "ht:r:s:")) != -1) switch (c) {
@@ -64,7 +66,7 @@ void parseCommandLine(int argc, char *argv[]) {
 	gReduceSimrec = 0*(atoi(optarg) == 0) + 1*(atoi(optarg) != 0);
         break;
       default:
-        std::cerr << "Unrecognized argument. Execute ./bin/Reductor -h to print usage." << std::endl;
+        std::cerr << "Unrecognized argument. Execute ./bin/Reductor" << gVariant << " -h to print usage." << std::endl;
         exit(0);
         break;
     }
@@ -79,7 +81,7 @@ void assignOptions() {
 }
 
 void printOptions() {
-  std::cout << "Executing Reductor program. The chosen parameters are: " << std::endl;
+  std::cout << "Executing Reductor" << gVariant << " program. The chosen parameters are: " << std::endl;
   std::cout << "  gTargetOption   = " << gTargetOption << std::endl;
   std::cout << "  gRunNumber      = " << gRunNumber << std::endl;
   std::cout << "  gDataKind       = " << gDataKind << std::endl;

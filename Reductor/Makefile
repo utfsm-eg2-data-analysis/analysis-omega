@@ -23,7 +23,7 @@ LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
 INCLUDES := -I$(CLASTOOL)/include -I./include
 LIBS := $(ROOTGLIBS) -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lDSTReader -lEG
 
-PROG := Reductor
+PROG := Reductor Reductor_2G
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
