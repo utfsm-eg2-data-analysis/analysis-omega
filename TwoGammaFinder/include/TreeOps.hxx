@@ -226,6 +226,7 @@ void SetMixBranches_GEN(TTree* tree, gen_m& mc_m, gen_eta& mc_eta) {
   tree->Branch("mc_ePx", &mc_eta.Px);
   tree->Branch("mc_ePy", &mc_eta.Py);
   tree->Branch("mc_ePz", &mc_eta.Pz);
+  tree->Branch("mc_eP", &mc_eta.P);
   tree->Branch("mc_eE", &mc_eta.E);
   tree->Branch("mc_eM", &mc_eta.M);
   tree->Branch("mc_eTheta", &mc_eta.Theta);
@@ -297,6 +298,7 @@ void NullMixVar_REC(rec_m& m, rec_eta& eta) {
   eta.Px = INVLD;
   eta.Py = INVLD;
   eta.Pz = INVLD;
+  eta.P = INVLD;
   eta.M  = INVLD;
   eta.E  = INVLD;
   eta.Theta = INVLD;
@@ -449,6 +451,7 @@ void AssignEtaVar_REC(rec_m& m, rec_eta& eta) {
   eta.Py = m.Py[0] + m.Py[1];
   eta.Pz = m.Pz[0] + m.Pz[1];
   Double_t fP = TMath::Sqrt(eta.Px * eta.Px + eta.Py * eta.Py + eta.Pz * eta.Pz);
+  eta.P = fP;
   eta.M = TMath::Sqrt(eta.E * eta.E - fP * fP);
   Double_t fDot = m.Px[0] * m.Px[1] + m.Py[0] * m.Py[1] + m.Pz[0] * m.Pz[1];
   Double_t fMag0 = TMath::Sqrt(m.Px[0] * m.Px[0] + m.Py[0] * m.Py[0] + m.Pz[0] * m.Pz[0]);
@@ -457,11 +460,11 @@ void AssignEtaVar_REC(rec_m& m, rec_eta& eta) {
   eta.Z = eta.E / m.Nu;
   eta.PhiPQ = PhiPQ(m.Pex, m.Pey, m.Pez, eta.Px, eta.Py, eta.Pz);
   eta.ThetaPQ = ThetaPQ(m.Pex, m.Pey, m.Pez, eta.Px, eta.Py, eta.Pz);
-  Double_t fCosThetaPQ = ((kEbeam - m.Pez) * eta.Pz - m.Pex * eta.Px - m.Pey * eta.Py) / (TMath::Sqrt(eta.P * eta.P * (m.Q2 + m.Nu * m.Nu)));
+  Double_t fCosThetaPQ = ((kEbeam - m.Pez) * eta.Pz - m.Pex * eta.Px - m.Pey * eta.Py) / (TMath::Sqrt(fP * fP * (m.Q2 + m.Nu * m.Nu)));
   eta.PhiLab = PhiLab(eta.Px, eta.Py, eta.Pz);
   eta.ThetaLab = ThetaLab(eta.Px, eta.Py, eta.Pz);
-  eta.Pt2 = eta.P * eta.P * (1 - fCosThetaPQ * fCosThetaPQ);
-  eta.Pl2 = eta.P * eta.P * fCosThetaPQ * fCosThetaPQ;
+  eta.Pt2 = fP * fP * (1 - fCosThetaPQ * fCosThetaPQ);
+  eta.Pl2 = fP * fP * fCosThetaPQ * fCosThetaPQ;
   eta.Mx2 = m.W * m.W + eta.M * eta.M - 2 * eta.Z * m.Nu * m.Nu + 2 * TMath::Sqrt(eta.Pl2 * (m.Nu * m.Nu + m.Q2)) - 2 * kMassProton * eta.Z * m.Nu;
 }
 
@@ -522,6 +525,7 @@ void AssignEtaVar_GEN(gen_m& mc_m, gen_eta& mc_eta) {
   mc_eta.Py = mc_m.Py[0] + mc_m.Py[1];
   mc_eta.Pz = mc_m.Pz[0] + mc_m.Pz[1];
   Double_t fP = TMath::Sqrt(mc_eta.Px * mc_eta.Px + mc_eta.Py * mc_eta.Py + mc_eta.Pz * mc_eta.Pz);
+  mc_eta.P = fP;
   mc_eta.M = TMath::Sqrt(mc_eta.E * mc_eta.E - fP * fP);
   Double_t fDot = mc_m.Px[0] * mc_m.Px[1] + mc_m.Py[0] * mc_m.Py[1] + mc_m.Pz[0] * mc_m.Pz[1];
   Double_t fMag0 = TMath::Sqrt(mc_m.Px[0] * mc_m.Px[0] + mc_m.Py[0] * mc_m.Py[0] + mc_m.Pz[0] * mc_m.Pz[0]);
@@ -530,11 +534,11 @@ void AssignEtaVar_GEN(gen_m& mc_m, gen_eta& mc_eta) {
   mc_eta.Z = mc_eta.E / mc_m.Nu;
   mc_eta.PhiPQ = PhiPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_eta.Px, mc_eta.Py, mc_eta.Pz);
   mc_eta.ThetaPQ = ThetaPQ(mc_m.Pex, mc_m.Pey, mc_m.Pez, mc_eta.Px, mc_eta.Py, mc_eta.Pz);
-  Double_t fCosThetaPQ = ((kEbeam - mc_m.Pez) * mc_eta.Pz - mc_m.Pex * mc_eta.Px - mc_m.Pey * mc_eta.Py) / (TMath::Sqrt(mc_eta.P * mc_eta.P * (mc_m.Q2 + mc_m.Nu * mc_m.Nu)));
+  Double_t fCosThetaPQ = ((kEbeam - mc_m.Pez) * mc_eta.Pz - mc_m.Pex * mc_eta.Px - mc_m.Pey * mc_eta.Py) / (TMath::Sqrt(fP* fP* (mc_m.Q2 + mc_m.Nu * mc_m.Nu)));
   mc_eta.PhiLab = PhiLab(mc_eta.Px, mc_eta.Py, mc_eta.Pz);
   mc_eta.ThetaLab = ThetaLab(mc_eta.Px, mc_eta.Py, mc_eta.Pz);
-  mc_eta.Pt2 = mc_eta.P * mc_eta.P * (1 - fCosThetaPQ * fCosThetaPQ);
-  mc_eta.Pl2 = mc_eta.P * mc_eta.P * fCosThetaPQ * fCosThetaPQ;
+  mc_eta.Pt2 = fP* fP* (1 - fCosThetaPQ * fCosThetaPQ);
+  mc_eta.Pl2 = fP* fP* fCosThetaPQ * fCosThetaPQ;
   mc_eta.Mx2 = mc_m.W * mc_m.W + mc_eta.M * mc_eta.M - 2 * mc_eta.Z * mc_m.Nu * mc_m.Nu + 2 * TMath::Sqrt(mc_eta.Pl2 * (mc_m.Nu * mc_m.Nu + mc_m.Q2)) - 2 * kMassProton * mc_eta.Z * mc_m.Nu;
 }
 
