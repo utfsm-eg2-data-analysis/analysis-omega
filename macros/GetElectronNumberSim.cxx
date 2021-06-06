@@ -2,17 +2,25 @@
 #include "Global.h"
 #endif
 
-void GetElectronNumberSim(TString setOption, TString targetOption, TString dirOption = "") {
+void GetElectronNumberSim(TString targetOption) {
   // Count the number of electrons from simulation reconstructed files.
   // Doesn't need vertex cuts (like data).
   
   /*** INPUT ***/
 
-  TString InputDir = gWorkDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption;
-  if (setOption == "jlab") InputDir += "/" + dirOption;
-  
   TChain *treeExtracted = new TChain();
-  treeExtracted->Add(InputDir + "/*.root/ntuple_e");
+  if (targetOption == "C") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/old/" + targetOption + "/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "Fe") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/old/" + targetOption + "/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "Pb") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "D") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/jlab/"+ targetOption +"/00/pruned" + targetOption + "_*.root/ntuple_e");
+  }
   
   /*** MAIN ***/
 
@@ -34,8 +42,8 @@ void GetElectronNumberSim(TString setOption, TString targetOption, TString dirOp
   /*** ELECTRON NUMBERS IN ENTIRE REGION ***/
 
   TCut CutNonNull = "Q2 != -9999";
-  TCut CutRegion = "Q2 > 1.0 && Q2 < 4.0 && Nu > 2.2 && Nu < 4.2"; // GST format, there are no omega variables yet
-  Int_t eNumber = treeExtracted->Draw("Nu>>simrec(100, 0., 5.)", gCutDIS && CutRegion && CutNonNull, "goff");
+  TCut CutRegion = "Q2 > 1.0 && Q2 < 4.0 && Nu > 2.2 && Nu < 4.2"; // GST format, there are no omega variables here
+  Int_t eNumber = treeExtracted->Draw("Nu>>simrec(100, 0., 5.)", gCutDIS && CutNonNull, "goff");
   std::cout << "ELECTRON NUMBER(" << targetOption << ") = "
 	    << eNumber << std::endl;
   eNumber = 0; // reset
@@ -46,7 +54,7 @@ void GetElectronNumberSim(TString setOption, TString targetOption, TString dirOp
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t i = 0; i < Nbins; i++) { 
       CutBin = kinvarOption[k] + Form(" > %f && ", EdgesKinvar[k][i]) + kinvarOption[k] + Form(" < %f", EdgesKinvar[k][i+1]);
-      eNumber = treeExtracted->Draw("Nu>>simrec2(100, 0., 5.)", gCutDIS && CutBin && CutRegion && CutNonNull, "goff");
+      eNumber = treeExtracted->Draw("Nu>>simrec2(100, 0., 5.)", gCutDIS && CutBin && CutNonNull, "goff");
       std::cout << "ELECTRON NUMBER(" << targetOption << ", "
 		<< Form("%.2f < ", EdgesKinvar[k][i]) + kinvarName[k] + Form(" < %.2f)", EdgesKinvar[k][i+1]) << " = "
 		<< eNumber << std::endl;

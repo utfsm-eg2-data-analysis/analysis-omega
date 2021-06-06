@@ -2,17 +2,25 @@
 #include "Global.h"
 #endif
 
-void GetElectronNumberMC(TString setOption, TString targetOption, TString dirOption = "") {
+void GetElectronNumberMC(TString targetOption) {
   // Count the number of electrons from MC files.
-  // Doesn't need vertex cuts (like data), or demanding non-null-values (like simrec), I'm not sure if it need RegionCuts.
+  // Doesn't need vertex cuts (like data), or demanding non-null-values (like simrec)
   
   /*** INPUT ***/
 
-  TString InputDir = gWorkDir + "/out/GetSimpleTuple/" + setOption + "/" + targetOption;
-  if (setOption == "jlab") InputDir += "/" + dirOption;
-  
   TChain *treeExtracted = new TChain();
-  treeExtracted->Add(InputDir + "/*.root/ntuple_e");
+  if (targetOption == "C") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/old/" + targetOption + "/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "Fe") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/old/" + targetOption + "/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "Pb") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+  } else if (targetOption == "D") {
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/usm/"+ targetOption +"/pruned" + targetOption + "_*.root/ntuple_e");
+    treeExtracted->Add(gWorkDir + "/out/GetSimpleTuple/jlab/"+ targetOption +"/00/pruned" + targetOption + "_*.root/ntuple_e");
+  }
   
   /*** MAIN ***/
 

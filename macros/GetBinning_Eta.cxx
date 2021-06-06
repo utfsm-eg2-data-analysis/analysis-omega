@@ -8,9 +8,10 @@
 
 #include "DrawVerticalLine.cxx"
 
-void SetBinning(TString targetOption = "Pb", Int_t Nbins = 4) {
+void GetBinning_Eta(TString targetOption = "Fe") {
 
   const Int_t Nkinvars = 4;
+  const Int_t Nbins = 5;
   
   /*** INPUT OPTIONS ***/
 
@@ -18,36 +19,34 @@ void SetBinning(TString targetOption = "Pb", Int_t Nbins = 4) {
   TString inputFile1, inputFile2, inputFile3;
   if (targetOption == "D") {
     CutVertex = gCutLiquid;
-    inputFile1 = gDataDir + "/C/*.root";
-    inputFile2 = gDataDir + "/Fe/*.root";
-    inputFile3 = gDataDir + "/Pb/*.root";
+    inputFile1 = gDataDir_Eta + "/C/*.root";
+    inputFile2 = gDataDir_Eta + "/Fe/*.root";
+    inputFile3 = gDataDir_Eta + "/Pb/*.root";
   } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
     CutVertex = gCutSolid;
-    inputFile1 = gDataDir + "/" + targetOption + "/*.root";
+    inputFile1 = gDataDir_Eta + "/" + targetOption + "/*.root";
   }
 
-  TString kinvarOption[Nkinvars] = {"Q2", "Nu", "wZ", "wPt2"};
-  TString titleAxis[Nkinvars];
-  TString histProperties[Nkinvars];
+  TString kinvarOption[4] = {"Q2", "Nu", "eZ", "ePt2"};
+  TString titleAxis[4];
+  TString histProperties[4];
   titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.)";
+  histProperties[0] = "(100, 1., 4.1)";
   titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.2)";
+  histProperties[1] = "(100, 2.2, 4.25)";
   titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 0.9)";
+  histProperties[2] = "(100, 0.5, 1.0)";
   titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
   histProperties[3] = "(100, 0., 1.5)";
 
-  Double_t kinvarLimit[Nkinvars][2];
-  kinvarLimit[0][0] = 1.0;  // Q2
-  kinvarLimit[0][1] = 4.0;
-  kinvarLimit[1][0] = 2.2;  // Nu
-  kinvarLimit[1][1] = 4.2;
-  kinvarLimit[2][0] = 0.5;  // Z
-  kinvarLimit[2][1] = 0.9;
-  kinvarLimit[3][0] = 0.0;  // Pt2
-  kinvarLimit[3][1] = 1.5;
-
+  Double_t KinvarEdges[Nkinvars][Nbins+1];
+  for (Int_t i = 0; i < Nbins+1; i++) {
+    KinvarEdges[0][i] = kEdgesQ2_Eta[i];
+    KinvarEdges[1][i] = kEdgesNu_Eta[i];
+    KinvarEdges[2][i] = kEdgesZ_Eta[i];
+    KinvarEdges[3][i] = kEdgesPt2_Eta[i];
+  }
+  
   /*** MAIN ***/
 
   TChain *treeExtracted = new TChain();
@@ -60,8 +59,8 @@ void SetBinning(TString targetOption = "Pb", Int_t Nbins = 4) {
 
   TH1D *dataHist[4];
 
-  for (Int_t hh = 0; hh < 4; hh++) {
-    treeExtracted->Draw(kinvarOption[hh] + ">>hist_" + kinvarOption[hh] + histProperties[hh], gCutDIS && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle, "goff");
+  for (Int_t hh = 0; hh < Nkinvars; hh++) {
+    treeExtracted->Draw(kinvarOption[hh] + ">>hist_" + kinvarOption[hh] + histProperties[hh], gCutDIS && CutVertex && gCutPhotonsOpAngle_Eta && gCutRegion_Eta, "goff");
     dataHist[hh] = (TH1D *)gROOT->FindObject("hist_" + kinvarOption[hh]);
 
     dataHist[hh]->SetFillStyle(0);
@@ -78,7 +77,7 @@ void SetBinning(TString targetOption = "Pb", Int_t Nbins = 4) {
   
   /*** DRAW ***/
 
-  TString canvasTitle = "set-bins-";
+  TString canvasTitle = "eta-bins-";
   canvasTitle += Form("%d", Nbins);
   canvasTitle += "_" + targetOption;
 
@@ -108,33 +107,9 @@ void SetBinning(TString targetOption = "Pb", Int_t Nbins = 4) {
       
       dataHist[counter-1]->Draw("HIST");
       
-      Double_t xq[Nbins];  // percentages
-      Double_t yq[Nbins];  // output array
-
-      // draw first line
-      DrawVerticalLine(kinvarLimit[counter-1][0], kBlue, kSolid, 3, 1);
+      for (Int_t i = 0; i < Nbins+1; i++) DrawVerticalLine(KinvarEdges[counter-1][i], kRed, kSolid, 3, 1);
       
-      for (Int_t i = 0; i < Nbins; i++) {
-	xq[i] = (Double_t)(i + 1) / (Double_t)Nbins;
-	dataHist[counter-1]->GetQuantiles(Nbins, yq, xq);
-	
-	// print information
-	if (i == 0)
-	  std::cout << "edges" << kinvarOption[counter-1] << "[" << (Nbins + 1) << "] = {" << dataHist[counter-1]->GetBinLowEdge(1) << ", " << yq[i] << ", ";
-	else if (i == (Nbins - 1))
-	  std::cout << yq[i] << "};" << std::endl;
-	else
-	  std::cout << yq[i] << ", ";
-	
-	// draw lines
-	if (i != (Nbins - 1))
-	  DrawVerticalLine(yq[i], kBlue, kSolid, 3, 1);
-	
-	c->Update();
-      }
-
-      // draw last line
-      DrawVerticalLine(kinvarLimit[counter-1][1], kBlue, kSolid, 3, 1);
+      c->Update();
     }
   }
 

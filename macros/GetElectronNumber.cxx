@@ -2,7 +2,7 @@
 #include "Global.h"
 #endif
 
-void GetElectronNumber(TString targetOption) {
+void GetElectronNumber(TString targetOption, TString particleOption = "omega") {
   // Count the number of electrons from data.
 
   /*** INPUT ***/
@@ -22,24 +22,31 @@ void GetElectronNumber(TString targetOption) {
   /*** MAIN ***/
 
   const Int_t Nkinvars = 2;
-  const Int_t Nbins = 4;
+  Int_t Nbins;
+  if (particleOption == "omega" ) Nbins = 4;
+  else if (particleOption == "eta" ) Nbins = 5;
 
   // define arrays, cut for each bin and hist
   TString kinvarIndex[Nkinvars] = {"Q", "N"};
   TString kinvarName[Nkinvars] = {"Q2", "Nu"};
   TString kinvarOption[Nkinvars] = {"Q2", "Nu"};
 
-  // fill edges array
+  // fill edges arrays
   Double_t EdgesKinvar[Nkinvars][Nbins+1];
+  
   for (Int_t i = 0; i < Nbins+1; i++) {
-    EdgesKinvar[0][i] = kEdgesQ2[i];
-    EdgesKinvar[1][i] = kEdgesNu[i];
+    if (particleOption == "omega" ) {
+      EdgesKinvar[0][i] = kEdgesQ2[i];
+      EdgesKinvar[1][i] = kEdgesNu[i];
+    } else if (particleOption == "eta") {
+      EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
+      EdgesKinvar[1][i] = kEdgesNu_Eta[i];
+    }
   }
 
   /*** ELECTRON NUMBERS IN ENTIRE REGION ***/
 
-  TCut CutRegion = "Q2 > 1.0 && Q2 < 4.0 && Nu > 2.2 && Nu < 4.2"; // GST format, there are no omega variables yet
-  Int_t eNumber = treeExtracted->Draw("Nu>>data(100, 0., 5.)", gCutDIS && CutVertex && CutRegion, "goff");
+  Int_t eNumber = treeExtracted->Draw("Nu>>data(100, 0., 5.)", gCutDIS && CutVertex, "goff");
   std::cout << "ELECTRON NUMBER(" << targetOption << ") = "
 	    << eNumber << std::endl;
   eNumber = 0; // reset
@@ -50,7 +57,7 @@ void GetElectronNumber(TString targetOption) {
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t i = 0; i < Nbins; i++) { 
       CutBin = kinvarOption[k] + Form(" > %f && ", EdgesKinvar[k][i]) + kinvarOption[k] + Form(" < %f", EdgesKinvar[k][i+1]);
-      eNumber = treeExtracted->Draw("Nu>>data2(100, 0., 5.)", gCutDIS && CutVertex && CutRegion && CutBin, "goff");
+      eNumber = treeExtracted->Draw("Nu>>data2(100, 0., 5.)", gCutDIS && CutVertex && CutBin, "goff");
       std::cout << "ELECTRON NUMBER(" << targetOption << ", "
 		<< Form("%.2f < ", EdgesKinvar[k][i]) + kinvarName[k] + Form(" < %.2f)", EdgesKinvar[k][i+1]) << " = "
 		<< eNumber << std::endl;
