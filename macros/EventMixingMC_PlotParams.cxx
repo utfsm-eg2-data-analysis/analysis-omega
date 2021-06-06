@@ -2,7 +2,7 @@
 #include "Global.h"
 #endif
 
-void EventMixing_PlotParams() {
+void EventMixingMC_PlotParams() {
 
   const Int_t Nkinvars = 4;
   const Int_t Ntargets = 4;
@@ -41,7 +41,7 @@ void EventMixing_PlotParams() {
   
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
-      rootInputFile[k][t] = new TFile(gProDir + "/macros/evnt-mixing/evnt-mixing_binned_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      rootInputFile[k][t] = new TFile(gProDir + "/macros/evnt-mixing/evnt-mixing_binned_" + targetString[t] + "_mc_" + kinvarOption[k] + ".root");
       std::cout << targetString[t] << " - " << kinvarOption[k] << std::endl;
       for (Int_t i = 0; i < Nbins; i++) {  // i for bins
 
@@ -51,15 +51,10 @@ void EventMixing_PlotParams() {
 	Double_t fitMean = Fit->GetParameter(1);
 	Double_t fitSigma = Fit->GetParameter(2);
 	
-	// method 1: include negative entries
-	/*
-	intOmega[k][t][i] = Hist->IntegralAndError(TMath::Floor((fitMean - 3*fitSigma - 0.66)/0.01), TMath::Ceil((fitMean + 3*fitSigma - 0.66)/0.01), intOmegaError[k][t][i], "");
-	*/
 	// method 2: remove negative entries
-	
 	intOmega[k][t][i] = 0;
 	intOmegaError[k][t][i] = 0;
-	for (Int_t s = TMath::Floor((fitMean - 3*fitSigma - 0.66)/0.01); s <= TMath::Ceil((fitMean + 3*fitSigma - 0.66)/0.01); s++) {
+	for (Int_t s = TMath::Floor((fitMean - 1.274*fitSigma - 0.66)/0.001); s <= TMath::Ceil((fitMean + 1.274*fitSigma - 0.66)/0.001); s++) {
 	  if (Hist->GetBinContent(s) > 0) intOmega[k][t][i] += Hist->GetBinContent(s);
 	  if (Hist->GetBinContent(s) > 0) intOmegaError[k][t][i] += Hist->GetBinError(s)*Hist->GetBinError(s);
 	}
@@ -113,6 +108,7 @@ void EventMixing_PlotParams() {
     omegaGraph[k][0]->GetYaxis()->SetTitle("N_{#omega}");
     omegaGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     omegaGraph[k][0]->GetYaxis()->SetTitleOffset(1.2);
+    omegaGraph[k][0]->GetYaxis()->SetMaxDigits(3);
 
     omegaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     omegaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
@@ -129,7 +125,7 @@ void EventMixing_PlotParams() {
   gStyle->SetPadBottomMargin(0.15);
   gStyle->SetPadLeftMargin(0.15);
  
-  TCanvas *c = new TCanvas("evnt-mixing_plot-params", "evnt-mixing_plot-params", 1080, 1080);
+  TCanvas *c = new TCanvas("evnt-mixing_mc_plot-params", "evnt-mixing_mc_plot-params", 1080, 1080);
   c->Divide(2, 2, 0.01, 0.01);  // nx, ny, margins
 
   gStyle->SetOptFit(0);
@@ -150,10 +146,10 @@ void EventMixing_PlotParams() {
 
   // legend
   TLegend *legend = new TLegend(0.75, 0.65, 0.9, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(omegaGraph[0][0], "D", "pl");
-  legend->AddEntry(omegaGraph[0][1], "C", "pl");
-  legend->AddEntry(omegaGraph[0][2], "Fe", "pl");
-  legend->AddEntry(omegaGraph[0][3], "Pb", "pl");
+  legend->AddEntry(omegaGraph[0][0], "D (MC)", "pl");
+  legend->AddEntry(omegaGraph[0][1], "C (MC)", "pl");
+  legend->AddEntry(omegaGraph[0][2], "Fe (MC)", "pl");
+  legend->AddEntry(omegaGraph[0][3], "Pb (MC)", "pl");
   legend->SetFillStyle(0);
   legend->SetTextFont(62);
   legend->SetTextSize(0.04);

@@ -1,157 +1,188 @@
+#ifndef GLOBAL_H
 #include "Global.h"
+#endif
 
-// from FitSub.cxx results
+#include "DrawVerticalLine.cxx"
 
-void EventMixing_MakeMR(TString kinvarOption, TString particleOption = "omega") {
+void EventMixing_MakeMR() {
+  // from fit results and electron numbers, calculate MR
 
   const Int_t Nbins = 4;
   const Int_t Ntargets = 4;
-
-  Double_t fitOmega[Ntargets][Nbins];
-  Double_t fitOmegaError[Ntargets][Nbins];
-
+  const Int_t Nkinvars = 4;
+  
   /*** INPUT ***/
-
-  Int_t kinvarIndex;
-  TString kinvarTitle;
-  Double_t EdgesKinvar[Nbins + 1];
-  if (kinvarOption == "Q2") {
-    kinvarIndex = 0;
-    kinvarTitle = "Q^{2} (GeV^{2})";
-    for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesQ2[i];
-  } else if (kinvarOption == "Nu") {
-    kinvarIndex = 1;
-    kinvarTitle = "#nu (GeV)";
-    for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesNu[i];
-  } else if (kinvarOption == "wZ") {
-    kinvarIndex = 2;
-    kinvarTitle = "Z";
-    for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesZ[i];
-  } else if (kinvarOption == "wPt2") {
-    kinvarIndex = 3;
-    kinvarTitle = "p_{T}^{2} (GeV^{2})";
-    for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesPt2[i];
+  
+  TString kinvarOption[Nkinvars] = {"Q2", "Nu", "wZ", "wPt2"};
+  TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
+  Double_t EdgesKinvar[Nkinvars][Nbins + 1];
+  for (Int_t i = 0; i < Nbins + 1; i++) {
+    EdgesKinvar[0][i] = kEdgesQ2[i];
+    EdgesKinvar[1][i] = kEdgesNu[i];
+    EdgesKinvar[2][i] = kEdgesZ[i];
+    EdgesKinvar[3][i] = kEdgesPt2[i];
   }
 
-  Double_t plotMin, plotMax;
-  Double_t maxMR;
-  if (particleOption == "omega") {
-    plotMin = 0.65;
-    plotMax = 0.90;
-    maxMR = 1.4;
-  } else if (particleOption == "eta") {
-    plotMin = 0.45;
-    plotMax = 0.65;
-    maxMR = 2.0;
-  }
+  Double_t plotMin = 0.66;
+  Double_t plotMax = 0.90;
+  Double_t maxMR = 1.4;
 
-  TString targetString[4] = {"D", "C", "Fe", "Pb"};
-  Color_t targetColor[4] = {kGreen + 3, kRed, kBlue, kBlack};
+  TString targetString[Ntargets] = {"D", "C", "Fe", "Pb"};
+  Color_t targetColor[Ntargets] = {kGreen + 3, kRed, kBlue, kBlack};
 
   /*** MAIN ***/
 
-  TFile *rootInputFile[Ntargets];
-  TH1D *omegaHist[Ntargets];
-  TH1D *electronHist[Ntargets];
-  TH1D *ratioHist[Ntargets];
-  TH1D *omegaMR[Ntargets];
+  TFile *rootInputFile[Nkinvars][Ntargets];
+  TH1D *omegaHist[Nkinvars][Ntargets];
+  TH1D *electronHist[Nkinvars][Ntargets];
+  TH1D *ratioHist[Nkinvars][Ntargets];
+  TH1D *MR[Nkinvars][Ntargets];
 
-  for (Int_t t = 0; t < Ntargets; t++) {
-    rootInputFile[t] = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_fit-sub_" + targetString[t] + ".root");
-    omegaHist[t] = new TH1D("omegaNumber_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    electronHist[t] = new TH1D("electronNumber_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    ratioHist[t] = new TH1D("ratio_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    omegaMR[t] = new TH1D("omegaMR_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-    for (Int_t i = 0; i < Nbins; i++) {
-      TF1 *Fit = (TF1 *)rootInputFile[t]->Get(Form("fit_%d_%d", i, kinvarIndex));
-      TFitResultPtr FitResult = (TFitResult *)rootInputFile[t]->Get(Form("TFitResult-sub_%d_%d-fit_%d_%d", i, kinvarIndex, i, kinvarIndex));
-      std::vector<Double_t> Parameters = FitResult->Parameters();
-      std::vector<Double_t> Errors = FitResult->Errors();
-      fitOmega[t][i] = Fit->Integral(plotMin, plotMax) / 0.01;
-      fitOmegaError[t][i] = Fit->IntegralError(plotMin, plotMax, FitResult->GetParams(), FitResult->GetCovarianceMatrix().GetMatrixArray(), 1e-1) / 0.01;
-      // fill hist
-      omegaHist[t]->SetBinContent(i + 1, fitOmega[t][i]);
-      omegaHist[t]->SetBinError(i + 1, fitOmegaError[t][i]);
-      // electron hist
-      if (kinvarIndex == 0) {
-        electronHist[t]->SetBinContent(i + 1, kNElecQ2[t][i]);
-        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2[t][i]));
-      } else if (kinvarIndex == 1) {
-        electronHist[t]->SetBinContent(i + 1, kNElecNu[t][i]);
-        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu[t][i]));
-      } else if (kinvarIndex == 2 || kinvarIndex == 3) {
-        electronHist[t]->SetBinContent(i + 1, kNElec[t]);
-        electronHist[t]->SetBinError(i + 1, TMath::Sqrt(kNElec[t]));
+  Double_t intOmega[Nkinvars][Ntargets][Nbins];
+  Double_t intOmegaError[Nkinvars][Ntargets][Nbins];
+  
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    for (Int_t t = 0; t < Ntargets; t++) {
+      // data
+      rootInputFile[k][t] = new TFile(gProDir + "/macros/evnt-mixing/evnt-mixing_binned_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      omegaHist[k][t] = new TH1D("omegaNumber_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      electronHist[k][t] = new TH1D("electronNumber_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      ratioHist[k][t] = new TH1D("ratio_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      MR[k][t] = new TH1D("MR_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      for (Int_t i = 0; i < Nbins; i++) {
+
+	TF1 *Fit = rootInputFile[k][t]->Get<TF1>(Form("model_%d", i));      
+	TH1D *Hist = rootInputFile[k][t]->Get<TH1D>(Form("sub_%d", i));      
+
+	Double_t fitMean = Fit->GetParameter(1);
+	Double_t fitSigma = Fit->GetParameter(2);
+	
+	// method 1: include negative entries
+	/*
+	intOmega[k][t][i] = Hist->IntegralAndError(TMath::Floor((fitMean - 3*fitSigma - 0.66)/0.01), TMath::Ceil((fitMean + 3*fitSigma - 0.66)/0.01), intOmegaError[k][t][i], "");
+	*/
+	// method 2: remove negative entries
+	
+	intOmega[k][t][i] = 0;
+	intOmegaError[k][t][i] = 0;
+	for (Int_t s = TMath::Floor((fitMean - 3*fitSigma - 0.66)/0.01); s <= TMath::Ceil((fitMean + 3*fitSigma - 0.66)/0.01); s++) {
+	  if (Hist->GetBinContent(s) > 0) intOmega[k][t][i] += Hist->GetBinContent(s);
+	  if (Hist->GetBinContent(s) > 0) intOmegaError[k][t][i] += Hist->GetBinError(s)*Hist->GetBinError(s);
+	}
+	intOmegaError[k][t][i] = TMath::Sqrt(intOmegaError[k][t][i]);
+
+	// fill hist
+	omegaHist[k][t]->SetBinContent(i + 1, intOmega[k][t][i]);
+	omegaHist[k][t]->SetBinError(i + 1, intOmegaError[k][t][i]);
+	// electron hist
+	if (k == 0) {
+	  electronHist[k][t]->SetBinContent(i + 1, kNElecQ2[t][i]);
+	  electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2[t][i]));
+	} else if (k == 1) {
+	  electronHist[k][t]->SetBinContent(i + 1, kNElecNu[t][i]);
+	  electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu[t][i]));
+	} else if (k == 2 || k == 3) {
+	  electronHist[k][t]->SetBinContent(i + 1, kNElec[t]);
+	  electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec[t]));
+	}
       }
-      ratioHist[t]->Divide(omegaHist[t], electronHist[t]);
-      // divide solid targets with liquid target
-      if (t > 0) omegaMR[t]->Divide(ratioHist[t], ratioHist[0]);
+      // calculate first ratio (normalize by electrons) and divide solid targets with liquid target
+      ratioHist[k][t]->Divide(omegaHist[k][t], electronHist[k][t]);
+      if (t > 0) MR[k][t]->Divide(ratioHist[k][t], ratioHist[k][0]);
     }
   }
-
+  
   /*** DEFINE GRAPHS ***/
 
   // define arrays
-  Double_t empty[Nbins];
-  Double_t MR_x[Nbins];
-  Double_t MR_xerr[Nbins];
-  Double_t MR_y[Ntargets][Nbins];
-  Double_t MR_yerr[Ntargets][Nbins];
+  Double_t empty[Nkinvars][Nbins];
+  Double_t MR_x[Nkinvars][Nbins];
+  Double_t MR_xerr[Nkinvars][Nbins];
+  Double_t MR_y[Nkinvars][Ntargets][Nbins];
+  Double_t MR_yerr[Nkinvars][Ntargets][Nbins];
 
   // fill arrays
-  for (Int_t i = 0; i < Nbins; i++) {
-    empty[i] = 0.;
-    MR_x[i] = (EdgesKinvar[i] + EdgesKinvar[i + 1]) / 2.;
-    MR_xerr[i] = (EdgesKinvar[i + 1] - EdgesKinvar[i]) / TMath::Sqrt(12);
-    for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
-      MR_y[tt][i] = omegaMR[tt]->GetBinContent(i + 1);
-      MR_yerr[tt][i] = omegaMR[tt]->GetBinError(i + 1);
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    for (Int_t i = 0; i < Nbins; i++) {
+      empty[k][i] = 0.;
+      MR_x[k][i] = (EdgesKinvar[k][i] + EdgesKinvar[k][i + 1]) / 2.;
+      MR_xerr[k][i] = (EdgesKinvar[k][i + 1] - EdgesKinvar[k][i]) / 2;
+      for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
+	MR_y[k][tt][i] = MR[k][tt]->GetBinContent(i + 1);
+	MR_yerr[k][tt][i] = MR[k][tt]->GetBinError(i + 1);
+      }
     }
   }
-
+    
   // define graphs
-  TGraphErrors *MRgraph[Ntargets];
-  for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
-    MRgraph[tt] = new TGraphErrors(Nbins, MR_x, MR_y[tt], MR_xerr, MR_yerr[tt]);
+  TGraphErrors *MRgraph[Nkinvars][Ntargets];
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
+      MRgraph[k][tt] = new TGraphErrors(Nbins, MR_x[k], MR_y[k][tt], MR_xerr[k], MR_yerr[k][tt]);
+    }
+    // set style
+    MRgraph[k][1]->SetTitle("");
+
+    MRgraph[k][1]->GetXaxis()->SetTitle(kinvarTitle[k]);
+    //MRgraph[k][1]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
+    MRgraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+    MRgraph[k][1]->GetXaxis()->SetTitleSize(0.04);
+    MRgraph[k][1]->GetXaxis()->SetTitleOffset(1.);
+
+    MRgraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#omega}");
+    MRgraph[k][1]->GetYaxis()->SetRangeUser(0., maxMR);
+    MRgraph[k][1]->GetYaxis()->SetTitleSize(0.04);
+    MRgraph[k][1]->GetYaxis()->SetTitleOffset(1.2);
+  
+    for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
+      MRgraph[k][tt]->SetMarkerStyle(21);
+      MRgraph[k][tt]->SetMarkerSize(1.5);
+      MRgraph[k][tt]->SetMarkerColor(targetColor[tt]);
+      MRgraph[k][tt]->SetLineColor(targetColor[tt]);
+      MRgraph[k][tt]->SetLineWidth(3);
+    }
   }
-
-  // set style
-  MRgraph[1]->SetTitle("Multiplicity Ratio: #" + particleOption);
-  MRgraph[1]->GetXaxis()->SetTitle(kinvarTitle);
-  MRgraph[1]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
-  MRgraph[1]->GetXaxis()->SetLimits(EdgesKinvar[0], EdgesKinvar[Nbins]);
-  MRgraph[1]->GetYaxis()->SetTitle("R_{#" + particleOption + "}");
-  MRgraph[1]->GetYaxis()->SetRangeUser(0., maxMR);
-
-  for (Int_t tt = 1; tt < Ntargets; tt++) {  // solid targets only
-    MRgraph[tt]->SetMarkerStyle(21);
-    MRgraph[tt]->SetMarkerSize(1.5);
-    MRgraph[tt]->SetMarkerColor(targetColor[tt]);
-    MRgraph[tt]->SetLineColor(targetColor[tt]);
-    MRgraph[tt]->SetLineWidth(3);
-  }
-
+  
   /*** DRAW ***/
 
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
+  // gStyle->SetLineWidth(2);
   
-  // define canvas
-  TCanvas *c = new TCanvas("evnt-mixing_MR_" + kinvarOption, "", 1000, 1000);
-  gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
 
-  MRgraph[1]->Draw("AP");  // Carbon
-  MRgraph[2]->Draw("P");   // Iron
-  MRgraph[3]->Draw("P");   // Lead
-
-  // legend
-  TLegend *legend = new TLegend(0.7, 0.7, 0.9, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(MRgraph[1], "Carbon", "p");
-  legend->AddEntry(MRgraph[2], "Iron", "p");
-  legend->AddEntry(MRgraph[3], "Lead", "p");
-  legend->Draw();
+  // set margin sizes
+  gStyle->SetPadTopMargin(0.05);
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadBottomMargin(0.15);
+  gStyle->SetPadLeftMargin(0.15);
   
+  // define canvas
+  TCanvas *c = new TCanvas("evnt-mixing_MR", "evnt-mixing_MR", 1080, 1080);
+  c->Divide(2, 2, 0.001, 0.001);
+
+  Int_t counter = 0;
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    counter++;
+    c->cd(counter);
+    
+    MRgraph[k][1]->Draw("AP");  // Carbon
+    MRgraph[k][2]->Draw("P");   // Iron
+    MRgraph[k][3]->Draw("P");   // Lead
+
+    // legend
+    TLegend *legend = new TLegend(0.75, 0.75, 0.9, 0.9);  // x1,y1,x2,y2
+    legend->AddEntry(MRgraph[k][1], "C", "p");
+    legend->AddEntry(MRgraph[k][2], "Fe", "p");
+    legend->AddEntry(MRgraph[k][3], "Pb", "p");
+    legend->SetFillStyle(0);
+    legend->SetTextFont(62);
+    legend->SetTextSize(0.035);
+    legend->SetBorderSize(0);
+    legend->Draw();
+
+    c->Update();
+  }
   /*
   c->Print(plotFile);  // output file
   */
