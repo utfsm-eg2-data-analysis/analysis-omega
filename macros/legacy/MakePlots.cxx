@@ -14,12 +14,12 @@ void MakePlots(TString targetOption, TString kinvarOption) {
   TString inputFile1, inputFile2, inputFile3;
   if (targetOption == "D") {
     CutVertex = gCutLiquid;
-    inputFile1 = gDataDir + "/comb_data-C.root";
-    inputFile2 = gDataDir + "/comb_data-Fe.root";
-    inputFile3 = gDataDir + "/comb_data-Pb.root";
+    inputFile1 = gDataDir + "/C/*.root";
+    inputFile2 = gDataDir + "/Fe/*.root";
+    inputFile3 = gDataDir + "/Pb/*.root";
   } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
     CutVertex = gCutSolid;
-    inputFile1 = gDataDir + "/comb_data-" + targetOption + ".root";
+    inputFile1 = gDataDir + "/" + targetOption + "/comb_data-" + targetOption + ".root";
   }
   
   TString titleAxis, histProperties;
