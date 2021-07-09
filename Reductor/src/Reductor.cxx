@@ -7,10 +7,6 @@
 
 // February 2021
 
-#include "Headers.hxx"
-#include "UX.hxx"
-
-#include "GSTtree.h"
 #include "Reductor.hxx"
 
 int main(int argc, char **argv) {
@@ -75,7 +71,7 @@ int main(int argc, char **argv) {
 
   /*** START ***/
 
-  Int_t k = 0; // counter of output entries
+  Int_t k = 0;  // counter of output entries
   for (Int_t i = 0; i <= nEntries; i++) {
     tInput->GetEntry(i);
     currentEvent = (Int_t)spInput.evnt;
@@ -99,8 +95,10 @@ int main(int argc, char **argv) {
       // same-event condition
       if (currentEvent == (Int_t)spInput.evnt) {
 #ifdef DEBUG
-        if (gReduceSimrec || gDataKind == "data") std::cout << "Current pid:          " << spInput.pid << std::endl;
-	else if (gReduceMC) std::cout << "Current mc_pid:       " << spInput.mc_pid << std::endl;
+        if (gReduceSimrec || gDataKind == "data")
+          std::cout << "Current pid:          " << spInput.pid << std::endl;
+        else if (gReduceMC)
+          std::cout << "Current mc_pid:       " << spInput.mc_pid << std::endl;
 #endif
         // count the particles
         if (gReduceSimrec || gDataKind == "data") {
@@ -163,7 +161,7 @@ int main(int argc, char **argv) {
             tPi0->Fill();
           }
         }
-	k++; // update output entries
+        k++;  // update output entries
       }
     }
 

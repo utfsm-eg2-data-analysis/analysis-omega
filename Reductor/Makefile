@@ -17,8 +17,8 @@ ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 CXX := c++ # -D DEBUG
 LD := c++
 
-CXXFLAGS := -g -O0 -Wall -fPIC $(ROOTCFLAGS) # O0
-LDFLAGS := -g -O0 $(ROOTLDFLAGS) # O0
+CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS) # default: O0, performance: O2
+LDFLAGS := -g -O2 $(ROOTLDFLAGS) # default: O0, performance: O2
 
 INCLUDES := -I$(CLASTOOL)/include -I./include
 LIBS := $(ROOTGLIBS) -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lDSTReader -lEG
