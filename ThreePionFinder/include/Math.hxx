@@ -1,8 +1,8 @@
 #ifndef MATH_HXX
 #define MATH_HXX
 
-#ifndef FNCTREE_H
-#include "FNCtree.h"
+#ifndef TREESTRUCTS_H
+#include "TreeStructs.h"
 #endif
 
 #ifndef PDG_HXX

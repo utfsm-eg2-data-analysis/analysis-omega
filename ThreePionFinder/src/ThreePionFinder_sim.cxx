@@ -1,13 +1,13 @@
 /*****************************************/
-/*  FilterNCombine_sim.cxx               */
+/*  ThreePionFinder_sim.cxx              */
 /*                                       */
 /*  Andrés Bórquez                       */
 /*                                       */
 /*****************************************/
 
-// February 2021
+// June 2021
 
-#include "FilterNCombine_sim.hxx"
+#include "ThreePionFinder_sim.hxx"
 
 int main(int argc, char **argv) {
 

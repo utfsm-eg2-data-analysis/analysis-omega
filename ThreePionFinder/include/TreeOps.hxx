@@ -5,7 +5,7 @@
 #include "Math.hxx"
 #include "PDG.hxx"
 
-#include "FNCtree.h"
+#include "TreeStructs.h"
 
 #ifndef INVLD
 #define INVLD -9999

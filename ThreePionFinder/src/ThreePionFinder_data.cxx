@@ -1,16 +1,16 @@
 /*****************************************/
-/*  FilterNCombine_data.cxx              */
+/*  ThreePionFinder_data.cxx             */
 /*                                       */
 /*  Andrés Bórquez                       */
 /*                                       */
 /*****************************************/
 
-// February 2021
+// June 2021
 
-#include "FilterNCombine_data.hxx"
+#include "ThreePionFinder_data.hxx"
 
 int main(int argc, char **argv) {
-
+  
   gDataKind = "data";
 
   parseCommandLine(argc, argv);
@@ -30,9 +30,9 @@ int main(int argc, char **argv) {
   /*** INPUT ***/
 
   TFile *InputRootFile = new TFile(gInputFile, "READ");
-  
+
   TTree *tree = InputRootFile->Get<TTree>("ntuple_data");
-  tree->SetBranchStatus("*", 0);           // only read what's necessary
+  tree->SetBranchStatus("*", 0);  // only read what's necessary
   SetMinimalBranches_REC(tree, t);
 
   /*** OUTPUT ***/
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     tree->GetEntry(i);
     currentEvent = (Int_t)t.evnt;
     currentTargType = (Int_t)t.TargType;  // necessary for event-mixing
-    
+
     // prevents repetition of same event
     if (i > 0) {
       tree->GetEntry(i - 1);
@@ -163,33 +163,33 @@ int main(int argc, char **argv) {
     if (gMixData) {
       // generalization
       for (Int_t Index = ParticleIndex; Index < LastIndex; Index++) {
-	// when choosing to change pi0, search for one gamma, it stays at 22
-	if (gParticleToSwap == 111) gParticleToSwap = 22;
-	// loop on possible combinations, each desired particle will be swapped
-	for (Size_t s = 0; s < combVector.size(); s++) {
-	  // choose a random entry
-	  while (1) {
-	    rng = r.Integer(nEntries);
-	    tree->GetEntry(rng);
-	    // check if it corresponds to the desired particle, same target and it's different from previous random entry
-	    if (((Int_t)t.pid == gParticleToSwap || (Int_t)t.pid == ParticleToSwap[Index]) && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
-	      combVector[s][Index] = rng;
-	      // in the case of one gamma, find its partner to form a pi0, which can be the previous or next entry
-	      // and save it into the spot of the 4th particle
-	      if (gParticleToSwap == 22 || ParticleToSwap[Index] == 22) {
-		tree->GetEntry(rng - 1);
-		if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng - 1;
-		tree->GetEntry(rng + 1);
-		if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng + 1;
-	      }
-	      prevRNG = rng;
-	      break;
-	    }
-	  }
-	}
+        // when choosing to change pi0, search for one gamma, it stays at 22
+        if (gParticleToSwap == 111) gParticleToSwap = 22;
+        // loop on possible combinations, each desired particle will be swapped
+        for (Size_t s = 0; s < combVector.size(); s++) {
+          // choose a random entry
+          while (1) {
+            rng = r.Integer(nEntries);
+            tree->GetEntry(rng);
+            // check if it corresponds to the desired particle, same target and it's different from previous random entry
+            if (((Int_t)t.pid == gParticleToSwap || (Int_t)t.pid == ParticleToSwap[Index]) && (Int_t)t.TargType == currentTargType && rng != prevRNG) {
+              combVector[s][Index] = rng;
+              // in the case of one gamma, find its partner to form a pi0, which can be the previous or next entry
+              // and save it into the spot of the 4th particle
+              if (gParticleToSwap == 22 || ParticleToSwap[Index] == 22) {
+                tree->GetEntry(rng - 1);
+                if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng - 1;
+                tree->GetEntry(rng + 1);
+                if ((Int_t)t.pid == 22) combVector[s][Index + 1] = rng + 1;
+              }
+              prevRNG = rng;
+              break;
+            }
+          }
+        }
       }
     }
-    
+
     /*** FILL MIX ***/
 
     // candidate appeared
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
       std::cout << "combVector[" << cc << "] = {" << combVector[cc][0] << ", " << combVector[cc][1] << ", " << combVector[cc][2] << ", " << combVector[cc][3] << "}" << std::endl;
 #endif
-      for (Int_t pp = 0; pp < 4; pp++) {                       // loop on final state particles
+      for (Int_t pp = 0; pp < 4; pp++) {  // loop on final state particles
         tree->GetEntry(combVector[cc][pp]);
         AssignMixVar_REC(t, m, combVector[cc][pp], pp);
       }  // end of loop on fs particles

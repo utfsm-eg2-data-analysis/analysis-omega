@@ -1,5 +1,5 @@
-#ifndef FNCTREE_H
-#define FNCTREE_H
+#ifndef TREESTRUCTS_H
+#define TREESTRUCTS_H
 
 /*
    NAMING CONVENTIONS

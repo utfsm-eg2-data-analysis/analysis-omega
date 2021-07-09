@@ -19,7 +19,7 @@ LDFLAGS := -g -O2 $(ROOTLDFLAGS) # default: O0, performance: O2
 INCLUDES := -I./include
 LIBS := $(ROOTGLIBS)
 
-PROG := FilterNCombine_data FilterNCombine_sim
+PROG := ThreePionFinder_data ThreePionFinder_sim
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
