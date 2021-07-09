@@ -13,7 +13,7 @@ using namespace RooFit;
 
 void BkgFitting_FiveBins_Eta(TString targetOption = "C", TString kinvarOption = "Q2", Int_t fixParams = 0) {
 
-  gROOT->SetBatch(kTRUE); // prevent output printing
+  gROOT->SetBatch(kTRUE);  // prevent output printing
 
   const Int_t Nbins = 5;
 

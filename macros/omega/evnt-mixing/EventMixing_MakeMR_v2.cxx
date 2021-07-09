@@ -6,7 +6,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
   // from bkg-subtracted histograms, fit results and electron numbers, calculate MR
   // apply acceptance results if necessary
   // v2: cuts signal from range given by fits
-  
+
   const Int_t Nbins = 4;
   const Int_t Ntargets = 4;
 
@@ -14,7 +14,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
   Double_t intOmegaError[Ntargets][Nbins];
 
   /*** INPUT ***/
-  
+
   if (OnlyWithAcceptance) IncludeAcceptance = 1;
 
   Int_t kinvarIndex;
@@ -55,8 +55,8 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
 
   /*** MAIN ***/
 
-  TFile *BinnedFile[Ntargets]; // file that containts the bkg-subtracted histograms
-  TFile *FitFile[Ntargets]; // fit results
+  TFile *BinnedFile[Ntargets];  // file that containts the bkg-subtracted histograms
+  TFile *FitFile[Ntargets];     // fit results
   TH1D *omegaHist[Ntargets];
   TH1D *electronHist[Ntargets];
   TH1D *ratioHist[Ntargets];
@@ -68,7 +68,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
   TH1D *ElectronACC[Ntargets];
   TH1D *RatioACC[Ntargets];
   TH1D *MR_ACC[Ntargets];
-  
+
   for (Int_t t = 0; t < Ntargets; t++) {
     // data
     BinnedFile[t] = new TFile(gProDir + "/macros/out/evnt-mixing-" + particleOption + "_binned_" + targetString[t] + ".root");
@@ -83,7 +83,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
       OmegaACC[t] = AcceptanceFile[t]->Get<TH1D>("OmegaACC_" + targetString[t] + "_" + kinvarOption);
       ElectronACC[t] = AcceptanceFile[t]->Get<TH1D>("ElectronACC_" + targetString[t] + "_" + kinvarOption);
       RatioACC[t] = new TH1D("RatioACC_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
-      RatioACC[t]->Divide(ElectronACC[t], OmegaACC[t], 1, 1); // inverse to data ratios
+      RatioACC[t]->Divide(ElectronACC[t], OmegaACC[t], 1, 1);  // inverse to data ratios
       MR_ACC[t] = new TH1D("MR_ACC_" + targetString[t], "", Nbins, EdgesKinvar[0], EdgesKinvar[Nbins]);
     }
     for (Int_t i = 0; i < Nbins; i++) {
@@ -92,7 +92,8 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
       // extract fit results
       TFitResultPtr FitResult = FitFile[t]->Get<TFitResult>(Form("TFitResult-sub_%d_%d-fit_%d_%d", i, kinvarIndex, i, kinvarIndex));
       std::vector<Double_t> Parameters = FitResult->Parameters();
-      intOmega[t][i] = Sub->Integral(Sub->FindBin(Parameters[1] - 3 * Parameters[2]), Sub->FindBin(Parameters[1] + 3 * Parameters[2]));;
+      intOmega[t][i] = Sub->Integral(Sub->FindBin(Parameters[1] - 3 * Parameters[2]), Sub->FindBin(Parameters[1] + 3 * Parameters[2]));
+      ;
       intOmegaError[t][i] = TMath::Sqrt(intOmega[t][i]);
       // fill hist
       omegaHist[t]->SetBinContent(i + 1, intOmega[t][i]);
@@ -118,7 +119,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
       if (t > 0) MR_ACC[t]->Divide(RatioACC[t], RatioACC[0]);
     }
   }
-  
+
   /*** DEFINE GRAPHS ***/
 
   // define arrays
@@ -139,8 +140,8 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
       MR_y[tt][i] = MR[tt]->GetBinContent(i + 1);
       MR_yerr[tt][i] = MR[tt]->GetBinError(i + 1);
       if (IncludeAcceptance) {
-	MR_ACC_y[tt][i] = MR_ACC[tt]->GetBinContent(i + 1);
-	MR_ACC_yerr[tt][i] = MR_ACC[tt]->GetBinError(i + 1);
+        MR_ACC_y[tt][i] = MR_ACC[tt]->GetBinContent(i + 1);
+        MR_ACC_yerr[tt][i] = MR_ACC[tt]->GetBinError(i + 1);
       }
     }
   }
@@ -188,9 +189,9 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
 
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  
+
   // define canvas
-  TCanvas *c = new TCanvas("evnt-mixing-" + particleOption+ "_MR_" + kinvarOption, "", 1000, 1000);
+  TCanvas *c = new TCanvas("evnt-mixing-" + particleOption + "_MR_" + kinvarOption, "", 1000, 1000);
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
 
@@ -200,8 +201,8 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
     MRgraph[3]->Draw("P");   // Lead
     if (IncludeAcceptance) {
       MR_ACCgraph[1]->Draw("P");  // Carbon
-      MR_ACCgraph[2]->Draw("P");   // Iron
-      MR_ACCgraph[3]->Draw("P");   // Lead
+      MR_ACCgraph[2]->Draw("P");  // Iron
+      MR_ACCgraph[3]->Draw("P");  // Lead
     }
   }
   if (OnlyWithAcceptance) {
@@ -223,7 +224,7 @@ void EventMixing_MakeMR_v2(TString kinvarOption, TString particleOption = "omega
     legend->AddEntry(MR_ACCgraph[3], "Lead + AC", "p");
   }
   legend->Draw();
-  
+
   /*
   c->Print(plotFile);  // output file
   */

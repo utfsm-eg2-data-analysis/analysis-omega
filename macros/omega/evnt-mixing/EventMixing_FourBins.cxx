@@ -12,9 +12,9 @@
 void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q2", Int_t fixParams = 1) {
   // Plot all bins, comparing event-mixing from data with data.
 
-  gROOT->SetBatch(kTRUE); // prevent output printing
+  gROOT->SetBatch(kTRUE);  // prevent output printing
   const Int_t Nbins = 4;
-  
+
   /*** INPUT ***/
 
   TString dataFile1, dataFile2, dataFile3;
@@ -56,7 +56,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
 
   // about kinvar option
   TString kinvarTitle;
-  Double_t EdgesKinvar[Nbins + 1];  
+  Double_t EdgesKinvar[Nbins + 1];
   if (kinvarOption == "Q2") {
     kinvarTitle = "Q^{2}";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesQ2[i];
@@ -70,7 +70,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     kinvarTitle = "p_{T}^{2}";
     for (Int_t i = 0; i < Nbins + 1; i++) EdgesKinvar[i] = kEdgesPt2[i];
   }
-  
+
   // to choose between eta and omega
   Int_t plotNbins = 24;
   Double_t plotMin = 0.66;
@@ -81,11 +81,11 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
   BinsForNormalization[2] = plotNbins - 4;
   BinsForNormalization[3] = plotNbins;
   TString histProperties = Form("(%d, %.3f, %.3f)", plotNbins, plotMin, plotMax);
-    
+
   /*** SET OUTPUT FILE ***/
 
-  TFile *RootOutputFile = new TFile(gProDir + "/macros/evnt-mixing/evnt-mixing_binned_" + targetOption + "_" + kinvarOption + ".root", "RECREATE");
-  
+  TFile *RootOutputFile = new TFile("evnt-mixing_" + targetOption + "_" + kinvarOption + ".root", "RECREATE");
+
   TString auxCut;
   TCut CutBin;
 
@@ -97,7 +97,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
   TH1D *dataMassive[Nbins];
   TH1D *bkgMassive[Nbins];
   TH1D *subMassive[Nbins];
- 
+
   Double_t dataNorm, bkgNorm;
 
   TF1 *Model[Nbins];
@@ -107,39 +107,43 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
 
   // fix parameters, based on "All data" results
   const Int_t Ntargets = 4;
-  Int_t kinvarIndex = 0*(kinvarOption == "Q2") + 1*(kinvarOption == "Nu") + 2*(kinvarOption == "wZ") + 3*(kinvarOption == "wPt2");
-  Double_t meanFix[Ntargets][Nbins] = {{0.785, 0.785, 0.785, 0.780}, {0.784, 0.783, 0.783, 0.781}, {0.782, 0.787, 0.783, 0.781}, {0.786, 0.784, 0.780, 0.782}};
-  Double_t sigmaFix[Ntargets][Nbins] = {{0.025, 0.022, 0.022, 0.022}, {0.023, 0.021, 0.023, 0.022}, {0.020, 0.023, 0.021, 0.022}, {0.021, 0.022, 0.024, 0.023}};
-  
+  Int_t kinvarIndex = 0 * (kinvarOption == "Q2") + 1 * (kinvarOption == "Nu") + 2 * (kinvarOption == "wZ") + 3 * (kinvarOption == "wPt2");
+  Double_t meanFix[Ntargets][Nbins] = {
+      {0.785, 0.785, 0.785, 0.780}, {0.784, 0.783, 0.783, 0.781}, {0.782, 0.787, 0.783, 0.781}, {0.786, 0.784, 0.780, 0.782}};
+  Double_t sigmaFix[Ntargets][Nbins] = {
+      {0.025, 0.022, 0.022, 0.022}, {0.023, 0.021, 0.023, 0.022}, {0.020, 0.023, 0.021, 0.022}, {0.021, 0.022, 0.024, 0.023}};
+
   for (Int_t i = 0; i < Nx; i++) {
     auxCut = Form("%f", EdgesKinvar[i]);
     auxCut += " < " + kinvarOption + " && " + kinvarOption + " < ";
     auxCut += Form("%f", EdgesKinvar[i + 1]);
     CutBin = auxCut;
-    
+
     std::cout << auxCut << std::endl;
 
     // prepare data
-    dataTree->Draw(Form("wD>>data_%d", i) + histProperties, gCutDIS && CutBin && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle, "goff");
+    dataTree->Draw(Form("wD>>data_%d", i) + histProperties,
+                   gCutDIS && CutBin && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle && gCutRegion, "goff");
     dataMassive[i] = (TH1D *)gROOT->FindObject(Form("data_%d", i));
-    
+
     dataMassive[i]->SetMarkerColor(kBlack);
     dataMassive[i]->SetMarkerStyle(8);
     dataMassive[i]->SetLineColor(kBlack);
     dataMassive[i]->SetLineWidth(2);
     dataMassive[i]->SetFillStyle(0);
-       
+
     dataMassive[i]->SetTitle("");
     dataMassive[i]->GetXaxis()->SetTitle("Reconstructed Mass #Deltam(#pi^{+}#pi^{-}#pi^{0}) [GeV]");
     dataMassive[i]->GetXaxis()->SetNdivisions(412);
     dataMassive[i]->GetYaxis()->SetTitle("Counts");
     dataMassive[i]->GetYaxis()->SetTitleOffset(1.2);
-    //dataMassive[i]->GetYaxis()->SetTitleSize(0.05);
+    // dataMassive[i]->GetYaxis()->SetTitleSize(0.05);
 
     // prepare bkg
-    bkgTree->Draw(Form("wD>>bkg_%d", i) + histProperties, gCutDIS && CutBin && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle, "goff");
+    bkgTree->Draw(Form("wD>>bkg_%d", i) + histProperties,
+                  gCutDIS && CutBin && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle && gCutRegion, "goff");
     bkgMassive[i] = (TH1D *)gROOT->FindObject(Form("bkg_%d", i));
-    
+
     bkgMassive[i]->SetMarkerColor(kRed);
     bkgMassive[i]->SetMarkerStyle(8);
     bkgMassive[i]->SetLineColor(kRed);
@@ -148,15 +152,17 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
 
     /*** NORMALIZATION ***/
 
-    dataNorm = dataMassive[i]->Integral(BinsForNormalization[0], BinsForNormalization[1]) + dataMassive[i]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
+    dataNorm = dataMassive[i]->Integral(BinsForNormalization[0], BinsForNormalization[1]) +
+               dataMassive[i]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
     std::cout << "dataNorm = " << dataNorm << std::endl;
 
-    bkgNorm = bkgMassive[i]->Integral(BinsForNormalization[0], BinsForNormalization[1]) + bkgMassive[i]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
+    bkgNorm = bkgMassive[i]->Integral(BinsForNormalization[0], BinsForNormalization[1]) +
+              bkgMassive[i]->Integral(BinsForNormalization[2], BinsForNormalization[3]);
     std::cout << "bkgNorm  = " << bkgNorm << std::endl;
     bkgMassive[i]->Scale(dataNorm / bkgNorm);
 
     /*** BKG SUBTRACTION ***/
-    
+
     subMassive[i] = new TH1D(Form("sub_%d", i), "", plotNbins, plotMin, plotMax);
     subMassive[i]->Add(dataMassive[i], bkgMassive[i], 1, -1);
 
@@ -166,29 +172,29 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     subMassive[i]->GetYaxis()->SetTitle("Data - Mixed Event Bkg");
     subMassive[i]->GetYaxis()->SetTitleOffset(1.2);
 
-    subMassive[i]->SetMarkerColor(kOrange+10);
+    subMassive[i]->SetMarkerColor(kOrange + 10);
     subMassive[i]->SetMarkerStyle(8);
-    subMassive[i]->SetLineColor(kOrange+10);
+    subMassive[i]->SetLineColor(kOrange + 10);
     subMassive[i]->SetLineWidth(2);
     subMassive[i]->SetFillStyle(0);
-    
+
     /*** FIT ***/
 
     Double_t MeanIGV = 0.782;
-    Double_t MeanLimit = 0.08;    
+    Double_t MeanLimit = 0.08;
     Double_t SigmaIGV = 0.024;
-    Double_t SigmaLimit = 0.011;    
+    Double_t SigmaLimit = 0.011;
     Model[i] = new TF1(Form("model_%d", i), "gaus(0) + pol1(3)", plotMin, plotMax);
     Model[i]->SetParameter(1, MeanIGV);
     Model[i]->SetParameter(2, SigmaIGV);
-    Model[i]->SetParLimits(0, 0., 100000); // force positive values
+    Model[i]->SetParLimits(0, 0., 100000);  // force positive values
     Model[i]->SetParLimits(1, MeanIGV - MeanLimit, MeanIGV + MeanLimit);
     Model[i]->SetParLimits(2, SigmaIGV - SigmaLimit, SigmaIGV + SigmaLimit);
     if (fixParams) {
       Model[i]->FixParameter(1, meanFix[kinvarIndex][i]);
       Model[i]->FixParameter(2, sigmaFix[kinvarIndex][i]);
     }
-    
+
     FitResult[i] = subMassive[i]->Fit(Form("model_%d", i), "BEMSVN");
 
     Signal[i] = new TF1(Form("signal_%d", i), "gaus", plotMin, plotMax);
@@ -198,12 +204,12 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     ResidualBkg[i] = new TF1(Form("res-bkg_%d", i), "pol1", plotMin, plotMax);
     ResidualBkg[i]->SetParameter(0, Model[i]->GetParameter(3));
     ResidualBkg[i]->SetParameter(1, Model[i]->GetParameter(4));
-        
+
     Signal[i]->SetLineWidth(3);
     Signal[i]->SetLineColor(kMagenta);
 
     ResidualBkg[i]->SetLineWidth(3);
-    ResidualBkg[i]->SetLineColor(kGray+2);
+    ResidualBkg[i]->SetLineColor(kGray + 2);
     ResidualBkg[i]->SetLineStyle(kDashed);
 
     // save into output file
@@ -211,7 +217,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     Model[i]->Write();
     FitResult[i]->Write();
   }
-  
+
   /*** FIX Y-AXIS ***/
 
   Double_t MaxRangeData = 0;
@@ -220,40 +226,41 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     if (dataMassive[i]->GetMaximum() > MaxRangeData) MaxRangeData = dataMassive[i]->GetMaximum();
     if (subMassive[i]->GetMaximum() > MaxRangeSub) MaxRangeSub = subMassive[i]->GetMaximum();
   }
-  
+
   /*** DRAW ***/
 
   gStyle->SetPadBorderSize(0);
-  
+
   gStyle->SetLineWidth(1);
   gStyle->SetOptStat(0);
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
   gStyle->SetTitleFontSize(0.06);
 
-  TCanvas *can1 = new TCanvas("evnt-mixing_binned_" + targetOption + "_" + kinvarOption, "evnt-mixing_binned_" + targetOption + "_" + kinvarOption, 1920, 960);
+  TCanvas *can1 = new TCanvas("evnt-mixing_" + targetOption + "_" + kinvarOption,
+                              "evnt-mixing_" + targetOption + "_" + kinvarOption, 1920, 960);
   can1->Divide(Nx, 2, 0, 0);
 
   // top
   Int_t counter = 0;
   for (Int_t i = 0; i < Nx; i++) {
-    
+
     counter++;
     can1->cd(counter);
 
     // set y-axis from before
-    dataMassive[i]->GetYaxis()->SetRangeUser(0, 1.2*MaxRangeData);
+    dataMassive[i]->GetYaxis()->SetRangeUser(0, 1.2 * MaxRangeData);
     dataMassive[i]->Draw("E");
     bkgMassive[i]->Draw("E SAME");
-    
+
     // title
     auxCut = Form("%.2f", EdgesKinvar[i]);
     auxCut += " < " + kinvarTitle + " < ";
     auxCut += Form("%.2f", EdgesKinvar[i + 1]);
     auxCut += ", " + targetOption + " data";
-    TPaveText *pav = new TPaveText(0.15, 0.88, 0.40, 0.98, "NDC NB"); // no border
+    TPaveText *pav = new TPaveText(0.15, 0.88, 0.40, 0.98, "NDC NB");  // no border
     pav->AddText(auxCut);
-    ((TText*)pav->GetListOfLines()->Last())->SetTextSize(0.04);
+    ((TText *)pav->GetListOfLines()->Last())->SetTextSize(0.04);
     pav->SetBorderSize(0);
     pav->SetFillStyle(0);
     pav->SetTextAlign(12);
@@ -262,7 +269,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
       pav->SetX2(0.40);
     }
     pav->Draw();
-    
+
     if (i == 0) {
       TLegend *leg = new TLegend(0.15, 0.74, 0.45, 0.88);  // x1,y1,x2,y2
       leg->AddEntry(dataMassive[i], "Data", "lp");
@@ -283,27 +290,31 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
   for (Int_t i = 0; i < Nx; i++) {
     counter++;
     can1->cd(counter);
-    
+
     // set y-axis from before
-    subMassive[i]->GetYaxis()->SetRangeUser(-0.5*MaxRangeSub, 1.5*MaxRangeSub);
+    subMassive[i]->GetYaxis()->SetRangeUser(-0.5 * MaxRangeSub, 1.5 * MaxRangeSub);
     subMassive[i]->Draw("E");
 
     Signal[i]->Draw("SAME");
     ResidualBkg[i]->Draw("SAME");
-    
-    if (i == 0) DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0.1, 1.0);
-    else if (i == 1) DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);
-    else if (i == 2) DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);
-    else if (i == 3) DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);    
-        
+
+    if (i == 0)
+      DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0.1, 1.0);
+    else if (i == 1)
+      DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);
+    else if (i == 2)
+      DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);
+    else if (i == 3)
+      DrawHorizontalLine(0, kBlack, kSolid, 1, 0, 0., 1.0);
+
     // title
     auxCut = Form("%.2f", EdgesKinvar[i]);
     auxCut += " < " + kinvarTitle + " < ";
     auxCut += Form("%.2f", EdgesKinvar[i + 1]);
     auxCut += ", " + targetOption + " data";
-    TPaveText *pav = new TPaveText(0.15, 0.88, 0.40, 0.98, "NDC NB"); // no border
+    TPaveText *pav = new TPaveText(0.15, 0.88, 0.40, 0.98, "NDC NB");  // no border
     pav->AddText(auxCut);
-    ((TText*)pav->GetListOfLines()->Last())->SetTextSize(0.04);
+    ((TText *)pav->GetListOfLines()->Last())->SetTextSize(0.04);
     pav->SetBorderSize(0);
     pav->SetFillStyle(0);
     pav->SetTextAlign(12);
@@ -326,7 +337,7 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     }
 
     // pave
-    Chi2String = Form("#chi^{2}/ndf = %.4f", Model[i]->GetChisquare()/(Double_t)Model[i]->GetNDF());
+    Chi2String = Form("#chi^{2}/ndf = %.4f", Model[i]->GetChisquare() / (Double_t)Model[i]->GetNDF());
     NormString = Form("A = %.3f #pm %.3f", Model[i]->GetParameter(0), Model[i]->GetParError(0));
     MeanString = Form("#mu = %.3f #pm %.6f", Model[i]->GetParameter(1), Model[i]->GetParError(1));
     SigmaString = Form("#sigma = %.3f #pm %.6f", Model[i]->GetParameter(2), Model[i]->GetParError(2));
@@ -347,15 +358,15 @@ void EventMixing_FourBins(TString targetOption = "Pb", TString kinvarOption = "Q
     // params
     MeanValue = Model[i]->GetParameter(1);
     SigmaValue = Model[i]->GetParameter(2);
-    DrawVerticalLine(MeanValue - 3*SigmaValue, kMagenta, kDashed, 2, 0, 0.2, 0.5);
-    DrawVerticalLine(MeanValue + 3*SigmaValue, kMagenta, kDashed, 2, 0, 0.2, 0.5);
-    
+    DrawVerticalLine(MeanValue - 3 * SigmaValue, kMagenta, kDashed, 2, 0, 0.2, 0.5);
+    DrawVerticalLine(MeanValue + 3 * SigmaValue, kMagenta, kDashed, 2, 0, 0.2, 0.5);
+
     // debug
     // if (i == Nx-1) DrawVerticalLine(0.9, kBlack, kSolid, 2, 0, 0.1, 1.0);
   }
 
-  can1->Print("evnt-mixing_binned_" + targetOption + "_" + kinvarOption + ".png");
-  
+  can1->Print("evnt-mixing_" + targetOption + "_" + kinvarOption + ".png");
+
   // close output file
-  RootOutputFile->Close();  
+  RootOutputFile->Close();
 }
