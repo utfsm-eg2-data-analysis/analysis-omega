@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##############################################################
-# ./send_GFRE_sim.sh <set> <target> <ndir>                   #
+# ./jlab_GTRE_sim.sh <set> <target> <ndir>                   #
 #     <set>    = (old, usm, jlab)                            #
 #     <target> = (D, C, Fe, Pb)                              #
 #     <ndir>   = (00, 01, 02, ...)                           #
 #                                                            #
-# EG: ./send_GFRE_sim.sh old Fe                              #
-#     ./send_GFRE_sim.sh usm D                               #
-#     ./send_GFRE_sim.sh jlab Pb 00                          #
+# EG: ./jlab_GTRE_sim.sh old Fe                              #
+#     ./jlab_GTRE_sim.sh usm D                               #
+#     ./jlab_GTRE_sim.sh jlab Pb 00                          #
 ##############################################################
 
 # One script to rule them all.
@@ -49,18 +49,18 @@ source ~/.bashrc
 # define important dirs
 TMPDIR=${WORKDIR}/tmp/${SETOPTION}/${TARNAME}
 GSTDIR=${VLTLDIR}/GetSimpleTuple
-FNCDIR=${VLTLDIR}/analysis-omega/FilterNCombine
+FNCDIR=${VLTLDIR}/analysis-omega/ThreePionFinder
 REDDIR=${VLTLDIR}/analysis-omega/Reductor
 if [[ "${SETOPTION}" == "jlab" ]]; then
     SIMDIR=/cache/mss/clas/eg2a/production/Simulation/omega_lepto/${TARNAME}/${NDIR} # sims stored in cache
     OUDIR1=${WORKDIR}/out/GetSimpleTuple/${SETOPTION}/${TARNAME}/${NDIR}
-    OUDIR2=${WORKDIR}/out/FilterNCombine/${SETOPTION}/${TARNAME}/${NDIR}
+    OUDIR2=${WORKDIR}/out/ThreePionFinder/${SETOPTION}/${TARNAME}/${NDIR}
     OUDIR3=${WORKDIR}/out/Reductor/${SETOPTION}/${TARNAME}/${NDIR}
     OUDIR4=${WORKDIR}/out/EventMixing/${SETOPTION}/${TARNAME}/${NDIR}
 else
     SIMDIR=/cache/mss/clas/eg2a/production/Simulation/omega_lepto/${SETOPTION}/${TARNAME} # sims stored in cache
     OUDIR1=${WORKDIR}/out/GetSimpleTuple/${SETOPTION}/${TARNAME}
-    OUDIR2=${WORKDIR}/out/FilterNCombine/${SETOPTION}/${TARNAME}
+    OUDIR2=${WORKDIR}/out/ThreePionFinder/${SETOPTION}/${TARNAME}
     OUDIR3=${WORKDIR}/out/Reductor/${SETOPTION}/${TARNAME}
     OUDIR4=${WORKDIR}/out/EventMixing/${SETOPTION}/${TARNAME}
 fi
@@ -82,8 +82,8 @@ jobmemory="2" # GB
 if [[ "${SETOPTION}" == "old" || "${SETOPTION}" == "usm" ]]; then
     for ((COUNTER=1; COUNTER <= $NFILES; COUNTER++)); do
 	RN=$(get_num_2dig $COUNTER) # starts at 01
-	
-	jobname="GFRE_${SETOPTION}-${TARNAME}_${RN}"
+
+	jobname="GTRE_${SETOPTION}-${TARNAME}_${RN}"
 	jobfile="${TMPDIR}/${jobname}.xml"
 
 	echo ${jobname}
@@ -101,22 +101,22 @@ if [[ "${SETOPTION}" == "old" || "${SETOPTION}" == "usm" ]]; then
 	echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 	# set inputs
 	thebinary1="${GSTDIR}/bin/GetSimpleTuple_sim"
-	thebinary2="${FNCDIR}/bin/FilterNCombine_sim"
+	thebinary2="${FNCDIR}/bin/ThreePionFinder_sim"
 	thebinary3="${REDDIR}/bin/Reductor"
-	execfile="${VLTLDIR}/analysis-omega/sh/run_GFRE_sim.sh"
+	execfile="${VLTLDIR}/analysis-omega/sh/run_GTRE_sim.sh"
 	echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_sim\"/>"              >> ${jobfile}
-	echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_sim\"/>"              >> ${jobfile}
+	echo "  <Input src=\"${thebinary2}\"  dest=\"ThreePionFinder_sim\"/>"              >> ${jobfile}
 	echo "  <Input src=\"${thebinary3}\"  dest=\"Reductor\"/>"                        >> ${jobfile}
-	echo "  <Input src=\"${execfile}\"    dest=\"run_GFRE_sim.sh\"/>"                 >> ${jobfile}
+	echo "  <Input src=\"${execfile}\"    dest=\"run_GTRE_sim.sh\"/>"                 >> ${jobfile}
 	inrootfile="${SIMDIR}/recsis${TARNAME}_${RN}.root"
 	echo "  <Input src=\"${inrootfile}\" dest=\"recsis${TARNAME}_${RN}.root\" copyOption=\"link\"/>" >> ${jobfile}
 	# set command
 	echo "  <Command><![CDATA["                                                       >> ${jobfile}
-	echo "    sed -i \"s|^SETOPTION=|SETOPTION=${SETOPTION}|g\" run_GFRE_sim.sh"      >> ${jobfile}
-	echo "    sed -i \"s|^TARNAME=|TARNAME=${TARNAME}|g\"       run_GFRE_sim.sh"      >> ${jobfile}
-	echo "    sed -i \"s|^RN=|RN=${RN}|g\"                      run_GFRE_sim.sh"      >> ${jobfile}
-	echo "    chmod 755 ./run_GFRE_sim.sh"                                            >> ${jobfile}
-	echo "    sh run_GFRE_sim.sh"                                                     >> ${jobfile}
+	echo "    sed -i \"s|^SETOPTION=|SETOPTION=${SETOPTION}|g\" run_GTRE_sim.sh"      >> ${jobfile}
+	echo "    sed -i \"s|^TARNAME=|TARNAME=${TARNAME}|g\"       run_GTRE_sim.sh"      >> ${jobfile}
+	echo "    sed -i \"s|^RN=|RN=${RN}|g\"                      run_GTRE_sim.sh"      >> ${jobfile}
+	echo "    chmod 755 ./run_GTRE_sim.sh"                                            >> ${jobfile}
+	echo "    sh run_GTRE_sim.sh"                                                     >> ${jobfile}
 	echo "  ]]></Command>"                                                            >> ${jobfile}
 	# set outputs
 	outrootfile01="${OUDIR1}/pruned${TARNAME}_${RN}.root"
@@ -126,7 +126,7 @@ if [[ "${SETOPTION}" == "old" || "${SETOPTION}" == "usm" ]]; then
 	outrootfile05="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sPim.root"
 	outrootfile06="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sPi0.root"
 	outrootfile07="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sAll.root"
-	outrootfile08="${OUDIR3}/pruned${TARNAME}_${RN}_red_MC.root"     
+	outrootfile08="${OUDIR3}/pruned${TARNAME}_${RN}_red_MC.root"
 	outrootfile09="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPip.root"
 	outrootfile10="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPim.root"
 	outrootfile11="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPi0.root"
@@ -158,7 +158,7 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
     nsets=$(($NFILES/25))
     if [[ $(($NFILES%25)) > 0 ]]; then ((nsets++)); fi
     for ((set_index=0; set_index < $nsets; set_index++)); do
-	jobname="GFRE_${TARNAME}-${NDIR}-${set_index}"
+	jobname="GTRE_${TARNAME}-${NDIR}-${set_index}"
 	jobfile="${TMPDIR}/${jobname}.xml"
 
 	echo ${jobname}
@@ -176,13 +176,13 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
 	# set inputs
 	thebinary1="${GSTDIR}/bin/GetSimpleTuple_sim"
-	thebinary2="${FNCDIR}/bin/FilterNCombine_sim"
+	thebinary2="${FNCDIR}/bin/ThreePionFinder_sim"
 	thebinary3="${REDDIR}/bin/Reductor"
-	execfile="${VLTLDIR}/analysis-omega/sh/run_GFRE_sim.sh"
+	execfile="${VLTLDIR}/analysis-omega/sh/run_GTRE_sim.sh"
 	echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_sim\"/>"              >> ${jobfile}
-	echo "  <Input src=\"${thebinary2}\"  dest=\"FilterNCombine_sim\"/>"              >> ${jobfile}
+	echo "  <Input src=\"${thebinary2}\"  dest=\"ThreePionFinder_sim\"/>"              >> ${jobfile}
 	echo "  <Input src=\"${thebinary3}\"  dest=\"Reductor\"/>"                        >> ${jobfile}
-	echo "  <Input src=\"${execfile}\"    dest=\"run_GFRE_sim.sh\"/>"                 >> ${jobfile}
+	echo "  <Input src=\"${execfile}\"    dest=\"run_GTRE_sim.sh\"/>"                 >> ${jobfile}
         # arrange set limits
 	NFILES_BEGIN=$(($set_index*25)) # rn starts at 00
 	diff=25
@@ -191,7 +191,7 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	# prevent giant initial files
 	if [[ "${set_index}" == "0" && "${NDIR}" == "00" ]]; then
 	    if [[ "${TARNAME}" == "D" || "${TARNAME}" == "C" || "${TARNAME}" == "Fe" ]]; then
-		NFILES_BEGIN=6		
+		NFILES_BEGIN=6
 	    fi
 	fi
 	# set input files
@@ -202,12 +202,12 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	done
 	# set commands
 	echo "  <Command><![CDATA["                                                           >> ${jobfile}
-	echo "    sed -i \"s|^SETOPTION=|SETOPTION=${SETOPTION}|g\"          run_GFRE_sim.sh" >> ${jobfile}
-	echo "    sed -i \"s|^TARNAME=|TARNAME=${TARNAME}|g\"                run_GFRE_sim.sh" >> ${jobfile}
-	echo "    sed -i \"s|^NFILES_BEGIN=|NFILES_BEGIN=${NFILES_BEGIN}|g\" run_GFRE_sim.sh" >> ${jobfile}
-	echo "    sed -i \"s|^NFILES_END=|NFILES_END=${NFILES_END}|g\"       run_GFRE_sim.sh" >> ${jobfile}
-	echo "    chmod 755 ./run_GFRE_sim.sh"                                                >> ${jobfile}
-	echo "    sh run_GFRE_sim.sh"                                                         >> ${jobfile}
+	echo "    sed -i \"s|^SETOPTION=|SETOPTION=${SETOPTION}|g\"          run_GTRE_sim.sh" >> ${jobfile}
+	echo "    sed -i \"s|^TARNAME=|TARNAME=${TARNAME}|g\"                run_GTRE_sim.sh" >> ${jobfile}
+	echo "    sed -i \"s|^NFILES_BEGIN=|NFILES_BEGIN=${NFILES_BEGIN}|g\" run_GTRE_sim.sh" >> ${jobfile}
+	echo "    sed -i \"s|^NFILES_END=|NFILES_END=${NFILES_END}|g\"       run_GTRE_sim.sh" >> ${jobfile}
+	echo "    chmod 755 ./run_GTRE_sim.sh"                                                >> ${jobfile}
+	echo "    sh run_GTRE_sim.sh"                                                         >> ${jobfile}
 	echo "  ]]></Command>"                                                                >> ${jobfile}
 	# set output files
 	for ((COUNTER=${NFILES_BEGIN}; COUNTER<=${NFILES_END}; COUNTER++)); do
@@ -219,7 +219,7 @@ elif [[ "${SETOPTION}" == "jlab" ]]; then
 	    outrootfile05="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sPim.root"
 	    outrootfile06="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sPi0.root"
 	    outrootfile07="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_sAll.root"
-	    outrootfile08="${OUDIR3}/pruned${TARNAME}_${RN}_red_MC.root"     
+	    outrootfile08="${OUDIR3}/pruned${TARNAME}_${RN}_red_MC.root"
 	    outrootfile09="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPip.root"
 	    outrootfile10="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPim.root"
 	    outrootfile11="${OUDIR4}/bkgmix${TARNAME}_${RN}_red_MC_sPi0.root"

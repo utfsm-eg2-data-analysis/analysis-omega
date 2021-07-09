@@ -88,5 +88,5 @@ for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do # ${NFILES} or 1
     echo "rm -v pruned${TARNAME}_${RN}_red.root"                      >> ${jobfile} # remove copied RE_2G files
 
     echo "Submitting job: ${jobfile}"
-    sbatch ${jobfile} # submit job!    
+    sbatch ${jobfile} # submit job!
 done
