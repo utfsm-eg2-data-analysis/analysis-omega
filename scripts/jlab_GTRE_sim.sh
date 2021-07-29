@@ -30,22 +30,6 @@ function get_num_2dig()
   echo $srn
 }
 
-function get_num_4dig()
-{
-  sr=$1
-  srn=""
-  if [[ $sr -lt 10 ]]; then
-    srn="000$sr"
-  elif [[ $sr -lt 100 ]]; then
-    srn="00$sr"
-  elif [[ $sr -lt 1000 ]]; then
-    srn="0$sr"
-  else
-    srn="$sr"
-  fi
-  echo $srn
-}
-
 #####
 # Input
 ###
@@ -100,7 +84,7 @@ for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do
 	if [[ "${SETOPTION}" == "jlab" ]]; then
 		RN=$(get_num_2dig $((${COUNTER}-1))) # starts at 00
 	else
-		RN=$(get_num_4dig ${COUNTER}) # starts at 0001
+		RN=$(get_num_2dig ${COUNTER}) # starts at 01
 	fi
 
 	# setting jobname
