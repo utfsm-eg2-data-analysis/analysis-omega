@@ -45,7 +45,7 @@ GSTDIR=${VLTLDIR}/GetSimpleTuple
 TPFDIR=${PRODIR}/ThreePionFinder
 OUDIR1=${WORKDIR}/out/GetSimpleTuple/bkg/${TARNAME}
 OUDIR2=${WORKDIR}/out/ThreePionFinder/bkg/${TARNAME}
-SIMDIR=${WORKDIR}/simulations-bkg # important input dir
+SIMDIR=${WORKDIR}/simulations-bkg/${TARNAME} # important input dir
 
 # make dirs, just in case
 mkdir -p ${TMPDIR} ${OUDIR1} ${OUDIR2}
@@ -83,7 +83,7 @@ for ((COUNTER=0; COUNTER < ${NFILES}; COUNTER++)); do
 	# set inputs
 	thebinary1="${GSTDIR}/bin/GetSimpleTuple_sim"
 	thebinary2="${TPFDIR}/bin/ThreePionFinder_sim"
-	execfile="${VLTLDIR}/analysis-omega/sh/run_GT_sim-bkg.sh"
+	execfile="${VLTLDIR}/analysis-omega/scripts/run_GT_sim-bkg.sh"
 	echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_sim\"/>"              >> ${jobfile}
 	echo "  <Input src=\"${thebinary2}\"  dest=\"ThreePionFinder_sim\"/>"             >> ${jobfile}
 	echo "  <Input src=\"${execfile}\"    dest=\"run_GT_sim-bkg.sh\"/>"               >> ${jobfile}
