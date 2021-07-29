@@ -9,7 +9,8 @@
 #     ./jlab_GTRE_data.sh Pb                                 #
 ##############################################################
 
-# One script to rule them all.
+# Script made to filter data from the EG2 experiment.
+# Please, make sure the environment variables HOME, PRODIR, VLTLDIR and WORKDIR are properly defined.
 
 #####
 # Input
@@ -21,22 +22,23 @@ TARNAME="$@"
 # Main
 ###
 
-# set env, WORKDIR and VLTLDIR should be set
-source ~/.bashrc
+source ${HOME}/.bashrc
 
-# define important dirs
-TMPDIR=${WORKDIR}/tmp/data/${TARNAME}
+# input dirs
 GSTDIR=${VLTLDIR}/GetSimpleTuple
-FNCDIR=${VLTLDIR}/analysis-omega/ThreePionFinder
-REDDIR=${VLTLDIR}/analysis-omega/Reductor
+TPFDIR=${PRODIR}/ThreePionFinder
+REDDIR=${PRODIR}/Reductor
 DATADIR=/cache/mss/clas/eg2a/production/Pass2/Clas # data stored in cache
+
+# output dirs
 OUDIR1=${WORKDIR}/out/GetSimpleTuple/data/${TARNAME}
 OUDIR2=${WORKDIR}/out/ThreePionFinder/data/${TARNAME}
-OUDIR3=${WORKDIR}/out/Reductor/data/${TARNAME}
-OUDIR4=${WORKDIR}/out/EventMixing/data/${TARNAME}
+OUDIR3=${WORKDIR}/out/Reductor_3P/data/${TARNAME}
+OUDIR4=${WORKDIR}/out/EventMixing_3P/data/${TARNAME}
+TMPDIR=${WORKDIR}/tmp/data/${TARNAME}
 
 # make dirs, just in case
-mkdir -p ${TMPDIR} ${OUDIR1} ${OUDIR2}
+mkdir -p ${TMPDIR} ${OUDIR1} ${OUDIR2} ${OUDIR3} ${OUDIR4}
 
 # obtain run numbers
 if [[ "${TARNAME}" == "C" ]]; then
@@ -46,7 +48,6 @@ elif [[ "${TARNAME}" == "Fe" ]]; then
 elif [[ "${TARNAME}" == "Pb" ]]; then
     RNLIST=${GSTDIR}/include/Pb-thinD2rn.txt
 fi
-NFILES=$(wc -l < ${RNLIST})
 
 # declaration of variables
 jobemail="andres.borquez.14@sansano.usm.cl"
@@ -55,8 +56,9 @@ jobtrack="analysis" # "debug" or "analysis"
 jobos="general"
 jobtime="4" # hours
 jobspace="2" # GB
-jobmemory="1" # GB
+jobmemory="2" # GB
 
+NFILES=$(wc -l < ${RNLIST})
 for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do # ${NFILES} or 1
     # update RN value
     RN=$(sed -n "$COUNTER{p;q}" ${RNLIST}) # data from RNLIST
@@ -79,9 +81,9 @@ for ((COUNTER=1; COUNTER <= ${NFILES}; COUNTER++)); do # ${NFILES} or 1
     echo "  <CPU core=\"1\"/>"                                                        >> ${jobfile}
     # set inputs
     thebinary1="${GSTDIR}/bin/GetSimpleTuple_data"
-    thebinary2="${FNCDIR}/bin/ThreePionFinder_data"
+    thebinary2="${TPFDIR}/bin/ThreePionFinder_data"
     thebinary3="${REDDIR}/bin/Reductor"
-    execfile="${VLTLDIR}/analysis-omega/sh/run_GTRE_data.sh"
+    execfile="${PRODIR}/scripts/run_GTRE_data.sh"
     echo "  <Input src=\"${thebinary1}\"  dest=\"GetSimpleTuple_data\"/>"             >> ${jobfile}
     echo "  <Input src=\"${thebinary2}\"  dest=\"ThreePionFinder_data\"/>"             >> ${jobfile}
     echo "  <Input src=\"${thebinary3}\"  dest=\"Reductor\"/>"                        >> ${jobfile}
