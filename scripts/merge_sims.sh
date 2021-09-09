@@ -83,3 +83,8 @@ for dir in ${in_path}/*/; do
     dir_number=${dir:(-3):2} # slice path from right to left
     hadd ${in_path}/recsisD_${dir_number}.root ${dir}/recsis${targ}_*.root
 done
+
+# clean after merging
+for dir2 in ${in_path}/*/; do
+    rm -rvf ${dir2}
+done
