@@ -96,7 +96,7 @@ out_path=${WORKDIR}/${part}Sim/${targ}
 for ((i=${run1}; i<=${run2}; i++)); do
     string_i="$(get_number_4dig ${i})"
     mkdir -vp ${out_path}/${string_i:0:2}/
-    mv -v ${in_path}/run${string_i}/clastool/recsis${targ}.root ${out_path}/${string_i:0:2}/recsisD_${string_i:2:2}.root
+    mv -v ${in_path}/run${string_i}/clastool/recsis${targ}.root ${out_path}/${string_i:0:2}/recsis${targ}_${string_i:2:2}.root
 done
 
 # clean after extracting
