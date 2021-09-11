@@ -104,3 +104,6 @@ for ((i=${run1}; i<=${run2}; i++)); do
     string_i="$(get_number_4dig ${i})"
     rm -rvf ${in_path}/run${string_i}
 done
+
+# clean corrupted files
+find ${out_path}/ -name *.root -size -50k -delete
