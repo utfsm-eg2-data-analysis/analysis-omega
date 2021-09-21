@@ -1,7 +1,7 @@
 .DELETE_ON_ERROR:
 
 ifndef CLASTOOL
-    $(error "Please set the variable CLASTOOL")
+    $(error "ERROR: please, set the variable CLASTOOL")
 endif
 
 MKDIR_P := mkdir -p
@@ -14,16 +14,16 @@ ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 
-CXX := c++ # -D DEBUG
+CXX := c++
 LD := c++
 
-CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS) # default: O0, performance: O2
-LDFLAGS := -g -O2 $(ROOTLDFLAGS) # default: O0, performance: O2
+CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS) # -D DEBUG
+LDFLAGS := -g -O2 $(ROOTLDFLAGS)
 
-INCLUDES := -I$(CLASTOOL)/include -I./include
-LIBS := $(ROOTGLIBS) -L$(CLASTOOL)/slib/${OS_NAME} -lClasTool -lClasBanks -lDSTReader -lEG
+INCLUDES := -I$(CLASTOOL)/TClasTool -I$(CLASTOOL)/ClasBanks -I$(CLASTOOL)/VirtualReader -I$(CLASTOOL)/DSTReader -I./include
+LIBS := $(ROOTGLIBS) -L$(CLAS_ROOT)/slib/${OS_NAME} -lClasTool -lClasBanks -lDSTReader -lEG
 
-PROG := Reductor Reductor_2G
+PROG := Reductor
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
@@ -31,7 +31,7 @@ LIST := $(addprefix $(BINDIR)/, $(PROG))
 all: $(LIST)
 
 $(BINDIR)/%: $(BINDIR)/%.o
-	@echo "Doing application" $@ 
+	@echo "Doing application" $@
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cxx
