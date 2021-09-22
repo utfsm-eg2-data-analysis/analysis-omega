@@ -18,20 +18,20 @@ int main(int argc, char **argv) {
   /*** DATA STRUCTURES ***/
 
   // same data structure
-  rec_t dsInput;
-  rec_t dsOutput;
+  elec_t elec_in, elec_out;
+  part_t part_in, part_out;
 
   /*** INPUT ***/
 
   TChain *tInput = new TChain();
   tInput->Add(gInputFile + "/" + gTreeName);
   tInput->SetBranchStatus("*", 1);
-  ReadParticleChain_REC(tInput, dsInput);
+  ReadInputChain_REC(tInput, elec_in, part_in);
 
   /*** OUTPUT ***/
   TFile *rootFile = new TFile(gOutputFile, "RECREATE", gDataDescription);
   TTree *tOutput = new TTree(gTreeName, "Stable particles");
-  SetParticleTree_REC(tOutput, dsOutput);
+  SetOutputTree_REC(tOutput, elec_out, part_out);
 
   /*** DECLARATIONS ***/
 
@@ -50,46 +50,33 @@ int main(int argc, char **argv) {
   Int_t currentEvent, previousEvent;
   Int_t nEntries = tInput->GetEntries();
 
-#ifdef DEBUG
-  nEntries = 10000;
-#endif
-
   /*** START ***/
 
-  Int_t k = 0;  // counter of output entries
-  for (Int_t i = 0; i <= nEntries; i++) {
+  for (Int_t i = 0; i < nEntries; i++) {
     tInput->GetEntry(i);
-    currentEvent = (Int_t)dsInput.evnt;
+    currentEvent = (Int_t)elec_in.evnt;
 
     // prevents repetition of same event
     if (i > 0) {
       tInput->GetEntry(i - 1);
-      previousEvent = (Int_t)dsInput.evnt;
+      previousEvent = (Int_t)elec_in.evnt;
       if (previousEvent == currentEvent) continue;
     }
 
-#ifdef DEBUG
-    std::cout << "Current event number: " << currentEvent << std::endl;
-    std::cout << "Current entry number: " << i << std::endl;
-#endif
-
     // count particles in the current event
-    for (Int_t j = i; j <= nEntries; j++) {
+    for (Int_t j = i; j < nEntries; j++) {
       tInput->GetEntry(j);
 
       // same-event condition
-      if (currentEvent == (Int_t)dsInput.evnt) {
-#ifdef DEBUG
-        std::cout << "Current pid:          " << dsInput.pid << std::endl;
-#endif
+      if (currentEvent == (Int_t)elec_in.evnt) {
         // count the particles
-        if ((Int_t)dsInput.pid == 211) {
+        if ((Int_t)part_in.pid == 211) {
           nPip++;
           pospions.push_back(j);
-        } else if ((Int_t)dsInput.pid == -211) {
+        } else if ((Int_t)part_in.pid == -211) {
           nPim++;
           negpions.push_back(j);
-        } else if ((Int_t)dsInput.pid == 22) {
+        } else if ((Int_t)part_in.pid == 22) {
           nGamma++;
           gammas.push_back(j);
         }
@@ -104,24 +91,17 @@ int main(int argc, char **argv) {
     entries.insert(entries.end(), negpions.begin(), negpions.end());
     entries.insert(entries.end(), gammas.begin(), gammas.end());
 
-#ifdef DEBUG
-    std::cout << "N = (" << nPip << ", " << nPim << ", " << nGamma << ")" << std::endl;
-#endif
-
     /*** MINIMUM SET OF PARTICLES FOUND ***/
 
     if (nPip >= 1 && nPim >= 1 && nGamma >= 2) {
       for (Size_t j = 0; j < entries.size(); j++) {
-        tInput->GetEntry(entries[j]);  // update all dsInput values
-        dsOutput = dsInput;
+        // update all input vars and write them into output tree
+        tInput->GetEntry(entries[j]);
+        elec_out = elec_in;
+        part_out = part_in;
         tOutput->Fill();
-        k++;  // update output entries
       }
     }
-
-#ifdef DEBUG
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-#endif
 
     // reset particle counters
     nPip = 0;
@@ -140,7 +120,7 @@ int main(int argc, char **argv) {
   rootFile->Write();
   rootFile->Close();
 
-  std::cout << "File " << gOutputFile << " has been created!" << std::endl;
+  std::cout << "This file has been created: " << gOutputFile << std::endl;
 
   return 0;
 }
