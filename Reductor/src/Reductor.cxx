@@ -60,7 +60,9 @@ int main(int argc, char **argv) {
     if (i > 0) {
       tInput->GetEntry(i - 1);
       previousEvent = (Int_t)elec_in.evnt;
-      if (previousEvent == currentEvent) continue;
+      if (previousEvent == currentEvent) {
+        continue;
+      }
     }
 
     // count particles in the current event
@@ -86,7 +88,7 @@ int main(int argc, char **argv) {
 
     }  // end loop of particles in current event
 
-    // arrange all particles in entries vector
+    // sort by particle type in a new vector called "entries"
     entries.insert(entries.end(), pospions.begin(), pospions.end());
     entries.insert(entries.end(), negpions.begin(), negpions.end());
     entries.insert(entries.end(), gammas.begin(), gammas.end());
