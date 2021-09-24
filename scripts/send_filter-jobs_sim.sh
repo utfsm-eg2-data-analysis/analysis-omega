@@ -39,6 +39,7 @@ function process_args() {
         else
             echo "ERROR: unrecognized argument: ${arr[$((ic))]}."
             print_help
+            exit 1
         fi
         ((ic+=2))
     done
@@ -154,12 +155,12 @@ for ((COUNTER=1; COUNTER <= ${TOTALRN}; COUNTER++)); do
     echo "cp -v pruned${TARNAME}_${RN}.root ${RED_OUTDIR}"            >> ${jobfile} # copy output files to RED output dir
     echo "rm -v recsis${TARNAME}_${RN}.root"                          >> ${jobfile} # remove symbolic link of input file
 
-    if [[ "${PARTICLE}" == "eta"]]; then
+    if [[ "${PARTICLE}" == "eta" ]]; then
         # TwoGammaFinder
         echo "cd ${TGF_OUTDIR}"                                       >> ${jobfile} # enter 2GF output dir
         echo "./TwoGammaFinder_sim -t${TARNAME} -r${RN}"              >> ${jobfile} # execute program
         echo "rm -v pruned${TARNAME}_${RN}.root"                      >> ${jobfile} # remove copied input files
-    elif [[ "${PARTICLE}" == "omega"]]; then
+    elif [[ "${PARTICLE}" == "omega" ]]; then
         # ThreePionFinder
         echo "cd ${TPF_OUTDIR}"                                       >> ${jobfile} # enter 3PF output dir
         echo "./ThreePionFinder_sim -t${TARNAME} -r${RN}"             >> ${jobfile} # execute program

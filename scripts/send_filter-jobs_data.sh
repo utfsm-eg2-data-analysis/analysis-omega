@@ -32,6 +32,7 @@ function process_args() {
         else
             echo "ERROR: unrecognized argument: ${arr[$((ic))]}."
             print_help
+            exit 1
         fi
         ((ic+=2))
     done
