@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
   TFile *InputRootFile = new TFile(gInputFile, "READ");
 
-  TTree *tree = InputRootFile->Get<TTree>("ntuple_data");
+  TTree *tree = (TTree *)InputRootFile->Get("ntuple_data");
   tree->SetBranchStatus("*", 1);  // turn on all input leaves
   SetInputTree_REC(tree, elec_in, part_in);
 

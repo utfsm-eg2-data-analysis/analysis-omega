@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
   TFile *InputRootFile = new TFile(gInputFile, "READ");
 
-  TTree *tree = InputRootFile->Get<TTree>("ntuple_sim");
+  TTree *tree = (TTree *)InputRootFile->Get("ntuple_sim");
   tree->SetBranchStatus("*", 1);
   SetInputTree_REC(tree, elec_in, part_in);
   if (!gMixReconstructed) {
