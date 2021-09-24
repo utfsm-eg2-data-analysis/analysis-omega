@@ -10,16 +10,16 @@ ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
 ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
 
-CXX := c++ # -D DEBUG
+CXX := c++
 LD := c++
 
-CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS) # default: O0, performance: O2
-LDFLAGS := -g -O2 $(ROOTLDFLAGS) # default: O0, performance: O2
+CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS)
+LDFLAGS := -g -O2 $(ROOTLDFLAGS)
 
 INCLUDES := -I./include
 LIBS := $(ROOTGLIBS)
 
-PROG := TwoGammaFinder_data # TwoGammaFinder_sim
+PROG := TwoGammaFinder_data TwoGammaFinder_sim
 LIST := $(addprefix $(BINDIR)/, $(PROG))
 
 .PHONY: all clean
@@ -27,7 +27,7 @@ LIST := $(addprefix $(BINDIR)/, $(PROG))
 all: $(LIST)
 
 $(BINDIR)/%: $(BINDIR)/%.o
-	@echo "Doing application" $@ 
+	@echo "Doing application" $@
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cxx

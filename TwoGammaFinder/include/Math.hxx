@@ -1,30 +1,30 @@
 #ifndef MATH_HXX
 #define MATH_HXX
 
-#ifndef TWOGFTREE_H
-#include "2GFtree.h"
+#ifndef GSTTREE_H
+#include "GSTtree.h"
 #endif
 
 #ifndef PDG_HXX
 #include "PDG.hxx"
 #endif
 
-TLorentzVector *GetCorrPhotonEnergy(rec_i& t) {  
+TLorentzVector *GetCorrPhotonEnergy(part_t &part) {
   // for gammas, based on TM's Analysis Note
   Double_t corrFactor;
   if (gDataKind == "data") {
     if (gTargetOption == "C" || gTargetOption == "Pb") {
-      corrFactor = 1.129 - 0.05793/t.Eh - 1.0773e-12/(t.Eh*t.Eh);
-    } else if (gTargetOption == "Fe") {
-      corrFactor = 1.116 - 0.09213/t.Eh + 0.01007/(t.Eh*t.Eh);
+      corrFactor = 1.129 - 0.05793 / part.Eh - 1.0773e-12 / (part.Eh * part.Eh);
+    } else { // when gTargetOption == "Fe"
+      corrFactor = 1.116 - 0.09213 / part.Eh + 0.01007 / (part.Eh * part.Eh);
     }
-  } else if (gDataKind == "sim") {
-    corrFactor = 1.000 + 0.005/t.Eh - 0.0052/(t.Eh*t.Eh);
+  } else { // when gDataKind == "sim"
+    corrFactor = 1.000 + 0.005 / part.Eh - 0.0052 / (part.Eh * part.Eh);
   }
-  Double_t fGammaE  = t.Eh/corrFactor;
-  Double_t fGammaPx = t.Px/corrFactor;
-  Double_t fGammaPy = t.Py/corrFactor;
-  Double_t fGammaPz = t.Pz/corrFactor;
+  Double_t fGammaE = part.Eh / corrFactor;
+  Double_t fGammaPx = part.Px / corrFactor;
+  Double_t fGammaPy = part.Py / corrFactor;
+  Double_t fGammaPz = part.Pz / corrFactor;
   TLorentzVector *fGammaP = new TLorentzVector(fGammaPx, fGammaPy, fGammaPz, fGammaE);
   return fGammaP;
 }
@@ -52,10 +52,10 @@ Float_t PhiPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy
   TVector3 unit(0., 0., 1.);
   Float_t Phi_y = virt.Angle(unit);
   virt.RotateY(Phi_y);
-  hadr.RotateY(Phi_y);  
+  hadr.RotateY(Phi_y);
   // finally, it obtains the phi component (in spherical coordinates) of the hadron vector (now in the virtual photon frame of reference)
-  fPhiPQ = hadr.Phi()*TMath::RadToDeg();
-  
+  fPhiPQ = hadr.Phi() * TMath::RadToDeg();
+
   return fPhiPQ;
 }
 
@@ -65,7 +65,7 @@ Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t f
   Float_t fThetaPQ;
   TVector3 hadr(fPx, fPy, fPz);
   TVector3 virt(-fPex, -fPey, kEbeam - fPez);
-  fThetaPQ = virt.Angle(hadr)*TMath::RadToDeg();
+  fThetaPQ = virt.Angle(hadr) * TMath::RadToDeg();
 
   return fThetaPQ;
 }
@@ -73,36 +73,36 @@ Float_t ThetaPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t f
 Float_t PhiLab(Float_t fPx, Float_t fPy, Float_t fPz) {
   // Returns the azimuthal angle in Lab frame for the particle
   TVector3 v3p(fPx, fPy, fPz);
-  Double_t fPhiLab = v3p.Phi()*TMath::RadToDeg();
+  Double_t fPhiLab = v3p.Phi() * TMath::RadToDeg();
   if (fPhiLab < -30.) {
-      return fPhiLab + 360.;
+    return fPhiLab + 360.;
   } else if (fPhiLab > 330.) {
     return fPhiLab - 360.;
-  } // closure
-  return fPhiLab; // default
+  }                // closure
+  return fPhiLab;  // default
 }
 
 Float_t ThetaLab(Float_t fPx, Float_t fPy, Float_t fPz) {
   // Returns the polar angle in Lab frame for the particle
   TVector3 v3p(fPx, fPy, fPz);
-  return v3p.Theta()*TMath::RadToDeg();
+  return v3p.Theta() * TMath::RadToDeg();
 }
 
 Float_t DeltaTheta(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz) {
   // angle between electron and particle
-  
+
   Float_t deltaTheta;
   TVector3 elec(fPex, fPey, fPez);
   TVector3 part(fPx, fPy, fPz);
-  deltaTheta = elec.Angle(part)*TMath::RadToDeg();
+  deltaTheta = elec.Angle(part) * TMath::RadToDeg();
 
   return deltaTheta;
 }
 
 Float_t BettaCalc(Float_t fP, Float_t fPid) {
-  
-  Float_t fM = GetParticleMass((Int_t) fPid);
-  Float_t fBettaCalc = fP/TMath::Sqrt(fP*fP + fM*fM);
+
+  Float_t fM = GetParticleMass((Int_t)fPid);
+  Float_t fBettaCalc = fP / TMath::Sqrt(fP * fP + fM * fM);
 
   return fBettaCalc;
 }
