@@ -18,6 +18,4 @@
 #include "TLorentzVector.h"
 #include "TRandom3.h"
 
-#include "ROOT/RVec.hxx"
-
 #endif
