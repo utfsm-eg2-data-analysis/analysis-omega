@@ -141,8 +141,8 @@ for ((COUNTER=1; COUNTER <= ${TOTALRN}; COUNTER++)); do
 	    echo "ln -s ${inputfile} ${inputfile##*/}"                    >> ${jobfile} # symbolic link each input file
     done
     echo "./GetSimpleTuple_data -t${TARNAME} -r${RN}"                 >> ${jobfile} # execute program
-    echo "cp -v pruned${TARNAME}_${RN}.root ${TPF_OUTDIR}"            >> ${jobfile} # copy output files to 3PF output dir
     echo "cp -v pruned${TARNAME}_${RN}.root ${TGF_OUTDIR}"            >> ${jobfile} # copy output files to 2GF output dir
+    echo "cp -v pruned${TARNAME}_${RN}.root ${TPF_OUTDIR}"            >> ${jobfile} # copy output files to 3PF output dir
     echo "cp -v pruned${TARNAME}_${RN}.root ${RED_OUTDIR}"            >> ${jobfile} # copy output files to RED output dir
     echo "rm -v clas_${RN}*.root"                                     >> ${jobfile} # remove symbolic link of input files
 

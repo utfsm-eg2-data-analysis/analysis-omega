@@ -112,14 +112,25 @@ SIMDIR=/cache/mss/clas/eg2a/production/Simulation/${PARTICLE}_lepto/new/${TARNAM
 TMPDIR=${WORKDIR}/tmp/${PARTICLE}-sim/${TARNAME}/${NDIR}
 
 # make output dirs, just in case
-mkdir -p ${TMPDIR} ${GST_OUTDIR} ${TPF_OUTDIR} ${TGF_OUTDIR} ${RED_OUTDIR} ${EVM_OUTDIR}
+mkdir -p ${TMPDIR} ${GST_OUTDIR}
+if [[ "${PARTICLE}" == "eta" ]]; then
+    mkdir -p ${TGF_OUTDIR}
+elif [[ "${PARTICLE}" == "omega" ]]; then
+    mkdir -p ${TPF_OUTDIR} ${RED_OUTDIR} ${EVM_OUTDIR}
+else
+    echo "ERROR: <part> argument must be omega or eta."
+    exit 1
+fi
 
 # copy binaries to output dirs
-cp -v ${GST_BINDIR}/GetSimpleTuple_sim   ${GST_OUTDIR}
-cp -v ${TPF_BINDIR}/ThreePionFinder_sim  ${TPF_OUTDIR}
-cp -v ${TGF_BINDIR}/TwoGammaFinder_sim   ${TGF_OUTDIR}
-cp -v ${RED_BINDIR}/Reductor             ${RED_OUTDIR}
-cp -v ${TPF_BINDIR}/ThreePionFinder_sim  ${EVM_OUTDIR}
+cp -v ${GST_BINDIR}/GetSimpleTuple_sim      ${GST_OUTDIR}
+if [[ "${PARTICLE}" == "eta" ]]; then
+    cp -v ${TGF_BINDIR}/TwoGammaFinder_sim  ${TGF_OUTDIR}
+elif [[ "${PARTICLE}" == "omega" ]]; then
+    cp -v ${TPF_BINDIR}/ThreePionFinder_sim ${TPF_OUTDIR}
+    cp -v ${RED_BINDIR}/Reductor            ${RED_OUTDIR}
+    cp -v ${TPF_BINDIR}/ThreePionFinder_sim ${EVM_OUTDIR}
+fi
 
 # obtain run numbers
 TOTALRN=$(ls -1 ${SIMDIR} | wc -l)
@@ -145,22 +156,26 @@ for ((COUNTER=1; COUNTER <= ${TOTALRN}; COUNTER++)); do
     echo "source ${HOME}/.bashrc"                                     >> ${jobfile}
     echo "source ${HOME}/software/env_scripts/set_all.sh"             >> ${jobfile}
 
-    # GetSimpleTuple
+    # GetSimpleTuple (1)
     echo "cd ${GST_OUTDIR}"                                           >> ${jobfile} # enter GST output dir
     inputfile=$(readlink -f ${SIMDIR}/recsis${TARNAME}_${RN}.root)                  # retrieve full path of input file
     echo "ln -s ${inputfile} ${inputfile##*/}"                        >> ${jobfile} # symbolic link the respective input file
     echo "./GetSimpleTuple_sim -t${TARNAME} -r${RN}"                  >> ${jobfile} # execute program
-    echo "cp -v pruned${TARNAME}_${RN}.root ${TPF_OUTDIR}"            >> ${jobfile} # copy output files to 3PF output dir
-    echo "cp -v pruned${TARNAME}_${RN}.root ${TGF_OUTDIR}"            >> ${jobfile} # copy output files to 2GF output dir
-    echo "cp -v pruned${TARNAME}_${RN}.root ${RED_OUTDIR}"            >> ${jobfile} # copy output files to RED output dir
     echo "rm -v recsis${TARNAME}_${RN}.root"                          >> ${jobfile} # remove symbolic link of input file
 
     if [[ "${PARTICLE}" == "eta" ]]; then
+        # GetSimpleTuple (2)
+        echo "cp -v pruned${TARNAME}_${RN}.root ${TGF_OUTDIR}"        >> ${jobfile} # copy output files to 2GF output dir
+
         # TwoGammaFinder
         echo "cd ${TGF_OUTDIR}"                                       >> ${jobfile} # enter 2GF output dir
         echo "./TwoGammaFinder_sim -t${TARNAME} -r${RN}"              >> ${jobfile} # execute program
         echo "rm -v pruned${TARNAME}_${RN}.root"                      >> ${jobfile} # remove copied input files
     elif [[ "${PARTICLE}" == "omega" ]]; then
+        # GetSimpleTuple (2)
+        echo "cp -v pruned${TARNAME}_${RN}.root ${TPF_OUTDIR}"        >> ${jobfile} # copy output files to 3PF output dir
+        echo "cp -v pruned${TARNAME}_${RN}.root ${RED_OUTDIR}"        >> ${jobfile} # copy output files to RED output dir
+
         # ThreePionFinder
         echo "cd ${TPF_OUTDIR}"                                       >> ${jobfile} # enter 3PF output dir
         echo "./ThreePionFinder_sim -t${TARNAME} -r${RN}"             >> ${jobfile} # execute program
@@ -179,9 +194,6 @@ for ((COUNTER=1; COUNTER <= ${TOTALRN}; COUNTER++)); do
         echo "./ThreePionFinder_sim -t${TARNAME} -r${RN} -m111"       >> ${jobfile} # execute program, swap pi0
         echo "./ThreePionFinder_sim -t${TARNAME} -r${RN} -m999"       >> ${jobfile} # execute program, swap all
         echo "rm -v redu${TARNAME}_${RN}.root"                        >> ${jobfile} # remove copied input files
-    else
-        echo "ERROR: <part> argument must be omega or eta."
-        exit 1
     fi
 
     echo "Submitting job: ${jobfile}"
