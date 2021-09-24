@@ -5,7 +5,7 @@
 /*                                       */
 /*****************************************/
 
-// June 2021
+// September 2021
 
 #include "ThreePionFinder_sim.hxx"
 
@@ -20,77 +20,43 @@ int main(int argc, char **argv) {
   /*** DATA STRUCTURES ***/
 
   // input
-  rec_i t;
-  gen_i mc_t;
+  elec_t elec_in, mc_elec_in;
+  part_t part_in, mc_part_in;
 
-  // output - mix
-  rec_m m;
-  rec_pi0 pi0;
-  rec_w w;
-  gen_m mc_m;
-  gen_pi0 mc_pi0;
-  gen_w mc_w;
+  // output
+  stable_t stable_out, mc_stable_out;
+  pi0_t pi0_out, mc_pi0_out;
+  omega_t omega_out, mc_omega_out;
 
   /*** INPUT ***/
 
   TFile *InputRootFile = new TFile(gInputFile, "READ");
 
   TTree *tree = InputRootFile->Get<TTree>("ntuple_sim");
-  // request RAM for reading random entries faster
-  // (TTree is optimized for sequential reading)
-  tree->SetMaxVirtualSize(2.2 * (Int_t)tree->GetTotBytes());
-  tree->LoadBaskets();
-
-  TTree *tPip;
-  TTree *tPim;
-  TTree *tPi0;
-  TBranch *bPip;
-  TBranch *bPim;
-  TBranch *bPi0;
-  Int_t jPip, jPim, jPi0;
-  Int_t nPip, nPim, nPi0;
-  std::vector<Int_t> vPip, vPim, vPi0;
-  if (gMixGenerated) {
-    std::cout << "Preparing indices trees into vectors..." << std::endl;
-    // pip
-    tPip = InputRootFile->Get<TTree>("tPip");
-    nPip = tPip->GetEntries();
-    bPip = tPip->GetBranch("iPip");
-    bPip->SetAddress(&jPip);
-    vPip.reserve(nPip);
-    for (Int_t i = 0; i < nPip; i++) {
-      bPip->GetEntry(i);
-      vPip.push_back(jPip);
-    }
-    // pim
-    tPim = InputRootFile->Get<TTree>("tPim");
-    nPim = tPim->GetEntries();
-    bPim = tPim->GetBranch("iPim");
-    bPim->SetAddress(&jPim);
-    vPim.reserve(nPim);
-    for (Int_t i = 0; i < nPim; i++) {
-      bPim->GetEntry(i);
-      vPim.push_back(jPim);
-    }
-    // pi0
-    tPi0 = InputRootFile->Get<TTree>("tPi0");
-    nPi0 = tPi0->GetEntries();
-    bPi0 = tPi0->GetBranch("iPi0");
-    bPi0->SetAddress(&jPi0);
-    vPi0.reserve(nPi0);
-    for (Int_t i = 0; i < nPi0; i++) {
-      bPi0->GetEntry(i);
-      vPi0.push_back(jPi0);
-    }
+  tree->SetBranchStatus("*", 1);
+  SetInputTree_REC(tree, elec_in, part_in);
+  if (!gMixReconstructed) {
+    SetInputTree_GEN(tree, mc_elec_in, mc_part_in);
   }
 
   /*** OUTPUT ***/
 
-  TFile *OutputRootFile = new TFile(gOutputFile, "RECREATE", "Omega Meson Filtered Combinations");
+  TFile *OutputRootFile = new TFile(gOutputFile, "RECREATE", "Omega Meson Candidates");
 
   TTree *tMix = new TTree("mix", "Combination of particles");
-  SetMixBranches_REC(tMix, m, pi0, w);
-  SetMixBranches_GEN(tMix, mc_m, mc_pi0, mc_w);
+  SetOutputTree_REC(tMix, stable_out, pi0_out, omega_out);
+  if (!gMixReconstructed) {
+    SetOutputTree_GEN(tMix, mc_stable_out, mc_pi0_out, mc_omega_out);
+  }
+
+  // variables to tag the decay channel of interest
+  Int_t nMCPipFromOmega = 0;    // count the number of Pid == 211 that have ParentID == 223
+  Int_t nMCPimFromOmega = 0;    // count the number of Pid == -211 that have ParentID == 223
+  Int_t nMCGammaFromOmega = 0;  // count the number of Pid == 22 that have ParentID == 223
+  Bool_t flagOmega2PPGG = 0;    // if and only if 1 gen. pi+, 1 gen. pi- & 2 gen. gammas have ParentID == 223
+
+  // additional branches to look for the decay channel of interest
+  tMix->Branch("mc_Omega2PPGG", &flagOmega2PPGG);
 
   /*** DECLARATIONS ***/
 
@@ -124,89 +90,69 @@ int main(int argc, char **argv) {
   // definition of variables for event-mixing
   TRandom3 r;  // variable to create random event numbers
   Int_t rng;
-  Int_t ParticleIndex = 0 * (gParticleToSwap == 211) + 1 * (gParticleToSwap == -211) + 2 * (gParticleToSwap == 111) + 0 * (gParticleToSwap == 999);
-  Int_t LastIndex = ParticleIndex + 1 * (gParticleToSwap == 211 || gParticleToSwap == -211 || gParticleToSwap == 111) + 3 * (gParticleToSwap == 999);  // generalization
-  Int_t ParticleToSwap[3] = {211, -211, 22};                                                                                                           // generalization
-
-  // prepare branches
-  tree->SetBranchStatus("*", 0);
-  SetMinimalBranches_REC(tree, t);
-  SetMinimalBranches_GEN(tree, mc_t);
+  Int_t ParticleIndex =
+      0 * (gParticleToSwap == 211) + 1 * (gParticleToSwap == -211) + 2 * (gParticleToSwap == 111) + 0 * (gParticleToSwap == 999);
+  Int_t LastIndex = ParticleIndex + 1 * (gParticleToSwap == 211 || gParticleToSwap == -211 || gParticleToSwap == 111) +
+                    3 * (gParticleToSwap == 999);  // generalization
+  Int_t ParticleToSwap[3] = {211, -211, 22};       // generalization
 
   Int_t currentEvent, previousEvent;
   Int_t nEntries = (Int_t)tree->GetEntries();
-  Int_t Start = 0;
-#ifndef DEBUG
-  if (gMixGenerated) {
-    if (gParticleToSwap == 211) {
-      nEntries = nEntries / 4;
-    } else if (gParticleToSwap == -211) {
-      Start = nEntries / 4;
-      nEntries = nEntries / 2 + 1;
-    } else if (gParticleToSwap == 111) {
-      Start = nEntries / 2;
-      nEntries = 3 * nEntries / 4 + 1;
-    } else if (gParticleToSwap == 999) {
-      Start = 3 * nEntries / 4;
-    }
-  }
-#else
-  nEntries = 10000;
-#endif
-  
+
   /*** START ***/
 
   // loop in entries
-  for (Int_t i = Start; i < nEntries; i++) {
-#ifndef DEBUG
-    std::cout << (Double_t)i / (Double_t)nEntries * 100. << " %" << std::endl;
-#endif
+  for (Int_t i = 0; i < nEntries; i++) {
     tree->GetEntry(i);
-    currentEvent = (Int_t)t.evnt;
+    currentEvent = (Int_t)elec_in.evnt;
 
     // prevents repetition of same event
     if (i > 0) {
       tree->GetEntry(i - 1);
-      previousEvent = (Int_t)t.evnt;
-      if (previousEvent == currentEvent) continue;
+      previousEvent = (Int_t)elec_in.evnt;
+      if (previousEvent == currentEvent) {
+        continue;
+      }
     }
 
-#ifdef DEBUG
-    std::cout << "Current event number: " << currentEvent << std::endl;
-    std::cout << "Current entry number: " << i << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-#endif
-
     // count particles in the current event
-    for (Int_t j = i; j <= nEntries; j++) {
+    for (Int_t j = i; j < nEntries; j++) {
       tree->GetEntry(j);
-      if (currentEvent == (Int_t)t.evnt) {
-
-#ifdef DEBUG
-        std::cout << "  Entry number: " << j << std::endl;
-        std::cout << "  mc_pid =      " << mc_t.pid << std::endl;
-        std::cout << "  pid    =      " << t.pid << std::endl;
-        std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-#endif
+      if (currentEvent == (Int_t)elec_in.evnt) {
         // count the simrec particles
-        if (t.pid == (Float_t)22)
+        if (part_in.pid == (Float_t)22) {
           gammaVector.push_back(j);
-        else if (t.pid == (Float_t)211)
+        } else if (part_in.pid == (Float_t)211) {
           pipVector.push_back(j);
-        else if (t.pid == (Float_t)-211)
+        } else if (part_in.pid == (Float_t)-211) {
           pimVector.push_back(j);
+        }
         // count the gsim particles
-        if (mc_t.pid == (Float_t)22)
+        if (mc_part_in.pid == (Float_t)22) {
           mc_gammaVector.push_back(j);
-        else if (mc_t.pid == (Float_t)211)
+          // decay channel of interest: count how many gammas come from an omega decay
+          if (mc_part_in.ParentID == (Float_t)223) {
+            nMCGammaFromOmega++;
+          }
+        } else if (mc_part_in.pid == (Float_t)211) {
           mc_pipVector.push_back(j);
-        else if (mc_t.pid == (Float_t)-211)
+          // decay channel of interest: count how many pi+ come from an omega decay
+          if (mc_part_in.ParentID == (Float_t)223) {
+            nMCPipFromOmega++;
+          }
+        } else if (mc_part_in.pid == (Float_t)-211) {
           mc_pimVector.push_back(j);
+          // decay channel of interest: count how many pi- come from an omega decay
+          if (mc_part_in.ParentID == (Float_t)223) {
+            nMCPimFromOmega++;
+          }
+        }
       } else {
         break;
       }
     }
 
+    // update counters
     nPipThisEvent = pipVector.size();
     nPimThisEvent = pimVector.size();
     nGammaThisEvent = gammaVector.size();
@@ -215,24 +161,9 @@ int main(int argc, char **argv) {
     nMCPimThisEvent = mc_pimVector.size();
     nMCGammaThisEvent = mc_gammaVector.size();
 
-#ifdef DEBUG
-    std::cout << "  nPip     = " << nPipThisEvent << std::endl;
-    std::cout << "  nPim     = " << nPimThisEvent << std::endl;
-    std::cout << "  nGamma   = " << nGammaThisEvent << std::endl;
-    std::cout << "  nMCPip   = " << nMCPipThisEvent << std::endl;
-    std::cout << "  nMCPim   = " << nMCPimThisEvent << std::endl;
-    std::cout << "  nMCGamma = " << nMCGammaThisEvent << std::endl;
-    std::cout << "  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
-#endif
-
-    // init all input branches
-    tree->SetBranchStatus("*", 1);
-    SetInputBranches_REC(tree, t);
-    SetInputBranches_GEN(tree, mc_t);
-
     /*** COMBINE ***/
 
-    // candidate appeared for MC
+    // generated omega candidate appeared
     if (nMCPipThisEvent >= 1 && nMCPimThisEvent >= 1 && nMCGammaThisEvent >= 2) {
       for (Int_t iPip = 0; iPip < nMCPipThisEvent; iPip++) {
         mc_currentComb.push_back(mc_pipVector[iPip]);
@@ -242,9 +173,6 @@ int main(int argc, char **argv) {
             mc_currentComb.push_back(mc_gammaVector[iGamma]);
             for (Int_t jGamma = iGamma + 1; jGamma < nMCGammaThisEvent; jGamma++) {
               mc_currentComb.push_back(mc_gammaVector[jGamma]);
-#ifdef DEBUG
-              std::cout << "mc_currentComb = {" << mc_currentComb[0] << ", " << mc_currentComb[1] << ", " << mc_currentComb[2] << ", " << mc_currentComb[3] << "}" << std::endl;
-#endif
               // fill vector
               mc_combVector.push_back(mc_currentComb);
               mc_currentComb.pop_back();
@@ -257,7 +185,7 @@ int main(int argc, char **argv) {
       }  // end of loop in pi+
     }    // end of at-least-one-omega condition
 
-    // candidate appeared for SIMREC
+    // reconstructed omega candidate appeared
     if (nPipThisEvent >= 1 && nPimThisEvent >= 1 && nGammaThisEvent >= 2) {
       for (Int_t iPip = 0; iPip < nPipThisEvent; iPip++) {
         currentComb.push_back(pipVector[iPip]);
@@ -267,9 +195,6 @@ int main(int argc, char **argv) {
             currentComb.push_back(gammaVector[iGamma]);
             for (Int_t jGamma = iGamma + 1; jGamma < nGammaThisEvent; jGamma++) {
               currentComb.push_back(gammaVector[jGamma]);
-#ifdef DEBUG
-              std::cout << "currentComb = {" << currentComb[0] << ", " << currentComb[1] << ", " << currentComb[2] << ", " << currentComb[3] << "}" << std::endl;
-#endif
               // fill vector
               combVector.push_back(currentComb);
               currentComb.pop_back();
@@ -285,17 +210,20 @@ int main(int argc, char **argv) {
     /*** EVENT MIXING OR OMEGA MATCHING ***/
 
     // declare output vectors - initially empty
-    std::vector<std::vector<Int_t>> mc_newVector;
-    std::vector<Int_t> auxVector;
-    std::vector<std::vector<Int_t>> newVector;
-    std::vector<Int_t> nullVector = {-1, -1, -1, -1};
+    std::vector<std::vector<int>> mc_newVector;
+    std::vector<int> auxVector;
+    std::vector<std::vector<int>> newVector;
+    std::vector<int> nullVector = {-1, -1, -1, -1};
 
     if (gMixReconstructed) {
+
       // do the event mixing for sim. reconstructed particles
       newVector = combVector;
       for (Int_t Index = ParticleIndex; Index < LastIndex; Index++) {
         // when choosing to change pi0, search for one gamma, it stays at 22
-        if (gParticleToSwap == 111) gParticleToSwap = 22;
+        if (gParticleToSwap == 111) {
+          gParticleToSwap = 22;
+        }
         // loop on possible combinations, each desired particle will be swapped
         for (Size_t s = 0; s < newVector.size(); s++) {
           // choose a random entry
@@ -303,15 +231,19 @@ int main(int argc, char **argv) {
             rng = r.Integer(nEntries);
             tree->GetEntry(rng);
             // check if it corresponds to the desired particle, same target and it's different from previous random entry
-            if (((Int_t)t.pid == gParticleToSwap || (Int_t)t.pid == ParticleToSwap[Index])) {
+            if (((Int_t)part_in.pid == gParticleToSwap || (Int_t)part_in.pid == ParticleToSwap[Index])) {
               newVector[s][Index] = rng;
               // in the case of one gamma, find its partner to form a pi0, which can be the previous or next entry
               // and save it into the spot of the 4th particle
               if (gParticleToSwap == 22 || ParticleToSwap[Index] == 22) {
                 tree->GetEntry(rng - 1);
-                if ((Int_t)t.pid == 22) newVector[s][Index + 1] = rng - 1;
+                if ((Int_t)part_in.pid == 22) {
+                  newVector[s][Index + 1] = rng - 1;
+                }
                 tree->GetEntry(rng + 1);
-                if ((Int_t)t.pid == 22) newVector[s][Index + 1] = rng + 1;
+                if ((Int_t)part_in.pid == 22) {
+                  newVector[s][Index + 1] = rng + 1;
+                }
               }
               break;
             }
@@ -319,32 +251,13 @@ int main(int argc, char **argv) {
         }
       }
 
-    } else if (gMixGenerated) {
-      // do the event mixing for generated particles, different because optimization
-      mc_newVector = mc_combVector;
-      for (Int_t Index = ParticleIndex; Index < LastIndex; Index++) {
-        // loop on possible combinations, each desired particle will be swapped
-        for (Size_t s = 0; s < mc_newVector.size(); s++) {
-          if (Index == 0) {
-            rng = r.Integer(nPip);
-            mc_newVector[s][Index] = vPip[rng];
-          } else if (Index == 1) {
-            rng = r.Integer(nPim);
-            mc_newVector[s][Index] = vPim[rng];
-          } else if (Index == 2) {
-            rng = r.Integer(nPi0);
-            mc_newVector[s][Index] = vPi0[rng];
-            mc_newVector[s][Index + 1] = vPi0[rng] + 1;
-          }
-        }
-      }
-
     } else {
-      // regular case
+
+      // regular case: no event-mixing
       // if the final state particles are already match, then the omegas are also matched
       for (Size_t m = 0; m < mc_combVector.size(); m++) {
         for (Size_t n = 0; n < combVector.size(); n++) {
-          Bool_t fMatchingCondition = (mc_combVector[m] == combVector[n]);
+          Bool_t fMatchingCondition = (mc_combVector[m] == combVector[n]);  // compare entry numbers
           if (fMatchingCondition) {
             mc_newVector.push_back(mc_combVector[m]);
             newVector.push_back(combVector[n]);
@@ -371,79 +284,51 @@ int main(int argc, char **argv) {
 
     /*** FILL MIX ***/
 
-    Int_t combCounter = 0;     // counter for simrec combinations
-    Int_t mc_combCounter = 0;  // counter for gsim combinations
-
     if (gMixReconstructed) {
+
       // after mixing reconstructed simulations, fill just as data
       // candidate appeared for SIMREC
       for (Size_t cc = 0; cc < newVector.size(); cc++) {  // loop on combinations
-#ifdef DEBUG
-        std::cout << "newVector[" << cc << "] = {" << newVector[cc][0] << ", " << newVector[cc][1] << ", " << newVector[cc][2] << ", " << newVector[cc][3] << "}" << std::endl;
-#endif
-        for (Int_t pp = 0; pp < 4; pp++) {  // loop on final state particles
+        for (Int_t pp = 0; pp < 4; pp++) {                // loop on final state particles
           tree->GetEntry(newVector[cc][pp]);
-          AssignMixVar_REC(t, m, newVector[cc][pp], pp);
+          WriteStableVars_REC(elec_in, part_in, stable_out, newVector[cc][pp], pp);
         }  // end of loop on fs particles
-        AssignMoreVar_REC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, cc);
-        AssignPi0Var_REC(m, pi0);
-        AssignOmegaVar_REC(m, pi0, w);
-        NullMixVar_GEN(mc_m, mc_pi0, mc_w);
+        WritePi0Vars(stable_out, pi0_out);
+        WriteOmegaVars(stable_out, pi0_out, omega_out);
+        NullOutputVars(mc_stable_out, mc_pi0_out, mc_omega_out);
         // fill
         tMix->Fill();
       }  // end of loop on combinations
-    } else if (gMixGenerated) {
-      // after mixing generated particles, fill
-      // candidate appeared for MC
-      for (Size_t cc = 0; cc < mc_newVector.size(); cc++) {  // loop on combinations
-#ifdef DEBUG
-        std::cout << "mc_newVector[" << cc << "] = {" << mc_newVector[cc][0] << ", " << mc_newVector[cc][1] << ", " << mc_newVector[cc][2] << ", " << mc_newVector[cc][3] << "}"
-                  << std::endl;
-#endif
-        for (Int_t pp = 0; pp < 4; pp++) {  // loop on final state particles
-          tree->GetEntry(mc_newVector[cc][pp]);
-          AssignMixVar_GEN(mc_t, mc_m, mc_newVector[cc][pp], pp);
-        }  // end of loop on fs particles
-        AssignMoreVar_GEN(mc_m, nMCPipThisEvent, nMCPimThisEvent, nMCGammaThisEvent, mc_combCounter);
-        AssignPi0Var_GEN(mc_m, mc_pi0);
-        AssignOmegaVar_GEN(mc_m, mc_pi0, mc_w);
-        NullMixVar_REC(m, pi0, w);
-        // evnt related vars
-        for (Int_t pp = 0; pp < 4; pp++) m.Entry[pp] = (Float_t)mc_newVector[cc][pp];
-        m.Event = t.evnt;
-        // fill
-        tMix->Fill();
-      }  // end of loop on combinations
+
     } else {
-      // regular case, attempts to do a matching
+
+      // regular case: no event-mixing, attempts to do a matching
       // candidate appeared for MC
       for (Size_t cc = 0; cc < mc_newVector.size(); cc++) {
         // assign generated particles
         if (mc_newVector[cc][0] != -1) {
           for (Int_t gg = 0; gg < 4; gg++) {  // loop on final state particles
             tree->GetEntry(mc_newVector[cc][gg]);
-            AssignMixVar_GEN(mc_t, mc_m, mc_newVector[cc][gg], gg);
+            WriteStableVars_GEN(mc_elec_in, mc_part_in, mc_stable_out, mc_newVector[cc][gg], gg);
+            stable_out.Event = elec_in.evnt;                                                            // don't forget the evnt!
+            flagOmega2PPGG = (nMCPipFromOmega == 1 && nMCPimFromOmega == 1 && nMCGammaFromOmega == 2);  // decay channel of interest
           }
-          AssignMoreVar_GEN(mc_m, nMCPipThisEvent, nMCPimThisEvent, nMCGammaThisEvent, mc_combCounter);
-          AssignPi0Var_GEN(mc_m, mc_pi0);
-          AssignOmegaVar_GEN(mc_m, mc_pi0, mc_w);
-          mc_combCounter++;
+          WritePi0Vars(mc_stable_out, mc_pi0_out);
+          WriteOmegaVars(mc_stable_out, mc_pi0_out, mc_omega_out);
         } else {
-          NullMixVar_GEN(mc_m, mc_pi0, mc_w);
+          NullOutputVars(mc_stable_out, mc_pi0_out, mc_omega_out);
+          flagOmega2PPGG = INVLD;  // decay channel of interest
         }
         // assign sim reconstructed particles
         if (newVector[cc][0] != -1) {
           for (Int_t rr = 0; rr < 4; rr++) {  // loop on final state particles
             tree->GetEntry(newVector[cc][rr]);
-            AssignMixVar_REC(t, m, newVector[cc][rr], rr);
-            CheckContamination(mc_t, m, rr);
+            WriteStableVars_REC(elec_in, part_in, stable_out, newVector[cc][rr], rr);
           }
-          AssignMoreVar_REC(m, nPipThisEvent, nPimThisEvent, nGammaThisEvent, combCounter);
-          AssignPi0Var_REC(m, pi0);
-          AssignOmegaVar_REC(m, pi0, w);
-          combCounter++;
+          WritePi0Vars(stable_out, pi0_out);
+          WriteOmegaVars(stable_out, pi0_out, omega_out);
         } else {
-          NullMixVar_REC(m, pi0, w);
+          NullOutputVars(stable_out, pi0_out, omega_out);
         }
         // fill
         tMix->Fill();
@@ -456,15 +341,15 @@ int main(int argc, char **argv) {
     nMCPipThisEvent = 0;
     nMCPimThisEvent = 0;
     nMCGammaThisEvent = 0;
+    nMCPipFromOmega = 0;
+    nMCPimFromOmega = 0;
+    nMCGammaFromOmega = 0;
+    flagOmega2PPGG = 0;
 
     // reset simrec counters
     nPipThisEvent = 0;
     nPimThisEvent = 0;
     nGammaThisEvent = 0;
-
-    // reset comb counters
-    combCounter = 0;
-    mc_combCounter = 0;
 
     // reset vectors
     mc_pipVector.clear();
@@ -483,11 +368,6 @@ int main(int argc, char **argv) {
 
     mc_newVector.clear();
     newVector.clear();
-
-#ifdef DEBUG
-    std::cout << "  !! Finished event" << std::endl;
-    std::cout << std::endl;
-#endif
   }  // end of loop in entries
 
   /*** WRITE ***/
