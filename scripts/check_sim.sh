@@ -1,45 +1,34 @@
 #!/bin/bash
 
-function cfied()
-{
+function cfied() {
     for dir in $1/*/; do echo "$dir : $(ls -1 $dir | wc -l)"; done
 }
 
-CACHEDIR=/cache/mss/clas/eg2a/production/Simulation/omega_lepto
-TAPEDIR=/mss/clas/eg2a/production/Simulation/omega_lepto
+PARTICLE="$@"
 
-echo "CACHE old"
-cfied ${CACHEDIR}/old
-echo "TAPE old"
-cfied ${TAPEDIR}/old
+CACHEDIR="/cache/mss/clas/eg2a/production/Simulation/${PARTICLE}_lepto"
+TAPEDIR="/mss/clas/eg2a/production/Simulation/${PARTICLE}_lepto"
+
+echo "CACHE new/D"
+cfied ${CACHEDIR}/new/D
+echo "TAPE new/D"
+cfied ${TAPEDIR}/new/D
 echo ""
 
-echo "CACHE usm"
-cfied ${CACHEDIR}/usm
-echo "TAPE usm"
-cfied ${TAPEDIR}/usm
+echo "CACHE new/C"
+cfied ${CACHEDIR}/new/C
+echo "TAPE new/C"
+cfied ${TAPEDIR}/new/C
 echo ""
 
-echo "CACHE jlab/D"
-cfied ${CACHEDIR}/D
-echo "TAPE jlab/D"
-cfied ${TAPEDIR}/D
+echo "CACHE new/Fe"
+cfied ${CACHEDIR}/new/Fe
+echo "TAPE new/Fe"
+cfied ${TAPEDIR}/new/Fe
 echo ""
 
-echo "CACHE jlab/C"
-cfied ${CACHEDIR}/C
-echo "TAPE jlab/C"
-cfied ${TAPEDIR}/C
-echo ""
-
-echo "CACHE jlab/Fe"
-cfied ${CACHEDIR}/Fe
-echo "TAPE jlab/Fe"
-cfied ${TAPEDIR}/Fe
-echo ""
-
-echo "CACHE jlab/Pb"
-cfied ${CACHEDIR}/Pb
-echo "TAPE jlab/Pb"
-cfied ${TAPEDIR}/Pb
+echo "CACHE new/Pb"
+cfied ${CACHEDIR}/new/Pb
+echo "TAPE new/Pb"
+cfied ${TAPEDIR}/new/Pb
 echo ""
