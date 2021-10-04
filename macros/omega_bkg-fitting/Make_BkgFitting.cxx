@@ -15,12 +15,6 @@ using namespace RooFit;
 const Int_t Nkinvars = 4;
 const Int_t Nbins = 4;
 
-// hardcoded parameters, obtained from results on "All"
-const Double_t meanFix[Nkinvars][Nbins] = {
-    {0.785, 0.784, 0.782, 0.790}, {0.785, 0.784, 0.787, 0.785}, {0.785, 0.783, 0.783, 0.782}, {0.781, 0.783, 0.781, 0.782}};
-const Double_t sigmaFix[Nkinvars][Nbins] = {
-    {0.024, 0.024, 0.018, 0.021}, {0.024, 0.021, 0.022, 0.023}, {0.022, 0.022, 0.020, 0.021}, {0.019, 0.023, 0.021, 0.022}};
-
 void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", Int_t fixParams = 0, TString StoreOption = "") {
   // 1) Fit omega signal and background
   // 2) Store fit values
@@ -103,8 +97,22 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
   RooFitResult *FitResult[Nbins];
 
-  // define auxiliar index, useful when fixParams == 1
-  Int_t kinvarIndex = 0 * (kinvarOption == "Q2") + 1 * (kinvarOption == "Nu") + 2 * (kinvarOption == "wZ") + 3 * (kinvarOption == "wPt2");
+  // in the case of fix params
+  TFile *RootInputFile;
+  RooFitResult *InputFit[Nbins];
+  Double_t MeanFix[Nbins];
+  Double_t SigmaFix[Nbins];
+  if (fixParams) {
+    // read the bkg-subtracted output file when running on "All" data
+    RootInputFile = new TFile(gProDir + "/gfx/omega_bkg-fitting/bkg-fitting_All_" + kinvarOption + ".root");
+    // loop over bins
+    for (Int_t i = 0; i < Nbins; i++) {
+      // get fit function to retrieve parameter's values
+      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%d", i));
+      MeanFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#mu(#omega)"))->getValV();
+      SigmaFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#sigma(#omega)"))->getValV();
+    }
+  }
 
   // loop over bins
   for (Int_t i = 0; i < Nbins; i++) {
@@ -136,9 +144,9 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // fix parameters
     if (fixParams) {
-      mean.setVal(meanFix[kinvarIndex][i]);
+      mean.setVal(MeanFix[i]);
       mean.setConstant(kTRUE);
-      sigma.setVal(sigmaFix[kinvarIndex][i]);
+      sigma.setVal(SigmaFix[i]);
       sigma.setConstant(kTRUE);
     }
 
@@ -194,7 +202,9 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
   Double_t MaxRange = 0;
   for (Int_t i = 0; i < Nbins; i++) {
-    if (dataHist[i]->GetMaximum() > MaxRange) MaxRange = dataHist[i]->GetMaximum();
+    if (dataHist[i]->GetMaximum() > MaxRange) {
+      MaxRange = dataHist[i]->GetMaximum();
+    }
   }
   MaxRange += MaxRange * 0.15;
 
@@ -245,6 +255,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     upperFrame[i]->GetYaxis()->SetTitle("Counts");
     upperFrame[i]->GetYaxis()->SetTitleSize(0.04);
     upperFrame[i]->GetYaxis()->SetTickSize(0.02);
+    upperFrame[i]->GetYaxis()->SetMaxDigits(3);
 
     upperFrame[i]->GetXaxis()->SetNdivisions(412);
 
@@ -327,7 +338,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // legend
     TLegend *leg = new TLegend(0.75, 0.75, 0.95, 0.88);  // x1,y1,x2,y2
-    leg->AddEntry(upperFrame[i]->findObject("Data"), "Data", "lp");
+    leg->AddEntry(upperFrame[i]->findObject("Data"), "Data", "lpe");
     leg->AddEntry(upperFrame[i]->findObject("Model"), "Fit", "l");
     leg->AddEntry(upperFrame[i]->findObject("Bkg"), "Bkg", "l");
     leg->AddEntry(upperFrame[i]->findObject("Signal"), "Signal", "l");

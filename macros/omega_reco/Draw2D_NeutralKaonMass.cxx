@@ -31,8 +31,7 @@ void Draw2D_NeutralKaonMass(TString StoreOption = "") {
   /*** 2D HISTOGRAM ***/
 
   TH2D *theDalitzHist;
-  dataChain->Draw("pippimM*pippimM:pippi0M*pippi0M>>dalitz(120, 0.0, 1.2, 120, 0.0, 1.2)", gCutDIS && CutVertex && gCutRegion && gCutPi0,
-                  "goff");
+  dataChain->Draw("pippimM*pippimM:pippi0M*pippi0M>>dalitz(120, 0.0, 1.2, 120, 0.0, 1.2)", gCutDIS && CutVertex && gCutPi0, "goff");
   theDalitzHist = (TH2D *)gROOT->FindObject("dalitz");
 
   // style

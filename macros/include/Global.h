@@ -22,16 +22,16 @@ TCut gCutLiquid = "TargType == 1 && Yec > -1.4 && Yec < 1.4";
 // photons id cut (requires "include/InputFunctions.cxx/SetAliases()")
 TCut gCutPhotonsOpAngle = "gamma1_OpAngle > 12. && gamma2_OpAngle > 12.";
 // omega reco cuts (gCutKaons requires "include/InputFunctions.cxx/SetAliases()")
-TCut gCutPi0 = "0.081 < pi0M && pi0M < 0.189";          // mean=0.135 & sigma=0.018 (October 2021)
-TCut gCutKaons = "pippimM < 0.483 || pippimM > 0.511";  // mean=0.247 & sigma=0.014 (October 2021)
+TCut gCutPi0 = "0.079 < pi0M && pi0M < 0.193";          // 3sigma cut, mean=0.136 & sigma=0.019 (October 2021)
+TCut gCutKaons = "pippimM < 0.484 || pippimM > 0.510";  // 1sigma cut, mean=0.247 & sigma=0.013 (October 2021)
 
 // omega binning: 4 bins (5 edges) for each kinematic variable
 // obtained with "omega_reco/Make_Binning.cxx" for Pb
 // (last edit: October 2021)
-const Double_t kEdgesQ2[5] = {1.0, 1.27, 1.52, 1.93, 4.0};
-const Double_t kEdgesNu[5] = {2.2, 3.28, 3.63, 3.90, 4.2};
+const Double_t kEdgesQ2[5] = {1, 1.26, 1.52, 1.94, 4.0};
+const Double_t kEdgesNu[5] = {2.2, 3.36, 3.67, 3.95, 4.2};
 const Double_t kEdgesZ[5] = {0.5, 0.57, 0.64, 0.74, 0.9};
-const Double_t kEdgesPt2[5] = {0.0, 0.08, 0.18, 0.36, 1.5};
+const Double_t kEdgesPt2[5] = {0, 0.07, 0.17, 0.34, 1.5};
 
 // kinematical limits for omega (optional cut)
 TCut gCutRegion = Form("Q2 > %.2f && Q2 < %.2f && Nu > %.2f && Nu < %.2f && wZ > %.2f && wZ < %.2f && wPt2 > %.2f && wPt2 < %.2f",

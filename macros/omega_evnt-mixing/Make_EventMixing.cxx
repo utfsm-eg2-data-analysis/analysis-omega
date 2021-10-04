@@ -13,12 +13,6 @@
 const Int_t Nkinvars = 4;
 const Int_t Nbins = 4;
 
-// hardcoded parameters, obtained from results on "All"
-const Double_t meanFix[Nkinvars][Nbins] = {
-    {0.785, 0.785, 0.785, 0.780}, {0.784, 0.783, 0.783, 0.781}, {0.782, 0.787, 0.783, 0.781}, {0.786, 0.784, 0.780, 0.782}};
-const Double_t sigmaFix[Nkinvars][Nbins] = {
-    {0.025, 0.022, 0.022, 0.022}, {0.023, 0.021, 0.023, 0.022}, {0.020, 0.023, 0.021, 0.022}, {0.021, 0.022, 0.024, 0.023}};
-
 void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", Int_t fixParams = 0, TString StoreOption = "") {
   // 1) Normalize event-mixing bkg to match data
   // 2) Subtract event-mixing bkg to data
@@ -99,8 +93,22 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
 
   TFitResultPtr FitResult[Nbins];
 
-  // define auxiliar index, useful when fixParams == 1
-  Int_t kinvarIndex = 0 * (kinvarOption == "Q2") + 1 * (kinvarOption == "Nu") + 2 * (kinvarOption == "wZ") + 3 * (kinvarOption == "wPt2");
+  // in the case of fix params
+  TFile *RootInputFile;
+  TF1 *Fit[Nbins];
+  Double_t MeanFix[Nbins];
+  Double_t SigmaFix[Nbins];
+  if (fixParams) {
+    // read the bkg-subtracted output file when running on "All" data
+    RootInputFile = new TFile(gProDir + "/gfx/omega_evnt-mixing/evnt-mixing_All_" + kinvarOption + ".root");
+    // loop over bins
+    for (Int_t i = 0; i < Nbins; i++) {
+      // get fit function to retrieve parameter's values
+      Fit[i] = (TF1 *)RootInputFile->Get(Form("model_%d", i));
+      MeanFix[i] = Fit[i]->GetParameter(1);
+      SigmaFix[i] = Fit[i]->GetParameter(2);
+    }
+  }
 
   // loop over bins
   for (Int_t i = 0; i < Nbins; i++) {
@@ -170,8 +178,8 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     Model[i]->SetParLimits(2, SigmaIGV - SigmaLimit, SigmaIGV + SigmaLimit);
 
     if (fixParams) {
-      Model[i]->FixParameter(1, meanFix[kinvarIndex][i]);
-      Model[i]->FixParameter(2, sigmaFix[kinvarIndex][i]);
+      Model[i]->FixParameter(1, MeanFix[i]);
+      Model[i]->FixParameter(2, SigmaFix[i]);
     }
 
     FitResult[i] = subMassive[i]->Fit(Form("model_%d", i), "BEMSVN");

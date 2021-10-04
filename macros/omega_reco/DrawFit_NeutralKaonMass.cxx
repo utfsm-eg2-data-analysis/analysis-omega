@@ -20,14 +20,14 @@ void DrawFit_NeutralKaonMass(TString StoreOption = "") {
 
   /*** INPUT ***/
 
-  TChain *dataChain = GetThreePionFinderChain("All", "data");
+  TChain *dataChain = GetThreePionFinderChain("All");
   TCut CutVertex = gCutSolid || gCutLiquid;
   SetAliases(dataChain);
 
   /*** HISTOGRAM ***/
 
   TH1D *theHist;
-  dataChain->Draw("pippimM*pippimM>>data(120, 0.16, 0.64)", gCutDIS && CutVertex && gCutRegion, "goff");  // 0.4, 0.8
+  dataChain->Draw("pippimM*pippimM>>data(120, 0.16, 0.64)", gCutDIS && CutVertex, "goff");  // 0.4, 0.8
   theHist = (TH1D *)gROOT->FindObject("data");
 
   // style
@@ -53,9 +53,10 @@ void DrawFit_NeutralKaonMass(TString StoreOption = "") {
   TF1 *Fit = new TF1("fit", "gaus", 0.240, 0.255);
   Fit->SetParameter(1, 2.47e-1);
   Fit->SetParameter(2, 1.5e-2);
+  // style
   Fit->SetLineColor(myCyan);
-  Fit->SetLineWidth(2);
-  TFitResultPtr FitResult = theHist->Fit("fit", "BEMSVR");
+  Fit->SetLineWidth(3);
+  TFitResultPtr FitResult = theHist->Fit("fit", "SR");  // BEMSVR
   // save parameters
   Parameters.NormValue = Fit->GetParameter(0);
   Parameters.NormError = Fit->GetParError(0);
@@ -74,14 +75,14 @@ void DrawFit_NeutralKaonMass(TString StoreOption = "") {
   theHist->Draw("E");
 
   // draw vertical lines to represent 1sigma cut
-  DrawVerticalLine(Parameters.MeanValue - 1 * Parameters.SigmaValue, myCyan, 9, 3, 1);
-  DrawVerticalLine(Parameters.MeanValue + 1 * Parameters.SigmaValue, myCyan, 9, 3, 1);
+  DrawVerticalLine(Parameters.MeanValue - 1 * Parameters.SigmaValue, myCyan, 7, 3, 1);
+  DrawVerticalLine(Parameters.MeanValue + 1 * Parameters.SigmaValue, myCyan, 7, 3, 1);
 
   // draw fit results
   TPaveText *pav = new TPaveText(0.60, 0.50, 0.9, 0.75, "NDC NB");  // no border
   pav->AddText(Form("#chi^{2}/ndf = %.4f", theHist->GetFunction("fit")->GetChisquare() / (Double_t)theHist->GetFunction("fit")->GetNDF()));
-  pav->AddText(Form("#mu = %.3f +- %.6f", Parameters.MeanValue, Parameters.MeanError));
-  pav->AddText(Form("#sigma = %.3f +- %.6f", Parameters.SigmaValue, Parameters.SigmaError));
+  pav->AddText(Form("#mu = %.3f #pm %.6f", Parameters.MeanValue, Parameters.MeanError));
+  pav->AddText(Form("#sigma = %.3f #pm %.6f", Parameters.SigmaValue, Parameters.SigmaError));
   pav->SetFillStyle(0);
   pav->Draw();
 

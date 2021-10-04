@@ -6,9 +6,9 @@
 #include "DrawFunctions.cxx"
 #endif
 
-#include "EtaElectronNumbers.hxx"
+#include "OmegaElectronNumbers.hxx"
 
-const Int_t Nbins = 5;
+const Int_t Nbins = 4;
 const Int_t Ntargets = 4;
 const Int_t Nkinvars = 4;
 
@@ -22,18 +22,18 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
 
   /*** MAIN ***/
 
-  TString kinvarOption[Nkinvars] = {"Q2", "Nu", "nZ", "nPt2"};
+  TString kinvarOption[Nkinvars] = {"Q2", "Nu", "wZ", "wPt2"};
   TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
-    EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
-    EdgesKinvar[1][i] = kEdgesNu_Eta[i];
-    EdgesKinvar[2][i] = kEdgesZ_Eta[i];
-    EdgesKinvar[3][i] = kEdgesPt2_Eta[i];
+    EdgesKinvar[0][i] = kEdgesQ2[i];
+    EdgesKinvar[1][i] = kEdgesNu[i];
+    EdgesKinvar[2][i] = kEdgesZ[i];
+    EdgesKinvar[3][i] = kEdgesPt2[i];
   }
 
   // fix y-axis max range
-  Double_t maxMR = 1.4;
+  Double_t maxMR = 1.5;
 
   TString targetString[Ntargets] = {"D", "C", "Fe", "Pb"};
   Color_t targetColor[Ntargets] = {myGreen, myRed, myBlue, myBlack};
@@ -50,28 +50,28 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
       // data
-      FitFile[k][t] = new TFile(gProDir + "/gfx/eta_bkg-fitting/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      FitFile[k][t] = new TFile(gProDir + "/gfx/omega_bkg-fitting/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
       omegaHist[k][t] = new TH1D("omegaNumber_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       electronHist[k][t] = new TH1D("electronNumber_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       ratioHist[k][t] = new TH1D("ratio_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       MR[k][t] = new TH1D("MR_" + targetString[t], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       for (Int_t i = 0; i < Nbins; i++) {
         RooFitResult *FitResult = (RooFitResult *)FitFile[k][t]->Get(Form("fit-result_%d", i));
-        fitOmega[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#eta}"))->getValV();
-        fitOmegaError[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
+        fitOmega[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#omega}"))->getValV();
+        fitOmegaError[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#omega}"))->getAsymErrorHi();
         // fill hist
         omegaHist[k][t]->SetBinContent(i + 1, fitOmega[k][t][i]);
         omegaHist[k][t]->SetBinError(i + 1, fitOmegaError[k][t][i]);
         // electron hist
         if (k == 0) {
-          electronHist[k][t]->SetBinContent(i + 1, kNElecQ2_Eta[t][i]);
-          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_Eta[t][i]));
+          electronHist[k][t]->SetBinContent(i + 1, kNElecQ2_Omega[t][i]);
+          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_Omega[t][i]));
         } else if (k == 1) {
-          electronHist[k][t]->SetBinContent(i + 1, kNElecNu_Eta[t][i]);
-          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_Eta[t][i]));
+          electronHist[k][t]->SetBinContent(i + 1, kNElecNu_Omega[t][i]);
+          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_Omega[t][i]));
         } else if (k == 2 || k == 3) {
-          electronHist[k][t]->SetBinContent(i + 1, kNElec_Eta[t]);
-          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec_Eta[t]));
+          electronHist[k][t]->SetBinContent(i + 1, kNElec_Omega[t]);
+          electronHist[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec_Omega[t]));
         }
       }
       // calculate first ratio (normalize by electrons) and divide solid targets with liquid target
@@ -120,16 +120,10 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
     MRgraph[k][1]->GetXaxis()->SetTitleSize(0.04);
     MRgraph[k][1]->GetXaxis()->SetTitleOffset(1.);
 
-    MRgraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#eta}");
+    MRgraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#omega}");
+    MRgraph[k][1]->GetYaxis()->SetRangeUser(0., maxMR);
     MRgraph[k][1]->GetYaxis()->SetTitleSize(0.04);
     MRgraph[k][1]->GetYaxis()->SetTitleOffset(1.2);
-
-    // set y-axis
-    if (k == 3) {
-      MRgraph[k][1]->GetYaxis()->SetRangeUser(0., 2.5);
-    } else {
-      MRgraph[k][1]->GetYaxis()->SetRangeUser(0., maxMR);
-    }
 
     // loop over solid targets only
     for (Int_t tt = 1; tt < Ntargets; tt++) {
@@ -146,7 +140,7 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
   SetMyStyle();
 
   // define canvas
-  TString CanvasName = "eta-MR_bkg-fitting";
+  TString CanvasName = "omega-MR_bkg-fitting";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(2, 2, 0.001, 0.001);
 
@@ -178,7 +172,7 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
   /*** OUTPUT ***/
 
   if (StoreOption != "") {
-    TString OutputDir = gProDir + "/gfx/eta_MR";
+    TString OutputDir = gProDir + "/gfx/omega_MR";
     system("mkdir -p " + OutputDir);
     c->Print(OutputDir + "/" + CanvasName + "." + StoreOption);
   }

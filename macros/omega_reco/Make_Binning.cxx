@@ -28,7 +28,7 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
   TCut CutVertex;
   if (targetOption == "D") {
     CutVertex = gCutLiquid;
-  } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
+  } else {  // solid targets
     CutVertex = gCutSolid;
   }
 
@@ -36,31 +36,31 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
 
   TString kinvarOption[Nkinvars] = {"Q2", "Nu", "wZ", "wPt2"};
   TString titleAxis[Nkinvars];
-  TString histProperties[Nkinvars];
   titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.)";
   titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.2)";
   titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 0.9)";
   titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
 
-  Double_t kinvarLimit[Nkinvars][2];
-  kinvarLimit[0][0] = 1.0;  // Q2
-  kinvarLimit[0][1] = 4.0;
-  kinvarLimit[1][0] = 2.2;  // Nu
-  kinvarLimit[1][1] = 4.2;
-  kinvarLimit[2][0] = 0.5;  // Z
-  kinvarLimit[2][1] = 0.9;
-  kinvarLimit[3][0] = 0.0;  // Pt2
-  kinvarLimit[3][1] = 1.5;
+  Double_t KinvarLimits[Nkinvars][2];
+  KinvarLimits[0][0] = 1.0;  // Q2
+  KinvarLimits[0][1] = 4.0;
+  KinvarLimits[1][0] = 2.2;  // Nu
+  KinvarLimits[1][1] = 4.2;
+  KinvarLimits[2][0] = 0.5;  // Z
+  KinvarLimits[2][1] = 0.9;
+  KinvarLimits[3][0] = 0.0;  // Pt2
+  KinvarLimits[3][1] = 1.5;
 
-  TH1D *dataHist[4];
+  TString histProperties[Nkinvars];
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    histProperties[k] = Form("(100, %.2f, %.2f)", KinvarLimits[k][0], KinvarLimits[k][1]);
+  }
 
-  for (Int_t hh = 0; hh < 4; hh++) {
+  TH1D *dataHist[Nkinvars];
+
+  for (Int_t hh = 0; hh < Nkinvars; hh++) {
     dataChain->Draw(kinvarOption[hh] + ">>hist_" + kinvarOption[hh] + histProperties[hh],
-                    gCutDIS && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle && gCutRegion, "goff");
+                    gCutDIS && CutVertex && gCutPhotonsOpAngle && gCutPi0 && gCutKaons, "goff");
     dataHist[hh] = (TH1D *)gROOT->FindObject("hist_" + kinvarOption[hh]);
 
     // style
@@ -81,9 +81,8 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
   TString CanvasName = "omega-binning_";
   CanvasName += Form("%d-bins", Nbins);
   CanvasName += "_" + targetOption + "-data";
-  TCanvas *c = new TCanvas(CanvasName, CanvasName, 1080, 1080);
+  TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(Nx, Ny, 0.001, 0.001);
-  // c->SetGrid();
 
   Int_t counter = 0;
   for (Int_t xx = 0; xx < Nx; xx++) {
@@ -97,7 +96,7 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
       Double_t yq[Nbins];  // output array
 
       // draw first line
-      DrawVerticalLine(kinvarLimit[counter - 1][0], myOrange, 7, 3, 1);
+      DrawVerticalLine(KinvarLimits[counter - 1][0], myOrange, 7, 4, 1);
 
       for (Int_t i = 0; i < Nbins; i++) {
         xq[i] = (Double_t)(i + 1) / (Double_t)Nbins;
@@ -113,13 +112,13 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
         }
         // draw lines
         if (i != (Nbins - 1)) {
-          DrawVerticalLine(yq[i], myOrange, 7, 3, 1);
+          DrawVerticalLine(yq[i], myOrange, 7, 4, 1);
         }
         c->Update();
       }
 
       // draw last line
-      DrawVerticalLine(kinvarLimit[counter - 1][1], myOrange, 7, 3, 1);
+      DrawVerticalLine(KinvarLimits[counter - 1][1], myOrange, 7, 4, 1);
     }
   }
 

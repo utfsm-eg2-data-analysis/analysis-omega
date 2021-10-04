@@ -6,16 +6,11 @@
 #include "DrawFunctions.cxx"
 #endif
 
+#include "OmegaElectronNumbers.hxx"
+
 const Int_t Nkinvars = 2;  // only Q2 and Nu
 const Int_t Ntargets = 4;
 const Int_t Nbins = 4;
-
-// hardcoded number of electrons for omega binning,
-// obtained with "omega_reco/Get_ElectronNumbers.cxx"
-// (October 2021)
-const Double_t kNElec[Ntargets];
-const Double_t kNElecQ2[Ntargets][Nbins];
-const Double_t kNElecNu[Ntargets][Nbins];
 
 void Draw_ElectronNumbers(TString StoreOption = "") {
   // Draw hardcoded number of electrons
@@ -58,14 +53,14 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     // define y values
     for (Int_t i = 0; i < Nbins; i++) {
       // fill Q2 arrays
-      electronNumber[0][t][i] = kNElecQ2[t][i];
+      electronNumber[0][t][i] = kNElecQ2_Omega[t][i];
       electronNumberErr[0][t][i] = TMath::Sqrt(electronNumber[0][t][i]);
       // fill Nu arrays
-      electronNumber[1][t][i] = kNElecNu[t][i];
+      electronNumber[1][t][i] = kNElecNu_Omega[t][i];
       electronNumberErr[1][t][i] = TMath::Sqrt(electronNumber[1][t][i]);
 
-      std::cout << electronNumberErr[0][t][i] << std::endl;
-      std::cout << electronNumberErr[1][t][i] << std::endl;
+      // std::cout << electronNumberErr[0][t][i] << std::endl;
+      // std::cout << electronNumberErr[1][t][i] << std::endl;
     }
     // set graphs
     electronGraph[0][t] = new TGraphErrors(Nbins, binCenter[0], electronNumber[0][t], binError[0], electronNumberErr[0][t]);
@@ -74,14 +69,16 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[0][t]->SetTitle("");
     electronGraph[0][t]->SetMarkerColor(targetColor[t]);
     electronGraph[0][t]->SetLineColor(targetColor[t]);
-    electronGraph[0][t]->SetLineWidth(2);
+    electronGraph[0][t]->SetLineWidth(3);
     electronGraph[0][t]->SetMarkerStyle(20);
+    electronGraph[0][t]->SetMarkerSize(1.5);
     // set Nu style
     electronGraph[1][t]->SetTitle("");
     electronGraph[1][t]->SetMarkerColor(targetColor[t]);
     electronGraph[1][t]->SetLineColor(targetColor[t]);
-    electronGraph[1][t]->SetLineWidth(2);
+    electronGraph[1][t]->SetLineWidth(3);
     electronGraph[1][t]->SetMarkerStyle(20);
+    electronGraph[1][t]->SetMarkerSize(1.5);
   }
 
   // prepare y-axis
@@ -102,7 +99,7 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   const Int_t Nx = 2;
   const Int_t Ny = 1;
   TString CanvasName = "electron-numbers_data";
-  TCanvas *c = new TCanvas(CanvasName, CanvasName, 1200, 600);
+  TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 1080);
   c->Divide(Nx, Ny, 0.001, 0.001);
 
   c->SetFrameLineWidth(2);

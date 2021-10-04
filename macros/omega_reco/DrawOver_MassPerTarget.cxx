@@ -82,7 +82,7 @@ void DrawOver_MassPerTarget(TString kinvarOption = "wD", TString StoreOption = "
 
   SetMyStyle();
 
-  TString CanvasName = "omega-" + kinvarOption + "-all-targets_data";
+  TString CanvasName = "omega-" + kinvarOption + "_all-targets_data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 1080, 1080);
 
   theHist_D->Draw("HIST");

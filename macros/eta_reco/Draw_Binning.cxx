@@ -29,23 +29,18 @@ void Draw_Binning(TString targetOption = "Fe", TString StoreOption = "") {
   TCut CutVertex;
   if (targetOption == "D") {
     CutVertex = gCutLiquid;
-  } else {  // if
+  } else {  // solid targets
     CutVertex = gCutSolid;
   }
 
   /*** MAIN ***/
 
-  TString kinvarOption[4] = {"Q2", "Nu", "nZ", "nPt2"};
-  TString titleAxis[4];
-  TString histProperties[4];
+  TString kinvarOption[Nkinvars] = {"Q2", "Nu", "nZ", "nPt2"};
+  TString titleAxis[Nkinvars];
   titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.1)";
   titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.25)";
   titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 1.0)";
   titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
 
   Double_t KinvarEdges[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
@@ -55,7 +50,12 @@ void Draw_Binning(TString targetOption = "Fe", TString StoreOption = "") {
     KinvarEdges[3][i] = kEdgesPt2_Eta[i];
   }
 
-  TH1D *dataHist[4];
+  TString histProperties[Nkinvars];
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    histProperties[k] = Form("(100, %.2f, %.2f)", KinvarEdges[k][0], KinvarEdges[k][Nbins]);
+  }
+
+  TH1D *dataHist[Nkinvars];
 
   for (Int_t hh = 0; hh < Nkinvars; hh++) {
     dataChain->Draw(kinvarOption[hh] + ">>hist_" + kinvarOption[hh] + histProperties[hh],
@@ -82,7 +82,6 @@ void Draw_Binning(TString targetOption = "Fe", TString StoreOption = "") {
   CanvasName += "_" + targetOption + "-data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(Nx, Ny, 0.001, 0.001);
-  // c->SetGrid();
 
   Int_t counter = 0;
   for (Int_t xx = 0; xx < Nx; xx++) {

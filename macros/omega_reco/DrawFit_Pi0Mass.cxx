@@ -20,14 +20,14 @@ void DrawFit_Pi0Mass(TString StoreOption = "") {
 
   /*** INPUT ***/
 
-  TChain *dataChain = GetThreePionFinderChain("All", "data");
+  TChain *dataChain = GetThreePionFinderChain("All");
   TCut CutVertex = gCutSolid || gCutLiquid;
   SetAliases(dataChain);
 
   /*** HISTOGRAM ***/
 
   TH1D *theHist;
-  dataChain->Draw("pi0M>>data(200, 0, 0.5)", gCutDIS && CutVertex && gCutRegion && gCutPhotonsOpAngle, "goff");
+  dataChain->Draw("pi0M>>data(200, 0, 0.5)", gCutDIS && CutVertex && gCutPhotonsOpAngle, "goff");
   theHist = (TH1D *)gROOT->FindObject("data");
 
   // style
@@ -54,7 +54,7 @@ void DrawFit_Pi0Mass(TString StoreOption = "") {
   Fit->SetParameter(1, 0.1354);
   Fit->SetParameter(2, 0.0185);
   // style
-  Fit->SetLineWidth(2);
+  Fit->SetLineWidth(3);
   Fit->SetLineColor(myRed);
   TFitResultPtr FitResult = theHist->Fit("fit", "SR");  // BEMSVR
   // save parameters
