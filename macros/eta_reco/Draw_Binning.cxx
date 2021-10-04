@@ -80,7 +80,7 @@ void Draw_Binning(TString targetOption = "Fe", TString StoreOption = "") {
   TString CanvasName = "eta-binning_";
   CanvasName += Form("%d-bins", Nbins);
   CanvasName += "_" + targetOption + "-data";
-  TCanvas *c = new TCanvas(CanvasName, CanvasName, 1080, 1080);
+  TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(Nx, Ny, 0.001, 0.001);
   // c->SetGrid();
 

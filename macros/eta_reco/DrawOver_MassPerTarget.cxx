@@ -10,7 +10,7 @@
 #include "DrawFunctions.cxx"
 #endif
 
-void DrawOver_MassPerTarget(TString StoreOption = "") {
+void DrawOver_MassPerTarget(Int_t KinLimits = 1, TString StoreOption = "") {
   // Draw an overlay of the invariant mass of eta for all targets
 
   // prevent output printing
@@ -35,10 +35,16 @@ void DrawOver_MassPerTarget(TString StoreOption = "") {
   TString titleAxis = "Reconstructed Mass m(#gamma#gamma) [GeV]";
   TString histProperties = "(150, 0., 1.)";
 
+  // apply kinematic limits
+  TCut CutRegion_Eta = "";
+  if (KinLimits) {
+    CutRegion_Eta = gCutRegion_Eta;
+  }
+
   /*** MAIN ***/
 
   TH1D *theHistD;
-  chainData_D->Draw("nM>>histD" + histProperties, gCutLiquid && gCutDIS && gCutPhotonsOpAngle && gCutRegion_Eta, "goff");
+  chainData_D->Draw("nM>>histD" + histProperties, gCutLiquid && gCutDIS && gCutPhotonsOpAngle && CutRegion_Eta, "goff");
   theHistD = (TH1D *)gROOT->FindObject("histD");
 
   theHistD->SetTitle("");
@@ -58,7 +64,7 @@ void DrawOver_MassPerTarget(TString StoreOption = "") {
   theHistD->SetLineWidth(3);
 
   TH1F *theHistFe;
-  chainData_Fe->Draw("nM>>histFe" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && gCutRegion_Eta, "goff");
+  chainData_Fe->Draw("nM>>histFe" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && CutRegion_Eta, "goff");
   theHistFe = (TH1F *)gROOT->FindObject("histFe");
 
   theHistFe->SetFillStyle(0);
@@ -66,7 +72,7 @@ void DrawOver_MassPerTarget(TString StoreOption = "") {
   theHistFe->SetLineWidth(3);
 
   TH1F *theHistC;
-  chainData_C->Draw("nM>>histC" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && gCutRegion_Eta, "goff");
+  chainData_C->Draw("nM>>histC" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && CutRegion_Eta, "goff");
   theHistC = (TH1F *)gROOT->FindObject("histC");
 
   theHistC->SetFillStyle(0);
@@ -74,7 +80,7 @@ void DrawOver_MassPerTarget(TString StoreOption = "") {
   theHistC->SetLineWidth(3);
 
   TH1F *theHistPb;
-  chainData_Pb->Draw("nM>>histPb" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && gCutRegion_Eta, "goff");
+  chainData_Pb->Draw("nM>>histPb" + histProperties, gCutSolid && gCutDIS && gCutPhotonsOpAngle && CutRegion_Eta, "goff");
   theHistPb = (TH1F *)gROOT->FindObject("histPb");
 
   theHistPb->SetFillStyle(0);
@@ -86,7 +92,10 @@ void DrawOver_MassPerTarget(TString StoreOption = "") {
   SetMyStyle();
   gStyle->SetOptLogy(1);
 
-  TString CanvasName = "eta-nM-all-targets_data";
+  TString CanvasName = "eta-nM_all-targets_data";
+  if (KinLimits) {
+    CanvasName = "eta-nM-with-kin-cuts_all-targets_data";
+  }
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 1080, 1080);
 
   theHistD->Draw("HIST");

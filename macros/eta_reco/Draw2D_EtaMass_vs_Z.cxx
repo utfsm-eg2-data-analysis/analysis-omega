@@ -26,7 +26,7 @@ void Draw2D_EtaMass_vs_Z(TString StoreOption = "") {
   /*** HIST 2D ***/
 
   TH2D *theHist;
-  dataChain->Draw("nM:nZ>>hist(100, 0.0, 1., 150, 0.25, 1.25)",
+  dataChain->Draw("nM:nZ>>hist(200, 0.0, 1., 200, 0.25, 1.25)",
                   gCutDIS && CutVertex && gCutPhotonsOpAngle && "Q2 < 4.1 && Nu > 2.2 && Nu < 4.25 && nPt2 > 0 && nPt2 < 1.5", "goff");
   theHist = (TH2D *)gROOT->FindObject("hist");
 
@@ -49,6 +49,9 @@ void Draw2D_EtaMass_vs_Z(TString StoreOption = "") {
   CustomizePaletteSize(theHist);
 
   DrawVerticalLine(0.5, myCyan, 9, 3, 1);
+
+  // draw axis over line
+  gPad->RedrawAxis();
 
   /*** OUTPUT ***/
 

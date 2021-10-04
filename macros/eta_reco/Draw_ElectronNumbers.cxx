@@ -6,16 +6,11 @@
 #include "DrawFunctions.cxx"
 #endif
 
+#include "EtaElectronNumbers.hxx"
+
 const Int_t Nkinvars = 2;  // only Q2 and Nu
 const Int_t Ntargets = 4;
 const Int_t Nbins = 5;
-
-// hardcoded number of electrons for eta binning,
-// obtained with "eta_reco/Get_ElectronNumbers.cxx"
-// (October 2021)
-const Double_t kNElec[Nbins];
-const Double_t kNElecQ2[Ntargets][Nbins];
-const Double_t kNElecNu[Ntargets][Nbins];
 
 void Draw_ElectronNumbers(TString StoreOption = "") {
   // Draw hardcoded number of electrons
@@ -46,11 +41,11 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   // define x bins
   for (Int_t i = 0; i < Nbins; i++) {
     // Q2
-    binCenter[0][i] = (kEdgesQ2[i] + kEdgesQ2[i + 1]) / 2.;
-    binError[0][i] = (kEdgesQ2[i + 1] - kEdgesQ2[i]) / TMath::Sqrt(12);
+    binCenter[0][i] = (kEdgesQ2_Eta[i] + kEdgesQ2_Eta[i + 1]) / 2.;
+    binError[0][i] = (kEdgesQ2_Eta[i + 1] - kEdgesQ2_Eta[i]) / TMath::Sqrt(12);
     // Nu
-    binCenter[1][i] = (kEdgesNu[i] + kEdgesNu[i + 1]) / 2.;
-    binError[1][i] = (kEdgesNu[i + 1] - kEdgesNu[i]) / TMath::Sqrt(12);
+    binCenter[1][i] = (kEdgesNu_Eta[i] + kEdgesNu_Eta[i + 1]) / 2.;
+    binError[1][i] = (kEdgesNu_Eta[i + 1] - kEdgesNu_Eta[i]) / TMath::Sqrt(12);
   }
 
   // define y values and set graphs
@@ -58,14 +53,14 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     // define y values
     for (Int_t i = 0; i < Nbins; i++) {
       // fill Q2 arrays
-      electronNumber[0][t][i] = kNElecQ2[t][i];
+      electronNumber[0][t][i] = kNElecQ2_Eta[t][i];
       electronNumberErr[0][t][i] = TMath::Sqrt(electronNumber[0][t][i]);
       // fill Nu arrays
-      electronNumber[1][t][i] = kNElecNu[t][i];
+      electronNumber[1][t][i] = kNElecNu_Eta[t][i];
       electronNumberErr[1][t][i] = TMath::Sqrt(electronNumber[1][t][i]);
 
-      std::cout << electronNumberErr[0][t][i] << std::endl;
-      std::cout << electronNumberErr[1][t][i] << std::endl;
+      // std::cout << electronNumberErr[0][t][i] << std::endl;
+      // std::cout << electronNumberErr[1][t][i] << std::endl;
     }
     // set graphs
     electronGraph[0][t] = new TGraphErrors(Nbins, binCenter[0], electronNumber[0][t], binError[0], electronNumberErr[0][t]);
@@ -74,14 +69,16 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[0][t]->SetTitle("");
     electronGraph[0][t]->SetMarkerColor(targetColor[t]);
     electronGraph[0][t]->SetLineColor(targetColor[t]);
-    electronGraph[0][t]->SetLineWidth(2);
+    electronGraph[0][t]->SetLineWidth(3);
     electronGraph[0][t]->SetMarkerStyle(20);
+    electronGraph[0][t]->SetMarkerSize(1.5);
     // set Nu style
     electronGraph[1][t]->SetTitle("");
     electronGraph[1][t]->SetMarkerColor(targetColor[t]);
     electronGraph[1][t]->SetLineColor(targetColor[t]);
-    electronGraph[1][t]->SetLineWidth(2);
+    electronGraph[1][t]->SetLineWidth(3);
     electronGraph[1][t]->SetMarkerStyle(20);
+    electronGraph[1][t]->SetMarkerSize(1.5);
   }
 
   // prepare y-axis
@@ -102,7 +99,7 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   const Int_t Nx = 2;
   const Int_t Ny = 1;
   TString CanvasName = "electron-numbers_data";
-  TCanvas *c = new TCanvas(CanvasName, CanvasName, 1200, 600);
+  TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 1080);
   c->Divide(Nx, Ny, 0.001, 0.001);
 
   c->SetFrameLineWidth(2);
@@ -113,13 +110,6 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   electronGraph[0][1]->Draw("P");
   electronGraph[0][2]->Draw("P");
   electronGraph[0][3]->Draw("P");
-
-  // right plot
-  c->cd(2);
-  electronGraph[1][0]->Draw("AP");
-  electronGraph[1][1]->Draw("P");
-  electronGraph[1][2]->Draw("P");
-  electronGraph[1][3]->Draw("P");
 
   // legend
   TLegend *legend = new TLegend(0.75, 0.65, 0.9, 0.9);  // x1,y1,x2,y2
@@ -132,6 +122,13 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   legend->SetTextSize(0.04);
   legend->SetBorderSize(0);
   legend->Draw();
+
+  // right plot
+  c->cd(2);
+  electronGraph[1][0]->Draw("AP");
+  electronGraph[1][1]->Draw("P");
+  electronGraph[1][2]->Draw("P");
+  electronGraph[1][3]->Draw("P");
 
   /*** OUTPUT ***/
 
