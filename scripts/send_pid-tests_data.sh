@@ -41,18 +41,6 @@ if [[ ! -e ${VLTLDIR}/GetSimpleTuple/bin/GetSimpleTuple_no-dc-fid ]]; then
     exit 1
 fi
 
-if [[ ! -e ${VLTLDIR}/GetSimpleTuple/bin/GetSimpleTuple_no-tof-pp ]]; then
-    echo "ERROR: binary file <GetSimpleTuple_no-tof-pp> doesn't exist."
-    echo ""
-    exit 1
-fi
-
-if [[ ! -e ${VLTLDIR}/GetSimpleTuple/bin/GetSimpleTuple_no-tof-pm ]]; then
-    echo "ERROR: binary file <GetSimpleTuple_no-tof-pm> doesn't exist."
-    echo ""
-    exit 1
-fi
-
 if [[ -z "${WORKDIR}" ]]; then
     echo "ERROR: environment variable WORKDIR is unset."
     echo ""
@@ -80,8 +68,6 @@ mkdir -p ${TMPDIR} ${TEST_OUTDIR}
 cp -v ${GST_BINDIR}/GetSimpleTuple_no-ec ${TEST_OUTDIR}
 cp -v ${GST_BINDIR}/GetSimpleTuple_no-vertex ${TEST_OUTDIR}
 cp -v ${GST_BINDIR}/GetSimpleTuple_no-dc-fid ${TEST_OUTDIR}
-cp -v ${GST_BINDIR}/GetSimpleTuple_no-tof-pp ${TEST_OUTDIR}
-cp -v ${GST_BINDIR}/GetSimpleTuple_no-tof-pm ${TEST_OUTDIR}
 
 # obtain run numbers
 if [[ "${TARNAME}" == "C" ]]; then
@@ -126,10 +112,6 @@ for ((COUNTER=1; COUNTER <= ${TOTALRN}; COUNTER++)); do
     echo "mv -v pruned${TARNAME}_${RN}.root pruned${TARNAME}_${RN}_no-vertex.root" >> ${jobfile} # rename output files accordingly
     echo "./GetSimpleTuple_no-dc-fid -t${TARNAME} -r${RN}"                         >> ${jobfile} # execute program
     echo "mv -v pruned${TARNAME}_${RN}.root pruned${TARNAME}_${RN}_no-dc-fid.root" >> ${jobfile} # rename output files accordingly
-    echo "./GetSimpleTuple_no-tof-pp -t${TARNAME} -r${RN}"                         >> ${jobfile} # execute program
-    echo "mv -v pruned${TARNAME}_${RN}.root pruned${TARNAME}_${RN}_no-tof-pp.root" >> ${jobfile} # rename output files accordingly
-    echo "./GetSimpleTuple_no-tof-pm -t${TARNAME} -r${RN}"                         >> ${jobfile} # execute program
-    echo "mv -v pruned${TARNAME}_${RN}.root pruned${TARNAME}_${RN}_no-tof-pm.root" >> ${jobfile} # rename output files accordingly
     echo "rm -v clas_${RN}*.root"                                                  >> ${jobfile} # remove symbolic link of input files
 
     echo "Submitting job: ${jobfile}"
