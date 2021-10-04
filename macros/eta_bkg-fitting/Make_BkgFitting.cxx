@@ -77,14 +77,12 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
   TH1D *bkgHist[Nbins];
   TH1D *modelHist[Nbins];
   TH1D *dataHist[Nbins];
-  TH1D *dataErrHist[Nbins];
-  TH1D *testHist[Nbins];
 
   TTree *auxTree[Nbins];
 
-  RooPlot *upperFrame[Nbins];
-  RooPlot *lowerFrame[Nbins];
+  RooPlot *theFrame[Nbins];
 
+  TString Chi2ndf[Nbins];
   TString Netas[Nbins];
   TString MeanS[Nbins];
   TString SigmaS[Nbins];
@@ -156,32 +154,22 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     RooRealVar nbkg("N_{bkg}", "number of background", 0, 1000000);
     RooAddPdf model("model", "(g+pol2)", RooArgList(bkg, signal), RooArgList(nbkg, nsig));
 
-    upperFrame[i] = x.frame(Name(Form("upper_f_%d", i)));
-    lowerFrame[i] = x.frame(Name(Form("lower_f_%d", i)));
+    theFrame[i] = x.frame(Name(Form("upper_f_%d", i)));
 
     FitResult[i] = model.fitTo(data, Minos(kTRUE), Extended(), Save());
     FitResult[i]->SetName(Form("fit-result_%d", i));
 
-    data.plotOn(upperFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
-    model.plotOn(upperFrame[i], Name("Model"), LineColor(myBlue));
+    data.plotOn(theFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
+    model.plotOn(theFrame[i], Name("Model"), LineColor(myBlue));
 
-    model.plotOn(upperFrame[i], Name("Bkg"), Components("bkg"), LineColor(kGray + 2), LineStyle(kDashed));
-    model.plotOn(upperFrame[i], Name("Signal"), Components("signal"), LineColor(myRed));
+    model.plotOn(theFrame[i], Name("Bkg"), Components("bkg"), LineColor(kGray + 2), LineStyle(kDashed));
+    model.plotOn(theFrame[i], Name("Signal"), Components("signal"), LineColor(myRed));
 
     modelHist[i] = (TH1D *)model.createHistogram(Form("model_%d", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
     modelHist[i]->Scale((plotMax - plotMin) / (Double_t)plotNbins);  // bin width
 
-    dataErrHist[i] = new TH1D(Form("dataErrHist_%d", i), Form("dataErrHist_%d", i), plotNbins, plotMin, plotMax);
-    for (Int_t k = 1; k <= plotNbins; k++) {
-      dataErrHist[i]->SetBinContent(k, dataHist[i]->GetBinError(k));
-      dataErrHist[i]->SetBinError(k, 0);
-    }
-
-    testHist[i] = new TH1D(Form("testHist_%d", i), Form("testHist_%d", i), plotNbins, plotMin, plotMax);
-    testHist[i]->Add(dataHist[i], modelHist[i], 1, -1);
-    testHist[i]->Divide(dataErrHist[i]);
-
     // assign parameters
+    Chi2ndf[i] = Form("#chi^{2}/ndf = %.4f", theFrame[i]->chiSquare("Model", "Data", 6));
     Netas[i] = Form("N_{#eta} = %.3f #pm %.3f", nsig.getValV(), nsig.getError());
     MeanS[i] = Form("#mu = %.3f #pm %.6f", mean.getValV(), mean.getError());
     SigmaS[i] = Form("#sigma = %.3f #pm %.6f", sigma.getValV(), sigma.getError());
@@ -194,101 +182,55 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     sigmaVal[i] = sigma.getValV();
   }
 
-  /*** FIX Y-AXIS ***/
-
-  Double_t MaxRange = 0;
-  for (Int_t i = 0; i < Nbins; i++) {
-    if (dataHist[i]->GetMaximum() > MaxRange) {
-      MaxRange = dataHist[i]->GetMaximum();
-    }
-  }
-  MaxRange += MaxRange * 0.15;
-
   /*** DRAW ***/
 
-  // set canvas
-  gStyle->SetOptStat(0);
-  gStyle->SetPadTickX(1);
-  gStyle->SetPadTickY(1);
+  SetMyStyle();
 
   const Int_t Nx = 3;
   const Int_t Ny = 2;
 
   TString CanvasName = "bkg-fitting_" + targetOption + "_" + kinvarOption;
-  TCanvas *can1 = new TCanvas(CanvasName, CanvasName, 2880, 2880);
+  TCanvas *can1 = new TCanvas(CanvasName, CanvasName, 3240, 2160);
   can1->Divide(Nx, Ny, 0.0001, 0.0001);
-
-  // define pads
-  TPad *upperPad[Nbins];
-  TPad *lowerPad[Nbins];
 
   Int_t counter = 1;
   // loop over bins
   for (Int_t i = 0; i < Nbins; i++) {
-    // prepare pads
-    upperPad[i] = new TPad(Form("upper_%d", i), Form("upper_%d", i), 0.05, 0.40, 0.95, 0.95, 0, 0, 0);  // x1,y1,x2,y2
-    upperPad[i]->SetTopMargin(0.05);
-    upperPad[i]->SetBottomMargin(0);
-    upperPad[i]->SetLeftMargin(0.15);
-    upperPad[i]->SetRightMargin(0.05);
-
-    lowerPad[i] = new TPad(Form("lower_%d", i), Form("lower_%d", i), 0.05, 0.05, 0.95, 0.40, 0, 0, 0);  // x1,y1,x2,y2
-    lowerPad[i]->SetTopMargin(0);
-    lowerPad[i]->SetBottomMargin(0.15);
-    lowerPad[i]->SetLeftMargin(0.15);
-    lowerPad[i]->SetRightMargin(0.05);
-
     // title
     auxCut = Form("%.2f", EdgesKinvar[i]);
     auxCut += " < " + kinvarTitle + " < ";
     auxCut += Form("%.2f", EdgesKinvar[i + 1]);
     auxCut += ", " + targetOption + " data";
 
-    // style: upper pad
-    upperFrame[i]->SetTitle("");
+    // style
+    theFrame[i]->SetTitle("");
 
-    upperFrame[i]->GetYaxis()->SetRangeUser(0, MaxRange);  // set y-axis from before
-    upperFrame[i]->GetYaxis()->SetTitle("Counts");
-    upperFrame[i]->GetYaxis()->SetTitleSize(0.04);
-    upperFrame[i]->GetYaxis()->SetTickSize(0.02);
+    theFrame[i]->GetYaxis()->SetRangeUser(0, 1.2 * dataHist[i]->GetMaximum());
+    theFrame[i]->GetYaxis()->SetTitle("Counts");
+    theFrame[i]->GetYaxis()->SetTitleSize(0.04);
+    theFrame[i]->GetYaxis()->SetTickSize(0.02);
+    theFrame[i]->GetYaxis()->SetMaxDigits(3);
 
-    upperFrame[i]->GetXaxis()->SetNdivisions(412);
+    theFrame[i]->GetXaxis()->SetTitle("Reconstructed Mass m(#gamma#gamma) [GeV]");
+    theFrame[i]->GetXaxis()->SetTitleOffset(1.2);
+    theFrame[i]->GetXaxis()->SetTitleSize(0.04);
+    theFrame[i]->GetXaxis()->SetTickSize(0.05);
+    // theFrame[i]->GetXaxis()->SetLabelSize(0.06);
 
-    // style: lower pad
-    testHist[i]->SetTitle("");
-    testHist[i]->SetFillColor(myViolet);
-
-    testHist[i]->GetYaxis()->SetRangeUser(-4.5, 4.5);
-    testHist[i]->GetYaxis()->SetRangeUser(-4.5, 4.5);
-    testHist[i]->GetYaxis()->SetTitle("Pull");
-    testHist[i]->GetYaxis()->SetTitleOffset(0.6);
-    testHist[i]->GetYaxis()->SetTitleSize(0.065);
-    testHist[i]->GetYaxis()->SetLabelSize(0.06);
-    testHist[i]->GetYaxis()->SetTickSize(0.02);
-    testHist[i]->GetYaxis()->SetNdivisions(210);
-
-    testHist[i]->GetXaxis()->SetTitle("Reconstructed Mass m(#gamma#gamma) [GeV]");
-    testHist[i]->GetXaxis()->SetTitleOffset(1.2);
-    testHist[i]->GetXaxis()->SetTitleSize(0.06);
-    testHist[i]->GetXaxis()->SetNdivisions(412);
-    testHist[i]->GetXaxis()->SetTickSize(0.05);
-    testHist[i]->GetXaxis()->SetLabelSize(0.06);
+    theFrame[i]->GetXaxis()->SetNdivisions(412);
 
     /*** UPPER PAD ***/
 
     can1->cd(counter);
 
-    lowerPad[i]->Draw();
-    upperPad[i]->Draw();
-
-    upperPad[i]->cd();
-    upperFrame[i]->Draw();
+    theFrame[i]->Draw();
 
     // title and parameters
     TPaveText *pav = new TPaveText(0.17, 0.57, 0.42, 0.90, "NDC NB");  // no border
     pav->AddText(auxCut);                                              // Title
     ((TText *)pav->GetListOfLines()->Last())->SetTextSize(0.04);
     pav->AddText("");
+    pav->AddText(Chi2ndf[i]);
     pav->AddText(Netas[i]);
     pav->AddText(MeanS[i]);
     pav->AddText(SigmaS[i]);
@@ -306,7 +248,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     Double_t x = meanVal[i] - 3 * sigmaVal[i];
     Double_t u = (x - gPad->GetX1()) / (gPad->GetX2() - gPad->GetX1());
     TLine *line_range;
-    line_range = new TLine(u, 0.00, u, 0.25);
+    line_range = new TLine(u, 0.15, u, 0.35);
     line_range->SetLineColor(myRed);
     line_range->SetLineWidth(2);
     line_range->SetLineStyle(7);
@@ -315,7 +257,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // mu + 3sigma
     x = meanVal[i] + 3 * sigmaVal[i];
     u = (x - gPad->GetX1()) / (gPad->GetX2() - gPad->GetX1());
-    line_range = new TLine(u, 0.00, u, 0.25);
+    line_range = new TLine(u, 0.15, u, 0.35);
     line_range->SetLineColor(myRed);
     line_range->SetLineWidth(2);
     line_range->SetLineStyle(7);
@@ -324,7 +266,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // mu
     x = meanVal[i];
     u = (x - gPad->GetX1()) / (gPad->GetX2() - gPad->GetX1());
-    line_range = new TLine(u, 0.00, u, 0.95);
+    line_range = new TLine(u, 0.15, u, 0.95);
     line_range->SetLineColor(myRed);
     line_range->SetLineWidth(2);
     line_range->SetLineStyle(7);
@@ -333,23 +275,14 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // legend
     TLegend *leg = new TLegend(0.75, 0.75, 0.95, 0.88);  // x1,y1,x2,y2
-    leg->AddEntry(upperFrame[i]->findObject("Data"), "Data", "lp");
-    leg->AddEntry(upperFrame[i]->findObject("Model"), "Fit", "l");
-    leg->AddEntry(upperFrame[i]->findObject("Bkg"), "Bkg", "l");
-    leg->AddEntry(upperFrame[i]->findObject("Signal"), "Signal", "l");
+    leg->AddEntry(theFrame[i]->findObject("Data"), "Data", "lpe");
+    leg->AddEntry(theFrame[i]->findObject("Model"), "Fit", "l");
+    leg->AddEntry(theFrame[i]->findObject("Bkg"), "Bkg", "l");
+    leg->AddEntry(theFrame[i]->findObject("Signal"), "Signal", "l");
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
     leg->SetTextFont(62);
     leg->Draw();
-
-    /*** LOWER PAD ***/
-
-    lowerPad[i]->cd();
-    testHist[i]->Draw("BAR MIN0 HIST");
-
-    DrawHorizontalLine(3, myOrange, 7, 2, 1);
-    DrawHorizontalLine(0, kBlack, kSolid, 1, 1);
-    DrawHorizontalLine(-3, myOrange, 7, 2, 1);
 
     can1->Update();
 
