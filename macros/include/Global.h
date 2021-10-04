@@ -10,6 +10,7 @@
 TString gProDir = getenv("PRODIR");
 TString gWorkDir = getenv("WORKDIR");
 
+TString gTestDir = gWorkDir + "/out/TestPID/data";
 TString gGetSimpleTupleDir = gWorkDir + "/out/GetSimpleTuple/data";
 TString gTwoGammaFinderDir = gWorkDir + "/out/TwoGammaFinder/data";
 TString gThreePionFinderDir = gWorkDir + "/out/ThreePionFinder/data";

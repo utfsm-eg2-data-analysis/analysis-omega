@@ -2,20 +2,32 @@
 
 # these will be an input option, later...
 data_kind="data"
-stage="ana"
+stage="test"
 
 targets=("D" "C" "Fe" "Pb")
 kinvars_eta=("Q2" "Nu" "nZ" "nPt2")
 kinvars_omega=("Q2" "Nu" "wZ" "wPt2")
 
 if [[ "${data_kind}" == "data" && "${stage}" == "test" ]]; then
-    ### STAGE 0: PID cuts
+
+    ###########################
+    # general event selection #
+    ###########################
+
+    # electron id
+    root -l -b -q 'id_electron/Draw2D_Eout_vs_Ein.cxx("png")'
+    root -l -b -q 'id_electron/Draw2D_SampFrac_Cuts.cxx("png")'
+    root -l -b -q 'id_electron/Draw2D_ThetaLab_vs_PhiLab.cxx("png")'
+    root -l -b -q 'id_electron/Draw2D_ECY_vs_ECX.cxx("png")'
+
+    # photons id
+    root -l -b -q 'id_photon/Draw_PhotonOpAngle.cxx("png")'
 
     # vertex cuts
-    root -l -b -q 'id_electron/Draw2D_VertexCorr.cxx("Fe", "png")'
+    root -l -b -q 'id_electron/Draw2D_VertexCorr.cxx("png")'
 
     # DIS cuts
-    root -l -b -q 'id_electron/Draw2D_DIS_Cuts.cxx("Fe", "png")'
+    root -l -b -q 'id_electron/Draw2D_DIS_Cuts.cxx("C", "png")'
 fi
 
 if [[ "${data_kind}" == "data" && "${stage}" == "ana" ]]; then

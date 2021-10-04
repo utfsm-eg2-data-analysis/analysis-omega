@@ -5,6 +5,16 @@
 #include "Global.h"
 #endif
 
+TChain *GetTestsChain(TString test = "no-ec", TString dataKind = "data") {
+  // return a TChain to get PID tests for electrons, after executing GetSimpleTuple on C data, specifically
+  TString dataFiles1;
+  dataFiles1 = gTestDir + "/C/pruned*_" + test + ".root";
+  // define and return chain
+  TChain *dataTree = new TChain();
+  dataTree->Add(dataFiles1 + "/ntuple_e");
+  return dataTree;
+}
+
 TChain *GetThreePionFinderChain(TString targetOption = "C", TString dataKind = "data") {
   // return a TChain that contains all filtered omega files
   TString dataFiles1, dataFiles2, dataFiles3;
