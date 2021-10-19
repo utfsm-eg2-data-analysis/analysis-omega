@@ -13,7 +13,7 @@ function print_help() {
     echo "./exec_all_macros.sh --kind <data_kind> --stage <stage> --part <part>"
     echo "Where:"
     echo "  <kind>  = selects kind of data (data, sim)"
-    echo "  <stage> = selecst stage of analysis (test, ana)"
+    echo "  <stage> = selecst stage of analysis (test, ana, pre-radcorr, radcorr)"
     echo "  <part>  = selects particle (eta, omega)"
     echo "Example:"
     echo "  ./exec_all_macros.sh --kind data --stage ana --part omega"
@@ -188,6 +188,16 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega
     root -l -b -q 'omega_MR/MakeMR_EventMixing.cxx("png")'
 fi
 
+if [[ "${data_kind}" == "sim" && "${stage}" == "test" ]]; then
+
+    ###########################
+    # general event selection #
+    ###########################
+
+    # electron pid plot
+    root -l -b -q 'id_sim-electron/Draw2D_SampFrac_Cuts.cxx("png")'
+fi
+
 if [[ "${data_kind}" == "sim" && "${stage}" == "ana" && "${particle}" == "omega" ]]; then
 
     ##############
@@ -308,4 +318,119 @@ if [[ "${data_kind}" == "sim" && "${stage}" == "ana" && "${particle}" == "eta" ]
     root -l -b -q 'eta_acceptance/Make_AcceptanceCorrRatios.cxx("png")'
     # do MR with acceptance
     root -l -b -q 'eta_acceptance/MakeMR_AcceptanceCorr.cxx("png")'
+fi
+
+if [[ "${stage}" == "radcorr" && "${particle}" == "electron" ]]; then
+
+    # draw grid
+    root -l -b -q 'rad-corr_electron/Draw2D_Grid.cxx("D", "eta", "png")'
+    root -l -b -q 'rad-corr_electron/Draw2D_Grid.cxx("D", "omega", "png")'
+
+    # draw externals corr factors
+    root -l -b -q 'rad-corr_electron/Draw_ExternalsCorrFactors.cxx("eta", "png")'
+    root -l -b -q 'rad-corr_electron/Draw_ExternalsCorrFactors.cxx("omega", "png")'
+
+    # draw externals corr ratios
+    root -l -b -q 'rad-corr_electron/Draw_ExternalsCorrRatios.cxx("eta", "png")'
+    root -l -b -q 'rad-corr_electron/Draw_ExternalsCorrRatios.cxx("omega", "png")'
+
+    # draw coulomb corr factors
+    root -l -b -q 'rad-corr_electron/Draw_CoulombCorrFactors.cxx("eta", "png")'
+    root -l -b -q 'rad-corr_electron/Draw_CoulombCorrFactors.cxx("omega", "png")'
+
+    # plot effect of rad. corr. on MR
+    root -l -b -q 'rad-corr_electron/Make_RadiativeCorrRatios.cxx("eta", "png")'
+    root -l -b -q 'rad-corr_electron/Make_RadiativeCorrRatios.cxx("omega", "png")'
+
+    # plot MR of omega
+    root -l -b -q 'rad-corr_electron/MakeMR_RadCorr_Omega.cxx("png")'
+
+    # plot MR of eta
+    root -l -b -q 'rad-corr_electron/MakeMR_RadCorr_Eta.cxx("png")'
+fi
+
+if [[ "${stage}" == "pre-radcorr" && "${particle}" == "omega" ]]; then
+
+    ###############################
+    # Fit PhiPQ and Get Centroids #
+    ###############################
+
+    # do background subtraction via evnt-mixing for all data
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ.cxx("All", 0, "png")'
+    # do it for liquid and solid targets, fixing params
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ.cxx("D", 1, "png")'
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ.cxx("A", 1, "png")'
+
+    # count omega numbers
+    root -l -b -q 'rad-corr_omega/Make_ParentID_PhiPQ.cxx("D", "png")'
+    root -l -b -q 'rad-corr_omega/Make_ParentID_PhiPQ.cxx("A", "png")'
+
+    # do background subtraction via evnt-mixing for all data
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx("All", 0, "png")'
+    # do background subtraction via evnt-mixing for all sim.rec.
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx("D", 1, "png")'
+    root -l -b -q 'rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx("A", 1, "png")'
+
+    # draw and fit acc. corr. PhiPQ distributions
+    root -l -b -q 'rad-corr_omega/DrawFit_PhiPQ.cxx("png")'
+
+    # get centroids
+    root -l -b -q 'rad-corr_omega/Get_Centroids.cxx("D")'
+    root -l -b -q 'rad-corr_omega/Get_Centroids.cxx("A")'
+
+    # after this, obtain RC Factors with HAPRAD...
+fi
+
+if [[ "${stage}" == "radcorr" && "${particle}" == "omega" ]]; then
+
+    # after obtaining rad. corr. factors, plot them!
+    root -l -b -q 'rad-corr_omega/Draw_RadCorrFactors.cxx("png")'
+    root -l -b -q 'rad-corr_omega/Draw_RadCorrRatios.cxx("png")'
+fi
+
+if [[ "${stage}" == "pre-radcorr" && "${particle}" == "eta" ]]; then
+
+    ###############################
+    # Fit PhiPQ and Get Centroids #
+    ###############################
+
+    # do background subtraction via bkg-fitting for all data
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ.cxx("All", 0, "png")'
+    # do it for liquid and solid targets, fixing params
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ.cxx("D", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ.cxx("C", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ.cxx("Fe", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ.cxx("Pb", 1, "png")'
+
+    # count eta numbers
+    root -l -b -q 'rad-corr_eta/Make_ParentID_PhiPQ.cxx("D", "png")'
+    root -l -b -q 'rad-corr_eta/Make_ParentID_PhiPQ.cxx("C", "png")'
+    root -l -b -q 'rad-corr_eta/Make_ParentID_PhiPQ.cxx("Fe", "png")'
+    root -l -b -q 'rad-corr_eta/Make_ParentID_PhiPQ.cxx("Pb", "png")'
+
+    # do background subtraction via bkg-fitting for all data
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx("All", 0, "png")'
+    # do background subtraction via bkg-fitting for all sim.rec.
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx("D", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx("C", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx("Fe", 1, "png")'
+    root -l -b -q 'rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx("Pb", 1, "png")'
+
+    # draw and fit acc. corr. PhiPQ distributions
+    root -l -b -q 'rad-corr_eta/DrawFit_PhiPQ.cxx("png")'
+
+    # get centroids
+    root -l -b -q 'rad-corr_eta/Get_Centroids.cxx("D")'
+    root -l -b -q 'rad-corr_eta/Get_Centroids.cxx("C")'
+    root -l -b -q 'rad-corr_eta/Get_Centroids.cxx("Fe")'
+    root -l -b -q 'rad-corr_eta/Get_Centroids.cxx("Pb")'
+
+    # after this, obtain RC Factors with HAPRAD...
+fi
+
+if [[ "${stage}" == "radcorr" && "${particle}" == "eta" ]]; then
+
+    # after obtaining rad. corr. factors, plot them!
+    root -l -b -q 'rad-corr_eta/Draw_RadCorrFactors.cxx("png")'
+    root -l -b -q 'rad-corr_eta/Draw_RadCorrRatios.cxx("png")'
 fi
