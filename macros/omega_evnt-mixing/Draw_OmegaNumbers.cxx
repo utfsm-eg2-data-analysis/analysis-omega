@@ -11,6 +11,7 @@ const Int_t Ntargets = 4;
 const Int_t Nbins = 4;
 
 void Draw_OmegaNumbers(TString StoreOption = "") {
+  // draw the obtained number of omegas after background subtraction via event-mixing
 
   // prevent output printing
   if (StoreOption != "") {
@@ -52,9 +53,6 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
   Color_t targetColor[4] = {myGreen, myRed, myBlue, myBlack};
 
   TFile *rootInputFile[Nkinvars][Ntargets];
-
-  Double_t plotMin = 0.66;
-  Double_t plotMax = 0.90;
 
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
@@ -134,12 +132,8 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
   TString CanvasName = "omega-numbers_data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
-  c->Divide(2, 2, 0.01, 0.01);  // nx, ny, margins
+  c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
 
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-
-  // mean
   c->cd(1);
   omegaGraph[0][0]->Draw("AP");
   omegaGraph[0][1]->Draw("P");

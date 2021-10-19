@@ -47,8 +47,8 @@ void DrawOver_Data_and_EventMixing(TString targetOption = "C", TString StoreOpti
   TH1D *dataMassive[Nx][Ny];
   TH1D *bkgMassive[Nx][Ny];
 
-  for (Int_t i = 0; i < Nx; i++) {    // Nx
-    for (Int_t j = 0; j < Ny; j++) {  // Ny
+  for (Int_t i = 0; i < Nx; i++) {
+    for (Int_t j = 0; j < Ny; j++) {
 
       dataChain->Draw(Form(kinvarOption[j][i] + ">>data_%i_%i" + histProperties[j][i], i, j),
                       gCutDIS && gCutPi0 && CutVertex && gCutKaons && gCutPhotonsOpAngle, "goff");
@@ -57,7 +57,7 @@ void DrawOver_Data_and_EventMixing(TString targetOption = "C", TString StoreOpti
       dataMassive[i][j]->SetTitle("");
       dataMassive[i][j]->SetMarkerColor(myBlack);
       dataMassive[i][j]->SetLineColor(myBlack);
-      dataMassive[i][j]->SetLineWidth(2);
+      dataMassive[i][j]->SetLineWidth(3);
       dataMassive[i][j]->SetFillStyle(0);
 
       dataMassive[i][j]->GetYaxis()->SetTitle("Normalized Counts");
@@ -77,7 +77,7 @@ void DrawOver_Data_and_EventMixing(TString targetOption = "C", TString StoreOpti
       bkgMassive[i][j]->SetTitle("");
       bkgMassive[i][j]->SetMarkerColor(myRed);
       bkgMassive[i][j]->SetLineColor(myRed);
-      bkgMassive[i][j]->SetLineWidth(2);
+      bkgMassive[i][j]->SetLineWidth(3);
       bkgMassive[i][j]->SetFillStyle(0);
     }
   }
@@ -100,10 +100,7 @@ void DrawOver_Data_and_EventMixing(TString targetOption = "C", TString StoreOpti
 
       if (i == 0 && j == 1) {
         dataNorm = dataMassive[i][j]->Integral(1, 5) + dataMassive[i][j]->Integral(19, 24);
-        std::cout << "dataNorm = " << dataNorm << std::endl;
-
         bkgNorm = bkgMassive[i][j]->Integral(1, 5) + bkgMassive[i][j]->Integral(19, 24);
-        std::cout << "bkgNorm  = " << bkgNorm << std::endl;
         bkgMassive[i][j]->Scale(dataNorm / bkgNorm);
 
         dataMassive[i][j]->Draw("E");

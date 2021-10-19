@@ -50,8 +50,4 @@ TCut gCutRegion_Eta =
     Form("Q2 > %.2f && Q2 < %.2f && Nu > %.2f && Nu < %.2f && nZ > %.2f && nZ < %.2f && nPt2 > %.2f && nPt2 < %.2f", kEdgesQ2_Eta[0],
          kEdgesQ2_Eta[5], kEdgesNu_Eta[0], kEdgesNu_Eta[5], kEdgesZ_Eta[0], kEdgesZ_Eta[5], kEdgesPt2_Eta[0], kEdgesPt2_Eta[5]);
 
-// Radiative Corrections
-TString gExternalsDir = getenv("EXTERNALS");
-TString gHapradDir = getenv("HAPRAD_CPP");
-
 #endif

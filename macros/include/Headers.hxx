@@ -21,6 +21,7 @@
 #include "TLine.h"
 #include "TObjString.h"
 #include "TPaveText.h"
+#include "TPaveStats.h"
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TExec.h"

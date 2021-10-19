@@ -94,10 +94,9 @@ void MakeMR_EventMixing(TString StoreOption = "") {
     }
   }
 
-  /*** DEFINE GRAPHS ***/
+  /*** GRAPHS ***/
 
   // define arrays
-  Double_t empty[Nkinvars][Nbins];
   Double_t MR_x[Nkinvars][Nbins];
   Double_t MR_xerr[Nkinvars][Nbins];
   Double_t MR_y[Nkinvars][Ntargets][Nbins];
@@ -106,7 +105,6 @@ void MakeMR_EventMixing(TString StoreOption = "") {
   // fill arrays
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t i = 0; i < Nbins; i++) {
-      empty[k][i] = 0.;
       MR_x[k][i] = (EdgesKinvar[k][i] + EdgesKinvar[k][i + 1]) / 2.;
       MR_xerr[k][i] = (EdgesKinvar[k][i + 1] - EdgesKinvar[k][i]) / 2;
       // loop over solid targets only
@@ -117,35 +115,32 @@ void MakeMR_EventMixing(TString StoreOption = "") {
     }
   }
 
-  // define graphs
+  // set graphs
   TGraphErrors *MRgraph[Nkinvars][Ntargets];
-
   for (Int_t k = 0; k < Nkinvars; k++) {
-    // loop over solid targets only
-    for (Int_t tt = 1; tt < Ntargets; tt++) {
-      MRgraph[k][tt] = new TGraphErrors(Nbins, MR_x[k], MR_y[k][tt], MR_xerr[k], MR_yerr[k][tt]);
+    for (Int_t t = 0; t < Ntargets; t++) {
+      MRgraph[k][t] = new TGraphErrors(Nbins, MR_x[k], MR_y[k][t], MR_xerr[k], MR_yerr[k][t]);
     }
-    // set style
-    MRgraph[k][1]->SetTitle("");
+  }
 
-    MRgraph[k][1]->GetXaxis()->SetTitle(kinvarTitle[k]);
-    // MRgraph[k][1]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
-    MRgraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-    MRgraph[k][1]->GetXaxis()->SetTitleSize(0.04);
-    MRgraph[k][1]->GetXaxis()->SetTitleOffset(1.);
+  // set style
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    MRgraph[k][1]->SetTitle("");
 
     MRgraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#omega}");
     MRgraph[k][1]->GetYaxis()->SetRangeUser(0., maxMR);
-    MRgraph[k][1]->GetYaxis()->SetTitleSize(0.04);
-    MRgraph[k][1]->GetYaxis()->SetTitleOffset(1.2);
+    MRgraph[k][1]->GetYaxis()->SetTitleSize(0.06);
 
-    // loop over solid targets only
-    for (Int_t tt = 1; tt < Ntargets; tt++) {
-      MRgraph[k][tt]->SetMarkerStyle(21);
-      MRgraph[k][tt]->SetMarkerSize(2);
-      MRgraph[k][tt]->SetMarkerColor(targetColor[tt]);
-      MRgraph[k][tt]->SetLineColor(targetColor[tt]);
-      MRgraph[k][tt]->SetLineWidth(3);
+    MRgraph[k][1]->GetXaxis()->SetTitle(kinvarTitle[k]);
+    MRgraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+    MRgraph[k][1]->GetXaxis()->SetTitleSize(0.06);
+
+    for (Int_t t = 0; t < Ntargets; t++) {
+      MRgraph[k][t]->SetMarkerStyle(21);
+      MRgraph[k][t]->SetMarkerSize(2);
+      MRgraph[k][t]->SetMarkerColor(targetColor[t]);
+      MRgraph[k][t]->SetLineColor(targetColor[t]);
+      MRgraph[k][t]->SetLineWidth(5);
     }
   }
 
@@ -156,7 +151,7 @@ void MakeMR_EventMixing(TString StoreOption = "") {
   // define canvas
   TString CanvasName = "omega-MR_evnt-mixing";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
-  c->Divide(2, 2, 0.001, 0.001);
+  c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
 
   Int_t counter = 0;
   for (Int_t k = 0; k < Nkinvars; k++) {
@@ -168,7 +163,7 @@ void MakeMR_EventMixing(TString StoreOption = "") {
     MRgraph[k][3]->Draw("P");   // Lead
 
     // legend
-    if (k == 0) {
+    if (k == 1) {
       TLegend *legend = new TLegend(0.2, 0.75, 0.45, 0.9);  // x1,y1,x2,y2
       legend->AddEntry(MRgraph[k][1], "C (No Acc. Corr.)", "lp");
       legend->AddEntry(MRgraph[k][2], "Fe (No Acc. Corr.)", "lp");

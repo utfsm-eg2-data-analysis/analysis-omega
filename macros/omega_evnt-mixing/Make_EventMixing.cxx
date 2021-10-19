@@ -277,7 +277,6 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     subMassive[i]->GetXaxis()->SetTitleOffset(1.2);
     subMassive[i]->GetXaxis()->SetTitleSize(0.045);
     subMassive[i]->GetXaxis()->SetTickSize(0.05);
-    subMassive[i]->GetXaxis()->SetLabelSize(0.045);
     subMassive[i]->GetXaxis()->SetNdivisions(412);
 
     /*** UPPER PAD ***/
@@ -354,10 +353,6 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     pav3->SetFillStyle(0);
     pav3->Draw();
 
-    // // draw params
-    // DrawVerticalLine(Model[i]->GetParameter(1) - 3 * Model[i]->GetParameter(2), myViolet, 7, 2, 1);
-    // DrawVerticalLine(Model[i]->GetParameter(1) + 3 * Model[i]->GetParameter(2), myViolet, 7, 2, 1);
-
     // draw lines
     gPad->Update();  // necessary
     // mu - 3sigma
@@ -393,7 +388,8 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     can1->Print(OutputDir + "/" + CanvasName + "." + StoreOption);
 
     // create output file
-    TFile *RootOutputFile = new TFile(OutputDir + "/" + CanvasName + ".root", "RECREATE");
+    TString OutputFileName = OutputDir + "/" + CanvasName + ".root";
+    TFile *RootOutputFile = new TFile(OutputFileName, "RECREATE");
 
     // loop over bins
     for (Int_t i = 0; i < Nbins; i++) {
@@ -405,5 +401,8 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
 
     // close output file
     RootOutputFile->Close();
+
+    // print output file path
+    std::cout << "The following file has been created: " << OutputFileName << std::endl;
   }
 }

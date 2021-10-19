@@ -369,7 +369,8 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     can1->Print(OutputDir + "/" + CanvasName + "." + StoreOption);
 
     // create output file
-    TFile *RootOutputFile = new TFile(OutputDir + "/" + CanvasName + ".root", "RECREATE");
+    TString OutputFileName = OutputDir + "/" + CanvasName + ".root";
+    TFile *RootOutputFile = new TFile(OutputFileName, "RECREATE");
 
     can1->Write();
 
@@ -381,5 +382,8 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // close output file
     RootOutputFile->Close();
+
+    // print output file path
+    std::cout << "The following file has been created: " << OutputFileName << std::endl;
   }
 }

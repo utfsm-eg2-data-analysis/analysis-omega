@@ -88,7 +88,7 @@ void Get_ElectronNumbers() {
         // get electron numbers
 
         eNumber_diff[t][k][i] =
-            electronsChain[t]->Draw("Nu>>data2(200, 2.2, 4.2)", gCutDIS && CutVertex[t] && CutRegion_GST && CutBin, "goff");
+            electronsChain[t]->Draw("Nu>>data2(200, 2.2, 4.2)", gCutDIS && CutVertex[t] && CutBin, "goff");
         // write them onto output library
         if (i == 0 && t == 0) {
           OutputTextFile << "const Double_t kNElec" << kinvarOption[k] << "_Omega[" << Ntargets << "][" << Nbins << "] = {{"

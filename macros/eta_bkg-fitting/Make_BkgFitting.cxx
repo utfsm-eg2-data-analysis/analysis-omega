@@ -146,7 +146,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // define bkg function
     RooRealVar b1("b1", "linear term", -100, 100);
-    RooRealVar b2("b2", "quadratic term", -10., 10.);
+    RooRealVar b2("b2", "quadratic term", -10., 0.);
     RooChebychev bkg("bkg", "background", x, RooArgList(b1, b2));
 
     // define extended composite model
@@ -297,7 +297,8 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     can1->Print(OutputDir + "/" + CanvasName + "." + StoreOption);
 
     // create output file
-    TFile *RootOutputFile = new TFile(OutputDir + "/" + CanvasName + ".root", "RECREATE");
+    TString OutputFileName = OutputDir + "/" + CanvasName + ".root";
+    TFile *RootOutputFile = new TFile(OutputFileName, "RECREATE");
 
     can1->Write();
 
@@ -309,5 +310,8 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     // close output file
     RootOutputFile->Close();
+
+    // print output file path
+    std::cout << "The following file has been created: " << OutputFileName << std::endl;
   }
 }

@@ -61,7 +61,6 @@ void Draw_EtaNumbers(TString StoreOption = "") {
       rootInputFile[k][t] = new TFile(gProDir + "/gfx/eta_bkg-fitting/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
       // loop over bins
       for (Int_t i = 0; i < Nbins; i++) {
-
         RooFitResult *FitResult = (RooFitResult *)rootInputFile[k][t]->Get(Form("fit-result_%d", i));
         fitEta[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#eta}"))->getValV();
         fitEtaError[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
@@ -122,7 +121,7 @@ void Draw_EtaNumbers(TString StoreOption = "") {
 
   TString CanvasName = "eta-numbers_data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
-  c->Divide(2, 2, 0.01, 0.01);  // nx, ny, margins
+  c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
 
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);

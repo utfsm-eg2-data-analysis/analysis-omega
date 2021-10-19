@@ -122,12 +122,8 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
   TString CanvasName = "omega-numbers_data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
-  c->Divide(2, 2, 0.01, 0.01);  // nx, ny, margins
+  c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
 
-  gStyle->SetOptFit(0);
-  gStyle->SetOptStat(0);
-
-  // mean
   c->cd(1);
   omegaGraph[0][0]->Draw("AP");
   omegaGraph[0][1]->Draw("P");

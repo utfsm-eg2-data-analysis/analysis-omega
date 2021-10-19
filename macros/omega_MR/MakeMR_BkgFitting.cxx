@@ -103,27 +103,25 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
     }
   }
 
-  // define graphs
+  // set graphs
   TGraphErrors *MRgraph[Nkinvars][Ntargets];
-
   for (Int_t k = 0; k < Nkinvars; k++) {
-    // loop over solid targets only
-    for (Int_t tt = 1; tt < Ntargets; tt++) {
-      MRgraph[k][tt] = new TGraphErrors(Nbins, MR_x[k], MR_y[k][tt], MR_xerr[k], MR_yerr[k][tt]);
+    for (Int_t t = 1; t < Ntargets; t++) {
+      MRgraph[k][t] = new TGraphErrors(Nbins, MR_x[k], MR_y[k][t], MR_xerr[k], MR_yerr[k][t]);
     }
-    // set style
+  }
+
+  // set style
+  for (Int_t k = 0; k < Nkinvars; k++) {
     MRgraph[k][1]->SetTitle("");
 
     MRgraph[k][1]->GetXaxis()->SetTitle(kinvarTitle[k]);
-    // MRgraph[k][1]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
     MRgraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-    MRgraph[k][1]->GetXaxis()->SetTitleSize(0.04);
-    MRgraph[k][1]->GetXaxis()->SetTitleOffset(1.);
+    MRgraph[k][1]->GetXaxis()->SetTitleSize(0.06);
 
     MRgraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#omega}");
     MRgraph[k][1]->GetYaxis()->SetRangeUser(0., maxMR);
-    MRgraph[k][1]->GetYaxis()->SetTitleSize(0.04);
-    MRgraph[k][1]->GetYaxis()->SetTitleOffset(1.2);
+    MRgraph[k][1]->GetYaxis()->SetTitleSize(0.06);
 
     // loop over solid targets only
     for (Int_t tt = 1; tt < Ntargets; tt++) {
@@ -131,7 +129,7 @@ void MakeMR_BkgFitting(TString StoreOption = "") {
       MRgraph[k][tt]->SetMarkerSize(2);
       MRgraph[k][tt]->SetMarkerColor(targetColor[tt]);
       MRgraph[k][tt]->SetLineColor(targetColor[tt]);
-      MRgraph[k][tt]->SetLineWidth(3);
+      MRgraph[k][tt]->SetLineWidth(5);
     }
   }
 
