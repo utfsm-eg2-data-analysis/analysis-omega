@@ -9,26 +9,6 @@
 #include "PDG.hxx"
 #endif
 
-TLorentzVector *GetCorrPhotonEnergy(part_t &part) {
-  // for gammas, based on TM's Analysis Note
-  Double_t corrFactor;
-  if (gDataKind == "data") {
-    if (gTargetOption == "C" || gTargetOption == "Pb") {
-      corrFactor = 1.129 - 0.05793 / part.Eh - 1.0773e-12 / (part.Eh * part.Eh);
-    } else { // when gTargetOption == "Fe"
-      corrFactor = 1.116 - 0.09213 / part.Eh + 0.01007 / (part.Eh * part.Eh);
-    }
-  } else { // when gDataKind == "sim"
-    corrFactor = 1.000 + 0.005 / part.Eh - 0.0052 / (part.Eh * part.Eh);
-  }
-  Double_t fGammaE = part.Eh / corrFactor;
-  Double_t fGammaPx = part.Px / corrFactor;
-  Double_t fGammaPy = part.Py / corrFactor;
-  Double_t fGammaPz = part.Pz / corrFactor;
-  TLorentzVector *fGammaP = new TLorentzVector(fGammaPx, fGammaPy, fGammaPz, fGammaE);
-  return fGammaP;
-}
-
 Float_t PhiPQ(Float_t fPex, Float_t fPey, Float_t fPez, Float_t fPx, Float_t fPy, Float_t fPz) {
   Float_t fPhiPQ;
   // two 3-momentum vectors are defined

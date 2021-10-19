@@ -127,13 +127,12 @@ void WriteStableVars_REC(elec_t& elec, part_t& part, stable_t& stable, Int_t ent
   stable.Entry[index] = (Float_t)entry;
   stable.Event = elec.evnt;
   // particles (14 vars)
-  TLorentzVector* fGamma = GetCorrPhotonEnergy(part);
-  stable.E[index] = (part.pid == 22) * fGamma->E() + (part.pid != 22) * part.Eh;
+  stable.E[index] = part.Eh;
   stable.Z[index] = stable.E[index] / stable.Nu;
-  stable.Px[index] = (part.pid == 22) * fGamma->Px() + (part.pid != 22) * part.Px;
-  stable.Py[index] = (part.pid == 22) * fGamma->Py() + (part.pid != 22) * part.Py;
-  stable.Pz[index] = (part.pid == 22) * fGamma->Pz() + (part.pid != 22) * part.Pz;
-  stable.P[index] = (part.pid == 22) * fGamma->P() + (part.pid != 22) * part.P;
+  stable.Px[index] = part.Px;
+  stable.Py[index] = part.Py;
+  stable.Pz[index] = part.Pz;
+  stable.P[index] = part.P;
   stable.ThetaPQ[index] = ThetaPQ(stable.Pex, stable.Pey, stable.Pez, stable.Px[index], stable.Py[index], stable.Pz[index]);
   stable.PhiPQ[index] = PhiPQ(stable.Pex, stable.Pey, stable.Pez, stable.Px[index], stable.Py[index], stable.Pz[index]);
   Double_t fCosThetaPQ = ((kEbeam - stable.Pez) * stable.Pz[index] - stable.Pex * stable.Px[index] - stable.Pey * stable.Py[index]) /
