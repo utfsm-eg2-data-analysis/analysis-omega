@@ -5,94 +5,317 @@
 #include "Global.h"
 #endif
 
+#ifndef ACCEPTANCE_H
+#include "Acceptance.h"
+#endif
+
 TChain *GetTestsChain(TString test = "no-ec", TString dataKind = "data") {
   // return a TChain to get PID tests for electrons, after executing GetSimpleTuple on C data, specifically
   TString dataFiles1;
   dataFiles1 = gTestDir + "/C/pruned*_" + test + ".root";
   // define and return chain
-  TChain *dataTree = new TChain();
-  dataTree->Add(dataFiles1 + "/ntuple_e");
-  return dataTree;
+  TChain *outputChain = new TChain();
+  outputChain->Add(dataFiles1 + "/ntuple_e");
+  return outputChain;
+}
+
+TChain *GetElectronsChain(TString targetOption = "C", TString dataKind = "data", TString part = "omega") {
+  // return a TChain that contains all identified scattered electrons
+  TString inputFiles[7];
+  TString GetSimpleTupleDir;  // non-global variable
+  if (dataKind == "data") {
+    // data case: set GSTdir to global var
+    GetSimpleTupleDir = gGetSimpleTupleDir;
+    // assign dirs
+    if (targetOption == "D" || targetOption == "All") {
+      inputFiles[0] = GetSimpleTupleDir + "/C/*.root";
+      inputFiles[1] = GetSimpleTupleDir + "/Fe/*.root";
+      inputFiles[2] = GetSimpleTupleDir + "/Pb/*.root";
+    } else {  // if targetOption == "C" || "Fe" || "Pb"
+      inputFiles[0] = GetSimpleTupleDir + "/" + targetOption + "/*.root";
+    }
+  } else {
+    // simulations case: set GSTdir according to particle
+    if (part == "omega") {
+      GetSimpleTupleDir = gGetSimpleTupleDir_OmegaSim;
+    } else {  // if part == eta
+      GetSimpleTupleDir = gGetSimpleTupleDir_EtaSim;
+    }
+    // assign dirs
+    if (targetOption == "D") {
+      inputFiles[0] = GetSimpleTupleDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = GetSimpleTupleDir + "/" + targetOption + "/01/*.root";
+      inputFiles[2] = GetSimpleTupleDir + "/" + targetOption + "/02/*.root";
+    } else if (targetOption == "Fe") {
+      inputFiles[0] = GetSimpleTupleDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = GetSimpleTupleDir + "/" + targetOption + "/01/*.root";
+    } else if (targetOption == "C" || targetOption == "Pb") {
+      inputFiles[0] = GetSimpleTupleDir + "/" + targetOption + "/00/*.root";
+    } else {
+      inputFiles[0] = GetSimpleTupleDir + "/D/00/*.root";
+      inputFiles[1] = GetSimpleTupleDir + "/D/01/*.root";
+      inputFiles[2] = GetSimpleTupleDir + "/D/02/*.root";
+      inputFiles[5] = GetSimpleTupleDir + "/C/00/*.root";
+      inputFiles[3] = GetSimpleTupleDir + "/Fe/00/*.root";
+      inputFiles[4] = GetSimpleTupleDir + "/Fe/01/*.root";
+      inputFiles[6] = GetSimpleTupleDir + "/Pb/00/*.root";
+    }
+  }
+  // define and return chain
+  TChain *outputChain = new TChain();
+  if (dataKind == "data") {
+    // data case
+    outputChain->Add(inputFiles[0] + "/ntuple_e");
+    if (targetOption == "D" || targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/ntuple_e");
+      outputChain->Add(inputFiles[2] + "/ntuple_e");
+    }
+  } else {
+    // simulations case
+    outputChain->Add(inputFiles[0] + "/ntuple_e");
+    if (targetOption == "Fe") {
+      outputChain->Add(inputFiles[1] + "/ntuple_e");
+    } else if (targetOption == "D") {
+      outputChain->Add(inputFiles[1] + "/ntuple_e");
+      outputChain->Add(inputFiles[2] + "/ntuple_e");
+    } else if (targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/ntuple_e");
+      outputChain->Add(inputFiles[2] + "/ntuple_e");
+      outputChain->Add(inputFiles[3] + "/ntuple_e");
+      outputChain->Add(inputFiles[4] + "/ntuple_e");
+      outputChain->Add(inputFiles[5] + "/ntuple_e");
+      outputChain->Add(inputFiles[6] + "/ntuple_e");
+    }
+  }
+  return outputChain;
 }
 
 TChain *GetThreePionFinderChain(TString targetOption = "C", TString dataKind = "data") {
   // return a TChain that contains all filtered omega files
-  TString dataFiles1, dataFiles2, dataFiles3;
-  if (targetOption == "D" || targetOption == "All") {
-    dataFiles1 = gThreePionFinderDir + "/C/*.root";
-    dataFiles2 = gThreePionFinderDir + "/Fe/*.root";
-    dataFiles3 = gThreePionFinderDir + "/Pb/*.root";
-  } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
-    dataFiles1 = gThreePionFinderDir + "/" + targetOption + "/*.root";
+  TString inputFiles[7];
+  TString ThreePionFinderDir;  // non-global variable
+  if (dataKind == "data") {
+    // data case: set TPFdir to global var
+    ThreePionFinderDir = gThreePionFinderDir;
+    // assign dirs
+    if (targetOption == "D" || targetOption == "A" || targetOption == "All") {
+      inputFiles[0] = ThreePionFinderDir + "/C/*.root";
+      inputFiles[1] = ThreePionFinderDir + "/Fe/*.root";
+      inputFiles[2] = ThreePionFinderDir + "/Pb/*.root";
+    } else {  // if targetOption == "C" || "Fe" || "Pb"
+      inputFiles[0] = ThreePionFinderDir + "/" + targetOption + "/*.root";
+    }
+  } else {
+    // simulations case: set TPFdir according to particle
+    ThreePionFinderDir = gThreePionFinderDir_OmegaSim;
+    // assign dirs
+    if (targetOption == "D") {
+      inputFiles[0] = ThreePionFinderDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = ThreePionFinderDir + "/" + targetOption + "/01/*.root";
+      inputFiles[2] = ThreePionFinderDir + "/" + targetOption + "/02/*.root";
+    } else if (targetOption == "Fe") {
+      inputFiles[0] = ThreePionFinderDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = ThreePionFinderDir + "/" + targetOption + "/01/*.root";
+    } else if (targetOption == "C" || targetOption == "Pb") {
+      inputFiles[0] = ThreePionFinderDir + "/" + targetOption + "/00/*.root";
+    } else if (targetOption == "A") {  // solid targets
+      inputFiles[0] = ThreePionFinderDir + "/C/00/*.root";
+      inputFiles[1] = ThreePionFinderDir + "/Fe/00/*.root";
+      inputFiles[2] = ThreePionFinderDir + "/Fe/01/*.root";
+      inputFiles[3] = ThreePionFinderDir + "/Pb/00/*.root";
+    } else {  // all
+      inputFiles[0] = ThreePionFinderDir + "/D/00/*.root";
+      inputFiles[1] = ThreePionFinderDir + "/D/01/*.root";
+      inputFiles[2] = ThreePionFinderDir + "/D/02/*.root";
+      inputFiles[3] = ThreePionFinderDir + "/C/00/*.root";
+      inputFiles[4] = ThreePionFinderDir + "/Fe/00/*.root";
+      inputFiles[5] = ThreePionFinderDir + "/Fe/01/*.root";
+      inputFiles[6] = ThreePionFinderDir + "/Pb/00/*.root";
+    }
   }
   // define and return chain
-  TChain *dataTree = new TChain();
-  dataTree->Add(dataFiles1 + "/mix");
-  if (targetOption == "D" || targetOption == "All") {
-    dataTree->Add(dataFiles2 + "/mix");
-    dataTree->Add(dataFiles3 + "/mix");
+  TChain *outputChain = new TChain();
+  if (dataKind == "data") {
+    // data case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "D" || targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    }
+  } else {
+    // simulations case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "Fe") {
+      outputChain->Add(inputFiles[1] + "/mix");
+    } else if (targetOption == "D") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    } else if (targetOption == "A") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+    } else if (targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+      outputChain->Add(inputFiles[4] + "/mix");
+      outputChain->Add(inputFiles[5] + "/mix");
+      outputChain->Add(inputFiles[6] + "/mix");
+    }
   }
-  return dataTree;
-}
-
-TChain *GetElectronsChain(TString targetOption = "C", TString dataKind = "data") {
-  // return a TChain that contains all identified scattered electrons
-  TString dataFiles1, dataFiles2, dataFiles3;
-  if (targetOption == "D" || targetOption == "All") {
-    dataFiles1 = gGetSimpleTupleDir + "/C/*.root";
-    dataFiles2 = gGetSimpleTupleDir + "/Fe/*.root";
-    dataFiles3 = gGetSimpleTupleDir + "/Pb/*.root";
-  } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
-    dataFiles1 = gGetSimpleTupleDir + "/" + targetOption + "/*.root";
-  }
-  // define and return chain
-  TChain *dataTree = new TChain();
-  dataTree->Add(dataFiles1 + "/ntuple_e");
-  if (targetOption == "D" || targetOption == "All") {
-    dataTree->Add(dataFiles2 + "/ntuple_e");
-    dataTree->Add(dataFiles3 + "/ntuple_e");
-  }
-  return dataTree;
+  return outputChain;
 }
 
 TChain *GetTwoGammaFinderChain(TString targetOption = "C", TString dataKind = "data") {
   // return a TChain that contains all filtered eta files
-  TString dataFiles1, dataFiles2, dataFiles3;
-  if (targetOption == "D" || targetOption == "All") {
-    dataFiles1 = gTwoGammaFinderDir + "/C/*.root";
-    dataFiles2 = gTwoGammaFinderDir + "/Fe/*.root";
-    dataFiles3 = gTwoGammaFinderDir + "/Pb/*.root";
-  } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
-    dataFiles1 = gTwoGammaFinderDir + "/" + targetOption + "/*.root";
+  TString inputFiles[7];
+  TString TwoGammaFinderDir;  // non-global variable
+  if (dataKind == "data") {
+    // data case: set TGFdir to global var
+    TwoGammaFinderDir = gTwoGammaFinderDir;
+    // assign dirs
+    if (targetOption == "D" || targetOption == "A" || targetOption == "All") {
+      inputFiles[0] = TwoGammaFinderDir + "/C/*.root";
+      inputFiles[1] = TwoGammaFinderDir + "/Fe/*.root";
+      inputFiles[2] = TwoGammaFinderDir + "/Pb/*.root";
+    } else {  // if targetOption == "C" || "Fe" || "Pb"
+      inputFiles[0] = TwoGammaFinderDir + "/" + targetOption + "/*.root";
+    }
+  } else {
+    // simulations case: set TGFdir according to particle
+    TwoGammaFinderDir = gTwoGammaFinderDir_EtaSim;
+    // assign dirs
+    if (targetOption == "D") {
+      inputFiles[0] = TwoGammaFinderDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = TwoGammaFinderDir + "/" + targetOption + "/01/*.root";
+      inputFiles[2] = TwoGammaFinderDir + "/" + targetOption + "/02/*.root";
+    } else if (targetOption == "Fe") {
+      inputFiles[0] = TwoGammaFinderDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = TwoGammaFinderDir + "/" + targetOption + "/01/*.root";
+    } else if (targetOption == "C" || targetOption == "Pb") {
+      inputFiles[0] = TwoGammaFinderDir + "/" + targetOption + "/00/*.root";
+    } else if (targetOption == "A") {  // solid targets
+      inputFiles[0] = TwoGammaFinderDir + "/C/00/*.root";
+      inputFiles[1] = TwoGammaFinderDir + "/Fe/00/*.root";
+      inputFiles[2] = TwoGammaFinderDir + "/Fe/01/*.root";
+      inputFiles[3] = TwoGammaFinderDir + "/Pb/00/*.root";
+    } else {
+      inputFiles[0] = TwoGammaFinderDir + "/D/00/*.root";
+      inputFiles[1] = TwoGammaFinderDir + "/D/01/*.root";
+      inputFiles[2] = TwoGammaFinderDir + "/D/02/*.root";
+      inputFiles[3] = TwoGammaFinderDir + "/C/00/*.root";
+      inputFiles[4] = TwoGammaFinderDir + "/Fe/00/*.root";
+      inputFiles[5] = TwoGammaFinderDir + "/Fe/01/*.root";
+      inputFiles[6] = TwoGammaFinderDir + "/Pb/00/*.root";
+    }
   }
   // define and return chain
-  TChain *dataTree = new TChain();
-  dataTree->Add(dataFiles1 + "/mix");
-  if (targetOption == "D" || targetOption == "All") {
-    dataTree->Add(dataFiles2 + "/mix");
-    dataTree->Add(dataFiles3 + "/mix");
+  TChain *outputChain = new TChain();
+  if (dataKind == "data") {
+    // data case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "D" || targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    }
+  } else {
+    // simulations case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "Fe") {
+      outputChain->Add(inputFiles[1] + "/mix");
+    } else if (targetOption == "D") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    } else if (targetOption == "A") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+    } else if (targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+      outputChain->Add(inputFiles[4] + "/mix");
+      outputChain->Add(inputFiles[5] + "/mix");
+      outputChain->Add(inputFiles[6] + "/mix");
+    }
   }
-  return dataTree;
+  return outputChain;
 }
 
 TChain *GetEventMixingChain(TString targetOption = "C", TString dataKind = "data") {
   // return a TChain that contains all background files generated via event-mixing for omega background subtraction
-  TString bkgFiles1, bkgFiles2, bkgFiles3;
-  if (targetOption == "D" || targetOption == "All") {
-    bkgFiles1 = gEventMixingDir + "/C/*.root";
-    bkgFiles2 = gEventMixingDir + "/Fe/*.root";
-    bkgFiles3 = gEventMixingDir + "/Pb/*.root";
-  } else if (targetOption == "C" || targetOption == "Fe" || targetOption == "Pb") {
-    bkgFiles1 = gEventMixingDir + "/" + targetOption + "/*.root";
+  TString inputFiles[7];
+  TString EventMixingDir;  // non-global variable
+  if (dataKind == "data") {
+    // data case: set EVMdir to global var
+    EventMixingDir = gEventMixingDir;
+    // assign dirs
+    if (targetOption == "D" || targetOption == "A" || targetOption == "All") {
+      inputFiles[0] = EventMixingDir + "/C/*.root";
+      inputFiles[1] = EventMixingDir + "/Fe/*.root";
+      inputFiles[2] = EventMixingDir + "/Pb/*.root";
+    } else {  // if targetOption == "C" || "Fe" || "Pb"
+      inputFiles[0] = EventMixingDir + "/" + targetOption + "/*.root";
+    }
+  } else {
+    // simulations case: set EVMdir according to particle
+    EventMixingDir = gEventMixingDir_OmegaSim;
+    // assign dirs
+    if (targetOption == "D") {
+      inputFiles[0] = EventMixingDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = EventMixingDir + "/" + targetOption + "/01/*.root";
+      inputFiles[2] = EventMixingDir + "/" + targetOption + "/02/*.root";
+    } else if (targetOption == "Fe") {
+      inputFiles[0] = EventMixingDir + "/" + targetOption + "/00/*.root";
+      inputFiles[1] = EventMixingDir + "/" + targetOption + "/01/*.root";
+    } else if (targetOption == "C" || targetOption == "Pb") {
+      inputFiles[0] = EventMixingDir + "/" + targetOption + "/00/*.root";
+    } else if (targetOption == "A") {  // solid targets
+      inputFiles[0] = EventMixingDir + "/C/00/*.root";
+      inputFiles[1] = EventMixingDir + "/Fe/00/*.root";
+      inputFiles[2] = EventMixingDir + "/Fe/01/*.root";
+      inputFiles[3] = EventMixingDir + "/Pb/00/*.root";
+    } else {
+      inputFiles[0] = EventMixingDir + "/D/00/*.root";
+      inputFiles[1] = EventMixingDir + "/D/01/*.root";
+      inputFiles[2] = EventMixingDir + "/D/02/*.root";
+      inputFiles[3] = EventMixingDir + "/C/00/*.root";
+      inputFiles[4] = EventMixingDir + "/Fe/00/*.root";
+      inputFiles[5] = EventMixingDir + "/Fe/01/*.root";
+      inputFiles[6] = EventMixingDir + "/Pb/00/*.root";
+    }
   }
   // define and return chain
-  TChain *bkgTree = new TChain();
-  bkgTree->Add(bkgFiles1 + "/mix");
-  if (targetOption == "D" || targetOption == "All") {
-    bkgTree->Add(bkgFiles2 + "/mix");
-    bkgTree->Add(bkgFiles3 + "/mix");
+  TChain *outputChain = new TChain();
+  if (dataKind == "data") {
+    // data case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "D" || targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    }
+  } else {
+    // simulations case
+    outputChain->Add(inputFiles[0] + "/mix");
+    if (targetOption == "Fe") {
+      outputChain->Add(inputFiles[1] + "/mix");
+    } else if (targetOption == "D") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+    } else if (targetOption == "A") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+    } else if (targetOption == "All") {
+      outputChain->Add(inputFiles[1] + "/mix");
+      outputChain->Add(inputFiles[2] + "/mix");
+      outputChain->Add(inputFiles[3] + "/mix");
+      outputChain->Add(inputFiles[4] + "/mix");
+      outputChain->Add(inputFiles[5] + "/mix");
+      outputChain->Add(inputFiles[6] + "/mix");
+    }
   }
-  return bkgTree;
+  return outputChain;
 }
 
 void SetAliases(TChain *treeExtracted) {
