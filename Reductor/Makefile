@@ -1,5 +1,9 @@
 .DELETE_ON_ERROR:
 
+ifndef ROOTSYS
+    $(error "ERROR: please, set ROOT")
+endif
+
 ifndef CLASTOOL
     $(error "ERROR: please, set the variable CLASTOOL")
 endif
@@ -10,15 +14,10 @@ BINDIR := ./bin
 SRCDIR := ./src
 
 ROOTCONFIG := root-config
-ROOTCFLAGS := $(shell $(ROOTCONFIG) --cflags)
-ROOTLDFLAGS := $(shell $(ROOTCONFIG) --ldflags)
+ROOTCFLAGS := $(shell $(ROOTCONFIG) --cxx --cflags)
+ROOTCFLAGS := $(ROOTCFLAGS) -fPIC
+ROOTLDFLAGS := $(shell $(ROOTCONFIG) --cxx --ldflags)
 ROOTGLIBS := $(shell $(ROOTCONFIG) --glibs)
-
-CXX := c++
-LD := c++
-
-CXXFLAGS := -g -O2 -Wall -fPIC $(ROOTCFLAGS) # -D DEBUG
-LDFLAGS := -g -O2 $(ROOTLDFLAGS)
 
 INCLUDES := -I$(CLASTOOL)/TClasTool -I$(CLASTOOL)/ClasBanks -I$(CLASTOOL)/VirtualReader -I$(CLASTOOL)/DSTReader -I./include
 LIBS := $(ROOTGLIBS) -L$(CLAS_ROOT)/slib/${OS_NAME} -lClasTool -lClasBanks -lDSTReader -lEG
@@ -31,12 +30,15 @@ LIST := $(addprefix $(BINDIR)/, $(PROG))
 all: $(LIST)
 
 $(BINDIR)/%: $(BINDIR)/%.o
-	@echo "Doing application" $@
-	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
+	@echo "Linking" $<
+	$(ROOTLDFLAGS) $(LIBS) -o $@ $^
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cxx
+	@echo "Compiling" $<
+	$(ROOTCFLAGS) $(INCLUDES) -c $< -o $@
+
+$(BINDIR):
 	$(MKDIR_P) $(BINDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -f $(LIST:%=%.o) $(LIST)

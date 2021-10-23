@@ -3,6 +3,12 @@ Reductor
 
 `Reductor` reduces `GetSimpleTuple` files into events that have at least 2 $\gamma$, 1 $\pi^+$, and 1 $\pi^-$.
 
+## Requirements
+
+* [**ClasTool**](https://github.com/utfsm-eg2-data-analysis/clas_software)
+
+* **ROOT**: it must be the same version that was used to compile **ClasTool**.
+
 ## Compilation
 
 Just execute:
