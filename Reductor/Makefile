@@ -35,10 +35,8 @@ $(BINDIR)/%: $(BINDIR)/%.o
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cxx
 	@echo "Compiling" $<
-	$(ROOTCFLAGS) $(INCLUDES) -c $< -o $@
-
-$(BINDIR):
 	$(MKDIR_P) $(BINDIR)
+	$(ROOTCFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -f $(LIST:%=%.o) $(LIST)
