@@ -62,7 +62,7 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
       // loop over bins
       for (Int_t i = 0; i < Nbins; i++) {
 
-        RooFitResult *FitResult = (RooFitResult *)rootInputFile[k][t]->Get(Form("fit-result_%d", i));
+        RooFitResult *FitResult = (RooFitResult *)rootInputFile[k][t]->Get(Form("fit-result_%i", i));
         fitOmega[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#omega}"))->getValV();
         fitOmegaError[k][t][i] = ((RooRealVar *)FitResult->floatParsFinal().find("N_{#omega}"))->getAsymErrorHi();
       }
@@ -114,6 +114,7 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
     omegaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     omegaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
+    omegaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

@@ -21,16 +21,7 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
   /*** MAIN ***/
 
   TString kinvarOption[Nkinvars] = {"Q2", "Nu", "wZ", "wPt2"};
-  TString titleAxis[Nkinvars];
-  TString histProperties[Nkinvars];
-  titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.)";
-  titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.2)";
-  titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 0.9)";
-  titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
+  TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
 
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
@@ -45,8 +36,8 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
 
   // declare input files to get acc. corrected omega numbers
   TFile *rootInputFile_Data[Ntargets][Nkinvars];
-  TFile *rootInputFile_Sim[Ntargets][Nkinvars];
   TFile *rootInputFile_MC[Ntargets][Nkinvars];
+  TFile *rootInputFile_Sim[Ntargets][Nkinvars];
 
   // declare output histograms
   TH1D *NOmega_Data[Ntargets][Nkinvars];
@@ -63,7 +54,7 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
   TH1D *Ratio_RadCorr[Ntargets][Nkinvars];  // Nh/Ne
 
   // declare final histogram
-  TH1D *MR[Nkinvars][Ntargets];
+  TH1D *MR[Ntargets][Nkinvars];
 
   for (Int_t t = 0; t < Ntargets; t++) {
     for (Int_t k = 0; k < Nkinvars; k++) {
@@ -107,14 +98,26 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
         Double_t auxNOmegaError_Data = 0;
         for (Int_t s = TMath::Floor((auxMean_Data - 3 * auxSigma_Data - 0.66) / 0.01);
              s <= TMath::Ceil((auxMean_Data + 3 * auxSigma_Data - 0.66) / 0.01); s++) {
-          if (auxHist_Data->GetBinContent(s) > 0) auxNOmega_Data += auxHist_Data->GetBinContent(s);
-          if (auxHist_Data->GetBinContent(s) > 0) auxNOmegaError_Data += auxHist_Data->GetBinError(s) * auxHist_Data->GetBinError(s);
+          if (auxHist_Data->GetBinContent(s) > 0) {
+            auxNOmega_Data += auxHist_Data->GetBinContent(s);
+          }
+          if (auxHist_Data->GetBinContent(s) > 0) {
+            auxNOmegaError_Data += auxHist_Data->GetBinError(s) * auxHist_Data->GetBinError(s);
+          }
         }
         auxNOmegaError_Data = TMath::Sqrt(auxNOmegaError_Data);
 
         // set bin content
         NOmega_Data[t][k]->SetBinContent(i + 1, auxNOmega_Data);
         NOmega_Data[t][k]->SetBinError(i + 1, auxNOmegaError_Data);
+
+        /*** OMEGA MC ***/
+
+        TH1D *auxHist_MC = (TH1D *)rootInputFile_MC[t][k]->Get(Form("hist_%i", i));
+
+        // set bin content
+        NOmega_MC[t][k]->SetBinContent(i + 1, auxHist_MC->GetEntries());
+        NOmega_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(auxHist_MC->GetEntries()));
 
         /*** OMEGA SIMREC ***/
 
@@ -129,22 +132,18 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
         Double_t auxNOmegaError_Sim = 0;
         for (Int_t s = TMath::Floor((auxMean_Sim - 3 * auxSigma_Sim - 0.66) / 0.01);
              s <= TMath::Ceil((auxMean_Sim + 3 * auxSigma_Sim - 0.66) / 0.01); s++) {
-          if (auxHist_Sim->GetBinContent(s) > 0) auxNOmega_Sim += auxHist_Sim->GetBinContent(s);
-          if (auxHist_Sim->GetBinContent(s) > 0) auxNOmegaError_Sim += auxHist_Sim->GetBinError(s) * auxHist_Sim->GetBinError(s);
+          if (auxHist_Sim->GetBinContent(s) > 0) {
+            auxNOmega_Sim += auxHist_Sim->GetBinContent(s);
+          }
+          if (auxHist_Sim->GetBinContent(s) > 0) {
+            auxNOmegaError_Sim += auxHist_Sim->GetBinError(s) * auxHist_Sim->GetBinError(s);
+          }
         }
         auxNOmegaError_Sim = TMath::Sqrt(auxNOmegaError_Sim);
 
         // set bin content
         NOmega_Sim[t][k]->SetBinContent(i + 1, auxNOmega_Sim);
         NOmega_Sim[t][k]->SetBinError(i + 1, auxNOmegaError_Sim);
-
-        /*** OMEGA MC ***/
-
-        TH1D *auxHist_MC = (TH1D *)rootInputFile_MC[t][k]->Get(Form("hist_%i", i));
-
-        // set bin content
-        NOmega_MC[t][k]->SetBinContent(i + 1, auxHist_MC->GetEntries());
-        NOmega_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(auxHist_MC->GetEntries()));
 
         /*** RAD CORR ELECTRONS ***/
 
@@ -198,9 +197,9 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
   }
 
   // set graphs
-  TGraphErrors *acceptanceGraph[Nkinvars][Ntargets];
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
+  TGraphErrors *acceptanceGraph[Ntargets][Nkinvars];
+  for (Int_t t = 0; t < Ntargets; t++) {
+    for (Int_t k = 0; k < Nkinvars; k++) {
       acceptanceGraph[t][k] = new TGraphErrors(Nbins, binCenter[k], acceptanceValue[t][k], binError[k], acceptanceError[t][k]);
     }
   }
@@ -214,7 +213,7 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
     acceptanceGraph[1][k]->GetYaxis()->SetTitleSize(0.06);
     acceptanceGraph[1][k]->GetYaxis()->SetMaxDigits(3);
 
-    acceptanceGraph[1][k]->GetXaxis()->SetTitle(titleAxis[k]);
+    acceptanceGraph[1][k]->GetXaxis()->SetTitle(kinvarTitle[k]);
     acceptanceGraph[1][k]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     acceptanceGraph[1][k]->GetXaxis()->SetTitleSize(0.06);
 
@@ -238,10 +237,12 @@ void MakeMR_RadCorr_Omega(TString StoreOption = "") {
 
   for (Int_t k = 0; k < Nkinvars; k++) {
     c->cd(k + 1);
+
     // draw per kinvar, only solid targets
     acceptanceGraph[1][k]->Draw("AP");
     acceptanceGraph[2][k]->Draw("P");
     acceptanceGraph[3][k]->Draw("P");
+
     // legend
     if (k == 1) {
       TLegend *legend = new TLegend(0.2, 0.75, 0.45, 0.9);  // x1,y1,x2,y2

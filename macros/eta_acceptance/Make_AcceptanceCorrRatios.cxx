@@ -233,6 +233,7 @@ void Make_AcceptanceCorrRatios(TString StoreOption = "") {
 
     acceptanceGraph[k][1]->GetXaxis()->SetTitle(titleAxis[k]);
     acceptanceGraph[k][1]->GetXaxis()->SetTitleSize(0.06);
+    acceptanceGraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

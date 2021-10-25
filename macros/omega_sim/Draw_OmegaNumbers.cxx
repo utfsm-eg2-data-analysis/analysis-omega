@@ -81,15 +81,9 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
   /*** GRAPHS ***/
 
-  // creating and filling histograms
-  TGraphErrors *omegaGraph[Nkinvars][Ntargets];
-
-  // define arrays
+  // define and fill arrays
   Double_t binCenter[Nkinvars][Nbins];
   Double_t binError[Nkinvars][Nbins];
-
-  // fill arrays
-
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t i = 0; i < Nbins; i++) {
       binCenter[k][i] = (EdgesKinvar[k][i] + EdgesKinvar[k][i + 1]) / 2.;
@@ -97,7 +91,8 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
     }
   }
 
-  // set graphs
+  // create graphs
+  TGraphErrors *omegaGraph[Nkinvars][Ntargets];
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
       omegaGraph[k][t] = new TGraphErrors(Nbins, binCenter[k], intOmega[k][t], binError[k], intOmegaError[k][t]);
@@ -112,30 +107,18 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
     }
   }
 
-  /*** SET Y AXIS ***/
+  /*** SET AXIS ***/
 
   for (Int_t k = 0; k < Nkinvars; k++) {
     omegaGraph[k][0]->GetYaxis()->SetRangeUser(0., 1.2 * TMath::MaxElement(Nbins, omegaGraph[k][0]->GetY()));
-
     omegaGraph[k][0]->GetYaxis()->SetTitle("N_{#omega}^{rec}");
     omegaGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     omegaGraph[k][0]->GetYaxis()->SetTitleOffset(1.2);
     omegaGraph[k][0]->GetYaxis()->SetMaxDigits(3);
 
+    omegaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     omegaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     omegaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
-  }
-
-  /*** FIX Y-AXIS ***/
-
-  Double_t MaxRangeSim[Nkinvars] = {0, 0, 0, 0};
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
-      // get the maximum of an array of length Nbins, and compare it with MaxRangeSim
-      if (TMath::MaxElement(Nbins, omegaGraph[k][t]->GetY()) > MaxRangeSim[k]) {
-        MaxRangeSim[k] = TMath::MaxElement(Nbins, omegaGraph[k][t]->GetY());
-      }
-    }
   }
 
   /*** DRAW ***/
@@ -146,47 +129,27 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
 
-  // set y-axis for all plots
-  omegaGraph[0][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeSim[0]);
-  omegaGraph[1][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeSim[1]);
-  omegaGraph[2][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeSim[2]);
-  omegaGraph[3][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeSim[3]);
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    c->cd(k + 1);
+    omegaGraph[k][0]->Draw("AP");
+    omegaGraph[k][1]->Draw("P");
+    omegaGraph[k][2]->Draw("P");
+    omegaGraph[k][3]->Draw("P");
 
-  c->cd(1);
-  omegaGraph[0][0]->Draw("AP");
-  omegaGraph[0][1]->Draw("P");
-  omegaGraph[0][2]->Draw("P");
-  omegaGraph[0][3]->Draw("P");
-
-  c->cd(2);
-  omegaGraph[1][0]->Draw("AP");
-  omegaGraph[1][1]->Draw("P");
-  omegaGraph[1][2]->Draw("P");
-  omegaGraph[1][3]->Draw("P");
-
-  // legend
-  TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(omegaGraph[0][0], "D (Sim. Rec.)", "pl");
-  legend->AddEntry(omegaGraph[0][1], "C (Sim. Rec.)", "pl");
-  legend->AddEntry(omegaGraph[0][2], "Fe (Sim. Rec.)", "pl");
-  legend->AddEntry(omegaGraph[0][3], "Pb (Sim. Rec.)", "pl");
-  legend->SetFillStyle(0);
-  legend->SetTextFont(62);
-  legend->SetTextSize(0.04);
-  legend->SetBorderSize(0);
-  legend->Draw();
-
-  c->cd(3);
-  omegaGraph[2][0]->Draw("AP");
-  omegaGraph[2][1]->Draw("P");
-  omegaGraph[2][2]->Draw("P");
-  omegaGraph[2][3]->Draw("P");
-
-  c->cd(4);
-  omegaGraph[3][0]->Draw("AP");
-  omegaGraph[3][1]->Draw("P");
-  omegaGraph[3][2]->Draw("P");
-  omegaGraph[3][3]->Draw("P");
+    if (k == 1) {
+      // legend
+      TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
+      legend->AddEntry(omegaGraph[0][0], "D (Sim. Rec.)", "pl");
+      legend->AddEntry(omegaGraph[0][1], "C (Sim. Rec.)", "pl");
+      legend->AddEntry(omegaGraph[0][2], "Fe (Sim. Rec.)", "pl");
+      legend->AddEntry(omegaGraph[0][3], "Pb (Sim. Rec.)", "pl");
+      legend->SetFillStyle(0);
+      legend->SetTextFont(62);
+      legend->SetTextSize(0.04);
+      legend->SetBorderSize(0);
+      legend->Draw();
+    }
+  }
 
   /*** OUTPUT ***/
 

@@ -37,7 +37,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
   Int_t plotNbins = 54;
   Double_t plotMin = 0.26;
   Double_t plotMax = 0.8;
-  TString histProperties = Form("(%d, %f, %f)", plotNbins, plotMin, plotMax);
+  TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;
@@ -77,7 +77,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     // loop over bins
     for (Int_t i = 0; i < NbinsPhiPQ; i++) {
       // get fit function to retrieve parameter's values
-      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%d", i));
+      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%i", i));
       MeanFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#mu(#eta)"))->getValV();
       SigmaFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#sigma(#eta)"))->getValV();
     }
@@ -124,10 +124,10 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     RooRealVar nbkg("N_{bkg}", "number of background", 0, 1000000);
     RooAddPdf model("model", "(g+pol2)", RooArgList(bkg, signal), RooArgList(nbkg, nsig));
 
-    theFrame[i] = x.frame(Name(Form("upper_f_%d", i)));
+    theFrame[i] = x.frame(Name(Form("upper_f_%i", i)));
 
     FitResult[i] = model.fitTo(data, Minos(kTRUE), Extended(), Save());
-    FitResult[i]->SetName(Form("fit-result_%d", i));
+    FitResult[i]->SetName(Form("fit-result_%i", i));
 
     data.plotOn(theFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
     model.plotOn(theFrame[i], Name("Model"), LineColor(myBlue));
@@ -135,7 +135,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     model.plotOn(theFrame[i], Name("Bkg"), Components("bkg"), LineColor(kGray + 2), LineStyle(kDashed));
     model.plotOn(theFrame[i], Name("Signal"), Components("signal"), LineColor(myRed));
 
-    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%d", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
+    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%i", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
     modelHist[i]->Scale((plotMax - plotMin) / (Double_t)plotNbins);  // bin width
 
     // assign parameters

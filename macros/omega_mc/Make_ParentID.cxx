@@ -60,7 +60,7 @@ void Make_ParentID(TString targetOption = "C", TString kinvarOption = "Q2", TStr
   Int_t plotNbins = 240;
   Double_t plotMin = 0.65;
   Double_t plotMax = 0.91;
-  TString histProperties = Form("(%d, %f, %f)", plotNbins, plotMin, plotMax);
+  TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;

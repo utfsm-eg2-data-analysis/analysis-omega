@@ -94,14 +94,15 @@ void Draw_RadCorrRatios(TString StoreOption = "") {
     RadCorrGraph[t]->SetMarkerSize(1.5);
   }
 
-  // set axis
+  // set y-axis
   RadCorrGraph[1]->GetYaxis()->SetRangeUser(0.95, 1.02);
-
   RadCorrGraph[1]->GetYaxis()->SetTitle("#delta^{RC}_{A} / #delta^{RC}_{D}");
   RadCorrGraph[1]->GetYaxis()->SetTitleSize(0.05);
   RadCorrGraph[1]->GetYaxis()->SetTitleOffset(1.4);
   RadCorrGraph[1]->GetYaxis()->SetMaxDigits(3);
 
+  // set x-axis
+  RadCorrGraph[1]->GetXaxis()->SetLimits(EdgesPhiPQ[0], EdgesPhiPQ[NbinsPhiPQ]);
   RadCorrGraph[1]->GetXaxis()->SetTitle(titleAxis);
   RadCorrGraph[1]->GetXaxis()->SetTitleSize(0.05);
 

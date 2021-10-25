@@ -6,8 +6,8 @@
 #include "DrawFunctions.cxx"
 #endif
 
-const Int_t Nkinvars = 4;
 const Int_t Ntargets = 4;
+const Int_t Nkinvars = 4;
 const Int_t Nbins = 5;
 
 void Draw_EtaNumbers(TString StoreOption = "") {
@@ -105,6 +105,7 @@ void Draw_EtaNumbers(TString StoreOption = "") {
 
     etaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     etaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
+    etaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** FIX Y-AXIS ***/

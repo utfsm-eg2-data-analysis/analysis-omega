@@ -66,7 +66,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
   Int_t plotNbins = 24;
   Double_t plotMin = 0.66;
   Double_t plotMax = 0.90;
-  TString histProperties = Form("(%d, %f, %f)", plotNbins, plotMin, plotMax);
+  TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;
@@ -108,7 +108,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // loop over bins
     for (Int_t i = 0; i < Nbins; i++) {
       // get fit function to retrieve parameter's values
-      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%d", i));
+      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%i", i));
       MeanFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#mu(#omega)"))->getValV();
       SigmaFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#sigma(#omega)"))->getValV();
     }
@@ -160,11 +160,11 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     RooRealVar nbkg("N_{bkg}", "number of background", 1000, 0, 1000000);
     RooAddPdf model("model", "(g+pol2)", RooArgList(bkg, signal), RooArgList(nbkg, nsig));
 
-    upperFrame[i] = x.frame(Name(Form("upper_f_%d", i)));
-    lowerFrame[i] = x.frame(Name(Form("lower_f_%d", i)));
+    upperFrame[i] = x.frame(Name(Form("upper_f_%i", i)));
+    lowerFrame[i] = x.frame(Name(Form("lower_f_%i", i)));
 
     FitResult[i] = model.fitTo(data, Minos(kTRUE), Extended(), Save());
-    FitResult[i]->SetName(Form("fit-result_%d", i));
+    FitResult[i]->SetName(Form("fit-result_%i", i));
 
     data.plotOn(upperFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
     model.plotOn(upperFrame[i], Name("Model"), LineColor(myBlue));
@@ -172,16 +172,16 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     model.plotOn(upperFrame[i], Name("Bkg"), Components("bkg"), LineColor(kGray + 2), LineStyle(kDashed));
     model.plotOn(upperFrame[i], Name("Signal"), Components("signal"), LineColor(myRed));
 
-    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%d", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
+    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%i", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
     modelHist[i]->Scale((plotMax - plotMin) / (Double_t)plotNbins);  // bin width
 
-    dataErrHist[i] = new TH1D(Form("dataErrHist_%d", i), Form("dataErrHist_%d", i), plotNbins, plotMin, plotMax);
+    dataErrHist[i] = new TH1D(Form("dataErrHist_%i", i), Form("dataErrHist_%i", i), plotNbins, plotMin, plotMax);
     for (Int_t k = 1; k <= plotNbins; k++) {
       dataErrHist[i]->SetBinContent(k, dataHist[i]->GetBinError(k));
       dataErrHist[i]->SetBinError(k, 0);
     }
 
-    testHist[i] = new TH1D(Form("testHist_%d", i), Form("testHist_%d", i), plotNbins, plotMin, plotMax);
+    testHist[i] = new TH1D(Form("testHist_%i", i), Form("testHist_%i", i), plotNbins, plotMin, plotMax);
     testHist[i]->Add(dataHist[i], modelHist[i], 1, -1);
     testHist[i]->Divide(dataErrHist[i]);
 
@@ -230,13 +230,13 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
   // loop over bins
   for (Int_t i = 0; i < Nbins; i++) {
     // prepare pads
-    upperPad[i] = new TPad(Form("upper_%d", i), Form("upper_%d", i), 0.05, 0.40, 0.95, 0.95, 0, 0, 0);  // x1,y1,x2,y2
+    upperPad[i] = new TPad(Form("upper_%i", i), Form("upper_%i", i), 0.05, 0.40, 0.95, 0.95, 0, 0, 0);  // x1,y1,x2,y2
     upperPad[i]->SetTopMargin(0.05);
     upperPad[i]->SetBottomMargin(0);
     upperPad[i]->SetLeftMargin(0.15);
     upperPad[i]->SetRightMargin(0.05);
 
-    lowerPad[i] = new TPad(Form("lower_%d", i), Form("lower_%d", i), 0.05, 0.05, 0.95, 0.40, 0, 0, 0);  // x1,y1,x2,y2
+    lowerPad[i] = new TPad(Form("lower_%i", i), Form("lower_%i", i), 0.05, 0.05, 0.95, 0.40, 0, 0, 0);  // x1,y1,x2,y2
     lowerPad[i]->SetTopMargin(0);
     lowerPad[i]->SetBottomMargin(0.15);
     lowerPad[i]->SetLeftMargin(0.15);

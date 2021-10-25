@@ -49,9 +49,9 @@ void Draw_ExternalsCorrRatios(TString PartOption = "omega", TString StoreOption 
   Double_t RadCorrFactor[Ntargets][NbinsQ2_Externals][NbinsNu_Externals];
 
   // loop over targets
-  for (Int_t tt = 0; tt < Ntargets; tt++) {
+  for (Int_t t = 0; t < Ntargets; t++) {
 
-    ExternalsFiles[tt].open(gProDir + "/gfx/rad-corr_electron/clas_" + PartOption + "_" + targetSufix[tt] + ".out", std::ios::in);
+    ExternalsFiles[t].open(gProDir + "/gfx/rad-corr_electron/clas_" + PartOption + "_" + targetSufix[t] + ".out", std::ios::in);
 
     std::string auxLine;
     TString auxString[13];  // number of columns in the .out files
@@ -59,7 +59,7 @@ void Draw_ExternalsCorrRatios(TString PartOption = "omega", TString StoreOption 
     Int_t binInNu;
     Int_t binInQ2;
 
-    while (getline(ExternalsFiles[tt], auxLine)) {
+    while (getline(ExternalsFiles[t], auxLine)) {
       // given the first line represents the name of the columns
       if (countLine > 0) {
         for (Int_t i = 0; i < 13; i++) {
@@ -70,13 +70,13 @@ void Draw_ExternalsCorrRatios(TString PartOption = "omega", TString StoreOption 
         // Column 0: Ebeam
         // Column 5: Sig_Born
         // Column 8: Sig_Rad
-        RadCorrFactor[tt][binInQ2][binInNu] = auxString[8].Atof() / auxString[5].Atof();  // Sig_Rad / Sig_Born
+        RadCorrFactor[t][binInQ2][binInNu] = auxString[8].Atof() / auxString[5].Atof();  // Sig_Rad / Sig_Born
       }
       countLine++;
     }
 
     // close input file
-    ExternalsFiles[tt].close();
+    ExternalsFiles[t].close();
   }
 
   // calculate liquid-to-solid ratio
@@ -103,20 +103,21 @@ void Draw_ExternalsCorrRatios(TString PartOption = "omega", TString StoreOption 
   TGraphErrors *RCgraph[Ntargets][NbinsQ2_Externals];
 
   for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
-    for (Int_t tt = 0; tt < Ntargets; tt++) {
-      RCgraph[tt][q] = new TGraphErrors(NbinsNu_Externals, BinGeoCenter, RadCorrRatio[tt][q], Empty, Empty);
-
+    for (Int_t t = 0; t < Ntargets; t++) {
+      RCgraph[t][q] = new TGraphErrors(NbinsNu_Externals, BinGeoCenter, RadCorrRatio[t][q], Empty, Empty);
       // set graphs' style
-      RCgraph[tt][q]->SetMarkerStyle(20);
-      RCgraph[tt][q]->SetMarkerSize(2);
-      RCgraph[tt][q]->SetMarkerColor(targetColor[tt]);
+      RCgraph[t][q]->SetMarkerStyle(20);
+      RCgraph[t][q]->SetMarkerSize(2);
+      RCgraph[t][q]->SetMarkerColor(targetColor[t]);
     }
-
-    // set graphs' titles and axis
+    // set graphs' title
     RCgraph[1][q]->SetTitle(Form("%.2f < Q^{2} < %.2f", EdgesQ2_Externals[q], EdgesQ2_Externals[q + 1]));
-    RCgraph[1][q]->GetXaxis()->SetTitle("#nu (GeV)");
+    // set y-axis
     RCgraph[1][q]->GetYaxis()->SetTitle("#delta^{RC}_{D} / #delta^{RC}_{A}");
     RCgraph[1][q]->GetYaxis()->SetRangeUser(0.95, 1.05);
+    // set x-axis
+    RCgraph[1][q]->GetXaxis()->SetLimits(EdgesNu_Externals[0], EdgesNu_Externals[NbinsNu_Externals]);
+    RCgraph[1][q]->GetXaxis()->SetTitle("#nu (GeV)");
   }
 
   /*** DRAW ***/

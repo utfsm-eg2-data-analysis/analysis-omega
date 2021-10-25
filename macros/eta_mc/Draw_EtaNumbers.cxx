@@ -6,8 +6,8 @@
 #include "DrawFunctions.cxx"
 #endif
 
-const Int_t Nkinvars = 4;
 const Int_t Ntargets = 4;
+const Int_t Nkinvars = 4;
 const Int_t Nbins = 5;
 
 void Draw_EtaNumbers(TString StoreOption = "") {
@@ -25,16 +25,7 @@ void Draw_EtaNumbers(TString StoreOption = "") {
   /*** MAIN ***/
 
   TString kinvarOption[4] = {"Q2", "Nu", "nZ", "nPt2"};
-  TString titleAxis[4];
-  TString histProperties[4];
-  titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.1)";
-  titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.25)";
-  titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 1.0)";
-  titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
+  TString kinvarTitle[4] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
 
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
@@ -63,15 +54,9 @@ void Draw_EtaNumbers(TString StoreOption = "") {
 
   /*** GRAPHS ***/
 
-  // creating and filling histograms
-  TGraphErrors *etaGraph[Nkinvars][Ntargets];
-
-  // define arrays
+  // define and fill arrays
   Double_t binCenter[Nkinvars][Nbins];
   Double_t binError[Nkinvars][Nbins];
-
-  // fill arrays
-
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t i = 0; i < Nbins; i++) {
       binCenter[k][i] = (EdgesKinvar[k][i] + EdgesKinvar[k][i + 1]) / 2.;
@@ -79,7 +64,8 @@ void Draw_EtaNumbers(TString StoreOption = "") {
     }
   }
 
-  // set graphs
+  // create and fill graphs
+  TGraphErrors *etaGraph[Nkinvars][Ntargets];
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
       etaGraph[k][t] = new TGraphErrors(Nbins, binCenter[k], fitEta[k][t], binError[k], fitEtaError[k][t]);
@@ -94,30 +80,19 @@ void Draw_EtaNumbers(TString StoreOption = "") {
     }
   }
 
-  /*** SET Y AXIS ***/
+  /*** SET AXIS ***/
 
   for (Int_t k = 0; k < Nkinvars; k++) {
+    // set y-axis
     etaGraph[k][0]->GetYaxis()->SetRangeUser(0., 1.2 * TMath::MaxElement(Nbins, etaGraph[k][0]->GetY()));
-
     etaGraph[k][0]->GetYaxis()->SetTitle("N_{#eta}^{gen}");
     etaGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     etaGraph[k][0]->GetYaxis()->SetTitleOffset(1.2);
     etaGraph[k][0]->GetYaxis()->SetMaxDigits(3);
-
-    etaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
+    // set x-axis
+    etaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+    etaGraph[k][0]->GetXaxis()->SetTitle(kinvarTitle[k]);
     etaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
-  }
-
-  /*** FIX Y-AXIS ***/
-
-  Double_t MaxRangeMC[Nkinvars] = {0, 0, 0, 0};
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
-      // get the maximum of an array of length Nbins, and compare it with MaxRangeMC
-      if (TMath::MaxElement(Nbins, etaGraph[k][t]->GetY()) > MaxRangeMC[k]) {
-        MaxRangeMC[k] = TMath::MaxElement(Nbins, etaGraph[k][t]->GetY());
-      }
-    }
   }
 
   /*** DRAW ***/
@@ -127,48 +102,28 @@ void Draw_EtaNumbers(TString StoreOption = "") {
   TString CanvasName = "eta-numbers_mc";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(2, 2, 0.001, 0.001);  // nx, ny, margins
+  for (Int_t k = 0; k < Nkinvars; k++) {
 
-  // set y-axis for all plots
-  etaGraph[0][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[0]);
-  etaGraph[1][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[1]);
-  etaGraph[2][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[2]);
-  etaGraph[3][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[3]);
+    c->cd(k + 1);
+    etaGraph[k][0]->Draw("AP");
+    etaGraph[k][1]->Draw("P");
+    etaGraph[k][2]->Draw("P");
+    etaGraph[k][3]->Draw("P");
 
-  c->cd(1);
-  etaGraph[0][0]->Draw("AP");
-  etaGraph[0][1]->Draw("P");
-  etaGraph[0][2]->Draw("P");
-  etaGraph[0][3]->Draw("P");
-
-  // legend
-  TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(etaGraph[0][0], "D (Sim. Gen.)", "pl");
-  legend->AddEntry(etaGraph[0][1], "C (Sim. Gen.)", "pl");
-  legend->AddEntry(etaGraph[0][2], "Fe (Sim. Gen.)", "pl");
-  legend->AddEntry(etaGraph[0][3], "Pb (Sim. Gen.)", "pl");
-  legend->SetFillStyle(0);
-  legend->SetTextFont(62);
-  legend->SetTextSize(0.04);
-  legend->SetBorderSize(0);
-  legend->Draw();
-
-  c->cd(2);
-  etaGraph[1][0]->Draw("AP");
-  etaGraph[1][1]->Draw("P");
-  etaGraph[1][2]->Draw("P");
-  etaGraph[1][3]->Draw("P");
-
-  c->cd(3);
-  etaGraph[2][0]->Draw("AP");
-  etaGraph[2][1]->Draw("P");
-  etaGraph[2][2]->Draw("P");
-  etaGraph[2][3]->Draw("P");
-
-  c->cd(4);
-  etaGraph[3][0]->Draw("AP");
-  etaGraph[3][1]->Draw("P");
-  etaGraph[3][2]->Draw("P");
-  etaGraph[3][3]->Draw("P");
+    // legend
+    if (k == 0) {
+      TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
+      legend->AddEntry(etaGraph[k][0], "D (Sim. Gen.)", "pl");
+      legend->AddEntry(etaGraph[k][1], "C (Sim. Gen.)", "pl");
+      legend->AddEntry(etaGraph[k][2], "Fe (Sim. Gen.)", "pl");
+      legend->AddEntry(etaGraph[k][3], "Pb (Sim. Gen.)", "pl");
+      legend->SetFillStyle(0);
+      legend->SetTextFont(62);
+      legend->SetTextSize(0.04);
+      legend->SetBorderSize(0);
+      legend->Draw();
+    }
+  }
 
   /*** OUTPUT ***/
 

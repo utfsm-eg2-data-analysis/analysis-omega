@@ -60,8 +60,8 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
       // loop over bins
       for (Int_t i = 0; i < Nbins; i++) {
 
-        TF1 *Fit = (TF1 *)rootInputFile[k][t]->Get(Form("model_%d", i));
-        TH1D *Hist = (TH1D *)rootInputFile[k][t]->Get(Form("sub_%d", i));
+        TF1 *Fit = (TF1 *)rootInputFile[k][t]->Get(Form("model_%i", i));
+        TH1D *Hist = (TH1D *)rootInputFile[k][t]->Get(Form("sub_%i", i));
 
         Double_t fitMean = Fit->GetParameter(1);
         Double_t fitSigma = Fit->GetParameter(2);
@@ -124,6 +124,7 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
     omegaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     omegaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
+    omegaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

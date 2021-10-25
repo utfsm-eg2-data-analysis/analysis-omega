@@ -223,103 +223,163 @@ void Make_RadiativeCorrRatios(TString PartOption = "eta", TString StoreOption = 
     for (Int_t t = 0; t < Ntargets; t++) {
       // Q2: bin 0
       NElec_RadCorr_MR[t][0][0] = 0;
+      NElec_RadCorr_MR_Error[t][0][0] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][0] += NElec_RadCorr[t][0][n];
+        NElec_RadCorr_MR_Error[t][0][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][0][n]) / NElec_RadCorr[t][0][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][0] = NElec_RadCorr_MR[t][0][0] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][0]);
       // Q2: bin 1
       NElec_RadCorr_MR[t][0][1] = 0;
+      NElec_RadCorr_MR_Error[t][0][1] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][1] += NElec_RadCorr[t][1][n];
+        NElec_RadCorr_MR_Error[t][0][1] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][1][n]) / NElec_RadCorr[t][1][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][1] = NElec_RadCorr_MR[t][0][1] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][1]);
       // Q2: bin 2
       NElec_RadCorr_MR[t][0][2] = 0;
+      NElec_RadCorr_MR_Error[t][0][2] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][2] += NElec_RadCorr[t][2][n];
+        NElec_RadCorr_MR_Error[t][0][2] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][2][n]) / NElec_RadCorr[t][2][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][2] = NElec_RadCorr_MR[t][0][2] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][2]);
       // Q2: bin 3
       NElec_RadCorr_MR[t][0][3] = 0;
+      NElec_RadCorr_MR_Error[t][0][3] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][3] += NElec_RadCorr[t][3][n];
+        NElec_RadCorr_MR_Error[t][0][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][3][n]) / NElec_RadCorr[t][3][n], 2);
         NElec_RadCorr_MR[t][0][3] += NElec_RadCorr[t][4][n];
+        NElec_RadCorr_MR_Error[t][0][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][4][n]) / NElec_RadCorr[t][4][n], 2);
         NElec_RadCorr_MR[t][0][3] += NElec_RadCorr[t][5][n];
+        NElec_RadCorr_MR_Error[t][0][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][5][n]) / NElec_RadCorr[t][5][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][3] = NElec_RadCorr_MR[t][0][3] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][3]);
       // Nu: bin 0
       NElec_RadCorr_MR[t][1][0] = 0;
+      NElec_RadCorr_MR_Error[t][1][0] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][0] += NElec_RadCorr[t][q][0];
+        NElec_RadCorr_MR_Error[t][1][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][0]) / NElec_RadCorr[t][q][0], 2);
         NElec_RadCorr_MR[t][1][0] += NElec_RadCorr[t][q][1];
+        NElec_RadCorr_MR_Error[t][1][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][1]) / NElec_RadCorr[t][q][1], 2);
         NElec_RadCorr_MR[t][1][0] += NElec_RadCorr[t][q][2];
+        NElec_RadCorr_MR_Error[t][1][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][2]) / NElec_RadCorr[t][q][2], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][0] = NElec_RadCorr_MR[t][1][0] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][0]);
       // Nu: bin 1
       NElec_RadCorr_MR[t][1][1] = 0;
+      NElec_RadCorr_MR_Error[t][1][1] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][1] += NElec_RadCorr[t][q][3];
+        NElec_RadCorr_MR_Error[t][1][1] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][3]) / NElec_RadCorr[t][q][3], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][1] = NElec_RadCorr_MR[t][1][1] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][1]);
       // Nu: bin 2
       NElec_RadCorr_MR[t][1][2] = 0;
+      NElec_RadCorr_MR_Error[t][1][2] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][2] += NElec_RadCorr[t][q][4];
+        NElec_RadCorr_MR_Error[t][1][2] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][4]) / NElec_RadCorr[t][q][4], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][2] = NElec_RadCorr_MR[t][1][2] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][2]);
       // Nu: bin 3
       NElec_RadCorr_MR[t][1][3] = 0;
+      NElec_RadCorr_MR_Error[t][1][3] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][3] += NElec_RadCorr[t][q][5];
+        NElec_RadCorr_MR_Error[t][1][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][5]) / NElec_RadCorr[t][q][5], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][3] = NElec_RadCorr_MR[t][1][3] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][3]);
     }
   } else {  // PartOption == "eta"
     for (Int_t t = 0; t < Ntargets; t++) {
       // Q2: bin 0
       NElec_RadCorr_MR[t][0][0] = 0;
+      NElec_RadCorr_MR_Error[t][0][0] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][0] += NElec_RadCorr[t][0][n];
+        NElec_RadCorr_MR_Error[t][0][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][0][n]) / NElec_RadCorr[t][0][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][0] = NElec_RadCorr_MR[t][0][0] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][0]);
       // Q2: bin 1
       NElec_RadCorr_MR[t][0][1] = 0;
+      NElec_RadCorr_MR_Error[t][0][1] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][1] += NElec_RadCorr[t][1][n];
+        NElec_RadCorr_MR_Error[t][0][1] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][1][n]) / NElec_RadCorr[t][1][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][1] = NElec_RadCorr_MR[t][0][1] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][1]);
       // Q2: bin 2
       NElec_RadCorr_MR[t][0][2] = 0;
+      NElec_RadCorr_MR_Error[t][0][2] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][2] += NElec_RadCorr[t][2][n];
+        NElec_RadCorr_MR_Error[t][0][2] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][2][n]) / NElec_RadCorr[t][2][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][2] = NElec_RadCorr_MR[t][0][2] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][2]);
       // Q2: bin 3
       NElec_RadCorr_MR[t][0][3] = 0;
+      NElec_RadCorr_MR_Error[t][0][3] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][3] += NElec_RadCorr[t][3][n];
+        NElec_RadCorr_MR_Error[t][0][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][3][n]) / NElec_RadCorr[t][3][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][3] = NElec_RadCorr_MR[t][0][3] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][3]);
       // Q2: bin 4
       NElec_RadCorr_MR[t][0][4] = 0;
+      NElec_RadCorr_MR_Error[t][0][4] = 0;
       for (Int_t n = 0; n < NbinsNu_Externals; n++) {
         NElec_RadCorr_MR[t][0][4] += NElec_RadCorr[t][4][n];
+        NElec_RadCorr_MR_Error[t][0][4] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][4][n]) / NElec_RadCorr[t][4][n], 2);
         NElec_RadCorr_MR[t][0][4] += NElec_RadCorr[t][5][n];
+        NElec_RadCorr_MR_Error[t][0][4] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][5][n]) / NElec_RadCorr[t][5][n], 2);
       }
+      NElec_RadCorr_MR_Error[t][0][4] = NElec_RadCorr_MR[t][0][4] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][0][4]);
       // Nu: bin 0
       NElec_RadCorr_MR[t][1][0] = 0;
+      NElec_RadCorr_MR_Error[t][1][0] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][0] += NElec_RadCorr[t][q][0];
+        NElec_RadCorr_MR_Error[t][1][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][0]) / NElec_RadCorr[t][q][0], 2);
         NElec_RadCorr_MR[t][1][0] += NElec_RadCorr[t][q][1];
+        NElec_RadCorr_MR_Error[t][1][0] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][1]) / NElec_RadCorr[t][q][1], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][0] = NElec_RadCorr_MR[t][1][0] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][0]);
       // Nu: bin 1
       NElec_RadCorr_MR[t][1][1] = 0;
+      NElec_RadCorr_MR_Error[t][1][1] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][1] += NElec_RadCorr[t][q][2];
+        NElec_RadCorr_MR_Error[t][1][1] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][2]) / NElec_RadCorr[t][q][2], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][1] = NElec_RadCorr_MR[t][1][1] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][1]);
       // Nu: bin 2
       NElec_RadCorr_MR[t][1][2] = 0;
+      NElec_RadCorr_MR_Error[t][1][2] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][2] += NElec_RadCorr[t][q][3];
+        NElec_RadCorr_MR_Error[t][1][2] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][3]) / NElec_RadCorr[t][q][3], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][2] = NElec_RadCorr_MR[t][1][2] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][2]);
       // Nu: bin 3
       NElec_RadCorr_MR[t][1][3] = 0;
+      NElec_RadCorr_MR_Error[t][1][3] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][3] += NElec_RadCorr[t][q][4];
+        NElec_RadCorr_MR_Error[t][1][3] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][4]) / NElec_RadCorr[t][q][4], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][3] = NElec_RadCorr_MR[t][1][3] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][3]);
       // Nu: bin 4
       NElec_RadCorr_MR[t][1][4] = 0;
+      NElec_RadCorr_MR_Error[t][1][4] = 0;
       for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
         NElec_RadCorr_MR[t][1][4] += NElec_RadCorr[t][q][5];
+        NElec_RadCorr_MR_Error[t][1][4] += TMath::Power(TMath::Sqrt(NElec_RadCorr[t][q][5]) / NElec_RadCorr[t][q][5], 2);
       }
+      NElec_RadCorr_MR_Error[t][1][4] = NElec_RadCorr_MR[t][1][4] * TMath::Sqrt(NElec_RadCorr_MR_Error[t][1][4]);
     }
   }
 
@@ -334,6 +394,7 @@ void Make_RadiativeCorrRatios(TString PartOption = "eta", TString StoreOption = 
       // fill histogram
       for (Int_t i = 0; i < Nbins_MR; i++) {
         HistForMR_RadCorr[t][k]->SetBinContent(i + 1, NElec_RadCorr_MR[t][k][i]);
+        HistForMR_RadCorr[t][k]->SetBinError(i + 1, NElec_RadCorr_MR_Error[t][k][i]);
       }
     }
   }
@@ -485,14 +546,17 @@ void Make_RadiativeCorrRatios(TString PartOption = "eta", TString StoreOption = 
   for (Int_t t = 0; t < Ntargets; t++) {
     for (Int_t k = 0; k < Nkinvars; k++) {
       Graph_EffectOfRadCorr[t][k] = new TGraphErrors(Nbins_MR, BinGeoCenter[k], Ratio_EffectOfRadCorr[t][k], BinGeoWidth[k], Empty);
-      // set graphs' titles and axis
       if (t == 1) {
+        // set graphs' title
         Graph_EffectOfRadCorr[t][k]->SetTitle("");
-        Graph_EffectOfRadCorr[t][k]->GetXaxis()->SetTitle(kinvarTitle[k]);
+        // set y-axis
+        Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetRangeUser(0.85 * MinRange[k], 1.15 * MaxRange[k]);
+        Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetTitle("R^{#" + PartOption + "}_{RC+AC} / R^{#" + PartOption + "}_{AC}");
         Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetTitleSize(0.06);
         Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetTitleOffset(1.1);
-        Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetTitle("R^{#" + PartOption + "}_{RC+AC} / R^{#" + PartOption + "}_{AC}");
-        Graph_EffectOfRadCorr[t][k]->GetYaxis()->SetRangeUser(0.85 * MinRange[k], 1.15 * MaxRange[k]);
+        // set x-axis
+        Graph_EffectOfRadCorr[t][k]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins_MR]);
+        Graph_EffectOfRadCorr[t][k]->GetXaxis()->SetTitle(kinvarTitle[k]);
         Graph_EffectOfRadCorr[t][k]->GetXaxis()->SetTitleSize(0.06);
       }
       // set graphs' style

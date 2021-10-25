@@ -106,6 +106,7 @@ void Draw_OmegaNumbers(TString StoreOption = "") {
 
     omegaGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     omegaGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
+    omegaGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** FIX Y-AXIS ***/

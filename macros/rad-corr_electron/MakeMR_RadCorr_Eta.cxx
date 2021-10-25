@@ -21,17 +21,7 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
   /*** MAIN ***/
 
   TString kinvarOption[Nkinvars] = {"Q2", "Nu", "nZ", "nPt2"};
-  TString titleAxis[Nkinvars];
-  TString histProperties[Nkinvars];
-  titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.1)";
-  titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.25)";
-  titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 1.0)";
-  titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
-
+  TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
     EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
@@ -45,13 +35,13 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
 
   // declare input files to get acc. corrected eta numbers
   TFile *rootInputFile_Data[Ntargets][Nkinvars];
-  TFile *rootInputFile_Sim[Ntargets][Nkinvars];
   TFile *rootInputFile_MC[Ntargets][Nkinvars];
+  TFile *rootInputFile_Sim[Ntargets][Nkinvars];
 
   // declare output histograms
   TH1D *NEta_Data[Ntargets][Nkinvars];
-  TH1D *NEta_Sim[Ntargets][Nkinvars];
   TH1D *NEta_MC[Ntargets][Nkinvars];
+  TH1D *NEta_Sim[Ntargets][Nkinvars];
   TH1D *NEta_Acceptance[Ntargets][Nkinvars];
   TH1D *NEta_AccCorr[Ntargets][Nkinvars];
 
@@ -63,7 +53,7 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
   TH1D *Ratio_RadCorr[Ntargets][Nkinvars];  // Nh/Ne
 
   // declare final histogram
-  TH1D *MR[Nkinvars][Ntargets];
+  TH1D *MR[Ntargets][Nkinvars];
 
   for (Int_t t = 0; t < Ntargets; t++) {
     for (Int_t k = 0; k < Nkinvars; k++) {
@@ -77,8 +67,8 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
       // create output histograms
       NEta_Data[t][k] =
           new TH1D("NEta_Data_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      NEta_Sim[t][k] = new TH1D("NEta_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       NEta_MC[t][k] = new TH1D("NEta_MC_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NEta_Sim[t][k] = new TH1D("NEta_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       NEta_Acceptance[t][k] =
           new TH1D("NEta_Acceptance_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
       NEta_AccCorr[t][k] =
@@ -102,6 +92,14 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
         NEta_Data[t][k]->SetBinContent(i + 1, auxNEta_Data);
         NEta_Data[t][k]->SetBinError(i + 1, auxNEtaError_Data);
 
+        /*** ETA MC ***/
+
+        TH1D *auxHist_MC = (TH1D *)rootInputFile_MC[t][k]->Get(Form("hist_%i", i));
+
+        // set bin content
+        NEta_MC[t][k]->SetBinContent(i + 1, auxHist_MC->GetEntries());
+        NEta_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(auxHist_MC->GetEntries()));
+
         /*** ETA SIMREC ***/
 
         RooFitResult *auxFitResult_Sim = (RooFitResult *)rootInputFile_Sim[t][k]->Get(Form("fit-result_%i", i));
@@ -111,14 +109,6 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
         // set bin content
         NEta_Sim[t][k]->SetBinContent(i + 1, auxNEta_Sim);
         NEta_Sim[t][k]->SetBinError(i + 1, auxNEtaError_Sim);
-
-        /*** ETA MC ***/
-
-        TH1D *auxHist_MC = (TH1D *)rootInputFile_MC[t][k]->Get(Form("hist_%i", i));
-
-        // set bin content
-        NEta_MC[t][k]->SetBinContent(i + 1, auxHist_MC->GetEntries());
-        NEta_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(auxHist_MC->GetEntries()));
 
         /*** RAD CORR ELECTRONS ***/
 
@@ -172,9 +162,9 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
   }
 
   // set graphs
-  TGraphErrors *acceptanceGraph[Nkinvars][Ntargets];
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
+  TGraphErrors *acceptanceGraph[Ntargets][Nkinvars];
+  for (Int_t t = 0; t < Ntargets; t++) {
+    for (Int_t k = 0; k < Nkinvars; k++) {
       acceptanceGraph[t][k] = new TGraphErrors(Nbins, binCenter[k], acceptanceValue[t][k], binError[k], acceptanceError[t][k]);
     }
   }
@@ -191,7 +181,7 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
     acceptanceGraph[1][k]->GetYaxis()->SetTitleSize(0.06);
     acceptanceGraph[1][k]->GetYaxis()->SetMaxDigits(3);
 
-    acceptanceGraph[1][k]->GetXaxis()->SetTitle(titleAxis[k]);
+    acceptanceGraph[1][k]->GetXaxis()->SetTitle(kinvarTitle[k]);
     acceptanceGraph[1][k]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     acceptanceGraph[1][k]->GetXaxis()->SetTitleSize(0.06);
 
@@ -215,10 +205,12 @@ void MakeMR_RadCorr_Eta(TString StoreOption = "") {
 
   for (Int_t k = 0; k < Nkinvars; k++) {
     c->cd(k + 1);
+
     // draw per kinvar, only solid targets
     acceptanceGraph[1][k]->Draw("AP");
     acceptanceGraph[2][k]->Draw("P");
     acceptanceGraph[3][k]->Draw("P");
+
     // legend
     if (k == 1) {
       TLegend *legend = new TLegend(0.2, 0.75, 0.45, 0.9);  // x1,y1,x2,y2

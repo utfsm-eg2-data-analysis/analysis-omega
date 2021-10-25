@@ -74,7 +74,7 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
   BinsForNormalization[1] = 5;
   BinsForNormalization[2] = plotNbins - 4;
   BinsForNormalization[3] = plotNbins;
-  TString histProperties = Form("(%d, %.3f, %.3f)", plotNbins, plotMin, plotMax);
+  TString histProperties = Form("(%i, %.3f, %.3f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;
@@ -104,7 +104,7 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     // loop over bins
     for (Int_t i = 0; i < Nbins; i++) {
       // get fit function to retrieve parameter's values
-      Fit[i] = (TF1 *)RootInputFile->Get(Form("model_%d", i));
+      Fit[i] = (TF1 *)RootInputFile->Get(Form("model_%i", i));
       MeanFix[i] = Fit[i]->GetParameter(1);
       SigmaFix[i] = Fit[i]->GetParameter(2);
     }
@@ -120,9 +120,9 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     std::cout << auxCut << std::endl;
 
     // prepare data
-    dataChain->Draw(Form("wD>>data_%d", i) + histProperties, gCutDIS && CutVertex && gCutPi0 && gCutKaons && gCutPhotonsOpAngle && CutBin,
+    dataChain->Draw(Form("wD>>data_%i", i) + histProperties, gCutDIS && CutVertex && gCutPi0 && gCutKaons && gCutPhotonsOpAngle && CutBin,
                     "goff");
-    dataMassive[i] = (TH1D *)gROOT->FindObject(Form("data_%d", i));
+    dataMassive[i] = (TH1D *)gROOT->FindObject(Form("data_%i", i));
 
     dataMassive[i]->SetMarkerColor(myBlack);
     dataMassive[i]->SetMarkerStyle(8);
@@ -131,9 +131,9 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     dataMassive[i]->SetFillStyle(0);
 
     // prepare bkg
-    bkgChain->Draw(Form("wD>>bkg_%d", i) + histProperties, gCutDIS && CutVertex && gCutPi0 && gCutKaons && gCutPhotonsOpAngle && CutBin,
+    bkgChain->Draw(Form("wD>>bkg_%i", i) + histProperties, gCutDIS && CutVertex && gCutPi0 && gCutKaons && gCutPhotonsOpAngle && CutBin,
                    "goff");
-    bkgMassive[i] = (TH1D *)gROOT->FindObject(Form("bkg_%d", i));
+    bkgMassive[i] = (TH1D *)gROOT->FindObject(Form("bkg_%i", i));
 
     bkgMassive[i]->SetMarkerColor(myRed);
     bkgMassive[i]->SetMarkerStyle(8);
@@ -154,7 +154,7 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
 
     /*** BKG SUBTRACTION ***/
 
-    subMassive[i] = new TH1D(Form("sub_%d", i), "", plotNbins, plotMin, plotMax);
+    subMassive[i] = new TH1D(Form("sub_%i", i), "", plotNbins, plotMin, plotMax);
     subMassive[i]->Add(dataMassive[i], bkgMassive[i], 1, -1);
 
     subMassive[i]->SetMarkerColor(myOrange);
@@ -170,7 +170,7 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
     Double_t MeanLimit = 0.08;
     Double_t SigmaIGV = 0.024;
     Double_t SigmaLimit = 0.011;
-    Model[i] = new TF1(Form("model_%d", i), "gaus(0) + pol1(3)", plotMin, plotMax);
+    Model[i] = new TF1(Form("model_%i", i), "gaus(0) + pol1(3)", plotMin, plotMax);
     Model[i]->SetParameter(1, MeanIGV);
     Model[i]->SetParameter(2, SigmaIGV);
     Model[i]->SetParLimits(0, 0., 100000);  // force positive values
@@ -182,13 +182,13 @@ void Make_EventMixing(TString targetOption = "C", TString kinvarOption = "Q2", I
       Model[i]->FixParameter(2, SigmaFix[i]);
     }
 
-    FitResult[i] = subMassive[i]->Fit(Form("model_%d", i), "BEMSVN");
+    FitResult[i] = subMassive[i]->Fit(Form("model_%i", i), "BEMSVN");
 
-    Signal[i] = new TF1(Form("signal_%d", i), "gaus", plotMin, plotMax);
+    Signal[i] = new TF1(Form("signal_%i", i), "gaus", plotMin, plotMax);
     Signal[i]->SetParameter(0, Model[i]->GetParameter(0));
     Signal[i]->SetParameter(1, Model[i]->GetParameter(1));
     Signal[i]->SetParameter(2, Model[i]->GetParameter(2));
-    ResidualBkg[i] = new TF1(Form("res-bkg_%d", i), "pol1", plotMin, plotMax);
+    ResidualBkg[i] = new TF1(Form("res-bkg_%i", i), "pol1", plotMin, plotMax);
     ResidualBkg[i]->SetParameter(0, Model[i]->GetParameter(3));
     ResidualBkg[i]->SetParameter(1, Model[i]->GetParameter(4));
 

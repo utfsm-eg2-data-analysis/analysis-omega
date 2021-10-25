@@ -132,6 +132,7 @@ void Make_ElectronAcceptance(TString StoreOption = "") {
 
     acceptanceGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     acceptanceGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
+    acceptanceGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

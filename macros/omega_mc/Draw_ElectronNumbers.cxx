@@ -8,8 +8,8 @@
 
 #include "OmegaMCElectronNumbers.hxx"
 
-const Int_t Nkinvars = 2;  // only Q2 and Nu
 const Int_t Ntargets = 4;
+const Int_t Nkinvars = 2;  // only Q2 and Nu
 const Int_t Nbins = 4;
 
 void Draw_ElectronNumbers(TString StoreOption = "") {
@@ -20,19 +20,23 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     gROOT->SetBatch(kTRUE);
   }
 
-  TString titleAxis[Nkinvars];
-  titleAxis[0] = "Q^{2} [GeV^{2}]";
-  titleAxis[1] = "#nu [GeV]";
+  TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]"};
+
+  Double_t EdgesKinvar[Nkinvars][Nbins + 1];
+  for (Int_t i = 0; i < Nbins + 1; i++) {
+    EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
+    EdgesKinvar[1][i] = kEdgesNu_Eta[i];
+  }
 
   TString targetString[Ntargets] = {"D", "C", "Fe", "Pb"};
   Color_t targetColor[Ntargets] = {myGreen, myRed, myBlue, myBlack};
 
   /*** GRAPHS ***/
 
-  // creating and filling histograms
+  // create and fill graphs
   TGraphErrors *electronGraph[Nkinvars][Ntargets];
 
-  // define arrays
+  // define and fill arrays
   Double_t binCenter[Nkinvars][Nbins];
   Double_t binError[Nkinvars][Nbins];
   Double_t electronNumber[Nkinvars][Ntargets][Nbins];
@@ -78,25 +82,18 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[1][t]->SetMarkerSize(1.5);
   }
 
-  // prepare y-axis
+  /*** SET AXIS ***/
+
   for (Int_t k = 0; k < Nkinvars; k++) {
+    // set y-axis
+    electronGraph[k][0]->GetYaxis()->SetRangeUser(0., 1.2 * TMath::MaxElement(Nbins, electronGraph[k][0]->GetY()));
     electronGraph[k][0]->GetYaxis()->SetTitle("N_{e^{-}}^{gen}");
     electronGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     electronGraph[k][0]->GetYaxis()->SetTitleOffset(1.);
-    electronGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
+    // set x-axis
+    electronGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+    electronGraph[k][0]->GetXaxis()->SetTitle(kinvarTitle[k]);
     electronGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
-  }
-
-  /*** FIX Y-AXIS ***/
-
-  Double_t MaxRangeMC[Nkinvars] = {0, 0};
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
-      // get the maximum of an array of length Nbins, and compare it with MaxRangeMC
-      if (TMath::MaxElement(Nbins, electronGraph[k][t]->GetY()) > MaxRangeMC[k]) {
-        MaxRangeMC[k] = TMath::MaxElement(Nbins, electronGraph[k][t]->GetY());
-      }
-    }
   }
 
   /*** DRAW ***/
@@ -107,40 +104,32 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
   const Int_t Nx = 2;
   const Int_t Ny = 1;
   TString CanvasName = "electron-numbers_mc";
-  TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 1080);
+  TCanvas *c = new TCanvas(CanvasName, CanvasName, Nx * 1080, Ny * 1080);
   c->Divide(Nx, Ny, 0.001, 0.001);
 
   c->SetFrameLineWidth(2);
 
-  // set y-axis
-  electronGraph[0][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[0]);
-  electronGraph[1][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRangeMC[1]);
+  for (Int_t k = 0; k < Nkinvars; k++) {
+    c->cd(k + 1);
+    electronGraph[k][0]->Draw("AP");
+    electronGraph[k][1]->Draw("P");
+    electronGraph[k][2]->Draw("P");
+    electronGraph[k][3]->Draw("P");
 
-  // left plot
-  c->cd(1);
-  electronGraph[0][0]->Draw("AP");
-  electronGraph[0][1]->Draw("P");
-  electronGraph[0][2]->Draw("P");
-  electronGraph[0][3]->Draw("P");
-
-  // legend
-  TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
-  legend->AddEntry(electronGraph[0][0], "D (Sim. Gen.)", "pl");
-  legend->AddEntry(electronGraph[0][1], "C (Sim. Gen.)", "pl");
-  legend->AddEntry(electronGraph[0][2], "Fe (Sim. Gen.)", "pl");
-  legend->AddEntry(electronGraph[0][3], "Pb (Sim. Gen.)", "pl");
-  legend->SetFillStyle(0);
-  legend->SetTextFont(62);
-  legend->SetTextSize(0.04);
-  legend->SetBorderSize(0);
-  legend->Draw();
-
-  // right plot
-  c->cd(2);
-  electronGraph[1][0]->Draw("AP");
-  electronGraph[1][1]->Draw("P");
-  electronGraph[1][2]->Draw("P");
-  electronGraph[1][3]->Draw("P");
+    // legend
+    if (k == 0) {
+      TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
+      legend->AddEntry(electronGraph[k][0], "D (Sim. Gen.)", "pl");
+      legend->AddEntry(electronGraph[k][1], "C (Sim. Gen.)", "pl");
+      legend->AddEntry(electronGraph[k][2], "Fe (Sim. Gen.)", "pl");
+      legend->AddEntry(electronGraph[k][3], "Pb (Sim. Gen.)", "pl");
+      legend->SetFillStyle(0);
+      legend->SetTextFont(62);
+      legend->SetTextSize(0.04);
+      legend->SetBorderSize(0);
+      legend->Draw();
+    }
+  }
 
   /*** OUTPUT ***/
 

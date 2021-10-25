@@ -9,8 +9,8 @@
 #include "OmegaMCElectronNumbers.hxx"
 #include "OmegaSimElectronNumbers.hxx"
 
-const Int_t Nkinvars = 4;
 const Int_t Ntargets = 4;
+const Int_t Nkinvars = 4;
 const Int_t Nbins = 4;
 
 void Make_AcceptanceCorrRatios(TString StoreOption = "") {
@@ -245,6 +245,7 @@ void Make_AcceptanceCorrRatios(TString StoreOption = "") {
 
     acceptanceGraph[k][1]->GetXaxis()->SetTitle(titleAxis[k]);
     acceptanceGraph[k][1]->GetXaxis()->SetTitleSize(0.06);
+    acceptanceGraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

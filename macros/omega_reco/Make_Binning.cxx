@@ -79,7 +79,7 @@ void Make_Binning(TString targetOption = "Pb", Int_t Nbins = 4, TString StoreOpt
   const Int_t Ny = 2;
 
   TString CanvasName = "omega-binning_";
-  CanvasName += Form("%d-bins", Nbins);
+  CanvasName += Form("%i-bins", Nbins);
   CanvasName += "_" + targetOption + "-data";
   TCanvas *c = new TCanvas(CanvasName, CanvasName, 2160, 2160);
   c->Divide(Nx, Ny, 0.001, 0.001);

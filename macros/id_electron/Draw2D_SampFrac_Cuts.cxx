@@ -27,11 +27,11 @@ void Draw2D_SampFrac_Cuts(TString StoreOption = "") {
 
   TH2D *Hist[6];
   for (Int_t Sector = 0; Sector < 6; Sector++) {
-    InputChain->Draw(Form("TMath::Max(Etot, Eout+Ein)/P:P>>hist_%d(240, 0., 5., 240, 0, 0.5)", Sector), Form("Sector == %d", Sector), "goff");
-    Hist[Sector] = (TH2D *)gROOT->FindObject(Form("hist_%d", Sector));
+    InputChain->Draw(Form("TMath::Max(Etot, Eout+Ein)/P:P>>hist_%i(240, 0., 5., 240, 0, 0.5)", Sector), Form("Sector == %i", Sector), "goff");
+    Hist[Sector] = (TH2D *)gROOT->FindObject(Form("hist_%i", Sector));
 
     SetMy2DHistStyle(Hist[Sector]);
-    Hist[Sector]->SetTitle(Form("Sector %d", Sector));
+    Hist[Sector]->SetTitle(Form("Sector %i", Sector));
 
     Hist[Sector]->GetYaxis()->SetTitle("E/P");
     Hist[Sector]->GetYaxis()->SetLabelSize(0.03);
@@ -68,7 +68,7 @@ void Draw2D_SampFrac_Cuts(TString StoreOption = "") {
       CustomizePaletteSize(Hist[counter - 1]);
 
       gPad->Update();  // necessary
-      TF1 *top = new TF1(Form("top_%d%d", i, j),
+      TF1 *top = new TF1(Form("top_%i%i", i, j),
                          Form("%f + %f*x + %f*x*x + 2.5*TMath::Sqrt(TMath::Power(%f,2) + TMath::Power(%f,2)/x)", kCPar[counter - 1][0],
                               kCPar[counter - 1][1], kCPar[counter - 1][2], kCPar[counter - 1][3], kCPar[counter - 1][4]),
                          0, 5);
@@ -78,7 +78,7 @@ void Draw2D_SampFrac_Cuts(TString StoreOption = "") {
       top->Draw("SAME");
 
       gPad->Update();  // necessary
-      TF1 *center = new TF1(Form("center_%d%d", i, j),
+      TF1 *center = new TF1(Form("center_%i%i", i, j),
                             Form("%f + %f*x + %f*x*x", kCPar[counter - 1][0], kCPar[counter - 1][1], kCPar[counter - 1][2]), 0, 5);
       center->SetLineColor(myBlue);
       center->SetLineStyle(kSolid);
@@ -86,7 +86,7 @@ void Draw2D_SampFrac_Cuts(TString StoreOption = "") {
       center->Draw("SAME");
 
       gPad->Update();  // necessary
-      TF1 *bottom = new TF1(Form("bottom_%d%d", i, j),
+      TF1 *bottom = new TF1(Form("bottom_%i%i", i, j),
                             Form("%f + %f*x + %f*x*x - 2.5*TMath::Sqrt(TMath::Power(%f,2) + TMath::Power(%f,2)/x)", kCPar[counter - 1][0],
                                  kCPar[counter - 1][1], kCPar[counter - 1][2], kCPar[counter - 1][3], kCPar[counter - 1][4]),
                             0, 5);

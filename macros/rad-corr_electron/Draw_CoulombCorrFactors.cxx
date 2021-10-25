@@ -49,9 +49,9 @@ void Draw_CoulombCorrFactors(TString PartOption = "omega", TString StoreOption =
   Double_t RadCorrFactor[Ntargets][NbinsQ2_Externals][NbinsNu_Externals];
 
   // loop over targets
-  for (Int_t tt = 0; tt < Ntargets; tt++) {
+  for (Int_t t = 0; t < Ntargets; t++) {
 
-    ExternalsFiles[tt].open(gProDir + "/gfx/rad-corr_electron/clas_" + PartOption + "_" + targetSufix[tt] + ".out", std::ios::in);
+    ExternalsFiles[t].open(gProDir + "/gfx/rad-corr_electron/clas_" + PartOption + "_" + targetSufix[t] + ".out", std::ios::in);
 
     std::string auxLine;
     TString auxString[13];  // number of columns in the .out files
@@ -59,7 +59,7 @@ void Draw_CoulombCorrFactors(TString PartOption = "omega", TString StoreOption =
     Int_t binInNu;
     Int_t binInQ2;
 
-    while (getline(ExternalsFiles[tt], auxLine)) {
+    while (getline(ExternalsFiles[t], auxLine)) {
       // given the first line represents the name of the columns
       if (countLine > 0) {
         for (Int_t i = 0; i < 13; i++) {
@@ -70,14 +70,14 @@ void Draw_CoulombCorrFactors(TString PartOption = "omega", TString StoreOption =
         // ignore empty bins by checking content of previous column
         if (auxString[11] != "NaN") {
           // Column 12: C_cor
-          RadCorrFactor[tt][binInQ2][binInNu] = auxString[12].Atof();
+          RadCorrFactor[t][binInQ2][binInNu] = auxString[12].Atof();
         }
       }
       countLine++;
     }
 
     // close input file
-    ExternalsFiles[tt].close();
+    ExternalsFiles[t].close();
   }
 
   /*** GRAPHS ***/
@@ -92,22 +92,23 @@ void Draw_CoulombCorrFactors(TString PartOption = "omega", TString StoreOption =
 
   // define graphs
   TGraphErrors *RCgraph[Ntargets][NbinsQ2_Externals];
-  for (Int_t tt = 0; tt < Ntargets; tt++) {
+  for (Int_t t = 0; t < Ntargets; t++) {
     for (Int_t q = 0; q < NbinsQ2_Externals; q++) {
-      RCgraph[tt][q] = new TGraphErrors(NbinsNu_Externals, BinGeoCenter, RadCorrFactor[tt][q], Empty, Empty);
-      // set graphs' titles and axis
-      if (tt == 0) {
-        RCgraph[tt][q]->SetTitle(Form("%.2f < Q^{2} < %.2f", EdgesQ2_Externals[q], EdgesQ2_Externals[q + 1]));
-        RCgraph[tt][q]->GetXaxis()->SetTitle("#nu (GeV)");
-        // RCgraph[tt][q]->GetXaxis()->SetNdivisions(500 + Nbins, kFALSE);
-        // RCgraph[tt][q]->GetXaxis()->SetLimits(EdgesKinvar[0], EdgesKinvar[Nbins]);
-        RCgraph[tt][q]->GetYaxis()->SetTitle("#delta^{CC}");
-        RCgraph[tt][q]->GetYaxis()->SetRangeUser(1., 1.075);
+      RCgraph[t][q] = new TGraphErrors(NbinsNu_Externals, BinGeoCenter, RadCorrFactor[t][q], Empty, Empty);
+      if (t == 0) {
+        // set graphs' title
+        RCgraph[t][q]->SetTitle(Form("%.2f < Q^{2} < %.2f", EdgesQ2_Externals[q], EdgesQ2_Externals[q + 1]));
+        // set y-axis
+        RCgraph[t][q]->GetYaxis()->SetTitle("#delta^{CC}");
+        RCgraph[t][q]->GetYaxis()->SetRangeUser(1., 1.075);
+        // set x-axis
+        RCgraph[t][q]->GetXaxis()->SetLimits(EdgesNu_Externals[0], EdgesNu_Externals[NbinsNu_Externals]);
+        RCgraph[t][q]->GetXaxis()->SetTitle("#nu (GeV)");
       }
       // set graphs' style
-      RCgraph[tt][q]->SetMarkerStyle(20);
-      RCgraph[tt][q]->SetMarkerSize(2);
-      RCgraph[tt][q]->SetMarkerColor(targetColor[tt]);
+      RCgraph[t][q]->SetMarkerStyle(20);
+      RCgraph[t][q]->SetMarkerSize(2);
+      RCgraph[t][q]->SetMarkerColor(targetColor[t]);
     }
   }
 

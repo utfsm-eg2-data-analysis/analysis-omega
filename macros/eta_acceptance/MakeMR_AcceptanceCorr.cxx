@@ -10,12 +10,12 @@
 #include "EtaMCElectronNumbers.hxx"
 #include "EtaSimElectronNumbers.hxx"
 
-const Int_t Nkinvars = 4;
 const Int_t Ntargets = 4;
+const Int_t Nkinvars = 4;
 const Int_t Nbins = 5;
 
 void MakeMR_AcceptanceCorr(TString StoreOption = "") {
-  // Calculate and draw MR after background subtraction via event mixing, obtained electron numbers and acceptance corr. factors
+  // Calculate and draw MR from fit results, electron numbers and acceptance corr. factors
 
   // prevent output printing
   if (StoreOption != "") {
@@ -24,27 +24,8 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
 
   /*** MAIN ***/
 
-  Double_t fitEta_Data[Nkinvars][Ntargets][Nbins];
-  Double_t fitEtaError_Data[Nkinvars][Ntargets][Nbins];
-
-  Double_t fitEta_Sim[Nkinvars][Ntargets][Nbins];
-  Double_t fitEtaError_Sim[Nkinvars][Ntargets][Nbins];
-
-  Double_t intEta_MC[Nkinvars][Ntargets][Nbins];
-  Double_t intEtaError_MC[Nkinvars][Ntargets][Nbins];
-
   TString kinvarOption[Nkinvars] = {"Q2", "Nu", "nZ", "nPt2"};
-  TString titleAxis[Nkinvars];
-  TString histProperties[Nkinvars];
-  titleAxis[0] = "Q^{2} [GeV^{2}]";
-  histProperties[0] = "(100, 1., 4.1)";
-  titleAxis[1] = "#nu [GeV]";
-  histProperties[1] = "(100, 2.2, 4.25)";
-  titleAxis[2] = "z_{h}";
-  histProperties[2] = "(100, 0.5, 1.0)";
-  titleAxis[3] = "p_{T}^{2} [GeV^{2}]";
-  histProperties[3] = "(100, 0., 1.5)";
-
+  TString kinvarTitle[Nkinvars] = {"Q^{2} [GeV^{2}]", "#nu [GeV]", "z_{h}", "p_{T}^{2} [GeV^{2}]"};
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
     EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
@@ -56,189 +37,156 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
   TString targetString[Ntargets] = {"D", "C", "Fe", "Pb"};
   Color_t targetColor[Ntargets] = {myGreen, myRed, myBlue, myBlack};
 
-  TFile *rootInputFile_Data[Nkinvars][Ntargets];
-  TFile *rootInputFile_Sim[Nkinvars][Ntargets];
-  TFile *rootInputFile_MC[Nkinvars][Ntargets];
+  // declare input files
+  TFile *FitFile_Data[Ntargets][Nkinvars];
+  TFile *HistFile_MC[Ntargets][Nkinvars];
+  TFile *FitFile_Sim[Ntargets][Nkinvars];
 
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
+  // declare output histograms
+  TH1D *NEta_Data[Ntargets][Nkinvars];
+  TH1D *NEta_MC[Ntargets][Nkinvars];
+  TH1D *NEta_Sim[Ntargets][Nkinvars];
+  TH1D *NEta_Acceptance[Ntargets][Nkinvars];
+  TH1D *NEta_AccCorr[Ntargets][Nkinvars];
 
-      // open files
-      rootInputFile_Data[k][t] =
-          new TFile(gProDir + "/gfx/eta_bkg-fitting/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
-      rootInputFile_MC[k][t] = new TFile(gProDir + "/gfx/eta_mc/parent-id_" + targetString[t] + "_" + kinvarOption[k] + ".root");
-      rootInputFile_Sim[k][t] = new TFile(gProDir + "/gfx/eta_sim/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+  TH1D *NElectron_Data[Ntargets][Nkinvars];
+  TH1D *NElectron_MC[Ntargets][Nkinvars];
+  TH1D *NElectron_Sim[Ntargets][Nkinvars];
+  TH1D *NElectron_Acceptance[Ntargets][Nkinvars];
+  TH1D *NElectron_AccCorr[Ntargets][Nkinvars];
+
+  TH1D *Ratio[Ntargets][Nkinvars];  // N_h/N_e
+  TH1D *MR[Ntargets][Nkinvars];     // R_A/R_D
+
+  for (Int_t t = 0; t < Ntargets; t++) {
+    for (Int_t k = 0; k < Nkinvars; k++) {
+
+      // open files (read only)
+      FitFile_Data[t][k] = new TFile(gProDir + "/gfx/eta_bkg-fitting/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      HistFile_MC[t][k] = new TFile(gProDir + "/gfx/eta_mc/parent-id_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      FitFile_Sim[t][k] = new TFile(gProDir + "/gfx/eta_sim/bkg-fitting_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+
+      // create output histograms
+      NEta_Data[t][k] =
+          new TH1D("NEta_Data_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NEta_MC[t][k] = new TH1D("NEta_MC_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NEta_Sim[t][k] = new TH1D("NEta_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NEta_Acceptance[t][k] =
+          new TH1D("NEta_Acceptance_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NEta_AccCorr[t][k] =
+          new TH1D("NEta_AccCorr_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+
+      NElectron_Data[t][k] =
+          new TH1D("NElectron_Data_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NElectron_MC[t][k] =
+          new TH1D("NElectron_MC_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NElectron_Sim[t][k] =
+          new TH1D("NElectron_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NElectron_Acceptance[t][k] =
+          new TH1D("NElectron_Acceptance_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      NElectron_AccCorr[t][k] =
+          new TH1D("NElectron_AccCorr_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+
+      Ratio[t][k] = new TH1D("Ratio_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      MR[t][k] = new TH1D("MR_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
 
       // loop over bins
       for (Int_t i = 0; i < Nbins; i++) {
 
         /*** ETA DATA ***/
 
-        RooFitResult *FitResult_Data = (RooFitResult *)rootInputFile_Data[k][t]->Get(Form("fit-result_%i", i));
-        fitEta_Data[k][t][i] = ((RooRealVar *)FitResult_Data->floatParsFinal().find("N_{#eta}"))->getValV();
-        fitEtaError_Data[k][t][i] = ((RooRealVar *)FitResult_Data->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
+        RooFitResult *auxFitResult_Data = (RooFitResult *)FitFile_Data[t][k]->Get(Form("fit-result_%i", i));
+        Double_t auxNEta_Data = ((RooRealVar *)auxFitResult_Data->floatParsFinal().find("N_{#eta}"))->getValV();
+        Double_t auxNEtaError_Data = ((RooRealVar *)auxFitResult_Data->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
 
-        /*** ETA SIMREC ***/
-
-        RooFitResult *FitResult_Sim = (RooFitResult *)rootInputFile_Sim[k][t]->Get(Form("fit-result_%i", i));
-        fitEta_Sim[k][t][i] = ((RooRealVar *)FitResult_Sim->floatParsFinal().find("N_{#eta}"))->getValV();
-        fitEtaError_Sim[k][t][i] = ((RooRealVar *)FitResult_Sim->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
+        // set bin content
+        NEta_Data[t][k]->SetBinContent(i + 1, auxNEta_Data);
+        NEta_Data[t][k]->SetBinError(i + 1, auxNEtaError_Data);
 
         /*** ETA MC ***/
 
-        TH1D *Hist_MC = (TH1D *)rootInputFile_MC[k][t]->Get(Form("hist_%i", i));
+        TH1D *auxHist_MC = (TH1D *)HistFile_MC[t][k]->Get(Form("hist_%i", i));
 
-        intEta_MC[k][t][i] = Hist_MC->GetEntries();
-        intEtaError_MC[k][t][i] = TMath::Sqrt(intEta_MC[k][t][i]);
-      }
-    }
-  }
+        // set bin content
+        NEta_MC[t][k]->SetBinContent(i + 1, auxHist_MC->GetEntries());
+        NEta_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(auxHist_MC->GetEntries()));
 
-  /*** HISTOGRAMS ***/
+        /*** ETA SIMREC ***/
 
-  TH1D *electronHist_Data[Nkinvars][Ntargets];
-  TH1D *etaHist_Data[Nkinvars][Ntargets];
+        RooFitResult *auxFitResult_Sim = (RooFitResult *)FitFile_Sim[t][k]->Get(Form("fit-result_%i", i));
+        Double_t auxNEta_Sim = ((RooRealVar *)auxFitResult_Sim->floatParsFinal().find("N_{#eta}"))->getValV();
+        Double_t auxNEtaError_Sim = ((RooRealVar *)auxFitResult_Sim->floatParsFinal().find("N_{#eta}"))->getAsymErrorHi();
 
-  TH1D *ratioHist_Data[Nkinvars][Ntargets];  // N_h/N_e
-  TH1D *MR[Nkinvars][Ntargets];              // R_A/R_D
+        // set bin content
+        NEta_Sim[t][k]->SetBinContent(i + 1, auxNEta_Sim);
+        NEta_Sim[t][k]->SetBinError(i + 1, auxNEtaError_Sim);
 
-  TH1D *electronHist_Sim[Nkinvars][Ntargets];
-  TH1D *electronHist_MC[Nkinvars][Ntargets];
-  TH1D *electronAcceptance[Nkinvars][Ntargets];
+        /*** ELECTRONS DATA ***/
 
-  TH1D *etaHist_Sim[Nkinvars][Ntargets];
-  TH1D *etaHist_MC[Nkinvars][Ntargets];
-  TH1D *etaAcceptance[Nkinvars][Ntargets];
-
-  TH1D *AccCorrFactorsHist[Nkinvars][Ntargets];
-  TH1D *AccCorrRatiosHist[Nkinvars][Ntargets];
-
-  TH1D *MRCorr[Nkinvars][Ntargets];
-
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
-
-      /*** ELECTRONS FROM DATA ***/
-
-      electronHist_Data[k][t] =
-          new TH1D("electronNumber_Data_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-
-      // fill hists, loop over bins
-      for (Int_t i = 0; i < Nbins; i++) {
         if (k == 0) {
           // Q2
-          electronHist_Data[k][t]->SetBinContent(i + 1, kNElecQ2_Eta[t][i]);
-          electronHist_Data[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_Eta[t][i]));
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecQ2_Eta[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_Eta[t][i]));
         } else if (k == 1) {
           // Nu
-          electronHist_Data[k][t]->SetBinContent(i + 1, kNElecNu_Eta[t][i]);
-          electronHist_Data[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_Eta[t][i]));
-        } else {  // k == 2 (wZ) or k == 3 (wPt2)
-          electronHist_Data[k][t]->SetBinContent(i + 1, kNElec_Eta[t]);
-          electronHist_Data[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec_Eta[t]));
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecNu_Eta[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_Eta[t][i]));
+        } else {
+          // wZ or wPt2
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElec_Eta[t]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_Eta[t]));
         }
-      }
 
-      /*** ETA FROM DATA ***/
+        /*** ELECTRONS MC ***/
 
-      etaHist_Data[k][t] =
-          new TH1D("etaNumber_Data_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-
-      // fill hists, loop over bins
-      for (Int_t i = 0; i < Nbins; i++) {
-        etaHist_Data[k][t]->SetBinContent(i + 1, fitEta_Data[k][t][i]);
-        etaHist_Data[k][t]->SetBinError(i + 1, fitEtaError_Data[k][t][i]);
-      }
-
-      /*** ETA/ELECTRONS RATIOS ***/
-
-      // calculate N_h/N_e with standard errors
-      ratioHist_Data[k][t] =
-          new TH1D("Ratio_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      ratioHist_Data[k][t]->Divide(etaHist_Data[k][t], electronHist_Data[k][t], 1, 1);
-
-      /*** UNCORR. MR ***/
-
-      // calculate multiplicity ratios with standard errors
-      MR[k][t] = new TH1D("MR_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      MR[k][t]->Divide(ratioHist_Data[k][t], ratioHist_Data[k][0], 1, 1);
-
-      /*** ELECTRONS ACCEPTANCE ***/
-
-      electronHist_Sim[k][t] =
-          new TH1D("electronNumber_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      electronHist_MC[k][t] =
-          new TH1D("electronNumber_MC_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      electronAcceptance[k][t] =
-          new TH1D("electronAcceptance_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-
-      // fill hists, loop over bins
-      for (Int_t i = 0; i < Nbins; i++) {
         if (k == 0) {
           // Q2
-          electronHist_Sim[k][t]->SetBinContent(i + 1, kNElecQ2_EtaSim[t][i]);
-          electronHist_Sim[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_EtaSim[t][i]));
-
-          electronHist_MC[k][t]->SetBinContent(i + 1, kNElecQ2_EtaMC[t][i]);
-          electronHist_MC[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_EtaMC[t][i]));
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecQ2_EtaMC[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_EtaMC[t][i]));
         } else if (k == 1) {
           // Nu
-          electronHist_Sim[k][t]->SetBinContent(i + 1, kNElecNu_EtaSim[t][i]);
-          electronHist_Sim[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_EtaSim[t][i]));
-
-          electronHist_MC[k][t]->SetBinContent(i + 1, kNElecNu_EtaMC[t][i]);
-          electronHist_MC[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_EtaMC[t][i]));
-        } else {  // k == 2 (wZ) or k == 3 (wPt2)
-          electronHist_Sim[k][t]->SetBinContent(i + 1, kNElec_EtaSim[t]);
-          electronHist_Sim[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec_EtaSim[t]));
-
-          electronHist_MC[k][t]->SetBinContent(i + 1, kNElec_EtaMC[t]);
-          electronHist_MC[k][t]->SetBinError(i + 1, TMath::Sqrt(kNElec_EtaMC[t]));
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecNu_EtaMC[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_EtaMC[t][i]));
+        } else {
+          // wZ or wPt2
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElec_EtaMC[t]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_EtaMC[t]));
         }
-      }
 
-      // calculate electrons acceptance with binomial errors
-      electronAcceptance[k][t]->Divide(electronHist_Sim[k][t], electronHist_MC[k][t], 1, 1, "B");
+        /*** ELECTRONS SIMREC ***/
 
-      /*** ETA ACCEPTANCE ***/
+        if (k == 0) {
+          // Q2
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecQ2_EtaSim[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_EtaSim[t][i]));
+        } else if (k == 1) {
+          // Nu
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecNu_EtaSim[t][i]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_EtaSim[t][i]));
+        } else {
+          // wZ or wPt2
+          NElectron_Data[t][k]->SetBinContent(i + 1, kNElec_EtaSim[t]);
+          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_EtaSim[t]));
+        }
+      }  // end of loop over bins
 
-      etaHist_Sim[k][t] =
-          new TH1D("etaNumber_Sim_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      etaHist_MC[k][t] =
-          new TH1D("etaNumber_MC_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      etaAcceptance[k][t] =
-          new TH1D("etaAcceptance_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+      // calculate acceptance of etas
+      NEta_Acceptance[t][k]->Divide(NEta_Sim[t][k], NEta_MC[t][k], 1, 1, "B");
 
-      // fill hists, loop over bins
-      for (Int_t i = 0; i < Nbins; i++) {
-        etaHist_Sim[k][t]->SetBinContent(i + 1, fitEta_Sim[k][t][i]);
-        etaHist_Sim[k][t]->SetBinError(i + 1, fitEtaError_Sim[k][t][i]);
+      // correct number of etas
+      NEta_AccCorr[t][k]->Divide(NEta_Data[t][k], NEta_Acceptance[t][k], 1, 1);
 
-        etaHist_MC[k][t]->SetBinContent(i + 1, intEta_MC[k][t][i]);
-        etaHist_MC[k][t]->SetBinError(i + 1, intEtaError_MC[k][t][i]);
-      }
+      // calculate acceptance of electrons
+      NElectron_Acceptance[t][k]->Divide(NElectron_Sim[t][k], NElectron_MC[t][k], 1, 1, "B");
 
-      // calculate eta acceptance with binomial errors
-      etaAcceptance[k][t]->Divide(etaHist_Sim[k][t], etaHist_MC[k][t], 1, 1, "B");
+      // correct number of electrons
+      NElectron_AccCorr[t][k]->Divide(NElectron_Data[t][k], NElectron_Acceptance[t][k], 1, 1);
 
-      /*** ELECTRON/ETA ACCEPTANCE ***/
+      // get Nh/Ne
+      Ratio[t][k]->Divide(NEta_AccCorr[t][k], NElectron_AccCorr[t][k], 1, 1);
 
-      // calculate acceptance corr factors with standard errors
-      AccCorrFactorsHist[k][t] =
-          new TH1D("AccCorrFactors_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      AccCorrFactorsHist[k][t]->Divide(electronAcceptance[k][t], etaAcceptance[k][t], 1, 1);
-
-      /*** SOLID/LIQUID ACCEPTANCE ***/
-      // calculate solid-to-liquid ratio of acceptance corr factors with standard errors
-      AccCorrRatiosHist[k][t] =
-          new TH1D("AccCorrRatios_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      AccCorrRatiosHist[k][t]->Divide(AccCorrFactorsHist[k][t], AccCorrFactorsHist[k][0], 1, 1);
-
-      /*** CORRECTED MR ***/
-
-      // calculate acceptance-corrected MR with standard errors
-      MRCorr[k][t] = new TH1D("MRCorr_" + targetString[t] + "_" + kinvarOption[k], "", Nbins, EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-      MRCorr[k][t]->Multiply(AccCorrRatiosHist[k][t], MR[k][t], 1, 1);
+      // calculate final MR
+      MR[t][k]->Divide(Ratio[t][k], Ratio[0][k], 1, 1);
     }
   }
 
@@ -248,8 +196,8 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
   Double_t binCenter[Nkinvars][Nbins];
   Double_t binError[Nkinvars][Nbins];
 
-  Double_t acceptanceValue[Nkinvars][Ntargets][Nbins];
-  Double_t acceptanceError[Nkinvars][Ntargets][Nbins];
+  Double_t acceptanceValue[Ntargets][Nkinvars][Nbins];
+  Double_t acceptanceError[Ntargets][Nkinvars][Nbins];
 
   // fill arrays
   for (Int_t k = 0; k < Nkinvars; k++) {
@@ -258,44 +206,42 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
       binError[k][i] = (EdgesKinvar[k][i + 1] - EdgesKinvar[k][i]) / 2;
       // fill acceptance values and errors
       for (Int_t t = 0; t < Ntargets; t++) {
-        acceptanceValue[k][t][i] = MRCorr[k][t]->GetBinContent(i + 1);
-        acceptanceError[k][t][i] = MRCorr[k][t]->GetBinError(i + 1);
+        acceptanceValue[t][k][i] = MR[t][k]->GetBinContent(i + 1);
+        acceptanceError[t][k][i] = MR[t][k]->GetBinError(i + 1);
       }
     }
   }
 
   // set graphs
-  TGraphErrors *acceptanceGraph[Nkinvars][Ntargets];
-  for (Int_t k = 0; k < Nkinvars; k++) {
-    for (Int_t t = 0; t < Ntargets; t++) {
-      acceptanceGraph[k][t] = new TGraphErrors(Nbins, binCenter[k], acceptanceValue[k][t], binError[k], acceptanceError[k][t]);
+  TGraphErrors *acceptanceGraph[Ntargets][Nkinvars];
+  for (Int_t t = 0; t < Ntargets; t++) {
+    for (Int_t k = 0; k < Nkinvars; k++) {
+      acceptanceGraph[t][k] = new TGraphErrors(Nbins, binCenter[k], acceptanceValue[t][k], binError[k], acceptanceError[t][k]);
     }
   }
 
   // set style
   for (Int_t k = 0; k < Nkinvars; k++) {
-    acceptanceGraph[k][1]->SetTitle("");
+    acceptanceGraph[1][k]->SetTitle("");
 
-    acceptanceGraph[k][1]->GetYaxis()->SetTitle("R_{A}^{#eta}");
-
-    // set y-axis
-    acceptanceGraph[k][1]->GetYaxis()->SetRangeUser(0., 1.6);
+    acceptanceGraph[1][k]->GetYaxis()->SetTitle("R_{A}^{#eta}");
+    acceptanceGraph[1][k]->GetYaxis()->SetRangeUser(0., 1.6);
     if (k == 3) {
-      acceptanceGraph[k][1]->GetYaxis()->SetRangeUser(0., 2.5);
+      acceptanceGraph[1][k]->GetYaxis()->SetRangeUser(0., 2.5);
     }
-    acceptanceGraph[k][1]->GetYaxis()->SetTitleSize(0.06);
-    acceptanceGraph[k][1]->GetYaxis()->SetMaxDigits(3);
+    acceptanceGraph[1][k]->GetYaxis()->SetTitleSize(0.06);
+    acceptanceGraph[1][k]->GetYaxis()->SetMaxDigits(3);
 
-    acceptanceGraph[k][1]->GetXaxis()->SetTitle(titleAxis[k]);
-    acceptanceGraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
-    acceptanceGraph[k][1]->GetXaxis()->SetTitleSize(0.06);
+    acceptanceGraph[1][k]->GetXaxis()->SetTitle(kinvarTitle[k]);
+    acceptanceGraph[1][k]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
+    acceptanceGraph[1][k]->GetXaxis()->SetTitleSize(0.06);
 
     for (Int_t t = 0; t < Ntargets; t++) {
-      acceptanceGraph[k][t]->SetMarkerStyle(21);
-      acceptanceGraph[k][t]->SetMarkerSize(2);
-      acceptanceGraph[k][t]->SetMarkerColor(targetColor[t]);
-      acceptanceGraph[k][t]->SetLineColor(targetColor[t]);
-      acceptanceGraph[k][t]->SetLineWidth(5);
+      acceptanceGraph[t][k]->SetMarkerStyle(21);
+      acceptanceGraph[t][k]->SetMarkerSize(2);
+      acceptanceGraph[t][k]->SetMarkerColor(targetColor[t]);
+      acceptanceGraph[t][k]->SetLineColor(targetColor[t]);
+      acceptanceGraph[t][k]->SetLineWidth(5);
     }
   }
 
@@ -310,16 +256,18 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
 
   for (Int_t k = 0; k < Nkinvars; k++) {
     c->cd(k + 1);
+
     // draw per kinvar, only solid targets
-    acceptanceGraph[k][1]->Draw("AP");
-    acceptanceGraph[k][2]->Draw("P");
-    acceptanceGraph[k][3]->Draw("P");
+    acceptanceGraph[1][k]->Draw("AP");
+    acceptanceGraph[2][k]->Draw("P");
+    acceptanceGraph[3][k]->Draw("P");
+
     // legend
     if (k == 1) {
       TLegend *legend = new TLegend(0.2, 0.75, 0.45, 0.9);  // x1,y1,x2,y2
-      legend->AddEntry(acceptanceGraph[k][1], "C (Acc. Corr.)", "pl");
-      legend->AddEntry(acceptanceGraph[k][2], "Fe (Acc. Corr.)", "pl");
-      legend->AddEntry(acceptanceGraph[k][3], "Pb (Acc. Corr.)", "pl");
+      legend->AddEntry(acceptanceGraph[1][k], "C (Acc. Corr.)", "pl");
+      legend->AddEntry(acceptanceGraph[2][k], "Fe (Acc. Corr.)", "pl");
+      legend->AddEntry(acceptanceGraph[3][k], "Pb (Acc. Corr.)", "pl");
       legend->SetFillStyle(0);
       legend->SetTextFont(62);
       legend->SetTextSize(0.04);

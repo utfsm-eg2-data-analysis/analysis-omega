@@ -40,7 +40,7 @@ void Make_ParentID_PhiPQ(TString targetOption = "C", TString StoreOption = "") {
   Int_t plotNbins = 200;
   Double_t plotMin = 0.26;
   Double_t plotMax = 0.8;
-  TString histProperties = Form("(%d, %f, %f)", plotNbins, plotMin, plotMax);
+  TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;
