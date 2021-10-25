@@ -63,10 +63,10 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     }
   }
 
-  Int_t plotNbins = 54;
-  Double_t plotMin = 0.26;
-  Double_t plotMax = 0.8;
-  TString histProperties = Form("(%d, %f, %f)", plotNbins, plotMin, plotMax);
+  Int_t plotNbins = 60;
+  Double_t plotMin = 0.3;
+  Double_t plotMax = 0.9;
+  TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
   TCut CutBin;
@@ -106,7 +106,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // loop over bins
     for (Int_t i = 0; i < Nbins; i++) {
       // get fit function to retrieve parameter's values
-      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%d", i));
+      InputFit[i] = (RooFitResult *)RootInputFile->Get(Form("fit-result_%i", i));
       MeanFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#mu(#eta)"))->getValV();
       SigmaFix[i] = ((RooRealVar *)InputFit[i]->floatParsFinal().find("#sigma(#eta)"))->getValV();
     }
@@ -154,10 +154,10 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     RooRealVar nbkg("N_{bkg}", "number of background", 0, 1000000);
     RooAddPdf model("model", "(g+pol2)", RooArgList(bkg, signal), RooArgList(nbkg, nsig));
 
-    theFrame[i] = x.frame(Name(Form("upper_f_%d", i)));
+    theFrame[i] = x.frame(Name(Form("upper_f_%i", i)));
 
     FitResult[i] = model.fitTo(data, Minos(kTRUE), Extended(), Save());
-    FitResult[i]->SetName(Form("fit-result_%d", i));
+    FitResult[i]->SetName(Form("fit-result_%i", i));
 
     data.plotOn(theFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
     model.plotOn(theFrame[i], Name("Model"), LineColor(myBlue));
@@ -165,7 +165,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     model.plotOn(theFrame[i], Name("Bkg"), Components("bkg"), LineColor(kGray + 2), LineStyle(kDashed));
     model.plotOn(theFrame[i], Name("Signal"), Components("signal"), LineColor(myRed));
 
-    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%d", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
+    modelHist[i] = (TH1D *)model.createHistogram(Form("model_%i", i), x, Binning(plotNbins, plotMin, plotMax), Extended());
     modelHist[i]->Scale((plotMax - plotMin) / (Double_t)plotNbins);  // bin width
 
     // assign parameters
@@ -188,7 +188,6 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
   const Int_t Nx = 3;
   const Int_t Ny = 2;
-
   TString CanvasName = "bkg-fitting_" + targetOption + "_" + kinvarOption;
   TCanvas *can1 = new TCanvas(CanvasName, CanvasName, 3240, 2160);
   can1->Divide(Nx, Ny, 0.0001, 0.0001);
@@ -205,18 +204,14 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // style
     theFrame[i]->SetTitle("");
 
-    theFrame[i]->GetYaxis()->SetRangeUser(0, 1.2 * dataHist[i]->GetMaximum());
+    theFrame[i]->GetYaxis()->SetRangeUser(0, 1.3 * dataHist[i]->GetMaximum());
     theFrame[i]->GetYaxis()->SetTitle("Counts");
     theFrame[i]->GetYaxis()->SetTitleSize(0.04);
-    theFrame[i]->GetYaxis()->SetTickSize(0.02);
     theFrame[i]->GetYaxis()->SetMaxDigits(3);
 
     theFrame[i]->GetXaxis()->SetTitle("Reconstructed Mass m(#gamma#gamma) [GeV]");
     theFrame[i]->GetXaxis()->SetTitleOffset(1.2);
     theFrame[i]->GetXaxis()->SetTitleSize(0.04);
-    theFrame[i]->GetXaxis()->SetTickSize(0.05);
-    // theFrame[i]->GetXaxis()->SetLabelSize(0.06);
-
     theFrame[i]->GetXaxis()->SetNdivisions(412);
 
     /*** UPPER PAD ***/
@@ -225,22 +220,28 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     theFrame[i]->Draw();
 
-    // title and parameters
-    TPaveText *pav = new TPaveText(0.17, 0.57, 0.42, 0.90, "NDC NB");  // no border
-    pav->AddText(auxCut);                                              // Title
-    ((TText *)pav->GetListOfLines()->Last())->SetTextSize(0.04);
-    pav->AddText("");
-    pav->AddText(Chi2ndf[i]);
-    pav->AddText(Netas[i]);
-    pav->AddText(MeanS[i]);
-    pav->AddText(SigmaS[i]);
-    pav->AddText(NbkgS[i]);
-    pav->AddText(PolaS[i]);
-    pav->AddText(PolbS[i]);
+    // set title
+    TPaveText *pav = new TPaveText(0.175, 0.85, 0.55, 0.9, "NDC NB");  // no border
+    pav->AddText(auxCut);
+    pav->SetTextSize(0.04);
     pav->SetBorderSize(0);
     pav->SetFillStyle(0);
     pav->SetTextAlign(12);
     pav->Draw();
+
+    // parameters
+    TPaveText *pav2 = new TPaveText(0.6, 0.625, 0.9, 0.875, "NDC NB");
+    pav2->AddText(Chi2ndf[i]);
+    pav2->AddText(Netas[i]);
+    pav2->AddText(MeanS[i]);
+    pav2->AddText(SigmaS[i]);
+    pav2->AddText(NbkgS[i]);
+    pav2->AddText(PolaS[i]);
+    pav2->AddText(PolbS[i]);
+    pav2->SetBorderSize(0);
+    pav2->SetFillStyle(0);
+    pav2->SetTextAlign(32);
+    pav2->Draw();
 
     // draw lines
     gPad->Update();  // necessary
@@ -266,7 +267,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     // mu
     x = meanVal[i];
     u = (x - gPad->GetX1()) / (gPad->GetX2() - gPad->GetX1());
-    line_range = new TLine(u, 0.15, u, 0.95);
+    line_range = new TLine(u, 0.15, u, 0.80);
     line_range->SetLineColor(myRed);
     line_range->SetLineWidth(2);
     line_range->SetLineStyle(7);
@@ -274,7 +275,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
     line_range->Draw();
 
     // legend
-    TLegend *leg = new TLegend(0.75, 0.75, 0.95, 0.88);  // x1,y1,x2,y2
+    TLegend *leg = new TLegend(0.2, 0.67, 0.35, 0.82);  // x1,y1,x2,y2
     leg->AddEntry(theFrame[i]->findObject("Data"), "Data", "lpe");
     leg->AddEntry(theFrame[i]->findObject("Model"), "Fit", "l");
     leg->AddEntry(theFrame[i]->findObject("Bkg"), "Bkg", "l");

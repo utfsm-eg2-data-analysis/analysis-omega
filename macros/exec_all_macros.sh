@@ -104,9 +104,9 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "eta" 
     ################
 
     # main plots
-    root -l -b -q 'eta_reco/DrawOver_MassPerTarget.cxx(0, "png")' # need to remove photon's corr ???
+    root -l -b -q 'eta_reco/DrawOver_MassPerTarget.cxx(0, "png")'
     root -l -b -q 'eta_reco/DrawOver_EffectOfKinCuts.cxx("png")'
-    root -l -b -q 'eta_reco/DrawOver_MassPerTarget.cxx(1, "png")' # need to remove photon's corr ???
+    root -l -b -q 'eta_reco/DrawOver_MassPerTarget.cxx(1, "png")'
     root -l -b -q 'eta_reco/Draw_Binning.cxx("Fe", "png")'
     root -l -b -q 'eta_reco/Draw2D_EtaMass_vs_Z.cxx("png")'
 
@@ -115,21 +115,17 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "eta" 
     root -l -b -q 'eta_reco/Draw_ElectronNumbers.cxx("png")'
 
     # eta background subtraction via bkg fitting
-    # 1) do it for all data
-    for var in "${kinvars_eta[@]}"; do
-        root -l -b -q 'eta_bkg-fitting/Make_BkgFitting.cxx("All", "'"${var}"'", 0, "png")'
-    done
-    # 2) do it for each target, fixing params
+    # do it for each target
     for targ in "${targets[@]}"; do
         for var in "${kinvars_eta[@]}"; do
-            root -l -b -q 'eta_bkg-fitting/Make_BkgFitting.cxx("'"${targ}"'", "'"${var}"'", 1, "png")'
+            root -l -b -q 'eta_bkg-fitting/Make_BkgFitting.cxx("'"${targ}"'", "'"${var}"'", 0, "png")'
         done
     done
     # draw obtained parameters
     root -l -b -q 'eta_bkg-fitting/Draw_EtaNumbers.cxx("png")'
 
     # do MR of eta
-    root -l -b -q 'eta_MR/MakeMR_BkgFitting.cxx("png")'
+    root -l -b -q 'eta_bkg-fitting/MakeMR_BkgFitting.cxx("png")'
 fi
 
 if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega" ]]; then
@@ -166,7 +162,7 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega
     root -l -b -q 'omega_bkg-fitting/Draw_OmegaNumbers.cxx("png")'
 
     # do MR of omega from bkg fitting
-    root -l -b -q 'omega_MR/MakeMR_BkgFitting.cxx("png")'
+    root -l -b -q 'omega_bkg-fitting/MakeMR_BkgFitting.cxx("png")'
 
     # omega background subtraction via evnt mixing
     # draw comparison between data and evnt mixing
@@ -185,7 +181,7 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega
     root -l -b -q 'omega_evnt-mixing/Draw_OmegaNumbers.cxx("png")'
 
     # do MR of omega from evnt mixing
-    root -l -b -q 'omega_MR/MakeMR_EventMixing.cxx("png")'
+    root -l -b -q 'omega_evnt-mixing/MakeMR_EventMixing.cxx("png")'
 fi
 
 if [[ "${data_kind}" == "sim" && "${stage}" == "test" ]]; then
