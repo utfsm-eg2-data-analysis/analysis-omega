@@ -34,9 +34,9 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
   TString kinvarTitle = "#phi_{PQ}";
   Double_t EdgesPhiPQ[NbinsPhiPQ + 1] = {-180, -108, -36, 36, 108, 180};
 
-  Int_t plotNbins = 54;
-  Double_t plotMin = 0.26;
-  Double_t plotMax = 0.8;
+  Int_t plotNbins = 60;
+  Double_t plotMin = 0.3;
+  Double_t plotMax = 0.9;
   TString histProperties = Form("(%i, %f, %f)", plotNbins, plotMin, plotMax);
 
   TString auxCut;
@@ -126,7 +126,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
 
     theFrame[i] = x.frame(Name(Form("upper_f_%i", i)));
 
-    FitResult[i] = model.fitTo(data, Minos(kTRUE), Extended(), Save());
+    FitResult[i] = model.fitTo(data, Range(plotMin, plotMax), Minos(kTRUE), Strategy(2), Extended(), Save());
     FitResult[i]->SetName(Form("fit-result_%i", i));
 
     data.plotOn(theFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
@@ -158,7 +158,6 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
 
   const Int_t Nx = 3;
   const Int_t Ny = 2;
-
   TString CanvasName = "bkg-fitting_" + targetOption + "_" + kinvarOption + "_sim";
   TCanvas *can1 = new TCanvas(CanvasName, CanvasName, 3240, 2160);
   can1->Divide(Nx, Ny, 0.0001, 0.0001);
@@ -178,15 +177,11 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     theFrame[i]->GetYaxis()->SetRangeUser(0, 1.5 * dataHist[i]->GetMaximum());
     theFrame[i]->GetYaxis()->SetTitle("Counts");
     theFrame[i]->GetYaxis()->SetTitleSize(0.04);
-    theFrame[i]->GetYaxis()->SetTickSize(0.02);
     theFrame[i]->GetYaxis()->SetMaxDigits(3);
 
     theFrame[i]->GetXaxis()->SetTitle("Reconstructed Mass m(#gamma#gamma) [GeV]");
     theFrame[i]->GetXaxis()->SetTitleOffset(1.2);
     theFrame[i]->GetXaxis()->SetTitleSize(0.04);
-    theFrame[i]->GetXaxis()->SetTickSize(0.05);
-    // theFrame[i]->GetXaxis()->SetLabelSize(0.06);
-
     theFrame[i]->GetXaxis()->SetNdivisions(412);
 
     /*** UPPER PAD ***/
@@ -195,22 +190,28 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
 
     theFrame[i]->Draw();
 
-    // title and parameters
-    TPaveText *pav = new TPaveText(0.17, 0.57, 0.42, 0.90, "NDC NB");  // no border
-    pav->AddText(auxCut);                                              // Title
-    ((TText *)pav->GetListOfLines()->Last())->SetTextSize(0.04);
-    pav->AddText("");
-    pav->AddText(Chi2ndf[i]);
-    pav->AddText(Netas[i]);
-    pav->AddText(MeanS[i]);
-    pav->AddText(SigmaS[i]);
-    pav->AddText(NbkgS[i]);
-    pav->AddText(PolaS[i]);
-    pav->AddText(PolbS[i]);
+    // set title
+    TPaveText *pav = new TPaveText(0.175, 0.85, 0.55, 0.9, "NDC NB");  // no border
+    pav->AddText(auxCut);
+    pav->SetTextSize(0.04);
     pav->SetBorderSize(0);
     pav->SetFillStyle(0);
     pav->SetTextAlign(12);
     pav->Draw();
+
+    // parameters
+    TPaveText *pav2 = new TPaveText(0.6, 0.57, 0.9, 0.82, "NDC NB");
+    pav2->AddText(Chi2ndf[i]);
+    pav2->AddText(Netas[i]);
+    pav2->AddText(MeanS[i]);
+    pav2->AddText(SigmaS[i]);
+    pav2->AddText(NbkgS[i]);
+    pav2->AddText(PolaS[i]);
+    pav2->AddText(PolbS[i]);
+    pav2->SetBorderSize(0);
+    pav2->SetFillStyle(0);
+    pav2->SetTextAlign(32);
+    pav2->Draw();
 
     // draw lines
     gPad->Update();  // necessary
@@ -236,7 +237,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     // mu
     x = meanVal[i];
     u = (x - gPad->GetX1()) / (gPad->GetX2() - gPad->GetX1());
-    line_range = new TLine(u, 0.15, u, 0.95);
+    line_range = new TLine(u, 0.15, u, 0.80);
     line_range->SetLineColor(myRed);
     line_range->SetLineWidth(2);
     line_range->SetLineStyle(7);
@@ -244,7 +245,7 @@ void Make_BkgFitting_PhiPQ_Sim(TString targetOption = "C", Int_t fixParams = 0, 
     line_range->Draw();
 
     // legend
-    TLegend *leg = new TLegend(0.75, 0.75, 0.95, 0.88);  // x1,y1,x2,y2
+    TLegend *leg = new TLegend(0.2, 0.67, 0.35, 0.82);  // x1,y1,x2,y2
     leg->AddEntry(theFrame[i]->findObject("Data"), "Data", "lpe");
     leg->AddEntry(theFrame[i]->findObject("Model"), "Fit", "l");
     leg->AddEntry(theFrame[i]->findObject("Bkg"), "Bkg", "l");
