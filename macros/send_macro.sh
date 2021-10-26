@@ -100,3 +100,4 @@ echo "root -l -b -q '${macro}${options}'"    >> ${jobfile}
 
 echo "Submitting job: ${jobfile}"
 sbatch ${jobfile} # submit job!
+echo ""

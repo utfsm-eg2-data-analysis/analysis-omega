@@ -13,7 +13,7 @@ function print_help() {
     echo "./send_long_macros.sh --kind <data_kind> --stage <stage> --part <part>"
     echo "Where:"
     echo "  <kind>  = selects kind of data (data, sim)"
-    echo "  <stage> = selecst stage of analysis (test, ana, radcorr)"
+    echo "  <stage> = selecst stage of analysis (test, ana, ana-fix, radcorr, radcorr-fix)"
     echo "  <part>  = selects particle (eta, omega)"
     echo "Example:"
     echo "  ./send_long_macros.sh --kind data --stage ana --part omega"
@@ -110,18 +110,14 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "eta" 
     ./send_macro.sh --macro eta_reco/Draw_Binning.cxx --opt '("Fe", "png")' --time 1
     ./send_macro.sh --macro eta_reco/Draw2D_EtaMass_vs_Z.cxx --opt '("png")' --time 1
 
-    # get and draw electron numbers for normalization
+    # get electron numbers for normalization
     ./send_macro.sh --macro eta_reco/Get_ElectronNumbers.cxx --opt '' --time 2
 
     # eta background subtraction via bkg fitting
-    # 1) do it for all data
-    for var in "${kinvars_eta[@]}"; do
-        ./send_macro.sh --macro eta_bkg-fitting/Make_BkgFitting.cxx --opt '("All", "'"${var}"'", 0, "png")' --time 1
-    done
-    # 2) do it for each target, fixing params
+    # do it for each target in data, without fixing params
     for targ in "${targets[@]}"; do
         for var in "${kinvars_eta[@]}"; do
-            ./send_macro.sh --macro eta_bkg-fitting/Make_BkgFitting.cxx --opt '("'"${targ}"'", "'"${var}"'", 1, "png")' --time 1
+            ./send_macro.sh --macro eta_bkg-fitting/Make_BkgFitting.cxx --opt '("'"${targ}"'", "'"${var}"'", 0, "png")' --time 1
         done
     done
 fi
@@ -149,12 +145,6 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega
     for var in "${kinvars_omega[@]}"; do
         ./send_macro.sh --macro omega_bkg-fitting/Make_BkgFitting.cxx --opt '("All", "'"${var}"'", 0, "png")' --time 1
     done
-    # 2) do it for each target, fixing params
-    for targ in "${targets[@]}"; do
-        for var in "${kinvars_omega[@]}"; do
-            ./send_macro.sh --macro omega_bkg-fitting/Make_BkgFitting.cxx --opt '("'"${targ}"'", "'"${var}"'", 1, "png")' --time 1
-        done
-    done
 
     # omega background subtraction via evnt mixing
     # draw comparison between data and evnt mixing
@@ -163,6 +153,18 @@ if [[ "${data_kind}" == "data" && "${stage}" == "ana" && "${particle}" == "omega
     for var in "${kinvars_omega[@]}"; do
         ./send_macro.sh --macro omega_evnt-mixing/Make_EventMixing.cxx --opt '("All", "'"${var}"'", 0, "png")' --time 1
     done
+fi
+
+if [[ "${data_kind}" == "data" && "${stage}" == "ana-fix" && "${particle}" == "omega" ]]; then
+    # omega background subtraction via bkg fitting
+    # 2) do it for each target, fixing params
+    for targ in "${targets[@]}"; do
+        for var in "${kinvars_omega[@]}"; do
+            ./send_macro.sh --macro omega_bkg-fitting/Make_BkgFitting.cxx --opt '("'"${targ}"'", "'"${var}"'", 1, "png")' --time 1
+        done
+    done
+
+    # omega background subtraction via evnt mixing
     # 2) do it for each target, fixing params
     for targ in "${targets[@]}"; do
         for var in "${kinvars_omega[@]}"; do
@@ -178,7 +180,7 @@ if [[ "${data_kind}" == "sim" && "${stage}" == "ana" && "${particle}" == "omega"
     ########################
 
     # draw comparison between sim.rec. and data
-    ./send_macro.sh --macro omega_mc/DrawOver_MC_and_Data.cxx --opt '("C", "png")' --time 2
+    ./send_macro.sh --macro omega_mc/DrawOver_MC_and_Data.cxx --opt '("Fe", "png")' --time 2
 
     # get and draw electron numbers for normalization
     ./send_macro.sh --macro omega_mc/Get_ElectronNumbers.cxx --opt '' --time 4
@@ -259,25 +261,29 @@ if [[ "${stage}" == "radcorr" && "${particle}" == "omega" ]]; then
 
     # do background subtraction via evnt-mixing for all data
     ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("All", 0, "png")' --time 1
-    # do it for liquid and solid targets, fixing params
-    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("D", 1, "png")' --time 1
-    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("A", 1, "png")' --time 1
 
     # count omega numbers
     ./send_macro.sh --macro rad-corr_omega/Make_ParentID_PhiPQ.cxx --opt '("D", "png")' --time 2
     ./send_macro.sh --macro rad-corr_omega/Make_ParentID_PhiPQ.cxx --opt '("A", "png")' --time 2
 
-    # do background subtraction via evnt-mixing for all data
-    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("All", 0, "png")' --time 2
     # do background subtraction via evnt-mixing for all sim.rec.
-    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("D", 1, "png")' --time 2
-    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("A", 1, "png")' --time 2
+    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("All", 0, "png")' --time 2
 
     # get centroids
-    ./send_macro.sh --macro rad-corr_omega/Get_Centroids.cxx --opt '("D")' --time 4
-    ./send_macro.sh --macro rad-corr_omega/Get_Centroids.cxx --opt '("A")' --time 4
+    ./send_macro.sh --macro rad-corr_omega/Get_Centroids.cxx --opt '("D")' --time 6
+    ./send_macro.sh --macro rad-corr_omega/Get_Centroids.cxx --opt '("A")' --time 6
 
     # after this, obtain RC Factors with HAPRAD...
+fi
+
+if [[ "${stage}" == "radcorr-fix" && "${particle}" == "omega" ]]; then
+    # do background subtraction via evnt-mixing for data liquid and solid targets, fixing params
+    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("D", 1, "png")' --time 1
+    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("A", 1, "png")' --time 1
+
+    # do background subtraction via evnt-mixing for sim.rec. liquid and solid targets, fixing params
+    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("D", 1, "png")' --time 2
+    ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ_Sim.cxx --opt '("A", 1, "png")' --time 2
 fi
 
 if [[ "${stage}" == "radcorr" && "${particle}" == "eta" ]]; then
@@ -286,11 +292,9 @@ if [[ "${stage}" == "radcorr" && "${particle}" == "eta" ]]; then
     # Fit PhiPQ and Get Centroids (18 jobs) #
     #########################################
 
-    # do background subtraction via bkg-fitting for all data
-    ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ.cxx --opt '("All", 0, "png")' --time 1
-    # do it for each target, fixing params
+    # do background subtraction via bkg-fitting for each data target, without fixing
     for targ in "${targets[@]}"; do
-        ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ.cxx --opt '("'"${targ}"'", 1, "png")' --time 1
+        ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ.cxx --opt '("'"${targ}"'", 0, "png")' --time 1
     done
 
     # count eta numbers
@@ -298,16 +302,14 @@ if [[ "${stage}" == "radcorr" && "${particle}" == "eta" ]]; then
         ./send_macro.sh --macro rad-corr_eta/Make_ParentID_PhiPQ.cxx --opt '("'"${targ}"'", "png")' --time 4
     done
 
-    # do background subtraction via bkg-fitting for all sim.rec.
-    ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx --opt '("All", 0, "png")' --time 2
-    # do it for each target, fixing params
+    # do background subtraction via bkg-fitting for each sim.rec. target, without fixing
     for targ in "${targets[@]}"; do
-        ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx --opt '("'"${targ}"'", 1, "png")' --time 2
+        ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ_Sim.cxx --opt '("'"${targ}"'", 0, "png")' --time 2
     done
 
     # get centroids
     for targ in "${targets[@]}"; do
-        ./send_macro.sh --macro rad-corr_eta/Get_Centroids.cxx --opt '("'"${targ}"'")' --time 4
+        ./send_macro.sh --macro rad-corr_eta/Get_Centroids.cxx --opt '("'"${targ}"'")' --time 6
     done
 
     # after this, obtain RC Factors with HAPRAD...

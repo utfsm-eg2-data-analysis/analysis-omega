@@ -9,7 +9,7 @@
 
 function print_help() {
     echo "SCRIPT: exec_all_macros.sh"
-    echo "======================="
+    echo "=========================="
     echo "./exec_all_macros.sh --kind <data_kind> --stage <stage> --part <part>"
     echo "Where:"
     echo "  <kind>  = selects kind of data (data, sim)"
