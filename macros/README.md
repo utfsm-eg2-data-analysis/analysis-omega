@@ -3,7 +3,11 @@ analysis-omega/macros
 
 ## Requirements
 
-To load all required functions, you must include the dir `${PRODIR}/macros/include` into your `ROOT_INCLUDE_PATH` environment variable.
+* Environment variables: `WORKDIR` and `PRODIR`.
+
+* **ROOT** version 6.24/06
+
+* To load all required functions, you must include the dir `${PRODIR}/macros/include` into your `ROOT_INCLUDE_PATH` environment variable.
 
 ## Order of execution
 

@@ -156,7 +156,7 @@ void Make_BkgFitting(TString targetOption = "C", TString kinvarOption = "Q2", In
 
     theFrame[i] = x.frame(Name(Form("upper_f_%i", i)));
 
-    FitResult[i] = model.chi2FitTo(data, Range(plotMin, plotMax), Minos(kTRUE), Strategy(2), Extended(), Save());
+    FitResult[i] = model.fitTo(data, Range(plotMin, plotMax), Minos(true), Strategy(2), Extended(), Save());
     FitResult[i]->SetName(Form("fit-result_%i", i));
 
     data.plotOn(theFrame[i], Name("Data"), Binning(plotNbins, plotMin, plotMax), LineColor(myBlack), MarkerColor(myBlack));
