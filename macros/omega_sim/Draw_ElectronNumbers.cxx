@@ -90,6 +90,7 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[k][0]->GetYaxis()->SetTitle("N_{e^{-}}^{gen}");
     electronGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     electronGraph[k][0]->GetYaxis()->SetTitleOffset(1.);
+    electronGraph[k][0]->GetYaxis()->SetMaxDigits(3);
     // set x-axis
     electronGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     electronGraph[k][0]->GetXaxis()->SetTitle(kinvarTitle[k]);
@@ -117,7 +118,7 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[k][3]->Draw("P");
 
     // legend
-    if (k == 0) {
+    if (k == 1) {
       TLegend *legend = new TLegend(0.6, 0.65, 0.85, 0.9);  // x1,y1,x2,y2
       legend->AddEntry(electronGraph[k][0], "D (Sim. Rec.)", "pl");
       legend->AddEntry(electronGraph[k][1], "C (Sim. Rec.)", "pl");

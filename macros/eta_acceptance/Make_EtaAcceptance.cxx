@@ -150,9 +150,19 @@ void Make_EtaAcceptance(TString StoreOption = "") {
 
   /*** SET Y AXIS ***/
 
+  Double_t MaxRange[Nkinvars] = {0, 0, 0, 0};
   for (Int_t k = 0; k < Nkinvars; k++) {
-    acceptanceGraph[k][0]->GetYaxis()->SetRangeUser(0., 0.08);
+    for (Int_t t = 0; t < Ntargets; t++) {
+      // get the maximum of an array of length Nbins, and compare it with MaxRange
+      if (TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY()) > MaxRange[k]) {
+        MaxRange[k] = TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY());
+      }
+    }
+  }
 
+  for (Int_t k = 0; k < Nkinvars; k++) {
+
+    acceptanceGraph[k][0]->GetYaxis()->SetRangeUser(0., 1.2 * MaxRange[k]);
     acceptanceGraph[k][0]->GetYaxis()->SetTitle("N^{rec}_{#eta}/N^{gen}_{#eta}");
     acceptanceGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     acceptanceGraph[k][0]->GetYaxis()->SetTitleOffset(1.);

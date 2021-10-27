@@ -216,13 +216,13 @@ void Make_AcceptanceCorrFactors(TString StoreOption = "") {
   }
 
   for (Int_t k = 0; k < Nkinvars; k++) {
+    // set y-axis
     acceptanceGraph[k][0]->GetYaxis()->SetRangeUser(0., 1.5 * MaxRange[k]);
-
     acceptanceGraph[k][0]->GetYaxis()->SetTitle("A_{e-}/A_{#eta}");
     acceptanceGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     acceptanceGraph[k][0]->GetYaxis()->SetTitleOffset(1.);
     acceptanceGraph[k][0]->GetYaxis()->SetMaxDigits(3);
-
+    // set x-axis
     acceptanceGraph[k][0]->GetXaxis()->SetTitle(titleAxis[k]);
     acceptanceGraph[k][0]->GetXaxis()->SetTitleSize(0.06);
     acceptanceGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);

@@ -225,27 +225,32 @@ void Make_AcceptanceCorrRatios(TString StoreOption = "") {
 
   /*** SET Y AXIS ***/
 
-  Double_t MaxRange[Nkinvars] = {0, 0, 0, 0};
+  Double_t MaxRange = 0;
+  Double_t MinRange = 0;
   for (Int_t k = 0; k < Nkinvars; k++) {
     for (Int_t t = 0; t < Ntargets; t++) {
       // get the maximum of an array of length Nbins, and compare it with MaxRange
-      if (TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY()) > MaxRange[k]) {
-        MaxRange[k] = TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY());
+      if (TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY()) > MaxRange) {
+        MaxRange = TMath::MaxElement(Nbins, acceptanceGraph[k][t]->GetY());
+      }
+      // get the minimum of an array of length Nbins, and compare it with MinRange
+      if (TMath::MinElement(Nbins, acceptanceGraph[k][t]->GetY()) > MinRange) {
+        MinRange = TMath::MinElement(Nbins, acceptanceGraph[k][t]->GetY());
       }
     }
   }
 
   for (Int_t k = 0; k < Nkinvars; k++) {
-    acceptanceGraph[k][1]->GetYaxis()->SetRangeUser(0., 1.5 * MaxRange[k]);
-
+    // set y-axis
+    acceptanceGraph[k][1]->GetYaxis()->SetRangeUser(0.6 * MinRange, 1.2 * MaxRange);
     acceptanceGraph[k][1]->GetYaxis()->SetTitle("R_{A, corr}^{#omega} / R_{A, uncorr}^{#omega}");
     acceptanceGraph[k][1]->GetYaxis()->SetTitleSize(0.06);
     acceptanceGraph[k][1]->GetYaxis()->SetTitleOffset(1.);
     acceptanceGraph[k][1]->GetYaxis()->SetMaxDigits(3);
-
+    // set x-axis
+    acceptanceGraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     acceptanceGraph[k][1]->GetXaxis()->SetTitle(titleAxis[k]);
     acceptanceGraph[k][1]->GetXaxis()->SetTitleSize(0.06);
-    acceptanceGraph[k][1]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
   }
 
   /*** DRAW ***/

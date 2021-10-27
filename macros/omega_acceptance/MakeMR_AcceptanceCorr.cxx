@@ -62,9 +62,10 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
     for (Int_t k = 0; k < Nkinvars; k++) {
 
       // open files (read only)
-      HistFile_Data[t][k] = new TFile(gProDir + "/gfx/omega_evnt-mixing/evnt-mixing_" + targetString[t] + "_" + kinvarOption[k] + ".root");
-      HistFile_MC[t][k] = new TFile(gProDir + "/gfx/omega_mc/parent-id_" + targetString[t] + "_" + kinvarOption[k] + ".root");
-      HistFile_Sim[t][k] = new TFile(gProDir + "/gfx/omega_sim/evnt-mixing_" + targetString[t] + "_" + kinvarOption[k] + ".root");
+      HistFile_Data[t][k] =
+          new TFile(gProDir + "/gfx/omega_evnt-mixing/evnt-mixing_" + targetString[t] + "_" + kinvarOption[k] + ".root", "READ");
+      HistFile_MC[t][k] = new TFile(gProDir + "/gfx/omega_mc/parent-id_" + targetString[t] + "_" + kinvarOption[k] + ".root", "READ");
+      HistFile_Sim[t][k] = new TFile(gProDir + "/gfx/omega_sim/evnt-mixing_" + targetString[t] + "_" + kinvarOption[k] + ".root", "READ");
 
       // create output histograms
       NOmega_Data[t][k] =
@@ -175,32 +176,32 @@ void MakeMR_AcceptanceCorr(TString StoreOption = "") {
 
         if (k == 0) {
           // Q2
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecQ2_OmegaMC[t][i]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_OmegaMC[t][i]));
+          NElectron_MC[t][k]->SetBinContent(i + 1, kNElecQ2_OmegaMC[t][i]);
+          NElectron_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_OmegaMC[t][i]));
         } else if (k == 1) {
           // Nu
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecNu_OmegaMC[t][i]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_OmegaMC[t][i]));
+          NElectron_MC[t][k]->SetBinContent(i + 1, kNElecNu_OmegaMC[t][i]);
+          NElectron_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_OmegaMC[t][i]));
         } else {
           // wZ or wPt2
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElec_OmegaMC[t]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_OmegaMC[t]));
+          NElectron_MC[t][k]->SetBinContent(i + 1, kNElec_OmegaMC[t]);
+          NElectron_MC[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_OmegaMC[t]));
         }
 
         /*** ELECTRONS SIMREC ***/
 
         if (k == 0) {
           // Q2
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecQ2_OmegaSim[t][i]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_OmegaSim[t][i]));
+          NElectron_Sim[t][k]->SetBinContent(i + 1, kNElecQ2_OmegaSim[t][i]);
+          NElectron_Sim[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecQ2_OmegaSim[t][i]));
         } else if (k == 1) {
           // Nu
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElecNu_OmegaSim[t][i]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_OmegaSim[t][i]));
+          NElectron_Sim[t][k]->SetBinContent(i + 1, kNElecNu_OmegaSim[t][i]);
+          NElectron_Sim[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElecNu_OmegaSim[t][i]));
         } else {
           // wZ or wPt2
-          NElectron_Data[t][k]->SetBinContent(i + 1, kNElec_OmegaSim[t]);
-          NElectron_Data[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_OmegaSim[t]));
+          NElectron_Sim[t][k]->SetBinContent(i + 1, kNElec_OmegaSim[t]);
+          NElectron_Sim[t][k]->SetBinError(i + 1, TMath::Sqrt(kNElec_OmegaSim[t]));
         }
       }  // end of loop over bins
 

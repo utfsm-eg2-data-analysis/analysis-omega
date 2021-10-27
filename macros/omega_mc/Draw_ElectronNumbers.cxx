@@ -24,8 +24,8 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
 
   Double_t EdgesKinvar[Nkinvars][Nbins + 1];
   for (Int_t i = 0; i < Nbins + 1; i++) {
-    EdgesKinvar[0][i] = kEdgesQ2_Eta[i];
-    EdgesKinvar[1][i] = kEdgesNu_Eta[i];
+    EdgesKinvar[0][i] = kEdgesQ2[i];
+    EdgesKinvar[1][i] = kEdgesNu[i];
   }
 
   TString targetString[Ntargets] = {"D", "C", "Fe", "Pb"};
@@ -90,6 +90,7 @@ void Draw_ElectronNumbers(TString StoreOption = "") {
     electronGraph[k][0]->GetYaxis()->SetTitle("N_{e^{-}}^{gen}");
     electronGraph[k][0]->GetYaxis()->SetTitleSize(0.06);
     electronGraph[k][0]->GetYaxis()->SetTitleOffset(1.);
+    electronGraph[k][0]->GetYaxis()->SetMaxDigits(3);
     // set x-axis
     electronGraph[k][0]->GetXaxis()->SetLimits(EdgesKinvar[k][0], EdgesKinvar[k][Nbins]);
     electronGraph[k][0]->GetXaxis()->SetTitle(kinvarTitle[k]);
