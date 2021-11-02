@@ -276,6 +276,27 @@ if [[ "${stage}" == "radcorr" && "${particle}" == "omega" ]]; then
     # after this, obtain RC Factors with HAPRAD...
 fi
 
+if [[ "${stage}" == "radcorr" && "${particle}" == "electron" ]]; then
+
+    # get electron numbers and centroids for each bin in EXTERNALS binning
+    # eta
+    for targ in "${targets[@]}"; do
+        for ((n=0; n<6; n++)); do
+            for ((q=0; q<6; q++)); do
+                ./send_macro.sh --macro rad-corr_electron/Get_ElectronNumbers.cxx --opt '("eta", "'"${targ}"'", '${n}', '${q}')' --time 8
+            done
+        done
+    done
+    # omega
+    for targ in "${targets[@]}"; do
+        for ((n=0; n<6; n++)); do
+            for ((q=0; q<6; q++)); do
+                ./send_macro.sh --macro rad-corr_electron/Get_ElectronNumbers.cxx --opt '("omega", "'"${targ}"'", '${n}', '${q}')' --time 8
+            done
+        done
+    done
+fi
+
 if [[ "${stage}" == "radcorr-fix" && "${particle}" == "omega" ]]; then
     # do background subtraction via evnt-mixing for data liquid and solid targets, fixing params
     ./send_macro.sh --macro rad-corr_omega/Make_EventMixing_PhiPQ.cxx --opt '("D", 1, "png")' --time 1
@@ -297,7 +318,7 @@ if [[ "${stage}" == "radcorr" && "${particle}" == "eta" ]]; then
         ./send_macro.sh --macro rad-corr_eta/Make_BkgFitting_PhiPQ.cxx --opt '("'"${targ}"'", 0, "png")' --time 1
     done
 
-    # count eta numbers
+    # count gen. eta numbers
     for targ in "${targets[@]}"; do
         ./send_macro.sh --macro rad-corr_eta/Make_ParentID_PhiPQ.cxx --opt '("'"${targ}"'", "png")' --time 4
     done

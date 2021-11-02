@@ -7,3 +7,5 @@
 **.root
 **/.vscode/
 **/gfx/
+**.log
+**.csv
